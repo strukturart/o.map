@@ -34,7 +34,11 @@
 
 	"systemXHR": {
 	"description": "Required to load remote content"
-	}
+	},
+   "device-storage:sdcard": {
+      "description": "To access files from the SD card",
+      "access": "read"
+    }
  
   }
 

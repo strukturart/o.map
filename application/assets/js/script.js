@@ -75,6 +75,31 @@ keyboard: true
 
   map.locate({setView: true, maxZoom: 16});
 
+
+/*
+TO-DO
+  var instanceOfDOMRequest = instanceOfDeviceStorage.get(fileName);
+
+  var sdcard = navigator.getDeviceStorage("sdcard");
+
+var request = sdcard.get("montoz.gpx");
+
+request.onsuccess = function () {
+  var name = this.result.name;
+  console.log('File "' + name + '" successfully retrieved from the sdcard storage area');
+}
+
+request.onerror = function () {
+  console.warn('Unable to get the file: ' + this.error);
+}
+
+
+var gpx = 'montoz.gpx'; // URL to your GPX file or the GPX itself
+new L.GPX(gpx, {async: true}).on('loaded', function(e) {
+  map.fitBounds(e.target.getBounds());
+}).addTo(map);
+*/
+
 //softkey 
 
 
@@ -118,7 +143,6 @@ function updateMarker(showMessage)
 
 getLocation();
 
-      
 
 }
 
