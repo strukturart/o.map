@@ -84,7 +84,7 @@ var current_lat = 0;
 var zoom_level = 16;
 
 
-function updateMarker()
+function updateMarker(showMessage)
 {
   function getLocation() {
 
@@ -103,6 +103,16 @@ function updateMarker()
 
       myMarker.setLatLng([position.coords.latitude, position.coords.longitude]).update();
       map.panTo( new L.LatLng(position.coords.latitude, position.coords.longitude));
+      if(showMessage == true)
+      {
+        if($('div#currentPosition').css('z-index')=='-3000')
+{
+        $('div#currentPosition').css("z-index","3000")
+        $('div#currentPosition > div').text("Latitude: "+position.coords.latitude +" / Longitude: "+position.coords.longitude)
+      }
+      else
+        {$('div#currentPosition').css("z-index","-3000")}
+    }
 
     }
 
@@ -141,6 +151,8 @@ else
 }
 
 }
+
+
 
 
 function showMan()
@@ -190,7 +202,7 @@ function handleKeyDown(evt) {
 
 
         case '1':
-          updateMarker();
+          updateMarker(false);
         break;
 
         case '2':
@@ -231,7 +243,11 @@ function handleKeyDown(evt) {
         break; 
 
         case '0':
-          ;showMan();
+          showMan();
+        break; 
+
+        case '3':
+          updateMarker(true);
         break; 
     }
 
