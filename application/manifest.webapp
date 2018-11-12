@@ -1,0 +1,41 @@
+{
+  "version": "1.0.0",
+  "name": "osm-map",
+  "description": "OpenStreetMap",
+  "launch_path": "/index.html",
+  "type": "certified",
+
+
+"csp": "default-src *; script-src 'self' https://nominatim.openstreetmap.org https://api.tiles.mapbox.com; object-src 'none'; style-src 'self' ",
+
+
+  "icons": {
+    "16": "/icons/icon16x16.png",
+    "48": "/icons/icon48x48.png",
+    "60": "/icons/icon60x60.png",
+    "128": "/icons/icon128x128.png"
+  },
+	
+  "developer": {
+    "name": "strukturart",
+    "url": "https://strukturart.com"
+  },
+
+
+
+  "permissions": {
+    "geolocation": {
+      "description": "Required to show user's location on map"
+    },
+
+	"spatialnavigation-app-manage": {
+	"navigator.spatialNavigationEnabled": false
+	},
+
+	"systemXHR": {
+	"description": "Required to load remote content"
+	}
+ 
+  }
+
+}
