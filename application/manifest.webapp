@@ -6,7 +6,7 @@
   "type": "certified",
 
 
-"csp": "default-src *; script-src 'self' https://nominatim.openstreetmap.org https://api.tiles.mapbox.com; object-src 'none'; style-src 'self' ",
+"csp": "default-src *; script-src 'self'  https://nominatim.openstreetmap.org https://api.tiles.mapbox.com; object-src 'none'; style-src 'self' ",
 
 
   "icons": {
@@ -36,9 +36,11 @@
 	"description": "Required to load remote content"
 	},
    "device-storage:sdcard": {
-      "description": "To access files from the SD card",
-      "access": "read"
-    }
+
+ "access": "readwrite"
+    },
+"device-storage:apps":{ "access": "readwrite" },
+  "webapps-manage":{ }
  
   }
 

@@ -76,30 +76,75 @@ keyboard: true
   map.locate({setView: true, maxZoom: 16});
 
 
-/*
-TO-DO
-  var instanceOfDOMRequest = instanceOfDeviceStorage.get(fileName);
 
-  var sdcard = navigator.getDeviceStorage("sdcard");
+var sdcard = navigator.getDeviceStorage("sdcard");
 
-var request = sdcard.get("montoz.gpx");
+var request = sdcard.available();
 
 request.onsuccess = function () {
+  // The result is a string
+
+  if (this.result == "available") {
+    //alert("The SDCard on your device is available");
+var request2 = sdcard.get("/sdcard/gpx/montoz.gpx");
+
+request2.onsuccess = function () {
   var name = this.result.name;
-  console.log('File "' + name + '" successfully retrieved from the sdcard storage area');
+
+ 
+
+  alert('File "' + name + '" successfully retrieved from the sdcard storage area');
+
+   var gpx = this.result.name; // URL to your GPX file or the GPX itself
+new L.GPX(gpx, {async: true}).on('loaded', function(e) {
+  map.fitBounds(e.target.getBounds());
+}).addTo(map)
+
 }
 
-request.onerror = function () {
-  console.warn('Unable to get the file: ' + this.error);
+request2.onerror = function () {
+  alert('Unable to get the file: ' + this.error.name);
 }
 
 
-var gpx = 'montoz.gpx'; // URL to your GPX file or the GPX itself
+var cursor = sdcard.enumerate();
+
+cursor.onsuccess = function () {
+  if(cursor.result.name !== null) {
+    var file = cursor.result;
+    //alert("File found: " + file.name);
+ 
+    // Once we found a file we check if there is other results
+    // Then we move to the next result, which call the cursor
+    // success with the next file as result.
+      this.continue();
+    }
+}
+
+cursor.onerror = function () { 
+    alert("No file found: " + this.error.name); 
+}
+
+
+
+
+  } else if (this.result == "unavailable") {
+    console.log("The SDcard on your device is not available");
+  } else {
+    console.log("The SDCard on your device is shared and thus not available");
+  }
+}
+
+/*
+ var gpx = "montoz.gpx"; // URL to your GPX file or the GPX itself
 new L.GPX(gpx, {async: true}).on('loaded', function(e) {
   map.fitBounds(e.target.getBounds());
 }).addTo(map);
-*/
 
+/*
+
+
+*/
 //softkey 
 
 
