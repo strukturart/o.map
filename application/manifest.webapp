@@ -22,6 +22,18 @@
   },
 
 
+    "activities": {
+       "view": {
+            "filters": {
+                "type": "url",
+                "url": {
+                    "required": true,
+                    "regexp":"/^https?:/"
+                }
+            }
+        }
+    },
+
 
   "permissions": {
     "geolocation": {

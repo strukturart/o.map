@@ -4,7 +4,7 @@
 <head>
 	
 	<title>OSM-Map</title>
-	<!--<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://nominatim.openstreetmap.org https://api.tiles.mapbox.com/">-->
+	<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://nominatim.openstreetmap.org https://api.tiles.mapbox.com/">
 
 
 
@@ -12,22 +12,16 @@
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
-		    <link rel="stylesheet" href="assets/css/main.css"/>
-
-	    <link rel="stylesheet" href="assets/css/grid.css"/>
-
-
+	<link rel="stylesheet" href="assets/css/main.css"/>
+	<link rel="stylesheet" href="assets/css/grid.css"/>
     <link rel="stylesheet" href="assets/leaflet/leaflet.css"/>
     <link rel="stylesheet" href="assets/css/leaflet-search.css"/>
 
 
-   
-
-
-
-
 </head>
 <body>
+
+
 
 <div id='map'></div>
 
@@ -35,7 +29,10 @@
 
 
 
-<div id="currentPosition" class="flex flex-column justify-content-center align-item-center"><div class="grid-col-200">hello</div></div>
+<div id="currentPosition" class="flex flex-column justify-content-center align-item-center">
+	<div class="grid-col-200"></div>
+</div>
+<div id="output"></div>
 <div id="zoom-level"></div>
 
 <div id="man-page">
@@ -54,12 +51,18 @@
 
 </body>
 </html>
+	<!--<script src="montoz.json"></script>-->
+
 	<script defer src="assets/js/jQuery-3.1.0.js"></script>
+	    <!--<script src="assets/js/leaflet-gpx.js"></script>-->
+	<script defer src="assets/js/applait.finder.min.js"></script>
+
 	<script defer src="assets/leaflet/leaflet.js" ></script>
 	<script defer src="assets/js/leaflet-search.js"></script>
-	    <script src="https://rawgithub.com/mpetazzoni/leaflet-gpx/master/gpx.js"></script>
+	<!--<script src="assets/js/leaflet-omnivore.min.js"></script>-->
+		<!--<script src="assets/js/leaflet-ajax.js"></script>-->
 
+
+ 
 	<script defer src="assets/js/script.js"></script>
-	<!--<script defer src="assets/js/leaflet-gpx.js"></script>-->
-
 

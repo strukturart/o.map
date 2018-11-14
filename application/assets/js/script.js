@@ -1,11 +1,24 @@
  
 $(document).ready(function() {
 
-    //leaflet
-  var map = L.map('map', {
-    zoomControl: false,
-dragging: false,
-keyboard: true
+
+//Global Vars
+var step = 0.001;
+var current_lng = 0;
+var current_lat = 0;
+var zoom_level = 16;
+var new_lat = 0;
+var new_lng = 0;
+var curPos = 0;
+var myMarker = "";
+
+
+
+//leaflet add map
+var map = L.map('map', {
+  zoomControl: false,
+  dragging: false,
+  keyboard: true
 }).fitWorld();
 
   L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
@@ -19,8 +32,77 @@ keyboard: true
          
   }).addTo(map);
 
+
+  function onLocationFound(e) {
+    var radius = e.accuracy / 2;
+    myMarker = L.marker(e.latlng).addTo(map);
+    L.circle(e.latlng, radius).addTo(map);
+    curPos = myMarker.getLatLng();
+    current_lng = curPos.lng;
+    current_lat = curPis.lat;
+
+
+  }
+
+
+
+  function onLocationError(e) {
+    alert(e.message);
+  }
+
+  map.on('locationfound', onLocationFound);
+  map.on('locationerror', onLocationError);
+
+  map.locate({setView: true, maxZoom: 16});
+
+
+      
+
+  zoom_level = 16
+  zoom_speed()
+
   
-  function formatJSON(rawjson) {  //callback that remap fields name
+
+
+
+//add geoJson Track
+
+function test()
+{
+
+  var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
+  finder.search("montoz.json");
+  finder.on("fileFound", function (file, fileinfo, storageName) {
+
+    var fileReader = new FileReader();
+    fileReader.addEventListener('load', function(){
+      var fileJSON =  fileReader.result;
+       $('div#output').text(fileJSON);
+
+		var myLayer = L.geoJSON().addTo(map);
+		myLayer.addData(fileJSON);
+		alert("yeah");
+
+      
+    });
+
+      fileReader.readAsText(file);
+
+  });
+
+
+
+}
+
+
+
+
+/*
+SEARCH
+*/
+
+  
+  function formatJSON(rawjson) {  
     var json = {},
       key, loc, disp = [];
       
@@ -47,36 +129,27 @@ keyboard: true
     tipAutoSubmit: true,
     autoCollapse: true,
     collapsed: false,
-    autoCollapseTime: 20000,
-    delayType: 1800, //with mobile device typing is more slow
+    autoCollapseTime: 10000,
+    delayType: 800, //with mobile device typing is more slow
     marker: {
       icon: true
     }   
   };
   
-  map.addControl( new L.Control.Search(mobileOpts) );
+  var searchControl =  new L.Control.Search(mobileOpts);
 
 
-  var myMarker = "";
-  function onLocationFound(e) {
-    //var radius = e.accuracy / 2;
-    myMarker = L.marker(e.latlng).addTo(map);
-      //.bindPopup("You are within " + radius + " meters from this point").openPopup();
+searchControl.on('search:locationfound', function(e) {
+	
+	 curPos = e.latlng;
+	   current_lng = curPos.lng;
+    current_lat = curPis.lat;
+})
 
-    //L.circle(e.latlng, radius).addTo(map);
-  }
-
-  function onLocationError(e) {
-    alert(e.message);
-  }
-
-  map.on('locationfound', onLocationFound);
-  map.on('locationerror', onLocationError);
-
-  map.locate({setView: true, maxZoom: 16});
+map.addControl( searchControl );
 
 
-
+/*
 var sdcard = navigator.getDeviceStorage("sdcard");
 
 var request = sdcard.available();
@@ -86,25 +159,27 @@ request.onsuccess = function () {
 
   if (this.result == "available") {
     //alert("The SDCard on your device is available");
-var request2 = sdcard.get("/sdcard/gpx/montoz.gpx");
+var request2 = sdcard.get("/sdcard1/gpx/montoz.json");
 
 request2.onsuccess = function () {
+
+	console.log(this.result)
   var name = this.result.name;
 
  
 
-  alert('File "' + name + '" successfully retrieved from the sdcard storage area');
+  //alert("File" + name + "successfully retrieved from the sdcard storage area");
 
-   var gpx = this.result.name; // URL to your GPX file or the GPX itself
-new L.GPX(gpx, {async: true}).on('loaded', function(e) {
-  map.fitBounds(e.target.getBounds());
-}).addTo(map)
+L.geoJSON(this.result).addTo(map);
+ 
 
 }
 
 request2.onerror = function () {
   alert('Unable to get the file: ' + this.error.name);
 }
+
+}}
 
 
 var cursor = sdcard.enumerate();
@@ -135,23 +210,16 @@ cursor.onerror = function () {
   }
 }
 
-/*
- var gpx = "montoz.gpx"; // URL to your GPX file or the GPX itself
-new L.GPX(gpx, {async: true}).on('loaded', function(e) {
-  map.fitBounds(e.target.getBounds());
-}).addTo(map);
-
-/*
-
-
 */
-//softkey 
 
 
-var step = 0.001;
-var current_lng = 0;
-var current_lat = 0;
-var zoom_level = 16;
+
+
+
+
+
+
+
 
 
 function updateMarker(showMessage)
@@ -172,7 +240,9 @@ function updateMarker(showMessage)
     {
 
       myMarker.setLatLng([position.coords.latitude, position.coords.longitude]).update();
-      map.panTo( new L.LatLng(position.coords.latitude, position.coords.longitude));
+      map.flyTo( new L.LatLng(position.coords.latitude, position.coords.longitude),16);
+      zoom_level = 16
+      zoom_speed()
       if(showMessage == true)
       {
         if($('div#currentPosition').css('z-index')=='-3000')
@@ -196,10 +266,10 @@ function goToMarker()
 {
     current_lng = 0;
     current_lat = 0;
-    var curPos = myMarker.getLatLng();
-    var new_lat = curPos.lat;
-    var new_lng = curPos.lng;
-    map.panTo( new L.LatLng(new_lat, new_lng));
+    curPos = myMarker.getLatLng();
+    new_lat = curPos.lat;
+    new_lng = curPos.lng;
+    map.flyTo( new L.LatLng(new_lat, new_lng));
 }
 
 
@@ -242,96 +312,18 @@ else
 }
 
 
+function showTrack()
+{
+  test();
+}
 
-
-
-
-
-
-function handleKeyDown(evt) {
-
-
-
-
-
-    switch (evt.key) {
-        case 'SoftLeft':
-          map.setZoom(map.getZoom() + 1);
-          zoom_level = map.getZoom();
-        break;
-
-        case 'SoftRight':
-          map.setZoom(map.getZoom() - 1);
-          zoom_level = map.getZoom();
-        break;
-
-        case 'Enter':
-          goToMarker();
-        break;
-
-
-        case '1':
-          updateMarker(false);
-        break;
-
-        case '2':
-          showSearch();
-        break;
-
-        case 'ArrowRight':
-          current_lng++;
-          var curPos = myMarker.getLatLng();
-          var new_lat = curPos.lat +(current_lat * step);
-          var new_lng = curPos.lng +(current_lng * step);
-          map.panTo( new L.LatLng(new_lat, new_lng));
-        break; 
-
-        case 'ArrowLeft':
-          current_lng--
-          var curPos = myMarker.getLatLng();
-          var new_lat = curPos.lat +(current_lat * step);
-          var new_lng = curPos.lng +(current_lng * step);
-          map.panTo( new L.LatLng(new_lat, new_lng));
-        break; 
-
-        case 'ArrowUp':
-          current_lat++
-          var curPos = myMarker.getLatLng();
-          var new_lat = curPos.lat +(current_lat * step);
-          var new_lng = curPos.lng +(current_lng * step);
-          map.panTo( new L.LatLng(new_lat, new_lng));
-        break; 
-        
-
-        case 'ArrowDown':
-          current_lat--
-          var curPos = myMarker.getLatLng();
-          var new_lat = curPos.lat +(current_lat * step);
-          var new_lng = curPos.lng +(current_lng * step);
-          map.panTo( new L.LatLng(new_lat, new_lng));
-        break; 
-
-        case '0':
-          showMan();
-        break; 
-
-        case '3':
-          updateMarker(true);
-        break; 
-    }
-
-
-
-       //map move speed
-
-
-
-
-
-  if(zoom_level < 6)
+function zoom_speed()
+{
+	if(zoom_level < 6)
     {
     step = 1;
     document.getElementById("zoom-level").innerHTML = zoom_level+step;
+    
     }
 
 
@@ -348,6 +340,114 @@ function handleKeyDown(evt) {
     document.getElementById("zoom-level").innerHTML = zoom_level+step;
     }
 
+    return step;
+}
+
+
+//KEYPAD TRIGGER
+
+
+function handleKeyDown(evt) {
+
+
+
+
+
+    switch (evt.key) {
+        case 'SoftLeft':
+          map.setZoom(map.getZoom() + 1);
+          zoom_level = map.getZoom();
+          zoom_speed();
+
+        break;
+
+        case 'SoftRight':
+          map.setZoom(map.getZoom() - 1);
+          zoom_level = map.getZoom();
+          zoom_speed();
+
+        break;
+
+        case 'Enter':
+          goToMarker();
+          zoom_speed();
+        break;
+
+        case '0':
+          showMan();
+        break; 
+
+
+        case '1':
+          updateMarker(false);
+        break;
+
+        case '2':
+          showSearch();
+        break;
+
+        case '3':
+          updateMarker(true);
+        break; 
+
+        case '4':
+          showTrack();
+        break;
+
+
+
+
+
+
+        case 'ArrowRight':
+          current_lng++;
+          //curPos = myMarker.getLatLng();
+          new_lat = curPos.lat +(current_lat * step);
+          new_lng = curPos.lng +(current_lng * step);
+          map.panTo( new L.LatLng(new_lat, new_lng));
+        break; 
+
+        case 'ArrowLeft':
+          current_lng--
+          //curPos = myMarker.getLatLng();
+          new_lat = curPos.lat +(current_lat * step);
+          new_lng = curPos.lng +(current_lng * step);
+          map.panTo( new L.LatLng(new_lat, new_lng));
+        break; 
+
+        case 'ArrowUp':
+          current_lat++
+          zoom_speed()
+          //var curPos = myMarker.getLatLng();
+          var new_lat = curPos.lat +(current_lat * step);
+          var new_lng = curPos.lng +(current_lng * step);
+          map.panTo( new L.LatLng(new_lat, new_lng));
+        break; 
+        
+
+        case 'ArrowDown':
+          current_lat--
+          zoom_speed()
+          //var curPos = myMarker.getLatLng();
+          var new_lat = curPos.lat +(current_lat * step);
+          var new_lng = curPos.lng +(current_lng * step);
+          map.panTo( new L.LatLng(new_lat, new_lng));
+        break; 
+
+    }
+
+    
+
+
+
+       //map move speed
+
+
+
+
+
+ 
+
 
 
 };
@@ -358,6 +458,9 @@ document.addEventListener('keydown', handleKeyDown);
 
 
   });
+
+
+
 
 
 
