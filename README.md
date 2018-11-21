@@ -7,7 +7,9 @@ This is an Open Street Map app for the Nokia 88104G - [KaiOS](https://www.kaiost
 + **key Enter** Center the map
 + **key 1** update Geolocation-> Marker
 + **key 2** search
-+ **key 3** show Position
++ **key 3** add Track
++ **key 4** show Position 
+
 
 
 ### How to jailbrak your phone

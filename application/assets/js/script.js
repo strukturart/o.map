@@ -14,6 +14,9 @@ var myMarker = "";
 
 
 
+
+
+
 //leaflet add map
 var map = L.map('map', {
   zoomControl: false,
@@ -33,21 +36,32 @@ var map = L.map('map', {
   }).addTo(map);
 
 
-  function onLocationFound(e) {
-    var radius = e.accuracy / 2;
-    myMarker = L.marker(e.latlng).addTo(map);
-    L.circle(e.latlng, radius).addTo(map);
-    curPos = myMarker.getLatLng();
-    current_lng = curPos.lng;
-    current_lat = curPis.lat;
+	$('div#location div#lat').text("searching position");
+	function onLocationFound(e)
+	{
+		//var radius = e.accuracy / 2;
+		myMarker = L.marker(e.latlng).addTo(map);
+		//L.circle(e.latlng, radius).addTo(map);
+
+
+		curPos = e.latlng;
+
+		current_lng = curPos.lng;
+		current_lat = curPos.lat;
+
+		$('div#location').css('display', 'none');
+		$('div#location div#lat').text(current_lat);
+		$('div#location div#lng').text(current_lng);
+
 
 
   }
 
 
 
-  function onLocationError(e) {
-    alert(e.message);
+  function onLocationError(e) 
+  {
+    $('div#location div#lat').text("position not found");
   }
 
   map.on('locationfound', onLocationFound);
@@ -55,11 +69,10 @@ var map = L.map('map', {
 
   map.locate({setView: true, maxZoom: 16});
 
-
-      
-
   zoom_level = 16
   zoom_speed()
+
+ 
 
   
 
@@ -67,16 +80,49 @@ var map = L.map('map', {
 
 //add geoJson Track
 
-function test()
+
+function addTrack()
 {
 
   var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
   finder.search("montoz.json");
-  finder.on("fileFound", function (file, fileinfo, storageName) {
 
-    var fileReader = new FileReader();
-    fileReader.addEventListener('load', function(){
-      var fileJSON =  fileReader.result;
+  finder.on("searchBegin", function (needle) {
+    alert("search startet")
+});
+
+ finder.on("fileFound", function (file, fileinfo, storageName) {
+ //alert("gefunden")
+
+ 
+    var reader = new FileReader();
+
+      reader.onerror = function(event) {
+    
+    alert('shit happens')
+    reader.abort();
+  };
+
+
+     reader.onload = function(event) {
+    // Hier wird der Text der Datei ausgegeben
+    //json = JSON.parse(event.target.result)
+    alert(json)
+  };
+
+  reader.onloadend = function () {
+   
+    var myLayer = L.geoJSON().addTo(map);
+    myLayer.addData(file);
+    alert("yeah");
+};
+
+
+  reader.readAsText(file)
+
+    /*
+    reader.addEventListener('load', function(){
+      var fileJSON =  reader.result;
        $('div#output').text(fileJSON);
 
 		var myLayer = L.geoJSON().addTo(map);
@@ -85,9 +131,15 @@ function test()
 
       
     });
+    */
+/*
+    reader.onload = function(event) {
+    // The file's text will be printed here
+    alert(event.target.result)
+  }
 
-      fileReader.readAsText(file);
-
+      ;
+*/
   });
 
 
@@ -140,10 +192,16 @@ SEARCH
 
 
 searchControl.on('search:locationfound', function(e) {
-	
-	 curPos = e.latlng;
-	   current_lng = curPos.lng;
-    current_lat = curPis.lat;
+
+
+	curPos = e.latlng;
+
+	current_lng = curPos.lng;
+	current_lat = curPos.lat;
+
+		$('div#location div#lat').text(current_lat);
+		$('div#location div#lng').text(current_lng);
+	$('.leaflet-control-search').css('display','none');
 })
 
 map.addControl( searchControl );
@@ -222,7 +280,7 @@ cursor.onerror = function () {
 
 
 
-function updateMarker(showMessage)
+function updateMarker(option)
 {
   function getLocation() {
 
@@ -243,37 +301,40 @@ function updateMarker(showMessage)
       map.flyTo( new L.LatLng(position.coords.latitude, position.coords.longitude),16);
       zoom_level = 16
       zoom_speed()
-      if(showMessage == true)
-      {
-        if($('div#currentPosition').css('z-index')=='-3000')
+
+      
+	current_lng = position.coords.longitude;
+	current_lat = position.coords.latitude;
+
+		$('div#location div#lat').text(current_lat);
+		$('div#location div#lng').text(current_lng);
+
+if(option == true)
 {
-        $('div#currentPosition').css("z-index","3000")
-        $('div#currentPosition > div').text("Latitude: "+position.coords.latitude +" / Longitude: "+position.coords.longitude)
-      }
-      else
-        {$('div#currentPosition').css("z-index","-3000")}
+	if($('div#location').css('display')== 'none')
+	{
+		$('div#location').css('display','block')
+	}
+	else
+	{
+		$('div#location').css('display','none')
+	}
+	
+}
     }
 
-    }
-
-getLocation();
+	getLocation();
 
 
 }
 
 
-function goToMarker()
-{
-    current_lng = 0;
-    current_lat = 0;
-    curPos = myMarker.getLatLng();
-    new_lat = curPos.lat;
-    new_lng = curPos.lng;
-    map.flyTo( new L.LatLng(new_lat, new_lng));
-}
+
 
 
 $('.leaflet-control-search').css('display','none')
+
+
 
 function showSearch()
 {
@@ -312,10 +373,7 @@ else
 }
 
 
-function showTrack()
-{
-  test();
-}
+
 
 function zoom_speed()
 {
@@ -369,8 +427,7 @@ function handleKeyDown(evt) {
         break;
 
         case 'Enter':
-          goToMarker();
-          zoom_speed();
+          
         break;
 
         case '0':
@@ -379,7 +436,7 @@ function handleKeyDown(evt) {
 
 
         case '1':
-          updateMarker(false);
+          updateMarker();
         break;
 
         case '2':
@@ -387,11 +444,11 @@ function handleKeyDown(evt) {
         break;
 
         case '3':
-          updateMarker(true);
+        	addTrack();    
         break; 
 
         case '4':
-          showTrack();
+        	updateMarker(true);
         break;
 
 
@@ -400,38 +457,37 @@ function handleKeyDown(evt) {
 
 
         case 'ArrowRight':
-          current_lng++;
-          //curPos = myMarker.getLatLng();
-          new_lat = curPos.lat +(current_lat * step);
-          new_lng = curPos.lng +(current_lng * step);
-          map.panTo( new L.LatLng(new_lat, new_lng));
+
+          zoom_speed()
+          $('div#location div#lat').text(current_lat);
+          $('div#location div#lng').text(current_lng);
+          current_lng = current_lng + step;
+          map.panTo( new L.LatLng(current_lat, current_lng));
         break; 
 
         case 'ArrowLeft':
-          current_lng--
-          //curPos = myMarker.getLatLng();
-          new_lat = curPos.lat +(current_lat * step);
-          new_lng = curPos.lng +(current_lng * step);
-          map.panTo( new L.LatLng(new_lat, new_lng));
+          zoom_speed()
+          $('div#location div#lat').text(current_lat);
+          $('div#location div#lng').text(current_lng);
+          current_lng = current_lng - step;
+          map.panTo( new L.LatLng(current_lat, current_lng));
         break; 
 
         case 'ArrowUp':
-          current_lat++
           zoom_speed()
-          //var curPos = myMarker.getLatLng();
-          var new_lat = curPos.lat +(current_lat * step);
-          var new_lng = curPos.lng +(current_lng * step);
-          map.panTo( new L.LatLng(new_lat, new_lng));
+          $('div#location div#lat').text(current_lat);
+          $('div#location div#lng').text(current_lng);
+          current_lat = current_lat + step;
+          map.panTo( new L.LatLng(current_lat, current_lng));
         break; 
         
 
         case 'ArrowDown':
-          current_lat--
           zoom_speed()
-          //var curPos = myMarker.getLatLng();
-          var new_lat = curPos.lat +(current_lat * step);
-          var new_lng = curPos.lng +(current_lng * step);
-          map.panTo( new L.LatLng(new_lat, new_lng));
+          $('div#location div#lat').text(current_lat);
+          $('div#location div#lng').text(current_lng);
+          current_lat = current_lat - step;
+          map.panTo( new L.LatLng(current_lat, current_lng));
         break; 
 
     }
