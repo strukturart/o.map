@@ -80,21 +80,29 @@ var map = L.map('map', {
 
 //add geoJson Track
 
+function openFileDialog()
+{
+	function openfile(file) { window.location = "file:///" + file; }
+
+
+}
+
 
 function addTrack()
 {
+	openFileDialog()
 
   var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
   finder.search("montoz.json");
 
   finder.on("searchBegin", function (needle) {
-    alert("search startet")
-});
+  alert("search startet")
+  });
 
  finder.on("fileFound", function (file, fileinfo, storageName) {
  //alert("gefunden")
 
- 
+ var mygpx="";
     var reader = new FileReader();
 
       reader.onerror = function(event) {
@@ -107,39 +115,23 @@ function addTrack()
      reader.onload = function(event) {
     // Hier wird der Text der Datei ausgegeben
     //json = JSON.parse(event.target.result)
-    alert(json)
+   
+    //alert(gpx)
   };
 
-  reader.onloadend = function () {
-   
+  reader.onloadend = function (event) {
+  	 mygpx = event.target.result
     var myLayer = L.geoJSON().addTo(map);
-    myLayer.addData(file);
-    alert("yeah");
+    myLayer.addData(JSON.parse(mygpx));
+  
+
+
 };
 
 
   reader.readAsText(file)
 
-    /*
-    reader.addEventListener('load', function(){
-      var fileJSON =  reader.result;
-       $('div#output').text(fileJSON);
 
-		var myLayer = L.geoJSON().addTo(map);
-		myLayer.addData(fileJSON);
-		alert("yeah");
-
-      
-    });
-    */
-/*
-    reader.onload = function(event) {
-    // The file's text will be printed here
-    alert(event.target.result)
-  }
-
-      ;
-*/
   });
 
 
@@ -511,6 +503,19 @@ function handleKeyDown(evt) {
 document.addEventListener('keydown', handleKeyDown);
 
 
+
+
+$(window).on("error", function(evt) {
+
+console.log("jQuery error event:", evt);
+var e = evt.originalEvent; // get the javascript event
+console.log("original event:", e);
+if (e.message) { 
+    alert("Error:\n\t" + e.message + "\nLine:\n\t" + e.lineno + "\nFile:\n\t" + e.filename);
+} else {
+    alert("Error:\n\t" + e.type + "\nElement:\n\t" + (e.srcElement || e.target));
+}
+});
 
 
   });
