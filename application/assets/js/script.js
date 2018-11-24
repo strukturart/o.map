@@ -60,22 +60,22 @@ var map = L.map('map', {
 
 
 
-  function onLocationError(e) 
-  {
-    $('div#location div#lat').text("position not found");
-  }
+	function onLocationError(e) 
+	{
+	$('div#location div#lat').text("position not found");
+	}
 
-  map.on('locationfound', onLocationFound);
-  map.on('locationerror', onLocationError);
+	map.on('locationfound', onLocationFound);
+	map.on('locationerror', onLocationError);
 
-  map.locate({setView: true, maxZoom: 16});
+	map.locate({setView: true, maxZoom: 16});
 
-  zoom_level = 16
-  zoom_speed()
+	zoom_level = 16
+	zoom_speed()
 
- 
 
-  
+
+
 
 
 
@@ -87,10 +87,7 @@ if ($(".items").is(":focus")) {
 	var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
 	finder.search($(document.activeElement).text());
 
-	finder.on("searchBegin", function (needle) 
-	{
-		alert("search startet")
-	});
+
 
 	
 
@@ -162,6 +159,14 @@ function addTrack()
 			$('div#finder-error').css("display","none");
 		}, 4000);
 	}
+
+		if(filematchcount > 0)
+	{
+		$('div#finder').css('display','block')
+
+	}
+
+
 	});
 
 	
@@ -174,10 +179,7 @@ function addTrack()
 
 	});
 
-	if(finderNav_tabindex > 0)
-	{
-		$('div#finder').css('display','block')
-	}
+	
 
 
 }
