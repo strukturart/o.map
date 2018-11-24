@@ -82,7 +82,7 @@ var map = L.map('map', {
 
 function openFileDialog()
 {
-	function openfile(file) { window.location = "file:///" + file; }
+	 //window.location = "file:///" ; 
 
 
 }
@@ -93,19 +93,27 @@ function addTrack()
 	openFileDialog()
 
   var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
-  finder.search("montoz.json");
+  finder.search(".json");
 
   finder.on("searchBegin", function (needle) {
   alert("search startet")
   });
-
+var i = 0
  finder.on("fileFound", function (file, fileinfo, storageName) {
- //alert("gefunden")
+
+i++
+$("#finder").append('<div class="items" tabindex="'+i+'">'+file.name+'</div>');
+
+$('#finder').find('div:first').focus();
+
 
  var mygpx="";
-    var reader = new FileReader();
+ var reader = new FileReader();
 
-      reader.onerror = function(event) {
+ 
+
+
+ reader.onerror = function(event) {
     
     alert('shit happens')
     reader.abort();
@@ -113,16 +121,13 @@ function addTrack()
 
 
      reader.onload = function(event) {
-    // Hier wird der Text der Datei ausgegeben
-    //json = JSON.parse(event.target.result)
-   
-    //alert(gpx)
+  
   };
 
   reader.onloadend = function (event) {
   	 mygpx = event.target.result
-    var myLayer = L.geoJSON().addTo(map);
-    myLayer.addData(JSON.parse(mygpx));
+    //var myLayer = L.geoJSON().addTo(map);
+    //myLayer.addData(JSON.parse(mygpx));
   
 
 
@@ -197,72 +202,6 @@ searchControl.on('search:locationfound', function(e) {
 })
 
 map.addControl( searchControl );
-
-
-/*
-var sdcard = navigator.getDeviceStorage("sdcard");
-
-var request = sdcard.available();
-
-request.onsuccess = function () {
-  // The result is a string
-
-  if (this.result == "available") {
-    //alert("The SDCard on your device is available");
-var request2 = sdcard.get("/sdcard1/gpx/montoz.json");
-
-request2.onsuccess = function () {
-
-	console.log(this.result)
-  var name = this.result.name;
-
- 
-
-  //alert("File" + name + "successfully retrieved from the sdcard storage area");
-
-L.geoJSON(this.result).addTo(map);
- 
-
-}
-
-request2.onerror = function () {
-  alert('Unable to get the file: ' + this.error.name);
-}
-
-}}
-
-
-var cursor = sdcard.enumerate();
-
-cursor.onsuccess = function () {
-  if(cursor.result.name !== null) {
-    var file = cursor.result;
-    //alert("File found: " + file.name);
- 
-    // Once we found a file we check if there is other results
-    // Then we move to the next result, which call the cursor
-    // success with the next file as result.
-      this.continue();
-    }
-}
-
-cursor.onerror = function () { 
-    alert("No file found: " + this.error.name); 
-}
-
-
-
-
-  } else if (this.result == "unavailable") {
-    console.log("The SDcard on your device is not available");
-  } else {
-    console.log("The SDCard on your device is shared and thus not available");
-  }
-}
-
-*/
-
-
 
 
 
@@ -455,6 +394,7 @@ function handleKeyDown(evt) {
           $('div#location div#lng').text(current_lng);
           current_lng = current_lng + step;
           map.panTo( new L.LatLng(current_lat, current_lng));
+           nav(1);
         break; 
 
         case 'ArrowLeft':
@@ -463,6 +403,7 @@ function handleKeyDown(evt) {
           $('div#location div#lng').text(current_lng);
           current_lng = current_lng - step;
           map.panTo( new L.LatLng(current_lat, current_lng));
+           nav(-1);
         break; 
 
         case 'ArrowUp':
@@ -471,6 +412,7 @@ function handleKeyDown(evt) {
           $('div#location div#lng').text(current_lng);
           current_lat = current_lat + step;
           map.panTo( new L.LatLng(current_lat, current_lng));
+           nav(-1);
         break; 
         
 
@@ -480,15 +422,13 @@ function handleKeyDown(evt) {
           $('div#location div#lng').text(current_lng);
           current_lat = current_lat - step;
           map.panTo( new L.LatLng(current_lat, current_lng));
+          nav(1)
         break; 
 
     }
 
     
 
-
-
-       //map move speed
 
 
 
@@ -500,8 +440,20 @@ function handleKeyDown(evt) {
 
 };
 
+function nav (move) {
+	
+  //var next = currentIndex + move;
+  var items = document.querySelectorAll('.items');
+  var targetElement = items[1];
+  targetElement.focus();
+  
+  $('div#finder').find('div[tabindex=1]').css('background','red')
+  //alert(targetElement)
+}
+
 document.addEventListener('keydown', handleKeyDown);
 
+document.activeElement.addEventListener('keydown', handleKeyDown);
 
 
 

@@ -26,6 +26,10 @@
 }
 
 
+:focus
+{
+	outline:3px solid yellow;
+}
 html,body
   {
 
@@ -69,6 +73,25 @@ div#zoom-level
   font-size: 16px;
   display:none;
 }
+
+div#finder
+{
+  position:fixed;
+  z-index: 1000;
+  top:10px;
+  left:10px;
+  
+  
+}
+
+div#finder div
+{
+	background:black;
+	color:white;
+	font-size:14px;
+	margin:0 0 3px 0;
+}
+
 
 div#man-page
 {
