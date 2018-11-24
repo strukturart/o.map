@@ -1,13 +1,16 @@
 This is an Open Street Map app for the Nokia 88104G - [KaiOS](https://www.kaiostech.com/) 
 
+### TODO
++ error message invalid json file
++ bug finder tabindex navigation
++ add test json file in repo
 
 ### Manual
 + **Soft-keys** Zoom the map
 + **Cursor Moving** the map
-+ **key Enter** Center the map
 + **key 1** update Geolocation-> Marker
 + **key 2** search
-+ **key 3** add Track
++ **key 3** load geoJson Track
 + **key 4** show Position 
 
 ### GeoJson
