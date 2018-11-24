@@ -82,16 +82,10 @@ var map = L.map('map', {
 function getFinderFile()
 {
 if ($(".items").is(":focus")) {
-	alert($(document.activeElement).text())
-}
 
-}
-
-function addTrack()
-{
 
 	var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
-	finder.search(".json");
+	finder.search($(document.activeElement).text());
 
 	finder.on("searchBegin", function (needle) 
 	{
@@ -102,47 +96,89 @@ function addTrack()
 
 	finder.on("fileFound", function (file, fileinfo, storageName) 
 	{
-		finderNav_tabindex++;
+	//file reader
 
+	var mygpx="";
+	var reader = new FileReader();
+
+
+
+
+	reader.onerror = function(event) 
+	{
+		alert('shit happens')
+		reader.abort();
+	};
+
+
+	reader.onload = function(event) 
+	{
+
+	};
+
+	reader.onloadend = function (event) 
+	{
+		mygpx = event.target.result
+		var myLayer = L.geoJSON().addTo(map);
+		myLayer.addData(JSON.parse(mygpx));
+	};
+
+
+	reader.readAsText(file)
+
+	$('div#finder').css('display','none')
+
+
+	});
+
+
+
+
+}
+
+}
+
+function addTrack()
+{
+	
+	//get file list
+	var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
+	finder.search(".json");
+	$("div#finder").empty();
+
+	finder.on("searchBegin", function (needle) 
+	{
+		alert("search startet")
+	});
+
+	finder.on("searchComplete", function (needle, filematchcount) 
+	{
+	if(filematchcount == 0)
+	{
+		$('div#finder-error').css('display','block')
+		$('div#finder-error').text('no file found')
+		setTimeout(function() 
+		{
+			$('div#finder-error').css("display","none");
+		}, 4000);
+	}
+	});
+
+	
+
+	finder.on("fileFound", function (file, fileinfo, storageName) 
+	{
+		finderNav_tabindex++;
 		$("div#finder").append('<div class="items" tabindex="'+finderNav_tabindex+'">'+fileinfo.name+'</div>');
 		$('div#finder').find('div:first').focus();
 
 	});
 
+	if(finderNav_tabindex > 0)
+	{
+		$('div#finder').css('display','block')
+	}
 
- //file reader
-/*
- var mygpx="";
- var reader = new FileReader();
-
- 
-
-
- reader.onerror = function(event) {
-    
-    alert('shit happens')
-    reader.abort();
-  };
-
-
-     reader.onload = function(event) {
-  
-  };
-
-  reader.onloadend = function (event) {
-  	 mygpx = event.target.result
-    //var myLayer = L.geoJSON().addTo(map);
-    //myLayer.addData(JSON.parse(mygpx));
-  
-
-
-};
-
-
-  reader.readAsText(file)
-
-
-*/
 
 }
 

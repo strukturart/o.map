@@ -26,10 +26,7 @@
 }
 
 
-:focus
-{
-	outline:3px solid yellow;
-}
+
 html,body
   {
 
@@ -76,13 +73,36 @@ div#zoom-level
 
 div#finder
 {
-  position:fixed;
-  z-index: 1000;
-  top:10px;
-  left:10px;
+	position:fixed;
+	z-index: 1000;
+	top:0px;
+	left:0px;
+	overflow:scroll;
+	background:black;
+	height:100vh;
+	width:100vw;
+	padding:5px;
+	display:none;
+
   
   
 }
+
+div#finder-error
+{
+	position:fixed;
+	z-index: 1000;
+	top:50%;
+	left:50%;
+	margin:-7px 0 0 -50px;
+	width:92px;
+	background:black;
+	color:white;
+	font-size:14px;
+	padding:3px;
+	display:none;
+}
+
 
 div#finder div
 {
@@ -90,6 +110,12 @@ div#finder div
 	color:white;
 	font-size:14px;
 	margin:0 0 3px 0;
+	padding:3px;
+}
+
+div#finder div:focus
+{
+	border-bottom:3px solid yellow;
 }
 
 
@@ -126,13 +152,12 @@ div#man-page li div
 div#location
 {
   position:fixed;
-  z-index:3000;
-  top:40px;
-  left:10px;
+  z-index:1000;
+  left:50%;
+  top:49%;
   background:black;
   color:white;
   font-size: 14px;
-  //display:none;
 }
 
 div#location div#lat
@@ -157,18 +182,7 @@ div#location div#lng
 #map { height: 100%; width: 100vw; }
 
 
-  .gpx { border: 2px #aaa solid; border-radius: 5px;
-        box-shadow: 0 0 3px 3px #ccc;
-        width: 800px; margin: 1em auto; }
-      .gpx header { padding: 0.5em; }
-      .gpx h3 { margin: 0; padding: 0; font-weight: bold; }
-      .gpx .start { font-size: smaller; color: #444; }
-      .gpx .map { border: 1px #888 solid; border-left: none; border-right: none;
-        width: 800px; height: 500px; margin: 0; }
-      .gpx footer { background: #f0f0f0; padding: 0.5em; }
-      .gpx ul.info { list-style: none; margin: 0; padding: 0; font-size: smaller; }
-      .gpx ul.info li { color: #666; padding: 2px; display: inline; }
-      .gpx ul.info li span { color: black; }
+
 
 /* KaiOS portrait devices (240x320) */
 @media only screen and (orientation : portrait) {
