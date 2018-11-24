@@ -442,16 +442,17 @@ function handleKeyDown(evt) {
 
 
 };
-var k = 0;
+
 function nav (move) {
-	k++
-  //var next = currentIndex + move;
+
+  var next =+ move;
   var items = document.querySelectorAll('.items');
-  var targetElement = items[k];
+  var targetElement = items[next];
   targetElement.focus();
   
-  $('div#finder').find('div[tabindex=1]').css('background','red')
+  //$('div#finder').find('div[tabindex=1]').css('background','red')
   //alert(targetElement)
+  
 }
 
 document.addEventListener('keydown', handleKeyDown);
