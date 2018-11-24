@@ -11,7 +11,8 @@ var new_lat = 0;
 var new_lng = 0;
 var curPos = 0;
 var myMarker = "";
-
+var finderNav_tabindex = -1;
+var i = 0;
 
 
 
@@ -78,71 +79,106 @@ var map = L.map('map', {
 
 
 
-//add geoJson Track
-
-function openFileDialog()
+function getFinderFile()
 {
-	 //window.location = "file:///" ; 
+if ($(".items").is(":focus")) {
 
-
-}
-
-
-function addTrack()
-{
 
 	var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
-	finder.search(".json");
+	finder.search($(document.activeElement).text());
 
 	finder.on("searchBegin", function (needle) 
 	{
 		alert("search startet")
 	});
 
-	var i = 0;
+	
 
 	finder.on("fileFound", function (file, fileinfo, storageName) 
 	{
+	//file reader
 
-		$("div#finder").append('<div class="items" tabindex="'+i+'">'+file.name+'</div>');
-		$('div#finder').find('div:first').focus();
+	var mygpx="";
+	var reader = new FileReader();
+
+
+
+
+	reader.onerror = function(event) 
+	{
+		alert('shit happens')
+		reader.abort();
+	};
+
+
+	reader.onload = function(event) 
+	{
+
+	};
+
+	reader.onloadend = function (event) 
+	{
+		mygpx = event.target.result
+		var myLayer = L.geoJSON().addTo(map);
+		myLayer.addData(JSON.parse(mygpx));
+	};
+
+
+	reader.readAsText(file)
+
+	$('div#finder').css('display','none')
+
 
 	});
 
 
- //file reader
-/*
- var mygpx="";
- var reader = new FileReader();
-
- 
 
 
- reader.onerror = function(event) {
-    
-    alert('shit happens')
-    reader.abort();
-  };
+}
 
+}
 
-     reader.onload = function(event) {
-  
-  };
+function addTrack()
+{
+	
+	//get file list
+	var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
+	finder.search(".json");
+	$("div#finder").empty();
 
-  reader.onloadend = function (event) {
-  	 mygpx = event.target.result
-    //var myLayer = L.geoJSON().addTo(map);
-    //myLayer.addData(JSON.parse(mygpx));
-  
+	finder.on("searchBegin", function (needle) 
+	{
+		alert("search startet")
+	});
 
+	finder.on("searchComplete", function (needle, filematchcount) 
+	{
+	if(filematchcount == 0)
+	{
+		$('div#finder-error').css('display','block')
+		$('div#finder-error').text('no file found')
+		setTimeout(function() 
+		{
+			$('div#finder-error').css("display","none");
+		}, 4000);
+	}
+	});
 
-};
+	
 
+	finder.on("fileFound", function (file, fileinfo, storageName) 
+	{
+		finderNav_tabindex++;
+		$("div#finder").append('<div class="items" tabindex="'+finderNav_tabindex+'">'+fileinfo.name+'</div>');
+		$('div#finder').find('div:first').focus();
 
-  reader.readAsText(file)
+	});
 
+	if(finderNav_tabindex > 0)
+	{
+		$('div#finder').css('display','block')
+	}
 
-*/
 
 }
 
@@ -336,6 +372,9 @@ function zoom_speed()
 }
 
 
+
+
+
 //KEYPAD TRIGGER
 
 
@@ -361,7 +400,7 @@ function handleKeyDown(evt) {
         break;
 
         case 'Enter':
-          
+        getFinderFile();
         break;
 
         case '0':
@@ -415,7 +454,7 @@ function handleKeyDown(evt) {
           $('div#location div#lng').text(current_lng);
           current_lat = current_lat + step;
           map.panTo( new L.LatLng(current_lat, current_lng));
-           nav(-1);
+           nav("-1");
         break; 
         
 
@@ -425,7 +464,7 @@ function handleKeyDown(evt) {
           $('div#location div#lng').text(current_lng);
           current_lat = current_lat - step;
           map.panTo( new L.LatLng(current_lat, current_lng));
-          nav(1)
+          nav("+1")
         break; 
 
     }
@@ -442,21 +481,36 @@ function handleKeyDown(evt) {
 
 
 };
-var k = 0;
+
 function nav (move) {
-	k++
-  //var next = currentIndex + move;
-  var items = document.querySelectorAll('.items');
-  var targetElement = items[k];
-  targetElement.focus();
-  
-  $('div#finder').find('div[tabindex=1]').css('background','red')
-  //alert(targetElement)
+
+	if(move == "+1" && i < finderNav_tabindex)
+	{
+		i++
+		if(i <= finderNav_tabindex)
+		{
+			var items = document.querySelectorAll('.items');
+			var targetElement = items[i];
+			targetElement.focus();
+		}
+	}
+
+	if(move == "-1" &&  i > -1)
+	{
+		i--
+		if(i >= 0)
+		{
+			var items = document.querySelectorAll('.items');
+			var targetElement = items[i];
+			targetElement.focus();
+		}
+	}
+
 }
 
 document.addEventListener('keydown', handleKeyDown);
 
-document.activeElement.addEventListener('keydown', handleKeyDown);
+//document.activeElement.addEventListener('keydown', handleKeyDown);
 
 
 
