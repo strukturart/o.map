@@ -90,23 +90,28 @@ function openFileDialog()
 
 function addTrack()
 {
-	openFileDialog()
 
-  var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
-  finder.search(".json");
+	var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
+	finder.search(".json");
 
-  finder.on("searchBegin", function (needle) {
-  alert("search startet")
-  });
-var i = 0
- finder.on("fileFound", function (file, fileinfo, storageName) {
+	finder.on("searchBegin", function (needle) 
+	{
+		alert("search startet")
+	});
 
-i++
-$("#finder").append('<div class="items" tabindex="'+i+'">'+file.name+'</div>');
+	var i = 0;
 
-$('#finder').find('div:first').focus();
+	finder.on("fileFound", function (file, fileinfo, storageName) 
+	{
+
+		$("div#finder").append('<div class="items" tabindex="'+i+'">'+file.name+'</div>');
+		$('div#finder').find('div:first').focus();
+
+	});
 
 
+ //file reader
+/*
  var mygpx="";
  var reader = new FileReader();
 
@@ -137,9 +142,7 @@ $('#finder').find('div:first').focus();
   reader.readAsText(file)
 
 
-  });
-
-
+*/
 
 }
 
@@ -394,7 +397,7 @@ function handleKeyDown(evt) {
           $('div#location div#lng').text(current_lng);
           current_lng = current_lng + step;
           map.panTo( new L.LatLng(current_lat, current_lng));
-           nav(1);
+          
         break; 
 
         case 'ArrowLeft':
@@ -403,7 +406,7 @@ function handleKeyDown(evt) {
           $('div#location div#lng').text(current_lng);
           current_lng = current_lng - step;
           map.panTo( new L.LatLng(current_lat, current_lng));
-           nav(-1);
+          
         break; 
 
         case 'ArrowUp':
@@ -439,12 +442,12 @@ function handleKeyDown(evt) {
 
 
 };
-
+var k = 0;
 function nav (move) {
-	
+	k++
   //var next = currentIndex + move;
   var items = document.querySelectorAll('.items');
-  var targetElement = items[1];
+  var targetElement = items[k];
   targetElement.focus();
   
   $('div#finder').find('div[tabindex=1]').css('background','red')
