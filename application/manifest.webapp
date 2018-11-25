@@ -22,17 +22,7 @@
   },
 
 
-    "activities": {
-       "view": {
-            "filters": {
-                "type": "url",
-                "url": {
-                    "required": true,
-                    "regexp":"/^https?:/"
-                }
-            }
-        }
-    },
+   
 
 
   "permissions": {
@@ -50,9 +40,8 @@
    "device-storage:sdcard": {
 
  "access": "readwrite"
-    },
-"device-storage:apps":{ "access": "readwrite" },
-  "webapps-manage":{ }
+    }
+
  
   }
 
