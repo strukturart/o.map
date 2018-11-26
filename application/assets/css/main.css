@@ -28,7 +28,7 @@
 
 
 html,body
-  {
+{
 
 	font-weight: 100;
 
@@ -52,7 +52,7 @@ html,body
 
 
 
-  }
+}
 
 
 
@@ -61,14 +61,14 @@ html,body
 
 div#zoom-level
 {
-  position:fixed;
-  z-index: 1000;
-  top:10px;
-  left:10px;
-  background:black;
-  color:white;
-  font-size: 16px;
-  display:none;
+	position:fixed;
+	z-index: 1000;
+	top:10px;
+	left:10px;
+	background:black;
+	color:white;
+	font-size: 16px;
+	display:none;
 }
 
 div#finder
@@ -151,35 +151,46 @@ div#man-page li div
 
 div#location
 {
-  position:fixed;
+  position:absolute;
   z-index:1000;
-  left:50%;
-  top:49%;
-  background:black;
+  left:0;
+  top:0;
+  background:none;
   color:white;
   font-size: 14px;
 }
 
 div#location div#lat
 {
- background:black;
-  color:white;
-  font-size: 14px;
-  display:block;
+	background:black;
+	color:white;
+	font-size: 14px;
+	padding:3px;
 }
 
 div#location div#lng
 {
 	background:black;
-  color:white;
-  font-size: 14px;
- 
+	color:white;
+	font-size: 14px;
+	padding:3px;
+}
+
+div#location div#message
+{
+	background:black;
+	color:white;
+	font-size:14px; 
 }
 
 
 
 
-#map { height: 100%; width: 100vw; }
+#map-container
+{ 
+	height: 100%;
+	width: 100vw;
+}
 
 
 

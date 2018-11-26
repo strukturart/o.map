@@ -13,31 +13,40 @@ var curPos = 0;
 var myMarker = "";
 var finderNav_tabindex = -1;
 var i = 0;
+var map_or_track;
 
 
 
 
 
-//leaflet add map
-var map = L.map('map', {
+//leaflet add basic map
+var map = L.map('map-container', {
   zoomControl: false,
   dragging: false,
   keyboard: true
 }).fitWorld();
 
-  L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
-    maxZoom: 18,
-    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-      '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-      'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-    id: 'mapbox.streets'
-
-          
-         
-  }).addTo(map);
 
 
-	$('div#location div#lat').text("searching position");
+	var tilesUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
+	tilesLayer = L.tileLayer(tilesUrl,{
+	maxZoom: 18,
+	attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+	'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+	'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+	id: 'mapbox.streets'
+	});
+
+	map.addLayer(tilesLayer);
+
+
+
+
+
+
+
+
+	$('div#location div#message').text("searching position");
 	function onLocationFound(e)
 	{
 		//var radius = e.accuracy / 2;
@@ -53,6 +62,7 @@ var map = L.map('map', {
 		$('div#location').css('display', 'none');
 		$('div#location div#lat').text(current_lat);
 		$('div#location div#lng').text(current_lng);
+		$('div#location div#message').text("");
 
 
 
@@ -62,7 +72,12 @@ var map = L.map('map', {
 
 	function onLocationError(e) 
 	{
-	$('div#location div#lat').text("position not found");
+	$('div#location div#message').text("position not found");
+	setTimeout(function() 
+		{
+			$('div#location').css("display","none");
+			$('div#location div#message').text("");
+		}, 4000);
 	}
 
 	map.on('locationfound', onLocationFound);
@@ -76,19 +91,72 @@ var map = L.map('map', {
 
 
 
+//finder 
 
 
 
-function getFinderFile()
+function startFinder(search_string,MapOrTrack)
+{
+	map_or_track = MapOrTrack;
+	i = 0;
+	//get file list
+	var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
+	finder.search(search_string);
+	$("div#finder").empty();
+
+	finder.on("searchBegin", function (needle) 
+	{
+		alert("search startet")
+	});
+
+	finder.on("searchComplete", function (needle, filematchcount) 
+	{
+	if(filematchcount == 0)
+	{
+		$('div#finder-error').css('display','block')
+		$('div#finder-error').text('no file found')
+		setTimeout(function() 
+		{
+			$('div#finder-error').css("display","none");
+		}, 4000);
+	}
+
+		if(filematchcount > 0)
+	{
+		$('div#finder').css('display','block')
+		$('div#finder').find('div.items[tabindex=0]').focus();
+	}
+
+
+	});
+
+	
+
+	finder.on("fileFound", function (file, fileinfo, storageName) 
+	{
+		finderNav_tabindex++;
+		$("div#finder").append('<div class="items" tabindex="'+finderNav_tabindex+'">'+fileinfo.name+'</div>');
+		$('div#finder').find('div.items[tabindex=0]').focus();
+
+
+	});
+
+	
+
+
+}
+
+
+
+
+
+function addGeoJson()
 {
 if ($(".items").is(":focus")) {
 
 
 	var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
 	finder.search($(document.activeElement).text());
-
-
-
 	
 
 	finder.on("fileFound", function (file, fileinfo, storageName) 
@@ -115,74 +183,49 @@ if ($(".items").is(":focus")) {
 
 	reader.onloadend = function (event) 
 	{
-		mygpx = event.target.result
-		var myLayer = L.geoJSON().addTo(map);
-		myLayer.addData(JSON.parse(mygpx));
+
+		if(myLayer)
+		{
+			L.removeLayer(myLayer) 
+		}
+		if(map_or_track == "Track")
+		{
+			mygpx = event.target.result
+			var myLayer = L.geoJSON().addTo(map);
+			myLayer.addData(JSON.parse(mygpx));
+			
+
+
+		}
+
+		if(map_or_track == "Map")
+		{
+			mygpx = event.target.result
+			var myMap = L.geoJSON().addTo(map);
+			myMap.addData(JSON.parse(mygpx));
+			map.removeLayer(tilesLayer);
+
+		}
+		
+		
 	};
 
 
 	reader.readAsText(file)
-
-	$('div#finder').css('display','none')
-
-
-	});
-
-
-
-
-}
-
-}
-
-function addTrack()
-{
-	
-	//get file list
-	var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
-	finder.search(".json");
+	finderNav_tabindex = -1;
 	$("div#finder").empty();
-
-	finder.on("searchBegin", function (needle) 
-	{
-		alert("search startet")
-	});
-
-	finder.on("searchComplete", function (needle, filematchcount) 
-	{
-	if(filematchcount == 0)
-	{
-		$('div#finder-error').css('display','block')
-		$('div#finder-error').text('no file found')
-		setTimeout(function() 
-		{
-			$('div#finder-error').css("display","none");
-		}, 4000);
-	}
-
-		if(filematchcount > 0)
-	{
-		$('div#finder').css('display','block')
-
-	}
-
-
-	});
-
+	$('div#finder').css('display','none');
 	
-
-	finder.on("fileFound", function (file, fileinfo, storageName) 
-	{
-		finderNav_tabindex++;
-		$("div#finder").append('<div class="items" tabindex="'+finderNav_tabindex+'">'+fileinfo.name+'</div>');
-		$('div#finder').find('div:first').focus();
-
 	});
 
-	
+
 
 
 }
+
+}
+
+
 
 
 
@@ -375,6 +418,34 @@ function zoom_speed()
 
 
 
+function nav (move) {
+var items = document.querySelectorAll('.items');
+	if(move == "+1" && i < finderNav_tabindex)
+	{
+		i++
+		if(i <= finderNav_tabindex)
+		{
+			var items = document.querySelectorAll('.items');
+			var targetElement = items[i];
+			targetElement.focus();
+
+		}
+	}
+
+	if(move == "-1" &&  i > 0)
+	{
+		i--
+		if(i >= 0)
+		{
+			var items = document.querySelectorAll('.items');
+			var targetElement = items[i];
+			targetElement.focus();
+    
+		}
+	}
+
+}
+
 
 
 //KEYPAD TRIGGER
@@ -402,7 +473,8 @@ function handleKeyDown(evt) {
         break;
 
         case 'Enter':
-        getFinderFile();
+        addGeoJson();
+
         break;
 
         case '0':
@@ -419,10 +491,14 @@ function handleKeyDown(evt) {
         break;
 
         case '3':
-        	addTrack();    
+        	startFinder(".json","Track");
         break; 
 
         case '4':
+        	startFinder(".json","Map");	
+        break;
+
+        case '5':
         	updateMarker(true);
         break;
 
@@ -474,41 +550,9 @@ function handleKeyDown(evt) {
     
 
 
-
-
-
-
- 
-
-
-
 };
 
-function nav (move) {
 
-	if(move == "+1" && i < finderNav_tabindex)
-	{
-		i++
-		if(i <= finderNav_tabindex)
-		{
-			var items = document.querySelectorAll('.items');
-			var targetElement = items[i];
-			targetElement.focus();
-		}
-	}
-
-	if(move == "-1" &&  i > -1)
-	{
-		i--
-		if(i >= 0)
-		{
-			var items = document.querySelectorAll('.items');
-			var targetElement = items[i];
-			targetElement.focus();
-		}
-	}
-
-}
 
 document.addEventListener('keydown', handleKeyDown);
 
