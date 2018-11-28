@@ -2,11 +2,9 @@ This is an Open Street Map app for the Nokia 88104G - [KaiOS](https://www.kaiost
 
 ### TODO
 + error message invalid json file
-+ bug finder tabindex navigation
 + add test .json file in the repo
 + add weatheApi for rain/snow radar
 + add map switcher normal/bicycle
-+ remove Layer
 
 ### Manual
 + **Soft-keys** Zoom the map
@@ -21,6 +19,9 @@ This is an Open Street Map app for the Nokia 88104G - [KaiOS](https://www.kaiost
 + Online tool: [geojson.io](http://geojson.io/#map=1/-55/228)
 + Validation: [geojsonlint](http://geojsonlint.com/)
 + GeoJson Map: [geojson Map] https://geojson-maps.ash.ms/
+
+### OSM MAPS - Tile Servers
++ https://wiki.openstreetmap.org/wiki/Tile_servers
 
 ### How to jailbrak your phone
 [OmniJB](http://omnijb.831337.xyz/)

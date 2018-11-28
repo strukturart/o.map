@@ -27,50 +27,55 @@
 
 <div id="location" class="flex justify-content-center align-item-center width-100 height-100">
 	<div>
-		<div id="message"></div>
 		<div id="lat"></div>
 		<div id="lng"></div>
+		<div id="altitude"></div>
 	</div>
+	<div id="close">close</div>
 </div>
 
-<div id="finder">
+<div id="message" class="flex justify-content-center align-item-center width-100 height-100">
+	<div>Welcome</div>
 </div>
-<div id="finder-error" class="flex justify-content-center align-item-center width-100 height-100">
-	<div></div>
+
+<div id="finder" class="flex justify-content-center align-item-center width-100 height-100">
+	<h2>Custom Map or Track</h2>
+	<div id="custom-map-track"></div>
+	<div id="finder-error"></div>
+	<div id="close">cancel</div>
 </div>
+	
 
 
 <div id="output"></div>
 <div id="zoom-level"></div>
 
-<div id="man-page">
-	<h1>OSM-Map Manual</h1>
-	<ul>
-		<li>Soft-keys<div>Zoom the map</div></li>
-		<li>Cursor<div>Moving the map</div></li>
-		<li>key 1<div>update Geolocation-> Marker</div></li>
-		<li>key 2 <div>search</div></li>
-		<li>key 3 <div>add Track</div></li>
-		<li>key 4 <div>add Map</div></li>
-		<li>key 5 <div>show Position</div></li>
-	</ul>
+<div id="man-page" class="flex justify-content-center align-item-center width-100 height-100">
+	<div id="inner">
+		<h1>OSM-Map Manual</h1>
+		<ul>
+			<li>Soft-keys<div>Zoom the map</div></li>
+			<li>Cursor<div>Moving the map</div></li>
+			<li>key 1<div>update Geolocation-> Marker</div></li>
+			<li>key 2 <div>search</div></li>
+			<li>key 3 <div>add Track</div></li>
+			<li>key 4 <div>add Map</div></li>
+			<li>key 5 <div>show Position</div></li>
+		</ul>
+	</div>
+	<div id="close">close</div>
 </div>
 
 
 
 </body>
 </html>
-	<!--<script src="montoz.json"></script>-->
-		<!--<script src="assets/js/leaflet-ajax.js"></script>-->
 
-	<!--<script src="assets/js/leaflet-gpx.js"></script>-->
 	<script defer src="assets/js/jQuery-3.1.0.js"></script>
 	<script defer src="assets/js/applait.finder.min.js"></script>
 
 	<script defer src="assets/leaflet/leaflet.js" ></script>
 	<script defer src="assets/js/leaflet-search.js"></script>
-	<!--<script src="assets/js/leaflet-omnivore.min.js"></script>-->
-
 
  
 	<script defer src="assets/js/script.js"></script>

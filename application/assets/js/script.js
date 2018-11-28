@@ -7,6 +7,7 @@ var step = 0.001;
 var current_lng = 0;
 var current_lat = 0;
 var zoom_level = 16;
+var altitude;
 var new_lat = 0;
 var new_lng = 0;
 var curPos = 0;
@@ -14,6 +15,7 @@ var myMarker = "";
 var finderNav_tabindex = -1;
 var i = 0;
 var map_or_track;
+var windowOpen = false;
 
 
 
@@ -45,8 +47,8 @@ var map = L.map('map-container', {
 
 
 
-
-	$('div#location div#message').text("searching position");
+	
+	$('div#message div').text("searching position");
 	function onLocationFound(e)
 	{
 		//var radius = e.accuracy / 2;
@@ -62,7 +64,9 @@ var map = L.map('map-container', {
 		$('div#location').css('display', 'none');
 		$('div#location div#lat').text(current_lat);
 		$('div#location div#lng').text(current_lng);
-		$('div#location div#message').text("");
+		$('div#message div').text("");
+		$('div#message').css('display', 'none');
+
 
 
 
@@ -72,11 +76,11 @@ var map = L.map('map-container', {
 
 	function onLocationError(e) 
 	{
-	$('div#location div#message').text("position not found");
+	$('div#message div').text("position not found");
 	setTimeout(function() 
 		{
 			$('div#location').css("display","none");
-			$('div#location div#message').text("");
+			$('div#message div').text("");
 		}, 4000);
 	}
 
@@ -97,12 +101,13 @@ var map = L.map('map-container', {
 
 function startFinder(search_string,MapOrTrack)
 {
+	$("div#custom-map-track").empty();
+	windowOpen = true;
 	map_or_track = MapOrTrack;
 	i = 0;
 	//get file list
 	var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
 	finder.search(search_string);
-	$("div#finder").empty();
 
 	finder.on("searchBegin", function (needle) 
 	{
@@ -135,7 +140,7 @@ function startFinder(search_string,MapOrTrack)
 	finder.on("fileFound", function (file, fileinfo, storageName) 
 	{
 		finderNav_tabindex++;
-		$("div#finder").append('<div class="items" tabindex="'+finderNav_tabindex+'">'+fileinfo.name+'</div>');
+		$("div#custom-map-track").append('<div class="items" tabindex="'+finderNav_tabindex+'">'+fileinfo.name+'</div>');
 		$('div#finder').find('div.items[tabindex=0]').focus();
 
 
@@ -193,6 +198,7 @@ if ($(".items").is(":focus")) {
 			mygpx = event.target.result
 			var myLayer = L.geoJSON().addTo(map);
 			myLayer.addData(JSON.parse(mygpx));
+			map.setZoom(12);
 			
 
 
@@ -204,6 +210,7 @@ if ($(".items").is(":focus")) {
 			var myMap = L.geoJSON().addTo(map);
 			myMap.addData(JSON.parse(mygpx));
 			map.removeLayer(tilesLayer);
+			map.setZoom(1);
 
 		}
 		
@@ -213,8 +220,9 @@ if ($(".items").is(":focus")) {
 
 	reader.readAsText(file)
 	finderNav_tabindex = -1;
-	$("div#finder").empty();
+
 	$('div#finder').css('display','none');
+	windowOpen = false;
 	
 	});
 
@@ -312,31 +320,26 @@ function updateMarker(option)
     function showPosition(position) 
     {
 
-      myMarker.setLatLng([position.coords.latitude, position.coords.longitude]).update();
-      map.flyTo( new L.LatLng(position.coords.latitude, position.coords.longitude),16);
-      zoom_level = 16
-      zoom_speed()
+		myMarker.setLatLng([position.coords.latitude, position.coords.longitude]).update();
+		map.flyTo( new L.LatLng(position.coords.latitude, position.coords.longitude),16);
+		zoom_level = 16
+		zoom_speed()
 
-      
-	current_lng = position.coords.longitude;
-	current_lat = position.coords.latitude;
+		current_lng = position.coords.longitude;
+		current_lat = position.coords.latitude;
+		altitude = position.coords.altitude;
 
 		$('div#location div#lat').text(current_lat);
 		$('div#location div#lng').text(current_lng);
+		$('div#location div#altitude').text(altitude);
 
-if(option == true)
-{
-	if($('div#location').css('display')== 'none')
-	{
-		$('div#location').css('display','block')
+		if(option == true)
+		{
+
+				$('div#location').css('display','block')
+				windowOpen = true;
+		}
 	}
-	else
-	{
-		$('div#location').css('display','none')
-	}
-	
-}
-    }
 
 	getLocation();
 
@@ -353,18 +356,15 @@ $('.leaflet-control-search').css('display','none')
 
 function showSearch()
 {
-if($('.leaflet-control-search').css('display')=='none')
-{
-$('.leaflet-control-search').css('display','block');
-$('.leaflet-control-search').find("input").focus();
-
-
-}
-else
-{
-  $('.leaflet-control-search').css('display','none');
-}
-
+	if($('.leaflet-control-search').css('display')=='none')
+	{
+		$('.leaflet-control-search').css('display','block');
+		$('.leaflet-control-search').find("input").focus();
+	}
+	else
+	{
+	  $('.leaflet-control-search').css('display','none');
+	}
 }
 
 
@@ -373,17 +373,51 @@ else
 function showMan()
 {
 
-  if($('div#man-page').css('display')=='none')
+	$('div#man-page').css('display','block');
+	$('div#man-page').find("input").focus();
+	windowOpen = true;
+
+}
+
+
+function closeWindow()
 {
-$('div#man-page').css('display','block');
-$('div#man-page').find("input").focus();
+
+
+	$('div#finder').css('display','none')
+	windowOpen = false;
+	$("div#custom-map-track").empty();
+
+
+	$('div#man-page').css('display','none')
+	windowOpen = false;
+
+
+	$('div#location').css('display','none')
+	windowOpen = false;
+
 
 
 }
-else
+
+function ZoomMap(in_out)
 {
-  $('div#man-page').css('display','none');
-}
+	if(windowOpen == false)
+	{
+		if(in_out == "in")
+		{
+			map.setZoom(map.getZoom() + 1);
+			zoom_level = map.getZoom();
+			zoom_speed();
+		}
+
+		if(in_out == "out")
+		{
+			map.setZoom(map.getZoom() - 1);
+			zoom_level = map.getZoom();
+			zoom_speed();
+		}
+	}
 
 }
 
@@ -416,6 +450,51 @@ function zoom_speed()
     return step;
 }
 
+
+function MovemMap(direction)
+{
+	if(windowOpen == false)
+	{
+		if(direction == "left")
+		{
+			zoom_speed()
+			$('div#location div#lat').text(current_lat);
+			$('div#location div#lng').text(current_lng);
+			current_lng = current_lng - step;
+			map.panTo( new L.LatLng(current_lat, current_lng));
+		}
+
+		if(direction == "right")
+		{
+			zoom_speed()
+			$('div#location div#lat').text(current_lat);
+			$('div#location div#lng').text(current_lng);
+			current_lng = current_lng + step;
+			map.panTo( new L.LatLng(current_lat, current_lng));
+		}
+
+		if(direction == "up")
+		{
+			zoom_speed()
+			$('div#location div#lat').text(current_lat);
+			$('div#location div#lng').text(current_lng);
+			current_lat = current_lat + step;
+			map.panTo( new L.LatLng(current_lat, current_lng));
+
+		}
+
+		if(direction == "down")
+		{
+			zoom_speed()
+			$('div#location div#lat').text(current_lat);
+			$('div#location div#lng').text(current_lng);
+			current_lat = current_lat - step;
+			map.panTo( new L.LatLng(current_lat, current_lng));
+
+		}
+	}
+
+}
 
 
 function nav (move) {
@@ -454,22 +533,15 @@ var items = document.querySelectorAll('.items');
 function handleKeyDown(evt) {
 
 
+		switch (evt.key) {
 
+		case 'SoftLeft':
+			ZoomMap("in");
+			closeWindow();
+		break;
 
-
-    switch (evt.key) {
-        case 'SoftLeft':
-          map.setZoom(map.getZoom() + 1);
-          zoom_level = map.getZoom();
-          zoom_speed();
-
-        break;
-
-        case 'SoftRight':
-          map.setZoom(map.getZoom() - 1);
-          zoom_level = map.getZoom();
-          zoom_speed();
-
+		case 'SoftRight':
+			ZoomMap("out");
         break;
 
         case 'Enter':
@@ -503,52 +575,25 @@ function handleKeyDown(evt) {
         break;
 
 
+		case 'ArrowRight':
+			MovemMap("right")
+		break; 
 
+		case 'ArrowLeft':
+			MovemMap("left")
+		break; 
 
+		case 'ArrowUp':
+			MovemMap("up")
+			nav("-1");
+		break; 
 
+		case 'ArrowDown':
+			MovemMap("down")
+			nav("+1")
+		break; 
 
-        case 'ArrowRight':
-
-          zoom_speed()
-          $('div#location div#lat').text(current_lat);
-          $('div#location div#lng').text(current_lng);
-          current_lng = current_lng + step;
-          map.panTo( new L.LatLng(current_lat, current_lng));
-          
-        break; 
-
-        case 'ArrowLeft':
-          zoom_speed()
-          $('div#location div#lat').text(current_lat);
-          $('div#location div#lng').text(current_lng);
-          current_lng = current_lng - step;
-          map.panTo( new L.LatLng(current_lat, current_lng));
-          
-        break; 
-
-        case 'ArrowUp':
-          zoom_speed()
-          $('div#location div#lat').text(current_lat);
-          $('div#location div#lng').text(current_lng);
-          current_lat = current_lat + step;
-          map.panTo( new L.LatLng(current_lat, current_lng));
-           nav("-1");
-        break; 
-        
-
-        case 'ArrowDown':
-          zoom_speed()
-          $('div#location div#lat').text(current_lat);
-          $('div#location div#lng').text(current_lng);
-          current_lat = current_lat - step;
-          map.panTo( new L.LatLng(current_lat, current_lng));
-          nav("+1")
-        break; 
-
-    }
-
-    
-
+	}
 
 };
 
@@ -556,7 +601,6 @@ function handleKeyDown(evt) {
 
 document.addEventListener('keydown', handleKeyDown);
 
-//document.activeElement.addEventListener('keydown', handleKeyDown);
 
 
 
