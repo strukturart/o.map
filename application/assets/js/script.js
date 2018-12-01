@@ -16,8 +16,6 @@ var finderNav_tabindex = -1;
 var i = 0;
 var map_or_track;
 var windowOpen = false;
-//var tilesUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
-var tilesUrl = 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png'
 
 
 
@@ -31,10 +29,23 @@ var map = L.map('map-container', {
 
 
 
+function toner_map()
+{
+	var tilesUrl = 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png'
+	tilesLayer = L.tileLayer(tilesUrl,{
+	maxZoom: 18,
+	attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+	'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, '	
+	});
+
+	map.addLayer(tilesLayer);
+
+}
 
 
-
-
+function mapbox_map()
+{
+	var tilesUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw'
 	tilesLayer = L.tileLayer(tilesUrl,{
 	maxZoom: 18,
 	attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
@@ -45,9 +56,9 @@ var map = L.map('map-container', {
 
 	map.addLayer(tilesLayer);
 
+}
 
-
-
+ toner_map()
 
 	
 	$('div#message div').text("searching position");
@@ -79,11 +90,7 @@ var map = L.map('map-container', {
 	function onLocationError(e) 
 	{
 	$('div#message div').text("position not found");
-	setTimeout(function() 
-		{
-			$('div#location').css("display","none");
-			$('div#message div').text("");
-		}, 4000);
+
 	}
 
 	map.on('locationfound', onLocationFound);
