@@ -9,11 +9,12 @@ This is an Open Street Map app for the Nokia 88104G - [KaiOS](https://www.kaiost
 ### Manual
 + **Soft-keys** Zoom the map
 + **Cursor Moving** the map
-+ **key 1** update Geolocation-> Marker
++ **key 1** update marker
 + **key 2** search
-+ **key 3** load geoJson Track
-+ **key 4** show Position 
-+ **key 5** add Map 
++ **key 3** load geoJson track
++ **key 4** load geoJson custom map 
++ **key 5** show latidude and longitiude 
++ **key #** shoe man-page
 
 ### GeoJson
 + Online tool: [geojson.io](http://geojson.io/#map=1/-55/228)
