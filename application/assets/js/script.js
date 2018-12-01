@@ -16,7 +16,8 @@ var finderNav_tabindex = -1;
 var i = 0;
 var map_or_track;
 var windowOpen = false;
-
+//var tilesUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
+var tilesUrl = 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png'
 
 
 
@@ -30,7 +31,10 @@ var map = L.map('map-container', {
 
 
 
-	var tilesUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
+
+
+
+
 	tilesLayer = L.tileLayer(tilesUrl,{
 	maxZoom: 18,
 	attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
@@ -40,8 +44,6 @@ var map = L.map('map-container', {
 	});
 
 	map.addLayer(tilesLayer);
-
-
 
 
 
@@ -140,6 +142,11 @@ function startFinder(search_string,MapOrTrack)
 	finder.on("fileFound", function (file, fileinfo, storageName) 
 	{
 		finderNav_tabindex++;
+		if(finderNav_tabindex == 0)
+		{
+		$("div#custom-map-track").append('<div class="items" tabindex="'+finderNav_tabindex+'">Toner</div>');
+			finderNav_tabindex = 1;
+		}
 		$("div#custom-map-track").append('<div class="items" tabindex="'+finderNav_tabindex+'">'+fileinfo.name+'</div>');
 		$('div#finder').find('div.items[tabindex=0]').focus();
 
