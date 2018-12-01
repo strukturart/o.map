@@ -7,37 +7,50 @@ var step = 0.001;
 var current_lng = 0;
 var current_lat = 0;
 var zoom_level = 16;
+var altitude;
 var new_lat = 0;
 var new_lng = 0;
 var curPos = 0;
 var myMarker = "";
 var finderNav_tabindex = -1;
 var i = 0;
+var map_or_track;
+var windowOpen = false;
+//var tilesUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
+var tilesUrl = 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png'
 
 
 
 
-
-//leaflet add map
-var map = L.map('map', {
+//leaflet add basic map
+var map = L.map('map-container', {
   zoomControl: false,
   dragging: false,
   keyboard: true
 }).fitWorld();
 
-  L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
-    maxZoom: 18,
-    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-      '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-      'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-    id: 'mapbox.streets'
-
-          
-         
-  }).addTo(map);
 
 
-	$('div#location div#lat').text("searching position");
+
+
+
+
+	tilesLayer = L.tileLayer(tilesUrl,{
+	maxZoom: 18,
+	attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+	'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+	'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+	id: 'mapbox.streets'
+	});
+
+	map.addLayer(tilesLayer);
+
+
+
+
+
+	
+	$('div#message div').text("searching position");
 	function onLocationFound(e)
 	{
 		//var radius = e.accuracy / 2;
@@ -53,6 +66,9 @@ var map = L.map('map', {
 		$('div#location').css('display', 'none');
 		$('div#location div#lat').text(current_lat);
 		$('div#location div#lng').text(current_lng);
+		$('div#message div').text("");
+		$('div#message').css('display', 'none');
+
 
 
 
@@ -62,7 +78,12 @@ var map = L.map('map', {
 
 	function onLocationError(e) 
 	{
-	$('div#location div#lat').text("position not found");
+	$('div#message div').text("position not found");
+	setTimeout(function() 
+		{
+			$('div#location').css("display","none");
+			$('div#message div').text("");
+		}, 4000);
 	}
 
 	map.on('locationfound', onLocationFound);
@@ -76,19 +97,78 @@ var map = L.map('map', {
 
 
 
+//finder 
 
 
 
-function getFinderFile()
+function startFinder(search_string,MapOrTrack)
+{
+	$("div#custom-map-track").empty();
+	windowOpen = true;
+	map_or_track = MapOrTrack;
+	i = 0;
+	//get file list
+	var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
+	finder.search(search_string);
+
+	finder.on("searchBegin", function (needle) 
+	{
+		alert("search startet")
+	});
+
+	finder.on("searchComplete", function (needle, filematchcount) 
+	{
+	if(filematchcount == 0)
+	{
+		$('div#finder-error').css('display','block')
+		$('div#finder-error').text('no file found')
+		setTimeout(function() 
+		{
+			$('div#finder-error').css("display","none");
+		}, 4000);
+	}
+
+		if(filematchcount > 0)
+	{
+		$('div#finder').css('display','block')
+		$('div#finder').find('div.items[tabindex=0]').focus();
+	}
+
+
+	});
+
+	
+
+	finder.on("fileFound", function (file, fileinfo, storageName) 
+	{
+		finderNav_tabindex++;
+		if(finderNav_tabindex == 0)
+		{
+		$("div#custom-map-track").append('<div class="items" tabindex="'+finderNav_tabindex+'">Toner</div>');
+			finderNav_tabindex = 1;
+		}
+		$("div#custom-map-track").append('<div class="items" tabindex="'+finderNav_tabindex+'">'+fileinfo.name+'</div>');
+		$('div#finder').find('div.items[tabindex=0]').focus();
+
+
+	});
+
+	
+
+
+}
+
+
+
+
+
+function addGeoJson()
 {
 if ($(".items").is(":focus")) {
 
 
 	var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
 	finder.search($(document.activeElement).text());
-
-
-
 	
 
 	finder.on("fileFound", function (file, fileinfo, storageName) 
@@ -115,17 +195,42 @@ if ($(".items").is(":focus")) {
 
 	reader.onloadend = function (event) 
 	{
-		mygpx = event.target.result
-		var myLayer = L.geoJSON().addTo(map);
-		myLayer.addData(JSON.parse(mygpx));
+
+		if(myLayer)
+		{
+			L.removeLayer(myLayer) 
+		}
+		if(map_or_track == "Track")
+		{
+			mygpx = event.target.result
+			var myLayer = L.geoJSON().addTo(map);
+			myLayer.addData(JSON.parse(mygpx));
+			map.setZoom(12);
+			
+
+
+		}
+
+		if(map_or_track == "Map")
+		{
+			mygpx = event.target.result
+			var myMap = L.geoJSON().addTo(map);
+			myMap.addData(JSON.parse(mygpx));
+			map.removeLayer(tilesLayer);
+			map.setZoom(1);
+
+		}
+		
+		
 	};
 
 
 	reader.readAsText(file)
+	finderNav_tabindex = -1;
 
-	$('div#finder').css('display','none')
-
-
+	$('div#finder').css('display','none');
+	windowOpen = false;
+	
 	});
 
 
@@ -135,54 +240,7 @@ if ($(".items").is(":focus")) {
 
 }
 
-function addTrack()
-{
-	
-	//get file list
-	var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
-	finder.search(".json");
-	$("div#finder").empty();
 
-	finder.on("searchBegin", function (needle) 
-	{
-		alert("search startet")
-	});
-
-	finder.on("searchComplete", function (needle, filematchcount) 
-	{
-	if(filematchcount == 0)
-	{
-		$('div#finder-error').css('display','block')
-		$('div#finder-error').text('no file found')
-		setTimeout(function() 
-		{
-			$('div#finder-error').css("display","none");
-		}, 4000);
-	}
-
-		if(filematchcount > 0)
-	{
-		$('div#finder').css('display','block')
-
-	}
-
-
-	});
-
-	
-
-	finder.on("fileFound", function (file, fileinfo, storageName) 
-	{
-		finderNav_tabindex++;
-		$("div#finder").append('<div class="items" tabindex="'+finderNav_tabindex+'">'+fileinfo.name+'</div>');
-		$('div#finder').find('div:first').focus();
-
-	});
-
-	
-
-
-}
 
 
 
@@ -269,31 +327,26 @@ function updateMarker(option)
     function showPosition(position) 
     {
 
-      myMarker.setLatLng([position.coords.latitude, position.coords.longitude]).update();
-      map.flyTo( new L.LatLng(position.coords.latitude, position.coords.longitude),16);
-      zoom_level = 16
-      zoom_speed()
+		myMarker.setLatLng([position.coords.latitude, position.coords.longitude]).update();
+		map.flyTo( new L.LatLng(position.coords.latitude, position.coords.longitude),16);
+		zoom_level = 16
+		zoom_speed()
 
-      
-	current_lng = position.coords.longitude;
-	current_lat = position.coords.latitude;
+		current_lng = position.coords.longitude;
+		current_lat = position.coords.latitude;
+		altitude = position.coords.altitude;
 
 		$('div#location div#lat').text(current_lat);
 		$('div#location div#lng').text(current_lng);
+		$('div#location div#altitude').text(altitude);
 
-if(option == true)
-{
-	if($('div#location').css('display')== 'none')
-	{
-		$('div#location').css('display','block')
+		if(option == true)
+		{
+
+				$('div#location').css('display','block')
+				windowOpen = true;
+		}
 	}
-	else
-	{
-		$('div#location').css('display','none')
-	}
-	
-}
-    }
 
 	getLocation();
 
@@ -310,18 +363,15 @@ $('.leaflet-control-search').css('display','none')
 
 function showSearch()
 {
-if($('.leaflet-control-search').css('display')=='none')
-{
-$('.leaflet-control-search').css('display','block');
-$('.leaflet-control-search').find("input").focus();
-
-
-}
-else
-{
-  $('.leaflet-control-search').css('display','none');
-}
-
+	if($('.leaflet-control-search').css('display')=='none')
+	{
+		$('.leaflet-control-search').css('display','block');
+		$('.leaflet-control-search').find("input").focus();
+	}
+	else
+	{
+	  $('.leaflet-control-search').css('display','none');
+	}
 }
 
 
@@ -330,17 +380,51 @@ else
 function showMan()
 {
 
-  if($('div#man-page').css('display')=='none')
+	$('div#man-page').css('display','block');
+	$('div#man-page').find("input").focus();
+	windowOpen = true;
+
+}
+
+
+function closeWindow()
 {
-$('div#man-page').css('display','block');
-$('div#man-page').find("input").focus();
+
+
+	$('div#finder').css('display','none')
+	windowOpen = false;
+	$("div#custom-map-track").empty();
+
+
+	$('div#man-page').css('display','none')
+	windowOpen = false;
+
+
+	$('div#location').css('display','none')
+	windowOpen = false;
+
 
 
 }
-else
+
+function ZoomMap(in_out)
 {
-  $('div#man-page').css('display','none');
-}
+	if(windowOpen == false)
+	{
+		if(in_out == "in")
+		{
+			map.setZoom(map.getZoom() + 1);
+			zoom_level = map.getZoom();
+			zoom_speed();
+		}
+
+		if(in_out == "out")
+		{
+			map.setZoom(map.getZoom() - 1);
+			zoom_level = map.getZoom();
+			zoom_speed();
+		}
+	}
 
 }
 
@@ -374,6 +458,79 @@ function zoom_speed()
 }
 
 
+function MovemMap(direction)
+{
+	if(windowOpen == false)
+	{
+		if(direction == "left")
+		{
+			zoom_speed()
+			$('div#location div#lat').text(current_lat);
+			$('div#location div#lng').text(current_lng);
+			current_lng = current_lng - step;
+			map.panTo( new L.LatLng(current_lat, current_lng));
+		}
+
+		if(direction == "right")
+		{
+			zoom_speed()
+			$('div#location div#lat').text(current_lat);
+			$('div#location div#lng').text(current_lng);
+			current_lng = current_lng + step;
+			map.panTo( new L.LatLng(current_lat, current_lng));
+		}
+
+		if(direction == "up")
+		{
+			zoom_speed()
+			$('div#location div#lat').text(current_lat);
+			$('div#location div#lng').text(current_lng);
+			current_lat = current_lat + step;
+			map.panTo( new L.LatLng(current_lat, current_lng));
+
+		}
+
+		if(direction == "down")
+		{
+			zoom_speed()
+			$('div#location div#lat').text(current_lat);
+			$('div#location div#lng').text(current_lng);
+			current_lat = current_lat - step;
+			map.panTo( new L.LatLng(current_lat, current_lng));
+
+		}
+	}
+
+}
+
+
+function nav (move) {
+var items = document.querySelectorAll('.items');
+	if(move == "+1" && i < finderNav_tabindex)
+	{
+		i++
+		if(i <= finderNav_tabindex)
+		{
+			var items = document.querySelectorAll('.items');
+			var targetElement = items[i];
+			targetElement.focus();
+
+		}
+	}
+
+	if(move == "-1" &&  i > 0)
+	{
+		i--
+		if(i >= 0)
+		{
+			var items = document.querySelectorAll('.items');
+			var targetElement = items[i];
+			targetElement.focus();
+    
+		}
+	}
+
+}
 
 
 
@@ -383,26 +540,20 @@ function zoom_speed()
 function handleKeyDown(evt) {
 
 
+		switch (evt.key) {
 
+		case 'SoftLeft':
+			ZoomMap("in");
+			closeWindow();
+		break;
 
-
-    switch (evt.key) {
-        case 'SoftLeft':
-          map.setZoom(map.getZoom() + 1);
-          zoom_level = map.getZoom();
-          zoom_speed();
-
-        break;
-
-        case 'SoftRight':
-          map.setZoom(map.getZoom() - 1);
-          zoom_level = map.getZoom();
-          zoom_speed();
-
+		case 'SoftRight':
+			ZoomMap("out");
         break;
 
         case 'Enter':
-        getFinderFile();
+        addGeoJson();
+
         break;
 
         case '0':
@@ -419,100 +570,44 @@ function handleKeyDown(evt) {
         break;
 
         case '3':
-        	addTrack();    
+        	startFinder(".json","Track");
         break; 
 
         case '4':
+        	startFinder(".json","Map");	
+        break;
+
+        case '5':
         	updateMarker(true);
         break;
 
 
+		case 'ArrowRight':
+			MovemMap("right")
+		break; 
 
+		case 'ArrowLeft':
+			MovemMap("left")
+		break; 
 
+		case 'ArrowUp':
+			MovemMap("up")
+			nav("-1");
+		break; 
 
+		case 'ArrowDown':
+			MovemMap("down")
+			nav("+1")
+		break; 
 
-        case 'ArrowRight':
-
-          zoom_speed()
-          $('div#location div#lat').text(current_lat);
-          $('div#location div#lng').text(current_lng);
-          current_lng = current_lng + step;
-          map.panTo( new L.LatLng(current_lat, current_lng));
-          
-        break; 
-
-        case 'ArrowLeft':
-          zoom_speed()
-          $('div#location div#lat').text(current_lat);
-          $('div#location div#lng').text(current_lng);
-          current_lng = current_lng - step;
-          map.panTo( new L.LatLng(current_lat, current_lng));
-          
-        break; 
-
-        case 'ArrowUp':
-          zoom_speed()
-          $('div#location div#lat').text(current_lat);
-          $('div#location div#lng').text(current_lng);
-          current_lat = current_lat + step;
-          map.panTo( new L.LatLng(current_lat, current_lng));
-           nav("-1");
-        break; 
-        
-
-        case 'ArrowDown':
-          zoom_speed()
-          $('div#location div#lat').text(current_lat);
-          $('div#location div#lng').text(current_lng);
-          current_lat = current_lat - step;
-          map.panTo( new L.LatLng(current_lat, current_lng));
-          nav("+1")
-        break; 
-
-    }
-
-    
-
-
-
-
-
-
- 
-
-
+	}
 
 };
 
-function nav (move) {
 
-	if(move == "+1" && i < finderNav_tabindex)
-	{
-		i++
-		if(i <= finderNav_tabindex)
-		{
-			var items = document.querySelectorAll('.items');
-			var targetElement = items[i];
-			targetElement.focus();
-		}
-	}
-
-	if(move == "-1" &&  i > -1)
-	{
-		i--
-		if(i >= 0)
-		{
-			var items = document.querySelectorAll('.items');
-			var targetElement = items[i];
-			targetElement.focus();
-		}
-	}
-
-}
 
 document.addEventListener('keydown', handleKeyDown);
 
-//document.activeElement.addEventListener('keydown', handleKeyDown);
 
 
 

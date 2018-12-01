@@ -28,12 +28,11 @@
 
 
 html,body
-  {
+{
 
 	font-weight: 100;
 
 	width:100%;
-	color:var(--color-four) ;
 	position:relative;
 
 
@@ -49,49 +48,45 @@ html,body
 	height: 100%;
 	margin: 0;
 
-
-
-
-  }
-
-
-
+}
 
 
 
 div#zoom-level
 {
-  position:fixed;
-  z-index: 1000;
-  top:10px;
-  left:10px;
-  background:black;
-  color:white;
-  font-size: 16px;
-  display:none;
+	position:fixed;
+	z-index: 1000;
+	top:10px;
+	left:10px;
+	background:black;
+	color:white;
+	font-size: 16px;
+	display:none;
 }
 
 div#finder
 {
-	position:fixed;
-	z-index: 1000;
+	position:absolute;
+	z-index:1000;
 	top:0px;
 	left:0px;
 	overflow:scroll;
 	background:black;
-	height:100vh;
-	width:100vw;
 	padding:5px;
+	color:white;
 	display:none;
+}
 
-  
-  
+div#finder h2
+{
+	font-size:14px;
+	font-weight:bold;
 }
 
 div#finder-error
 {
-	position:fixed;
-	z-index: 1000;
+	position:absolute;
+	z-index:1000;
 	top:50%;
 	left:50%;
 	margin:-7px 0 0 -50px;
@@ -104,13 +99,29 @@ div#finder-error
 }
 
 
-div#finder div
+div#finder div#custom-map-track
 {
 	background:black;
 	color:white;
 	font-size:14px;
 	margin:0 0 3px 0;
 	padding:3px;
+	max-height:80%;
+	overflow: scroll;
+}
+
+div#finder div#close
+{
+	background:black;
+	color:white;
+	font-size:14px;
+	padding:3px;
+	position:absolute;
+	bottom:5px;
+	left:5px;
+	min-width:100vw;
+
+
 }
 
 div#finder div:focus
@@ -122,20 +133,17 @@ div#finder div:focus
 div#man-page
 {
   display:none;
-  position:fixed;
-  z-index: 3000;
+  position:absolute;
+  z-index:1000;
   top:0;
   background:black;
   color:white;
   font-size: 12px;
-  width:100%;
-  height:100vh;
   padding:5px;
 }
 
 div#man-page h1
 {
-  text-align:center;
   font-weight: 800;
   margin:0 0 10px 0;
   font-size:14px;
@@ -148,38 +156,102 @@ div#man-page li div
 
 }
 
+div#man-page div#inner
+{
+	max-height:200px;
+}
+
+div#man-page div#close
+{
+	background:black;
+	color:white;
+	font-size:14px;
+	padding:3px;
+	position:absolute;
+	bottom:5px;
+	left:5px;
+	min-width:100vw;
+}
+
 
 div#location
 {
-  position:fixed;
+  position:absolute;
   z-index:1000;
-  left:50%;
-  top:49%;
+  left:0;
+  top:0;
   background:black;
   color:white;
   font-size: 14px;
+  padding:5px;
+}
+
+div#location div#close
+{
+	background:black;
+	color:white;
+	font-size:14px;
+	padding:3px;
+	position:absolute;
+	bottom:5px;
+	left:5px;
+	min-width:100vw;
 }
 
 div#location div#lat
 {
- background:black;
-  color:white;
-  font-size: 14px;
-  display:block;
+	background:black;
+	color:white;
+	font-size: 14px;
+	padding:3px;
 }
 
 div#location div#lng
 {
 	background:black;
-  color:white;
-  font-size: 14px;
- 
+	color:white;
+	font-size: 14px;
+	padding:3px;
+}
+
+div#location div#altitude
+{
+	background:black;
+	color:white;
+	font-size: 14px;
+	padding:3px;
+}
+
+
+
+div#message
+{
+	position:absolute;
+	z-index:1000;
+	left:0;
+	top:0;
+	background:black;
+	color:white;
+	font-size: 14px;
+	padding:5px;
+}
+
+div#message div
+{
+	background:black;
+	color:white;
+	font-size: 14px;
+	padding:3px;
 }
 
 
 
 
-#map { height: 100%; width: 100vw; }
+#map-container
+{ 
+	height: 100%;
+	width: 100vw;
+}
 
 
 
