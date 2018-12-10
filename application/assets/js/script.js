@@ -1,5 +1,4 @@
- 
-$(document).ready(function() {
+ $(document).ready(function() {
 
 
 //Global Vars
@@ -194,12 +193,14 @@ function addGeoJson()
 				map.removeLayer(tilesLayer);
 				toner_map();
 				$('div#finder').css('display','none');
+				windowOpen = false;
 			}
 			if(item_value == "Mapbox")
 			{
 				map.removeLayer(tilesLayer);
 				mapbox_map();
 				$('div#finder').css('display','none');
+				windowOpen = false;
 			}
 
 		}
@@ -243,12 +244,38 @@ function addGeoJson()
 					}
 
 
-
-						$('div#finder div#question').css('opacity','1');
 						mygpx = event.target.result
-						var myLayer = L.geoJSON().addTo(map);
-						myLayer.addData(JSON.parse(mygpx));
-						map.setZoom(12);
+						
+						//check if json valid
+						var printError = function(error, explicit) {
+						    console.log("[${explicit ? 'EXPLICIT' : 'INEXPLICIT'}] ${error.name}: ${error.message}");
+						}
+
+						try {
+						   
+						    console.log(JSON.parse(mygpx));
+						} catch (e) {
+						    if (e instanceof SyntaxError) {
+						        //alert(e, true);
+						        alert("Json file is not valid");
+						        return;
+						    } else {
+						        //alert(e, false);
+						        alert("okay")
+
+						    }
+
+
+						}
+
+												    	//if valid add layer
+								$('div#finder div#question').css('opacity','1');
+								var myLayer = L.geoJSON().addTo(map);
+								myLayer.addData(JSON.parse(mygpx));
+								map.setZoom(12);
+
+
+
 					
 						
 
@@ -493,18 +520,23 @@ function zoom_speed()
 
 function unload_map(trueFalse)
 {
-	if(trueFalse == true)
+	if(windowOpen == true)
 	{
-		map.removeLayer(tilesLayer);
-		$('div#finder').css('display','none');
-		$('div#finder div#question').css('opacity','0');
-		alert("hide map")
-	}
 
-	if(trueFalse == false)
-	{
-		$('div#finder').css('display','none');
-		$('div#finder div#question').css('opacity','0');
+		if(trueFalse == true)
+		{
+			map.removeLayer(tilesLayer);
+			$('div#finder').css('display','none');
+			$('div#finder div#question').css('opacity','0');
+			windowOpen = false;
+		}
+
+		if(trueFalse == false)
+		{
+			$('div#finder').css('display','none');
+			$('div#finder div#question').css('opacity','0');
+			windowOpen = false;
+		}
 	}
 }
 
@@ -598,8 +630,8 @@ function handleKeyDown(evt) {
 
 		case 'SoftLeft':
 			ZoomMap("in");
-			closeWindow();
 			unload_map(false);
+			closeWindow();
 			
 		break;
 
@@ -678,9 +710,9 @@ console.log("jQuery error event:", evt);
 var e = evt.originalEvent; // get the javascript event
 console.log("original event:", e);
 if (e.message) { 
-    alert("Error:\n\t" + e.message + "\nLine:\n\t" + e.lineno + "\nFile:\n\t" + e.filename);
+    //alert("Error:\n\t" + e.message + "\nLine:\n\t" + e.lineno + "\nFile:\n\t" + e.filename);
 } else {
-    alert("Error:\n\t" + e.type + "\nElement:\n\t" + (e.srcElement || e.target));
+    //alert("Error:\n\t" + e.type + "\nElement:\n\t" + (e.srcElement || e.target));
 }
 });
 
