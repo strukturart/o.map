@@ -31,20 +31,13 @@ html,body
 {
 
 	font-weight: 100;
-
 	width:100%;
 	position:relative;
-
-
 	margin:0px;
 	padding:0px;  
-
-
 	font-size:0.95rem;
 	line-height:1.4rem;
-
 	-webkit-appearance: none;
-
 	height: 100%;
 	margin: 0;
 
@@ -52,10 +45,50 @@ html,body
 
 
 
+/*///////////////////////////
+///MAP////////////////*/
+
+div#map-container
+{ 
+	height: 100%;
+	width: 100vw;
+}
+
+
+
+/*///////////////////////////
+///MESSAGE////////////////*/
+
+div#message
+{
+	position:absolute;
+	z-index:2000;
+	left:0;
+	top:0;
+	background:black;
+	color:white;
+	font-size: 14px;
+	padding:5px;
+}
+
+div#message div
+{
+	background:black;
+	color:white;
+	font-size: 14px;
+	padding:3px;
+}
+
+
+
+/*///////////////////////////
+///HELPER////////////////*/
+
+
 div#zoom-level
 {
-	position:fixed;
-	z-index: 1000;
+	position:absolute;
+	z-index: 1;
 	top:10px;
 	left:10px;
 	background:black;
@@ -64,13 +97,17 @@ div#zoom-level
 	display:none;
 }
 
+
+
+/*///////////////////////////
+///FINDER////////////////*/
+
 div#finder
 {
 	position:absolute;
 	z-index:1000;
 	top:0px;
 	left:0px;
-	overflow:scroll;
 	background:black;
 	padding:5px;
 	color:white;
@@ -86,7 +123,7 @@ div#finder h2
 div#finder-error
 {
 	position:absolute;
-	z-index:1000;
+	z-index:2;
 	top:50%;
 	left:50%;
 	margin:-7px 0 0 -50px;
@@ -128,6 +165,30 @@ div#finder div:focus
 {
 	border-bottom:3px solid yellow;
 }
+
+div#finder div#question
+{
+	background:black;
+	color:white;
+	font-size:14px;
+	position:absolute;
+	top:0;
+	left:0;
+	z-index:3000;
+	opacity:0.2;
+	
+}
+
+div#finder div#question div#question-text
+{
+	padding:50px 30px  0 30px;
+	text-align: center;
+	
+}
+
+
+/*///////////////////////////
+///MAN-PAGE////////////////*/
 
 
 div#man-page
@@ -172,6 +233,12 @@ div#man-page div#close
 	left:5px;
 	min-width:100vw;
 }
+
+
+
+
+/*///////////////////////////
+///LOCATION////////////////*/
 
 
 div#location
@@ -222,36 +289,6 @@ div#location div#altitude
 	padding:3px;
 }
 
-
-
-div#message
-{
-	position:absolute;
-	z-index:1000;
-	left:0;
-	top:0;
-	background:black;
-	color:white;
-	font-size: 14px;
-	padding:5px;
-}
-
-div#message div
-{
-	background:black;
-	color:white;
-	font-size: 14px;
-	padding:3px;
-}
-
-
-
-
-#map-container
-{ 
-	height: 100%;
-	width: 100vw;
-}
 
 
 
