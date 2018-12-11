@@ -7,7 +7,7 @@ var step = 0.001;
 var current_lng = 0;
 var current_lat = 0;
 var zoom_level = 16;
-var altitude;
+var altitude = "not found";
 var new_lat = 0;
 var new_lng = 0;
 var curPos = 0;
@@ -16,8 +16,6 @@ var finderNav_tabindex = -1;
 var i = 0;
 var map_or_track;
 var windowOpen = false;
-//var tilesUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
-var tilesUrl = 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png'
 
 
 
@@ -29,12 +27,27 @@ var map = L.map('map-container', {
   keyboard: true
 }).fitWorld();
 
+////////////////////
+////MAPS////////////
+///////////////////
+
+function toner_map()
+{
+	var tilesUrl = 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png'
+	tilesLayer = L.tileLayer(tilesUrl,{
+	maxZoom: 18,
+	attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+	'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, '	
+	});
+
+	map.addLayer(tilesLayer);
+
+}
 
 
-
-
-
-
+function mapbox_map()
+{
+	var tilesUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw'
 	tilesLayer = L.tileLayer(tilesUrl,{
 	maxZoom: 18,
 	attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
@@ -45,6 +58,15 @@ var map = L.map('map-container', {
 
 	map.addLayer(tilesLayer);
 
+}
+
+ mapbox_map()
+
+
+
+////////////////////
+////GEOLOCATION/////
+///////////////////
 
 
 
@@ -78,12 +100,7 @@ var map = L.map('map-container', {
 
 	function onLocationError(e) 
 	{
-	$('div#message div').text("position not found");
-	setTimeout(function() 
-		{
-			$('div#location').css("display","none");
-			$('div#message div').text("");
-		}, 4000);
+		$('div#message div').text("position not found");
 	}
 
 	map.on('locationfound', onLocationFound);
@@ -97,15 +114,18 @@ var map = L.map('map-container', {
 
 
 
-//finder 
+//////////////////////////////////
+////LOAD GEOSON & SWITCH MAPS/////
+//////////////////////////////////
 
 
 
-function startFinder(search_string,MapOrTrack)
-{
+function startFinder(search_string)
+{					
+	finderNav_tabindex = -1;
 	$("div#custom-map-track").empty();
 	windowOpen = true;
-	map_or_track = MapOrTrack;
+	
 	i = 0;
 	//get file list
 	var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
@@ -118,21 +138,22 @@ function startFinder(search_string,MapOrTrack)
 
 	finder.on("searchComplete", function (needle, filematchcount) 
 	{
-	if(filematchcount == 0)
-	{
-		$('div#finder-error').css('display','block')
-		$('div#finder-error').text('no file found')
-		setTimeout(function() 
+		if(filematchcount == 0)
 		{
-			$('div#finder-error').css("display","none");
-		}, 4000);
-	}
+			$('div#finder-error').css('display','block')
+			$('div#finder-error').text('no file found')
+			setTimeout(function() 
+			{
+				$('div#finder-error').css("display","none");
+			}, 4000);
+		}
 
+			
 		if(filematchcount > 0)
-	{
-		$('div#finder').css('display','block')
-		$('div#finder').find('div.items[tabindex=0]').focus();
-	}
+		{
+			$('div#finder').css('display','block')
+			$('div#finder').find('div.items[tabindex=0]').focus();
+		}
 
 
 	});
@@ -144,8 +165,9 @@ function startFinder(search_string,MapOrTrack)
 		finderNav_tabindex++;
 		if(finderNav_tabindex == 0)
 		{
-		$("div#custom-map-track").append('<div class="items" tabindex="'+finderNav_tabindex+'">Toner</div>');
-			finderNav_tabindex = 1;
+		$("div#custom-map-track").append('<div class="items" tabindex="0">Toner</div>');
+		$("div#custom-map-track").append('<div class="items" tabindex="1">Mapbox</div>');
+			finderNav_tabindex = 2;
 		}
 		$("div#custom-map-track").append('<div class="items" tabindex="'+finderNav_tabindex+'">'+fileinfo.name+'</div>');
 		$('div#finder').find('div.items[tabindex=0]').focus();
@@ -153,101 +175,108 @@ function startFinder(search_string,MapOrTrack)
 
 	});
 
-	
-
 
 }
-
 
 
 
 
 function addGeoJson()
 {
-if ($(".items").is(":focus")) {
-
-
-	var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
-	finder.search($(document.activeElement).text());
-	
-
-	finder.on("fileFound", function (file, fileinfo, storageName) 
+	if ($(".items").is(":focus")) 
 	{
-	//file reader
-
-	var mygpx="";
-	var reader = new FileReader();
-
-
-
-
-	reader.onerror = function(event) 
-	{
-		alert('shit happens')
-		reader.abort();
-	};
-
-
-	reader.onload = function(event) 
-	{
-
-	};
-
-	reader.onloadend = function (event) 
-	{
-
-		if(myLayer)
+		//switch online maps
+		var item_value = $(document.activeElement).text();
+		if(item_value == "Toner" || item_value =="Mapbox")
 		{
-			L.removeLayer(myLayer) 
+			if(item_value == "Toner")
+			{
+				map.removeLayer(tilesLayer);
+				toner_map();
+				$('div#finder').css('display','none');
+				windowOpen = false;
+			}
+			if(item_value == "Mapbox")
+			{
+				map.removeLayer(tilesLayer);
+				mapbox_map();
+				$('div#finder').css('display','none');
+				windowOpen = false;
+			}
+
 		}
-		if(map_or_track == "Track")
+
+		//add geoJson data
+		else
 		{
-			mygpx = event.target.result
-			var myLayer = L.geoJSON().addTo(map);
-			myLayer.addData(JSON.parse(mygpx));
-			map.setZoom(12);
+
+
+			var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
+			finder.search($(document.activeElement).text());
+
+
 			
 
+			finder.on("fileFound", function (file, fileinfo, storageName) 
+			{
+				//file reader
 
+				var mygpx="";
+				var reader = new FileReader();
+
+
+
+
+				reader.onerror = function(event) 
+				{
+					alert('shit happens')
+					reader.abort();
+				};
+
+
+
+
+				reader.onloadend = function (event) 
+				{
+
+					if(myLayer)
+					{
+						L.removeLayer(myLayer) 
+					}
+
+
+
+						$('div#finder div#question').css('opacity','1');
+						mygpx = event.target.result
+						var myLayer = L.geoJSON().addTo(map);
+						myLayer.addData(JSON.parse(mygpx));
+						map.setZoom(12);
+					
+						
+
+				};
+
+
+				reader.readAsText(file)
+
+			
+			
+			});
 		}
 
-		if(map_or_track == "Map")
-		{
-			mygpx = event.target.result
-			var myMap = L.geoJSON().addTo(map);
-			myMap.addData(JSON.parse(mygpx));
-			map.removeLayer(tilesLayer);
-			map.setZoom(1);
 
-		}
-		
-		
-	};
-
-
-	reader.readAsText(file)
-	finderNav_tabindex = -1;
-
-	$('div#finder').css('display','none');
-	windowOpen = false;
-	
-	});
-
-
-
+	}
 
 }
 
-}
 
 
 
 
 
-
-/*
-SEARCH
-*/
+//////////////////////////
+////SEARCH BOX////////////
+/////////////////////////
 
   
   function formatJSON(rawjson) {  
@@ -300,61 +329,7 @@ searchControl.on('search:locationfound', function(e) {
 	$('.leaflet-control-search').css('display','none');
 })
 
-map.addControl( searchControl );
-
-
-
-
-
-
-
-
-
-function updateMarker(option)
-{
-  function getLocation() {
-
-    if (navigator.geolocation) 
-    {
-      navigator.geolocation.getCurrentPosition(showPosition);
-    } 
-
-    else 
-    {
-      alert("New Position not found.")}
-    }
-    
-    function showPosition(position) 
-    {
-
-		myMarker.setLatLng([position.coords.latitude, position.coords.longitude]).update();
-		map.flyTo( new L.LatLng(position.coords.latitude, position.coords.longitude),16);
-		zoom_level = 16
-		zoom_speed()
-
-		current_lng = position.coords.longitude;
-		current_lat = position.coords.latitude;
-		altitude = position.coords.altitude;
-
-		$('div#location div#lat').text(current_lat);
-		$('div#location div#lng').text(current_lng);
-		$('div#location div#altitude').text(altitude);
-
-		if(option == true)
-		{
-
-				$('div#location').css('display','block')
-				windowOpen = true;
-		}
-	}
-
-	getLocation();
-
-
-}
-
-
-
+map.addControl(searchControl);
 
 
 $('.leaflet-control-search').css('display','none')
@@ -377,6 +352,65 @@ function showSearch()
 
 
 
+
+//////////////////////////
+////MARKER UPDATE/////////
+/////////////////////////
+
+
+function updateMarker(option)
+{
+  function getLocation() {
+
+    if (navigator.geolocation) 
+    {
+      navigator.geolocation.getCurrentPosition(showPosition);
+    } 
+
+    else 
+    {
+      alert("New Position not found.")}
+    }
+    
+    function showPosition(position) 
+    {
+		if(option == true)
+		{
+			$('div#location').css('display','block')
+			windowOpen = true;
+		}
+
+		myMarker.setLatLng([position.coords.latitude, position.coords.longitude]).update();
+		map.flyTo( new L.LatLng(position.coords.latitude, position.coords.longitude),16);
+		zoom_level = 16
+		zoom_speed()
+
+		current_lng = position.coords.longitude;
+		current_lat = position.coords.latitude;
+		altitude = position.coords.altitude;
+
+		$('div#location div#lat').text(current_lat);
+		$('div#location div#lng').text(current_lng);
+		$('div#location div#altitude').text(altitude);
+
+
+	}
+
+	getLocation();
+
+
+}
+
+
+
+
+
+////////////////////////
+////MAN PAGE////////////
+////////////////////////
+
+
+
 function showMan()
 {
 
@@ -393,7 +427,6 @@ function closeWindow()
 
 	$('div#finder').css('display','none')
 	windowOpen = false;
-	$("div#custom-map-track").empty();
 
 
 	$('div#man-page').css('display','none')
@@ -402,6 +435,8 @@ function closeWindow()
 
 	$('div#location').css('display','none')
 	windowOpen = false;
+
+
 
 
 
@@ -455,6 +490,29 @@ function zoom_speed()
     }
 
     return step;
+}
+
+
+function unload_map(trueFalse)
+{
+	if(windowOpen == true)
+	{
+
+		if(trueFalse == true)
+		{
+			map.removeLayer(tilesLayer);
+			$('div#finder').css('display','none');
+			$('div#finder div#question').css('opacity','0');
+			windowOpen = false;
+		}
+
+		if(trueFalse == false)
+		{
+			$('div#finder').css('display','none');
+			$('div#finder div#question').css('opacity','0');
+			windowOpen = false;
+		}
+	}
 }
 
 
@@ -534,7 +592,10 @@ var items = document.querySelectorAll('.items');
 
 
 
-//KEYPAD TRIGGER
+//////////////////////////
+////KEYPAD TRIGGER////////////
+/////////////////////////
+
 
 
 function handleKeyDown(evt) {
@@ -545,10 +606,14 @@ function handleKeyDown(evt) {
 		case 'SoftLeft':
 			ZoomMap("in");
 			closeWindow();
+			unload_map(false);
+			
 		break;
 
 		case 'SoftRight':
 			ZoomMap("out");
+			unload_map(true);
+			
         break;
 
         case 'Enter':
@@ -570,11 +635,11 @@ function handleKeyDown(evt) {
         break;
 
         case '3':
-        	startFinder(".json","Track");
+        	startFinder(".json");
         break; 
 
         case '4':
-        	startFinder(".json","Map");	
+        	
         break;
 
         case '5':
@@ -609,6 +674,9 @@ function handleKeyDown(evt) {
 document.addEventListener('keydown', handleKeyDown);
 
 
+//////////////////////////
+////BUG OUTPUT////////////
+/////////////////////////
 
 
 $(window).on("error", function(evt) {
