@@ -194,12 +194,14 @@ function addGeoJson()
 				map.removeLayer(tilesLayer);
 				toner_map();
 				$('div#finder').css('display','none');
+				windowOpen = false;
 			}
 			if(item_value == "Mapbox")
 			{
 				map.removeLayer(tilesLayer);
 				mapbox_map();
 				$('div#finder').css('display','none');
+				windowOpen = false;
 			}
 
 		}
@@ -493,18 +495,23 @@ function zoom_speed()
 
 function unload_map(trueFalse)
 {
-	if(trueFalse == true)
+	if(windowOpen == true)
 	{
-		map.removeLayer(tilesLayer);
-		$('div#finder').css('display','none');
-		$('div#finder div#question').css('opacity','0');
-		alert("hide map")
-	}
 
-	if(trueFalse == false)
-	{
-		$('div#finder').css('display','none');
-		$('div#finder div#question').css('opacity','0');
+		if(trueFalse == true)
+		{
+			map.removeLayer(tilesLayer);
+			$('div#finder').css('display','none');
+			$('div#finder div#question').css('opacity','0');
+			windowOpen = false;
+		}
+
+		if(trueFalse == false)
+		{
+			$('div#finder').css('display','none');
+			$('div#finder div#question').css('opacity','0');
+			windowOpen = false;
+		}
 	}
 }
 
