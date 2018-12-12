@@ -256,11 +256,9 @@ function addGeoJson()
 						    console.log(JSON.parse(mygpx));
 						} catch (e) {
 						    if (e instanceof SyntaxError) {
-						        //alert(e, true);
 						        alert("Json file is not valid");
 						        return;
 						    } else {
-						        //alert(e, false);
 						        alert("okay")
 
 						    }
@@ -331,7 +329,7 @@ function addGeoJson()
     tipAutoSubmit: true,
     autoCollapse: true,
     collapsed: false,
-    autoCollapseTime: 10000,
+    autoCollapseTime: 1000,
     delayType: 800, //with mobile device typing is more slow
     marker: {
       icon: true
@@ -349,8 +347,8 @@ searchControl.on('search:locationfound', function(e) {
 	current_lng = curPos.lng;
 	current_lat = curPos.lat;
 
-		$('div#location div#lat').text(current_lat);
-		$('div#location div#lng').text(current_lng);
+	$('div#location div#lat').text(current_lat);
+	$('div#location div#lng').text(current_lng);
 	$('.leaflet-control-search').css('display','none');
 })
 
@@ -367,13 +365,17 @@ function showSearch()
 	{
 		$('.leaflet-control-search').css('display','block');
 		$('.leaflet-control-search').find("input").focus();
+		setTimeout(function() {
+			$('.leaflet-control-search').find("input").val("");
+		}, 1000);
 	}
 	else
 	{
 	  $('.leaflet-control-search').css('display','none');
+	  $('.leaflet-control-search').find("input").val("");
+
 	}
 }
-
 
 
 
