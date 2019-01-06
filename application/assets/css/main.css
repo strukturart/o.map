@@ -186,6 +186,36 @@ div#finder div#question div#question-text
 	
 }
 
+/*///////////////////////////
+///SEARCH////////////////*/
+
+
+div#search
+{
+  display:none;
+  position:absolute;
+  z-index:1000;
+  top:0;
+  background:none;
+  padding:0px;
+}
+
+
+div#search div#close
+{
+	background:black;
+	color:white;
+	font-size:14px;
+	padding:3px;
+	position:absolute;
+	bottom:0px;
+	left:0px;
+	min-width:60px;
+}
+
+
+
+
 
 /*///////////////////////////
 ///MAN-PAGE////////////////*/
@@ -262,7 +292,20 @@ div#location div#close
 	position:absolute;
 	bottom:5px;
 	left:5px;
-	min-width:100vw;
+	min-width:100px;
+}
+
+div#location div#share
+{
+	background:black;
+	color:white;
+	font-size:14px;
+	padding:3px;
+	position:absolute;
+	bottom:5px;
+	right:10px;
+	text-align: right;
+	min-width:70px;
 }
 
 div#location div#lat

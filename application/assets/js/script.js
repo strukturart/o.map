@@ -15,6 +15,7 @@ var finderNav_tabindex = -1;
 var i = 0;
 var map_or_track;
 var windowOpen = false;
+var message_body = "";
 
 
 
@@ -59,7 +60,7 @@ function mapbox_map()
 
 }
 
- mapbox_map()
+toner_map()
 
 
 
@@ -271,11 +272,7 @@ function addGeoJson()
 								var myLayer = L.geoJSON().addTo(map);
 								myLayer.addData(JSON.parse(mygpx));
 								map.setZoom(12);
-
-
-
-					
-						
+		
 
 				};
 
@@ -350,6 +347,8 @@ searchControl.on('search:locationfound', function(e) {
 	$('div#location div#lat').text(current_lat);
 	$('div#location div#lng').text(current_lng);
 	$('.leaflet-control-search').css('display','none');
+	$('div#search').css('display','none');
+
 })
 
 map.addControl(searchControl);
@@ -368,6 +367,8 @@ function showSearch()
 		setTimeout(function() {
 			$('.leaflet-control-search').find("input").val("");
 		}, 1000);
+		$('div#search').css('display','block');
+
 	}
 	else
 	{
@@ -377,6 +378,20 @@ function showSearch()
 	}
 }
 
+
+function killSearch()
+{
+
+	if($('.leaflet-control-search').css('display')=='block')
+	{
+		$('div#search').css('display','none');
+		$('.leaflet-control-search').css('display','none');
+		$('.leaflet-control-search').find("input").val("");
+		$('.leaflet-control-search').find("input").blur();
+		windowOpen = false;
+	}
+
+}
 
 
 
@@ -420,6 +435,7 @@ function updateMarker(option)
 		$('div#location div#lng').text(current_lng);
 		$('div#location div#altitude').text(altitude);
 
+		message_body = "My position: "+"https://www.openstreetmap.org/?mlat="+current_lat+"&mlon="+current_lng+"&zoom=14#map=14/"+current_lat+"/"+current_lng;
 
 	}
 
@@ -427,6 +443,23 @@ function updateMarker(option)
 
 
 }
+
+function send_sms()
+{
+	if($('div#location').css('display') == 'block')
+	{
+            var sms = new MozActivity({
+                name: "new",
+                data: {
+                    type: "websms/sms",
+                    number: "",
+                    body: ".."+ message_body
+                }
+            });
+        }
+        }
+    
+
 
 
 
@@ -631,15 +664,19 @@ function handleKeyDown(evt) {
 		switch (evt.key) {
 
 		case 'SoftLeft':
+			killSearch();
 			ZoomMap("in");
 			unload_map(false);
 			closeWindow();
+			
+
 			
 		break;
 
 		case 'SoftRight':
 			ZoomMap("out");
 			unload_map(true);
+			send_sms();
 			
         break;
 
