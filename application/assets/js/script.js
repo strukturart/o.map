@@ -60,14 +60,129 @@ function mapbox_map()
 
 }
 
-toner_map()
+mapbox_map()
 
 
 
 ////////////////////
 ////GEOLOCATION/////
 ///////////////////
+//////////////////////////
+////MARKER SET AND UPDATE/////////
+/////////////////////////
 
+
+function updateMarker(option)
+{
+  function getLocation() 
+  {
+
+		if (navigator.geolocation) 
+		{
+			var timeoutVal = 10 * 1000 * 1000;
+			navigator.geolocation.getCurrentPosition
+			(
+				displayPosition, 
+				displayError,
+				{ enableHighAccuracy: true, timeout: timeoutVal, maximumAge: 0 }
+			);
+		}
+
+		else 
+		{
+		  alert("Geolocation is not supported by this browser");
+		}
+
+	}
+
+
+
+    function displayPosition(position) 
+    {
+		if(option == true)
+		{
+			$('div#location').css('display','block')
+			windowOpen = true;
+		}
+
+		if(option == "init")
+		{
+		$('div#message div').text("Welcome");
+		setTimeout(function() 
+		{
+			$('div#message div').text("searching position");
+		},1000);
+
+		current_lng = position.coords.longitude;
+		current_lat = position.coords.latitude;
+		myMarker = L.marker([current_lat,current_lng]).addTo(map);
+		map.setView([position.coords.latitude, position.coords.longitude], 13);
+		zoom_speed();
+		setTimeout(function() 
+			{
+				$('div#location').css('display','none')
+				$('div#message div').text("");
+				$('div#message').css('display', 'none');
+
+			}, 4000);
+		
+		return false;
+
+		}
+
+		myMarker.setLatLng([position.coords.latitude, position.coords.longitude]).update();
+		map.flyTo( new L.LatLng(position.coords.latitude, position.coords.longitude),16);
+		zoom_level = 16
+		zoom_speed()
+
+		current_lng = position.coords.longitude;
+		current_lat = position.coords.latitude;
+		altitude = position.coords.altitude;
+
+		$('div#location div#lat').text(current_lat);
+		$('div#location div#lng').text(current_lng);
+		$('div#location div#altitude').text(altitude);
+
+		message_body = "My position: "+"https://www.openstreetmap.org/?mlat="+current_lat+"&mlon="+current_lng+"&zoom=14#map=14/"+current_lat+"/"+current_lng;
+
+	}
+
+	function displayError(error) 
+	{
+		var errors = { 
+		1: 'Permission denied',
+		2: 'Position unavailable',
+		3: 'Request timeout'
+		};
+  		alert("Error: " + errors[error.code]);
+	}
+
+	getLocation();
+
+
+}
+
+	updateMarker("init")
+
+
+
+function send_sms()
+{
+	if($('div#location').css('display') == 'block')
+	{
+            var sms = new MozActivity({
+                name: "new",
+                data: {
+                    type: "websms/sms",
+                    number: "",
+                    body: ".."+ message_body
+                }
+            });
+        }
+        }
+    
+
+/*
 
 
 
@@ -112,7 +227,7 @@ toner_map()
 	zoom_speed()
 
 
-
+*/
 
 //////////////////////////////////
 ////LOAD GEOSON & SWITCH MAPS/////
@@ -165,8 +280,8 @@ function startFinder(search_string)
 		finderNav_tabindex++;
 		if(finderNav_tabindex == 0)
 		{
-		$("div#custom-map-track").append('<div class="items" tabindex="0">Toner</div>');
-		$("div#custom-map-track").append('<div class="items" tabindex="1">Mapbox</div>');
+		$("div#custom-map-track").append('<div class="items" data-map="toner" tabindex="0">Toner <i>Map</i></div>');
+		$("div#custom-map-track").append('<div class="items" data-map="mapbox" tabindex="1">Mapbox <i>Map</i></div>');
 			finderNav_tabindex = 2;
 		}
 		$("div#custom-map-track").append('<div class="items" tabindex="'+finderNav_tabindex+'">'+fileinfo.name+'</div>');
@@ -186,17 +301,17 @@ function addGeoJson()
 	if ($(".items").is(":focus")) 
 	{
 		//switch online maps
-		var item_value = $(document.activeElement).text();
-		if(item_value == "Toner" || item_value =="Mapbox")
+		var item_value = $(document.activeElement).data('map');
+		if(item_value == "toner" || item_value =="mapbox")
 		{
-			if(item_value == "Toner")
+			if(item_value == "toner")
 			{
 				map.removeLayer(tilesLayer);
 				toner_map();
 				$('div#finder').css('display','none');
 				windowOpen = false;
 			}
-			if(item_value == "Mapbox")
+			if(item_value == "mapbox")
 			{
 				map.removeLayer(tilesLayer);
 				mapbox_map();
@@ -348,6 +463,8 @@ searchControl.on('search:locationfound', function(e) {
 	$('div#location div#lng').text(current_lng);
 	$('.leaflet-control-search').css('display','none');
 	$('div#search').css('display','none');
+	toner_map()
+
 
 })
 
@@ -361,7 +478,8 @@ $('.leaflet-control-search').css('display','none')
 function showSearch()
 {
 	if($('.leaflet-control-search').css('display')=='none')
-	{
+	{	
+		windowOpen = true;
 		$('.leaflet-control-search').css('display','block');
 		$('.leaflet-control-search').find("input").focus();
 		setTimeout(function() {
@@ -394,71 +512,6 @@ function killSearch()
 }
 
 
-
-//////////////////////////
-////MARKER UPDATE/////////
-/////////////////////////
-
-
-function updateMarker(option)
-{
-  function getLocation() {
-
-    if (navigator.geolocation) 
-    {
-      navigator.geolocation.getCurrentPosition(showPosition);
-    } 
-
-    else 
-    {
-      alert("New Position not found.")}
-    }
-    
-    function showPosition(position) 
-    {
-		if(option == true)
-		{
-			$('div#location').css('display','block')
-			windowOpen = true;
-		}
-
-		myMarker.setLatLng([position.coords.latitude, position.coords.longitude]).update();
-		map.flyTo( new L.LatLng(position.coords.latitude, position.coords.longitude),16);
-		zoom_level = 16
-		zoom_speed()
-
-		current_lng = position.coords.longitude;
-		current_lat = position.coords.latitude;
-		altitude = position.coords.altitude;
-
-		$('div#location div#lat').text(current_lat);
-		$('div#location div#lng').text(current_lng);
-		$('div#location div#altitude').text(altitude);
-
-		message_body = "My position: "+"https://www.openstreetmap.org/?mlat="+current_lat+"&mlon="+current_lng+"&zoom=14#map=14/"+current_lat+"/"+current_lng;
-
-	}
-
-	getLocation();
-
-
-}
-
-function send_sms()
-{
-	if($('div#location').css('display') == 'block')
-	{
-            var sms = new MozActivity({
-                name: "new",
-                data: {
-                    type: "websms/sms",
-                    number: "",
-                    body: ".."+ message_body
-                }
-            });
-        }
-        }
-    
 
 
 

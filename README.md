@@ -2,7 +2,6 @@ This is an Open Street Map app for the Nokia 88104G - [KaiOS](https://www.kaiost
 
 ### TODO
 + add weatheApi for rain/snow radar
-+ search box remove 2, close with keypad
 + design + icons
 
 
