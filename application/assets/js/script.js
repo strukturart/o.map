@@ -70,6 +70,11 @@ mapbox_map()
 //////////////////////////
 ////MARKER SET AND UPDATE/////////
 /////////////////////////
+$('div#message div').text("Welcome");
+setTimeout(function() 
+		{
+			$('div#message div').text("Searching position");
+		},3000);
 
 
 function updateMarker(option)
@@ -107,25 +112,25 @@ function updateMarker(option)
 
 		if(option == "init")
 		{
-		$('div#message div').text("Welcome");
-		setTimeout(function() 
-		{
-			$('div#message div').text("searching position");
-		},1000);
+		
+		
 
 		current_lng = position.coords.longitude;
 		current_lat = position.coords.latitude;
 		myMarker = L.marker([current_lat,current_lng]).addTo(map);
 		map.setView([position.coords.latitude, position.coords.longitude], 13);
 		zoom_speed();
+
+
 		setTimeout(function() 
-			{
+		{
 				$('div#location').css('display','none')
 				$('div#message div').text("");
 				$('div#message').css('display', 'none');
+		},4000);
 
-			}, 4000);
-		
+			
+
 		return false;
 
 		}
@@ -149,12 +154,15 @@ function updateMarker(option)
 
 	function displayError(error) 
 	{
+
 		var errors = { 
 		1: 'Permission denied',
 		2: 'Position unavailable',
 		3: 'Request timeout'
 		};
-  		alert("Error: " + errors[error.code]);
+  		//alert("Error: " + errors[error.code]);
+  		$('div#message div').text(errors[error.code]);
+  		getLocation() 
 	}
 
 	getLocation();
