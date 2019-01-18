@@ -5,7 +5,8 @@
 var step = 0.001;
 var current_lng = 0;
 var current_lat = 0;
-var zoom_level = 16;
+var zoom_level = 18;
+var current_zoom_level = 18;
 var altitude = "not found";
 var new_lat = 0;
 var new_lng = 0;
@@ -137,7 +138,6 @@ function updateMarker(option)
 
 		myMarker.setLatLng([position.coords.latitude, position.coords.longitude]).update();
 		map.flyTo( new L.LatLng(position.coords.latitude, position.coords.longitude),16);
-		zoom_level = 16
 		zoom_speed()
 
 		current_lng = position.coords.longitude;
@@ -190,52 +190,6 @@ function send_sms()
         }
     
 
-/*
-
-
-
-	
-	$('div#message div').text("searching position");
-	function onLocationFound(e)
-	{
-		//var radius = e.accuracy / 2;
-		myMarker = L.marker(e.latlng).addTo(map);
-		//L.circle(e.latlng, radius).addTo(map);
-
-
-		curPos = e.latlng;
-
-		current_lng = curPos.lng;
-		current_lat = curPos.lat;
-
-		$('div#location').css('display', 'none');
-		$('div#location div#lat').text(current_lat);
-		$('div#location div#lng').text(current_lng);
-		$('div#message div').text("");
-		$('div#message').css('display', 'none');
-
-
-
-
-  }
-
-
-
-	function onLocationError(e) 
-	{
-		$('div#message div').text("position not found");
-	}
-
-	map.on('locationfound', onLocationFound);
-	map.on('locationerror', onLocationError);
-
-	map.locate({setView: true, maxZoom: 16});
-
-	zoom_level = 16
-	zoom_speed()
-
-
-*/
 
 //////////////////////////////////
 ////LOAD GEOSON & SWITCH MAPS/////
@@ -565,21 +519,22 @@ function closeWindow()
 
 function ZoomMap(in_out)
 {
+	var current_zoom_level = map.getZoom();
 	if(windowOpen == false)
 	{
 		if(in_out == "in")
-		{
-			map.setZoom(map.getZoom() + 1);
-			zoom_level = map.getZoom();
-			zoom_speed();
+		{ current_zoom_level = current_zoom_level + 1
+			map.setZoom(current_zoom_level);
 		}
 
 		if(in_out == "out")
-		{
-			map.setZoom(map.getZoom() - 1);
-			zoom_level = map.getZoom();
-			zoom_speed();
+		{current_zoom_level = current_zoom_level - 1
+			map.setZoom(current_zoom_level);
 		}
+		
+		zoom_level = current_zoom_level;
+		zoom_speed();
+
 	}
 
 }
@@ -592,7 +547,7 @@ function zoom_speed()
 	if(zoom_level < 6)
     {
     step = 1;
-    document.getElementById("zoom-level").innerHTML = zoom_level+step;
+    
     
     }
 
@@ -600,15 +555,17 @@ function zoom_speed()
       if(zoom_level > 6)
     {
     step = 0.1;
-    document.getElementById("zoom-level").innerHTML = zoom_level+step;
     }
 
 
-    if(zoom_level > 12)
+    if(zoom_level > 11)
     {
     step = 0.001;
-    document.getElementById("zoom-level").innerHTML = zoom_level+step;
     }
+
+
+    document.getElementById("zoom-level").innerHTML = "level "+zoom_level+" step "+step;
+
 
     return step;
 }

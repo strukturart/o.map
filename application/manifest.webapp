@@ -10,10 +10,8 @@
 
 
   "icons": {
-    "16": "/icons/icon16x16.png",
-    "48": "/icons/icon48x48.png",
-    "60": "/icons/icon60x60.png",
-    "128": "/icons/icon128x128.png"
+    "56": "/icons/icon-56-56.png",
+    "112": "/icons/icon-112-112.png"
   },
 	
   "developer": {
