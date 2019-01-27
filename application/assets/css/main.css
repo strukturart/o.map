@@ -333,6 +333,53 @@ div#location div#altitude
 }
 
 
+div#location div#weather
+{
+	margin:10px 0 0 0;
+}
+
+div#location div#temp
+{
+	font-size:1.7rem;
+}
+
+
+div#location div#weather div#weather-bar
+{
+}
+
+div#location div#weather div#weather-bar div#icon
+{
+	margin:8px 0 0 0;
+}
+
+
+div#location div#weather div#wind-dir
+{
+	font-size:1.7rem;
+	max-height:1.7rem!Important;
+}
+
+div#location div#weather div#wind-speed
+{
+	font-size:0.7rem;
+	max-height:1.7rem!Important;
+	margin:-10px 0 0 0;
+}
+
+
+
+div#location div#weather div#wind-speed div#wind-speed-val
+{
+	max-height:0.7rem;
+
+}
+
+div#location div#weather div#wind-speed div#wind-speed-unit
+{
+	max-height:0.7rem;
+}
+
 
 
 

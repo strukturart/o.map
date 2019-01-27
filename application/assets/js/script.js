@@ -17,8 +17,53 @@ var i = 0;
 var map_or_track;
 var windowOpen = false;
 var message_body = "";
+var openweather_api = "";
 
 
+//get Openweather Api Key
+var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
+	finder.search("openweather.json");
+
+	finder.on("fileFound", function (file, fileinfo, storageName) 
+	{
+		//file reader
+
+		var apiKey="";
+		var reader = new FileReader();
+
+		reader.onerror = function(event) 
+				{
+					alert('shit happens')
+					reader.abort();
+				};
+
+				reader.onloadend = function (event) 
+				{
+
+						apiKey = event.target.result
+						
+						//check if json valid
+						var printError = function(error, explicit) {
+						console.log("[${explicit ? 'EXPLICIT' : 'INEXPLICIT'}] ${error.name}: ${error.message}");
+						}
+
+						try {
+						   
+						} catch (e) {
+						    if (e instanceof SyntaxError) {
+						        alert("Json file is not valid");
+						        return;
+						    } else {
+						        
+						    }
+
+						}
+								var data = JSON.parse(apiKey);
+								openweather_api  = data.api_key;
+				};
+				reader.readAsText(file)
+			});
+		
 
 
 //leaflet add basic map
@@ -144,9 +189,67 @@ function updateMarker(option)
 		current_lat = position.coords.latitude;
 		altitude = position.coords.altitude;
 
-		$('div#location div#lat').text(current_lat);
-		$('div#location div#lng').text(current_lng);
-		$('div#location div#altitude').text(altitude);
+		$('div#location div#lat').text("Lat "+current_lat.toFixed(5));
+		$('div#location div#lng').text("Lng "+current_lng.toFixed(5));
+		$('div#location div#altitude').text("alt "+altitude.toFixed(5));
+
+
+if(openweather_api != "")
+{
+	var hello =$.getJSON( "https://api.openweathermap.org/data/2.5/forecast?lat="+current_lat+"&lon="+current_lng+"&units=metric&APPID="+openweather_api, function(data) {
+	// Success
+	}).done( function(data) {
+
+	
+		var degree = data.list[0].wind.deg;
+		var wind_dir = "";
+
+				switch (true)
+				{
+				    case (degree>337.5):
+				      wind_dir = 'N';
+				      break;
+				    case (degree>292.5):
+				      wind_dir = 'N';
+				      break; 
+				   case (degree>247.5):
+				      wind_dir = 'W';
+				      break; 
+				   case (degree>202.5):
+				      wind_dir = 'SW';
+				      break; 
+				   case (degree>157.5):
+				      wind_dir = 'S';
+				      break; 
+				   case (degree>122.5):
+				      wind_dir = 'SE';
+				      break; 
+				   case (degree>67.5):
+				      wind_dir = 'E';
+				      break; 
+				   case (degree>22.5):
+				      wind_dir = 'NE';
+				      
+				}
+
+				$('div#location div#temp').text(data.list[0].main.temp+"°");
+				//$('div#location div#clouds').text("clouds "+data.list[0].clouds.all+"%");
+				$('div#location div#wind div#wind-speed div#wind-speed-val').text(data.list[0].wind.speed);
+				$('div#location div#wind div#wind-dir').text(wind_dir);
+
+				$('div#location div#pressure div#pressure-val').text(data.list[0].main.pressure);
+
+				//$('div#location div#forecast-time').text(data.list[0].dt_txt);
+				$("div#location div#icon img").attr("src","https://openweathermap.org/img/w/"+data.list[0].weather[0].icon+".png");
+
+
+	}).fail( function() {
+	   alert("error api access")
+	}).always( function() {
+	  // Complete
+	});
+}
+
 
 		message_body = "My position: "+"https://www.openstreetmap.org/?mlat="+current_lat+"&mlon="+current_lng+"&zoom=14#map=14/"+current_lat+"/"+current_lng;
 

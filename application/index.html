@@ -4,7 +4,7 @@
 <head>
 	
 	<title>OSM-Map</title>
-	<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://nominatim.openstreetmap.org https://api.tiles.mapbox.com/">
+	<meta http-equiv="Content-Security-Policy" content="default-src 'self'  https://nominatim.openstreetmap.org https://api.tiles.mapbox.com/ https://api.openweathermap.org/ https://openweathermap.org/">
 
 
 
@@ -36,10 +36,40 @@
 		<div id="lat"></div>
 		<div id="lng"></div>
 		<div id="altitude"></div>
+		<div id="weather">
+			<div class="flex text-center"><strong>Forecast next 3h</strong></div>
+			
+			<div id="clouds"></div>
+			
+		
+
+			<div id="forecast-time"></div>
+			<div id="weather-bar" class="flex align-item-center justify-content-spacearound">
+				<div id="icon"><img src=""></div>
+				<div id="temp"></div>
+			</div>
+
+			<div id="weather-bar" class="flex align-item-center justify-content-spacearound">
+				<div id="wind" class="flex align-item-center">
+					<div id="wind-dir"></div>
+					<div id="wind-speed">
+						<div id="wind-speed-val"></div>
+						<div id="wind-speed-unit">m/sec</div>
+					</div>
+				</div>
+
+
+				<div id="pressure">
+					<div id="pressure-val"></div>
+					<div id="pressure-unit">hpa</div>
+				</div>
+			</div>
+			
+		</div>
 	</div>
 	<div class="flex width-100 justify-content-spacebetween">
 		<div id="close">close</div>
-		<div id="share">share</div>
+		<div id="share">share position</div>
 	</div>
 </div>
 
@@ -92,6 +122,8 @@
 </html>
 
 	<script defer src="assets/js/jQuery-3.1.0.js"></script>
+		<script defer src="assets/js/moments.min.js"></script>
+
 	<script defer src="assets/js/applait.finder.min.js"></script>
 
 	<script defer src="assets/leaflet/leaflet.js" ></script>
@@ -99,5 +131,6 @@
 
  
 	<script defer src="assets/js/script.js"></script>
+
 	<script defer src="assets/js/tile.stamen.1.3.0.js"></script>
 

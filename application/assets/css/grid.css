@@ -654,6 +654,12 @@
 }
 
 
+.text-center
+{
+  text-align:center;
+}
+
+
 
 .flex
 {
@@ -747,7 +753,7 @@
 
 .width-100
 {
-  min-width:100vw;
+  min-width:98vw;
 }
 
 .height-100

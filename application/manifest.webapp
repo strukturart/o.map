@@ -6,7 +6,7 @@
   "type": "certified",
 
 
-"csp": "default-src *; script-src 'self'  https://nominatim.openstreetmap.org https://api.tiles.mapbox.com; object-src 'none'; style-src 'self' ",
+
 
 
   "icons": {
