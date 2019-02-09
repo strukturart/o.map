@@ -20,6 +20,9 @@ var message_body = "";
 var openweather_api = "";
 
 
+
+$("div#window-status").text(windowOpen);
+
 //get Openweather Api Key
 var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
 	finder.search("openweather.json");
@@ -231,16 +234,25 @@ if(openweather_api != "")
 				      wind_dir = 'NE';
 				      
 				}
+//forecast 3h
+				$('div#location section#forecast-3 div#temp').text(data.list[0].main.temp+"°");
+				$('div#location section#forecast-3 div#wind div#wind-speed div#wind-speed-val').text(data.list[0].wind.speed);
+				$('div#location section#forecast-3 div#wind div#wind-dir').text(wind_dir);
+				$('div#location section#forecast-3 div#pressure div#pressure-val').text(data.list[0].main.pressure);
+				$('div#location section#forecast-3 div.title div#forecast-time').text(data.list[0].dt_txt);
+				$("div#location section#forecast-3 div#icon img").attr("src","https://openweathermap.org/img/w/"+data.list[0].weather[0].icon+".png");
 
-				$('div#location div#temp').text(data.list[0].main.temp+"°");
-				//$('div#location div#clouds').text("clouds "+data.list[0].clouds.all+"%");
-				$('div#location div#wind div#wind-speed div#wind-speed-val').text(data.list[0].wind.speed);
-				$('div#location div#wind div#wind-dir').text(wind_dir);
 
-				$('div#location div#pressure div#pressure-val').text(data.list[0].main.pressure);
+//forecast 6h
+				$('div#location section#forecast-6 div#temp').text(data.list[1].main.temp+"°");
+				$('div#location section#forecast-6 div#wind div#wind-speed div#wind-speed-val').text(data.list[1].wind.speed);
+				$('div#location section#forecast-6 div#wind div#wind-dir').text(wind_dir);
+				$('div#location section#forecast-6 div#pressure div#pressure-val').text(data.list[1].main.pressure);
+				$('div#location section#forecast-6 div.title div#forecast-time').text(data.list[1].dt_txt);
+				$("div#location section#forecast-6 div#icon img").attr("src","https://openweathermap.org/img/w/"+data.list[1].weather[0].icon+".png");
 
-				//$('div#location div#forecast-time').text(data.list[0].dt_txt);
-				$("div#location div#icon img").attr("src","https://openweathermap.org/img/w/"+data.list[0].weather[0].icon+".png");
+
+
 
 
 	}).fail( function() {
@@ -294,6 +306,8 @@ function send_sms()
     
 
 
+
+
 //////////////////////////////////
 ////LOAD GEOSON & SWITCH MAPS/////
 //////////////////////////////////
@@ -313,7 +327,6 @@ function startFinder(search_string)
 
 	finder.on("searchBegin", function (needle) 
 	{
-		alert("search startet")
 	});
 
 	finder.on("searchComplete", function (needle, filematchcount) 
@@ -447,7 +460,7 @@ function addGeoJson()
 
 						}
 
-												    	//if valid add layer
+								//if valid add layer
 								$('div#finder div#question').css('opacity','1');
 								var myLayer = L.geoJSON().addTo(map);
 								myLayer.addData(JSON.parse(mygpx));
@@ -528,7 +541,7 @@ searchControl.on('search:locationfound', function(e) {
 	$('div#location div#lng').text(current_lng);
 	$('.leaflet-control-search').css('display','none');
 	$('div#search').css('display','none');
-	toner_map()
+	
 
 
 })
@@ -545,6 +558,8 @@ function showSearch()
 	if($('.leaflet-control-search').css('display')=='none')
 	{	
 		windowOpen = true;
+		$("div#window-status").text(windowOpen);
+
 		$('.leaflet-control-search').css('display','block');
 		$('.leaflet-control-search').find("input").focus();
 		setTimeout(function() {
@@ -571,7 +586,8 @@ function killSearch()
 		$('.leaflet-control-search').css('display','none');
 		$('.leaflet-control-search').find("input").val("");
 		$('.leaflet-control-search').find("input").blur();
-		windowOpen = false;
+		//windowOpen = false;
+		alert(windowOpen)
 	}
 
 }
@@ -622,6 +638,7 @@ function closeWindow()
 
 function ZoomMap(in_out)
 {
+	$("div#window-status").text(windowOpen);
 	var current_zoom_level = map.getZoom();
 	if(windowOpen == false)
 	{
@@ -676,7 +693,7 @@ function zoom_speed()
 
 function unload_map(trueFalse)
 {
-	if(windowOpen == true)
+	if($("div#finder").css('display')=='block')
 	{
 
 		if(trueFalse == true)
@@ -699,7 +716,7 @@ function unload_map(trueFalse)
 
 function MovemMap(direction)
 {
-	if(windowOpen == false)
+	if(windowOpen != true)
 	{
 		if(direction == "left")
 		{
@@ -789,9 +806,6 @@ function handleKeyDown(evt) {
 			ZoomMap("in");
 			unload_map(false);
 			closeWindow();
-			
-
-			
 		break;
 
 		case 'SoftRight':

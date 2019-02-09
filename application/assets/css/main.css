@@ -22,9 +22,10 @@
 
 *::-webkit-scrollbar 
 {
-	width: 0 !important;
+	width: 0!important;
+	background-color:transparent!Important;
+	display:none!Important;
 }
-
 
 
 html,body
@@ -40,7 +41,6 @@ html,body
 	-webkit-appearance: none;
 	height: 100%;
 	margin: 0;
-
 }
 
 
@@ -95,6 +95,18 @@ div#zoom-level
 	color:white;
 	font-size: 16px;
 	display:none;
+}
+
+div#window-status
+{
+	position:fixed;
+	top:10px;
+	left:5px;
+	background:black;
+	color:white;
+	z-index: 1000;
+	display:none;
+
 }
 
 
@@ -230,7 +242,9 @@ div#man-page
   background:black;
   color:white;
   font-size: 12px;
-  padding:5px;
+  padding:5px 5px 50px 5px;
+  overflow-y:hidden; 
+  overflow-x:scroll;
 }
 
 div#man-page h1
@@ -238,7 +252,14 @@ div#man-page h1
   font-weight: 800;
   margin:0 0 10px 0;
   font-size:14px;
+  color:blue;
 
+}
+
+div#man-page h2
+{
+  color:blue;
+  font-size:12px;
 }
 
 div#man-page li div
@@ -247,10 +268,6 @@ div#man-page li div
 
 }
 
-div#man-page div#inner
-{
-	max-height:200px;
-}
 
 div#man-page div#close
 {
@@ -258,7 +275,7 @@ div#man-page div#close
 	color:white;
 	font-size:14px;
 	padding:3px;
-	position:absolute;
+	position:fixed;
 	bottom:5px;
 	left:5px;
 	min-width:100vw;
@@ -280,30 +297,36 @@ div#location
   background:black;
   color:white;
   font-size: 14px;
-  padding:5px;
+  padding:5px 5px 50px 5px;
+  display:none;
+  overflow: hidden;
 }
 
-div#location div#close
+
+div#location div#button-set
+{
+	position:fixed!Important;
+	bottom:10px;
+	height:20px;
+	background:black;
+}
+
+
+div#location div#button-set div div#close
 {
 	background:black;
 	color:white;
 	font-size:14px;
 	padding:3px;
-	position:absolute;
-	bottom:5px;
-	left:5px;
 	min-width:100px;
 }
 
-div#location div#share
+div#location div#button-set div div#share
 {
 	background:black;
 	color:white;
 	font-size:14px;
 	padding:3px;
-	position:absolute;
-	bottom:5px;
-	right:10px;
 	text-align: right;
 	min-width:70px;
 }
@@ -344,8 +367,12 @@ div#location div#temp
 }
 
 
-div#location div#weather div#weather-bar
+div#location div#weather section
 {
+	border-top:2px dashed yellow;
+	margin: 0 0 20px 0;
+	padding:5px 0 0 0;
+
 }
 
 div#location div#weather div#weather-bar div#icon
