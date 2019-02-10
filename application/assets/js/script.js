@@ -63,6 +63,7 @@ var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
 						}
 								var data = JSON.parse(apiKey);
 								openweather_api  = data.api_key;
+
 				};
 				reader.readAsText(file)
 			});
@@ -86,7 +87,7 @@ function toner_map()
 	tilesLayer = L.tileLayer(tilesUrl,{
 	maxZoom: 18,
 	attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-	'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, '	
+	'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'	
 	});
 
 	map.addLayer(tilesLayer);
@@ -109,8 +110,43 @@ function mapbox_map()
 
 }
 
-mapbox_map()
+function owm_map()
+{
+	
 
+
+	var tilesUrl = 'https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid='+openweather_api;
+	tilesLayer = L.tileLayer(tilesUrl,{
+	maxZoom: 18,
+	attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+	'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'	
+	});
+
+
+	
+map.addLayer(tilesLayer);
+}
+
+
+
+function osm_map()
+{
+	
+	var tilesUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+	tilesLayer = L.tileLayer(tilesUrl,{
+	maxZoom: 18,
+	attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+	'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'	
+	});
+
+	map.addLayer(tilesLayer);
+}
+
+
+
+
+
+osm_map()
 
 
 ////////////////////
@@ -235,22 +271,30 @@ if(openweather_api != "")
 				      
 				}
 //forecast 3h
-				$('div#location section#forecast-3 div#temp').text(data.list[0].main.temp+"°");
+				$('div#location section#forecast-3 div#temp').text(Math.round(data.list[0].main.temp)+"°");
 				$('div#location section#forecast-3 div#wind div#wind-speed div#wind-speed-val').text(data.list[0].wind.speed);
 				$('div#location section#forecast-3 div#wind div#wind-dir').text(wind_dir);
-				$('div#location section#forecast-3 div#pressure div#pressure-val').text(data.list[0].main.pressure);
+				$('div#location section#forecast-3 div#pressure div#pressure-val').text(Math.round(data.list[0].main.pressure));
 				$('div#location section#forecast-3 div.title div#forecast-time').text(data.list[0].dt_txt);
 				$("div#location section#forecast-3 div#icon img").attr("src","https://openweathermap.org/img/w/"+data.list[0].weather[0].icon+".png");
 
 
 //forecast 6h
-				$('div#location section#forecast-6 div#temp').text(data.list[1].main.temp+"°");
+				$('div#location section#forecast-6 div#temp').text(Math.round(data.list[1].main.temp)+"°");
 				$('div#location section#forecast-6 div#wind div#wind-speed div#wind-speed-val').text(data.list[1].wind.speed);
 				$('div#location section#forecast-6 div#wind div#wind-dir').text(wind_dir);
-				$('div#location section#forecast-6 div#pressure div#pressure-val').text(data.list[1].main.pressure);
+				$('div#location section#forecast-6 div#pressure div#pressure-val').text(Math.round(data.list[1].main.pressure));
 				$('div#location section#forecast-6 div.title div#forecast-time').text(data.list[1].dt_txt);
 				$("div#location section#forecast-6 div#icon img").attr("src","https://openweathermap.org/img/w/"+data.list[1].weather[0].icon+".png");
 
+
+//forecast 6h
+				$('div#location section#forecast-9 div#temp').text(Math.round(data.list[2].main.temp)+"°");
+				$('div#location section#forecast-9 div#wind div#wind-speed div#wind-speed-val').text(data.list[2].wind.speed);
+				$('div#location section#forecast-9 div#wind div#wind-dir').text(wind_dir);
+				$('div#location section#forecast-9 div#pressure div#pressure-val').text(Math.round(data.list[2].main.pressure));
+				$('div#location section#forecast-9 div.title div#forecast-time').text(data.list[2].dt_txt);
+				$("div#location section#forecast-9 div#icon img").attr("src","https://openweathermap.org/img/w/"+data.list[2].weather[0].icon+".png");
 
 
 
@@ -360,7 +404,12 @@ function startFinder(search_string)
 		{
 		$("div#custom-map-track").append('<div class="items" data-map="toner" tabindex="0">Toner <i>Map</i></div>');
 		$("div#custom-map-track").append('<div class="items" data-map="mapbox" tabindex="1">Mapbox <i>Map</i></div>');
-			finderNav_tabindex = 2;
+		$("div#custom-map-track").append('<div class="items" data-map="osm" tabindex="2">OSM <i>Map</i></div>');
+		if(openweather_api != "")
+		{
+			$("div#custom-map-track").append('<div class="items" data-map="owm" tabindex="3">Weather <i>Map</i></div>');
+		}
+			finderNav_tabindex = 4;
 		}
 		$("div#custom-map-track").append('<div class="items" tabindex="'+finderNav_tabindex+'">'+fileinfo.name+'</div>');
 		$('div#finder').find('div.items[tabindex=0]').focus();
@@ -380,7 +429,7 @@ function addGeoJson()
 	{
 		//switch online maps
 		var item_value = $(document.activeElement).data('map');
-		if(item_value == "toner" || item_value =="mapbox")
+		if(item_value == "toner" || item_value =="mapbox" || item_value =="owm" || item_value =="osm")
 		{
 			if(item_value == "toner")
 			{
@@ -393,6 +442,24 @@ function addGeoJson()
 			{
 				map.removeLayer(tilesLayer);
 				mapbox_map();
+				$('div#finder').css('display','none');
+				windowOpen = false;
+			}
+
+			if(item_value == "osm")
+			{
+				map.removeLayer(tilesLayer);
+				osm_map();
+				$('div#finder').css('display','none');
+				windowOpen = false;
+			}
+
+
+			if(item_value == "owm")
+			{
+				map.removeLayer(tilesLayer);
+				osm_map();
+				owm_map();
 				$('div#finder').css('display','none');
 				windowOpen = false;
 			}
@@ -587,7 +654,6 @@ function killSearch()
 		$('.leaflet-control-search').find("input").val("");
 		$('.leaflet-control-search').find("input").blur();
 		//windowOpen = false;
-		alert(windowOpen)
 	}
 
 }
@@ -884,9 +950,9 @@ console.log("jQuery error event:", evt);
 var e = evt.originalEvent; // get the javascript event
 console.log("original event:", e);
 if (e.message) { 
-    //alert("Error:\n\t" + e.message + "\nLine:\n\t" + e.lineno + "\nFile:\n\t" + e.filename);
+    alert("Error:\n\t" + e.message + "\nLine:\n\t" + e.lineno + "\nFile:\n\t" + e.filename);
 } else {
-    //alert("Error:\n\t" + e.type + "\nElement:\n\t" + (e.srcElement || e.target));
+    alert("Error:\n\t" + e.type + "\nElement:\n\t" + (e.srcElement || e.target));
 }
 });
 
