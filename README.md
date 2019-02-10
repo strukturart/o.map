@@ -1,17 +1,27 @@
-This is an Open Street Map app for the Nokia 88104G - [KaiOS](https://www.kaiostech.com/) 
+This is an Open Street Map app for the Nokia 88104G - [Gerda](https://gerda.tech/) 
 
-### TODO
-+ add weatheApi for rain/snow radar
-+ design + icons
+### Features
++ Map
++ Weather 
++ Send your position by sms
++ Import Tracks (geoJson)
+
+If you want to use the weather feature, you need to get an API key from openweathermap.org. Then you need to create a file called openweather.json on your sd-card and add the following content: {"api_key": your-api-key "}
+
+
+![image-1](/example/image-1.png)
+![image-2](/example/image-2.png)
+![image-2](/example/image-3.png)
+
 
 
 ### Manual
 + **Soft-keys** Zoom the map
-+ **Cursor Moving** the map
++ **Cursor** Moving the map
 + **key 1** update marker
 + **key 2** search
-+ **key 3** load geoJson track
-+ **key 5** show geolocation data
++ **key 3** load geoJson track or load Map
++ **key 5** show geolocation data and weather
 + **key #** show man-page
 
 ### GeoJson
@@ -23,8 +33,10 @@ This is an Open Street Map app for the Nokia 88104G - [KaiOS](https://www.kaiost
 + https://wiki.openstreetmap.org/wiki/Tile_servers
 
 ### How to jailbrak your phone
-[OmniJB](http://omnijb.831337.xyz/)
+[Gerda](https://gerda.tech/)
+
 ### Do you need more App's
 [bananahackers](https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/bananahackers)
+
 ### Thank you
 + Ivan from the Bananna Hackers Group
