@@ -4,7 +4,7 @@
 <head>
 	
 	<title>OSM-Map</title>
-	<meta http-equiv="Content-Security-Policy" content="default-src 'self'  https://nominatim.openstreetmap.org https://api.tiles.mapbox.com/ https://api.openweathermap.org/ https://tile.openweathermap.org/ https://openweathermap.org/">
+	<meta http-equiv="Content-Security-Policy" content="default-src 'self'  https://nominatim.openstreetmap.org https://api.tiles.mapbox.com/ https://api.openweathermap.org/ https://tile.openweathermap.org/ http://maps.openweathermap.org/https://openweathermap.org/">
 
 
 
@@ -42,88 +42,29 @@
 		<div id="lng"></div>
 		<div id="altitude"></div>
 		<div id="weather">
-			<section id="forecast-3">
-				<div class="width-100 title flex text-center"><div id="forecast-time"></div></div>
-				
-				<div id="clouds"></div>
-				
-				<div id="weather-bar" class="flex align-item-center justify-content-spacearound">
-					<div id="icon"><img src=""></div>
-					<div id="temp"></div>
-				</div>
-
-				<div id="weather-bar" class="flex align-item-center justify-content-spacearound">
-					<div id="wind" class="flex align-item-center">
-						<div id="wind-dir"></div>
-						<div id="wind-speed">
-							<div id="wind-speed-val"></div>
-							<div id="wind-speed-unit">m/sec</div>
-						</div>
-					</div>
 
 
-					<div id="pressure">
-						<div id="pressure-val"></div>
-						<div id="pressure-unit">hpa</div>
+		<section id="forecast-0">
+			<div class="width-100 title flex justify-content-spacearound"><div class="forecast-time"></div></div>
+			<div id="weather-bar" class="flex align-item-center justify-content-spacearound">
+				<div id="icon"><img src=""></div>
+				<div id="temp"></div>
+			</div>
+			<div id="weather-bar" class="flex align-item-center justify-content-spacearound">
+				<div id="wind" class="flex align-item-center">
+					<div id="wind-dir"></div>
+					<div id="wind-speed">
+						<div id="wind-speed-val"></div>
+						<div id="wind-speed-unit">m/sec</div>
 					</div>
 				</div>
-			</section>
-
-			<section id="forecast-6">
-				<div class="flex text-center title width-100"><div id="forecast-time"></div></div>
-				
-				<div id="clouds"></div>
-				
-				
-				<div id="weather-bar" class="flex align-item-center justify-content-spacearound">
-					<div id="icon"><img src=""></div>
-					<div id="temp"></div>
+				<div id="pressure">
+					<div id="pressure-val"></div>
+					<div id="pressure-unit">hpa</div>
 				</div>
+			</div>
+		</section>
 
-				<div id="weather-bar" class="flex align-item-center justify-content-spacearound">
-					<div id="wind" class="flex align-item-center">
-						<div id="wind-dir"></div>
-						<div id="wind-speed">
-							<div id="wind-speed-val"></div>
-							<div id="wind-speed-unit">m/sec</div>
-						</div>
-					</div>
-
-
-					<div id="pressure">
-						<div id="pressure-val"></div>
-						<div id="pressure-unit">hpa</div>
-					</div>
-				</div>
-			</section>
-
-
-			<section id="forecast-9">
-				<div class="width-100 title flex text-center"><div id="forecast-time"></div></div>
-				
-				<div id="clouds"></div>
-				
-				<div id="weather-bar" class="flex align-item-center justify-content-spacearound">
-					<div id="icon"><img src=""></div>
-					<div id="temp"></div>
-				</div>
-
-				<div id="weather-bar" class="flex align-item-center justify-content-spacearound">
-					<div id="wind" class="flex align-item-center">
-						<div id="wind-dir"></div>
-						<div id="wind-speed">
-							<div id="wind-speed-val"></div>
-							<div id="wind-speed-unit">m/sec</div>
-						</div>
-					</div>
-
-
-					<div id="pressure">
-						<div id="pressure-val"></div>
-						<div id="pressure-unit">hpa</div>
-					</div>
-				</div>
-			</section>
 
 		</div>
 
@@ -198,8 +139,8 @@
 			<li><h2>key 2 </h2><div>search</div></li>
 			<li><h2>key 3 </h2><div>add Track / Map</div></li>
 			<li><h2>key 5 </h2><div>show Position and wheater</div></li>
-			<p>
-				If you want to use this feature, you need to get an API key from openweathermap.org. Then you need to create a file called openweather.json on your sd.card and add the following content: {"api_key": your-api-key "}
+			<p>---------
+				If you want to use the weather feature, you need to get an API key from openweathermap.org. Then you need to create a file called openweather.json on your sd-card and add the following content: {"api_key": your-api-key "}
 			</p>
 		</ul>
 	<div id="close">close</div>

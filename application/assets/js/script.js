@@ -113,14 +113,15 @@ function mapbox_map()
 function owm_map()
 {
 	
-
-
 	var tilesUrl = 'https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid='+openweather_api;
+
+	//var tilesUrl = 'http://maps.openweathermap.org/maps/2.0/weather/PA0/{z}/{x}/{y}?appid='+openweather_api;
 	tilesLayer = L.tileLayer(tilesUrl,{
 	maxZoom: 18,
 	attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
 	'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'	
 	});
+
 
 
 	
@@ -270,31 +271,63 @@ if(openweather_api != "")
 				      wind_dir = 'NE';
 				      
 				}
-//forecast 3h
-				$('div#location section#forecast-3 div#temp').text(Math.round(data.list[0].main.temp)+"°");
-				$('div#location section#forecast-3 div#wind div#wind-speed div#wind-speed-val').text(data.list[0].wind.speed);
-				$('div#location section#forecast-3 div#wind div#wind-dir').text(wind_dir);
-				$('div#location section#forecast-3 div#pressure div#pressure-val').text(Math.round(data.list[0].main.pressure));
-				$('div#location section#forecast-3 div.title div#forecast-time').text(data.list[0].dt_txt);
-				$("div#location section#forecast-3 div#icon img").attr("src","https://openweathermap.org/img/w/"+data.list[0].weather[0].icon+".png");
+//cloning elements
+var template = $("section#forecast-0")
+for (var i = 1; i < 20; i++) { 
+
+	template.clone()
+	.attr("id","forecast-"+i)
+	.appendTo('div#weather');
+	
+}
 
 
-//forecast 6h
-				$('div#location section#forecast-6 div#temp').text(Math.round(data.list[1].main.temp)+"°");
-				$('div#location section#forecast-6 div#wind div#wind-speed div#wind-speed-val').text(data.list[1].wind.speed);
-				$('div#location section#forecast-6 div#wind div#wind-dir').text(wind_dir);
-				$('div#location section#forecast-6 div#pressure div#pressure-val').text(Math.round(data.list[1].main.pressure));
-				$('div#location section#forecast-6 div.title div#forecast-time').text(data.list[1].dt_txt);
-				$("div#location section#forecast-6 div#icon img").attr("src","https://openweathermap.org/img/w/"+data.list[1].weather[0].icon+".png");
+
+for (var i = 0; i < 20; i++) { 
+
+var day = moment.unix(data.list[i].dt).format("DD");
+	
+if(Math.ceil(day/2) == day/2)
+{
+	$('div#location section#forecast-'+i).addClass('day-style-2');
+} 
+else 
+{
+	$('div#location section#forecast-'+i).addClass('day-style-1');
+}
+	var date_format = moment.unix(data.list[i].dt).format("ddd DD MMM hh:mm")
 
 
-//forecast 6h
-				$('div#location section#forecast-9 div#temp').text(Math.round(data.list[2].main.temp)+"°");
-				$('div#location section#forecast-9 div#wind div#wind-speed div#wind-speed-val').text(data.list[2].wind.speed);
-				$('div#location section#forecast-9 div#wind div#wind-dir').text(wind_dir);
-				$('div#location section#forecast-9 div#pressure div#pressure-val').text(Math.round(data.list[2].main.pressure));
-				$('div#location section#forecast-9 div.title div#forecast-time').text(data.list[2].dt_txt);
-				$("div#location section#forecast-9 div#icon img").attr("src","https://openweathermap.org/img/w/"+data.list[2].weather[0].icon+".png");
+
+				$('div#location section#forecast-'+i+' div#temp').text(Math.round(data.list[i].main.temp)+"°");
+				$('div#location section#forecast-'+i+' div#wind div#wind-speed div#wind-speed-val').text(data.list[i].wind.speed);
+				$('div#location section#forecast-'+i+' div#wind div#wind-dir').text(wind_dir);
+				$('div#location section#forecast-'+i+' div#pressure div#pressure-val').text(Math.round(data.list[i].main.pressure));
+				//$('div#location section#forecast-'+i+' div.title div#forecast-time').text(data.list[i].dt_txt);
+				$('div#location section#forecast-'+i+' div.title div.forecast-time').text(date_format);
+				$('div#location section#forecast-'+i+' div#icon img').attr("src","https://openweathermap.org/img/w/"+data.list[i].weather[0].icon+".png");
+
+
+}
+
+var tmp_0 = Math.round(data.list[4].main.temp)
+var tmp_1 = Math.round(data.list[5].main.temp)
+var tmp_2 = Math.round(data.list[6].main.temp)
+var tmp_3 = Math.round(data.list[7].main.temp)
+var tmp_4 = Math.round(data.list[8].main.temp)
+
+var rain_0 = Math.round(data.list[4].rain)
+var rain_1 = Math.round(data.list[5].rain)
+var rain_2 = Math.round(data.list[6].rain)
+var rain_3 = Math.round(data.list[7].rain)
+var rain_4 = Math.round(data.list[8].rain)
+
+var date_0 = moment.unix(data.list[4].dt).format("HH:mm")
+var date_1 = moment.unix(data.list[5].dt).format("HH:mm")
+var date_2 = moment.unix(data.list[6].dt).format("HH:mm")
+var date_3 = moment.unix(data.list[7].dt).format("HH:mm")
+var date_4 = moment.unix(data.list[8].dt).format("HH:mm")
+
 
 
 
@@ -346,8 +379,10 @@ function send_sms()
                 }
             });
         }
-        }
-    
+}
+
+
+
 
 
 

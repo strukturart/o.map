@@ -369,15 +369,21 @@ div#location div#temp
 
 div#location div#weather section
 {
-	border-top:2px dashed yellow;
-	margin: 0 0 20px 0;
-	padding:5px 0 0 0;
+	border-top:2px dashed white;
+	margin: 0 0 0px 0;
+	padding:12px 5px 12px 5px;
 
 }
 
 div#location div#weather div#weather-bar div#icon
 {
 	margin:8px 0 0 0;
+}
+
+div#location div#weather div.forecast-time
+{
+
+
 }
 
 
@@ -407,8 +413,25 @@ div#location div#weather div#wind-speed div#wind-speed-unit
 	max-height:0.7rem;
 }
 
+.day-style-1
+{
+	background:rgba(0,0,255,0.6);
+}
+
+.day-style-2
+{
+	background:rgba(11,135,61,0.6);
+}
 
 
+section.chart
+{
+
+  border:none!Important;
+  margin:50px 0 0 0;
+  max-width:240px!Important;
+  display: none;
+}
 
 /* KaiOS portrait devices (240x320) */
 @media only screen and (orientation : portrait) {
