@@ -4,7 +4,7 @@
 <head>
 	
 	<title>OSM-Map</title>
-	<meta http-equiv="Content-Security-Policy" content="default-src 'self'  https://nominatim.openstreetmap.org https://api.tiles.mapbox.com/ https://api.openweathermap.org/ https://tile.openweathermap.org/ http://maps.openweathermap.org/https://openweathermap.org/">
+	<meta http-equiv="Content-Security-Policy" content="default-src 'self'  https://nominatim.openstreetmap.org https://api.tiles.mapbox.com/* https://api.openweathermap.org/ https://tile.openweathermap.org/ http://maps.openweathermap.org/https://openweathermap.org/ https://tile.openstreetmap.org/">
 
 
 
@@ -96,7 +96,7 @@
 -->
 
 <div id="finder" class="flex justify-content-center align-item-center width-100 height-100">
-	<h2>Custom Map or Track</h2>
+	<h2>MAPS</h2>
 	<div id="custom-map-track"></div>
 	<div id="online-maps"></div>
 	<div id="finder-error"></div>
@@ -158,5 +158,5 @@
 	<script defer src="assets/js/leaflet-search.js"></script>
 	<script defer src="assets/js/script.js"></script>
 	<script defer src="assets/js/tile.stamen.1.3.0.js"></script>
-	<script defer src="assets/js/chart.bundle.min.js"></script>
+	<!--<script defer src="assets/js/chart.bundle.min.js"></script>-->
 	<scrip defer src="assets/js/leaflet-openweathermap.js"></scrip>

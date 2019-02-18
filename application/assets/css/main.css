@@ -130,7 +130,10 @@ div#finder h2
 {
 	font-size:14px;
 	font-weight:bold;
+	margin:5px 0 5px 0!Important;
 }
+
+
 
 div#finder-error
 {
@@ -175,7 +178,8 @@ div#finder div#close
 
 div#finder div:focus
 {
-	border-bottom:3px solid yellow;
+	background:yellow;
+	color:black;
 }
 
 div#finder div#question
@@ -306,8 +310,8 @@ div#location
 div#location div#button-set
 {
 	position:fixed!Important;
-	bottom:10px;
-	height:20px;
+	bottom:0px;
+	height:30px;
 	background:black;
 }
 

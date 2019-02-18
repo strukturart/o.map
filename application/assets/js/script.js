@@ -23,16 +23,92 @@ var openweather_api = "";
 
 $("div#window-status").text(windowOpen);
 
+getOWMkey()
+
+//leaflet add basic map
+var map = L.map('map-container', {
+  zoomControl: false,
+  dragging: false,
+  keyboard: true
+}).fitWorld();
+
+////////////////////
+////MAPS////////////
+///////////////////
+
+function toner_map()
+{
+	var tilesUrl = 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png'
+	tilesLayer = L.tileLayer(tilesUrl,{
+	maxZoom: 18,
+	attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+	'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'	
+	});
+
+	map.addLayer(tilesLayer);
+
+}
+
+
+
+function owm_map()
+{
+	
+	var tilesUrl = 'https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid='+openweather_api;
+	tilesLayer = L.tileLayer(tilesUrl,{
+	maxZoom: 18,
+	attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+	'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'	
+	});
+
+
+
+	
+map.addLayer(tilesLayer);
+}
+
+
+function osm_map()
+{
+	
+	var tilesUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+	tilesLayer = L.tileLayer(tilesUrl,{
+	maxZoom: 18,
+	attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+	'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'	
+	});
+
+	map.addLayer(tilesLayer);
+}
+
+
+osm_map()
+
+/////////////////////////
 //get Openweather Api Key
+/////////////////////////
+function getOWMkey()
+{
 var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
+
+
+	finder.on("empty", function (needle) 
+	{
+	    //alert("no sdcard found, no openweathermap api-key found");
+	    return;
+	});
+
 	finder.search("openweather.json");
+
+
 
 	finder.on("fileFound", function (file, fileinfo, storageName) 
 	{
 		//file reader
 
 		var apiKey="";
-		var reader = new FileReader();
+		var reader = new FileReader()
+
 
 		reader.onerror = function(event) 
 				{
@@ -67,88 +143,7 @@ var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
 				};
 				reader.readAsText(file)
 			});
-		
-
-
-//leaflet add basic map
-var map = L.map('map-container', {
-  zoomControl: false,
-  dragging: false,
-  keyboard: true
-}).fitWorld();
-
-////////////////////
-////MAPS////////////
-///////////////////
-
-function toner_map()
-{
-	var tilesUrl = 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png'
-	tilesLayer = L.tileLayer(tilesUrl,{
-	maxZoom: 18,
-	attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-	'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'	
-	});
-
-	map.addLayer(tilesLayer);
-
-}
-
-
-function mapbox_map()
-{
-	var tilesUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw'
-	tilesLayer = L.tileLayer(tilesUrl,{
-	maxZoom: 18,
-	attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-	'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-	'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-	id: 'mapbox.streets'
-	});
-
-	map.addLayer(tilesLayer);
-
-}
-
-function owm_map()
-{
-	
-	var tilesUrl = 'https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid='+openweather_api;
-
-	//var tilesUrl = 'http://maps.openweathermap.org/maps/2.0/weather/PA0/{z}/{x}/{y}?appid='+openweather_api;
-	tilesLayer = L.tileLayer(tilesUrl,{
-	maxZoom: 18,
-	attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-	'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'	
-	});
-
-
-
-	
-map.addLayer(tilesLayer);
-}
-
-
-
-function osm_map()
-{
-	
-	var tilesUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-	tilesLayer = L.tileLayer(tilesUrl,{
-	maxZoom: 18,
-	attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-	'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'	
-	});
-
-	map.addLayer(tilesLayer);
-}
-
-
-
-
-
-osm_map()
-
+}	
 
 ////////////////////
 ////GEOLOCATION/////
@@ -165,8 +160,8 @@ setTimeout(function()
 
 function updateMarker(option)
 {
-  function getLocation() 
-  {
+	function getLocation() 
+	{
 
 		if (navigator.geolocation) 
 		{
@@ -188,11 +183,12 @@ function updateMarker(option)
 
 
 
-    function displayPosition(position) 
-    {
+	function displayPosition(position) 
+	{
 		if(option == true)
 		{
 			$('div#location').css('display','block')
+			getOWMkey()
 			windowOpen = true;
 		}
 
@@ -231,105 +227,97 @@ function updateMarker(option)
 
 		$('div#location div#lat').text("Lat "+current_lat.toFixed(5));
 		$('div#location div#lng').text("Lng "+current_lng.toFixed(5));
-		$('div#location div#altitude').text("alt "+altitude.toFixed(5));
+		if(altitude != null)
+		{
+			$('div#location div#altitude').text("alt "+altitude.toFixed(5));
+		}
 
 
-if(openweather_api != "")
+	
+		if(openweather_api == "")
+		{
+			 $("div#weather").css("display","none")
+		}
+
+else
 {
+	
 	var hello =$.getJSON( "https://api.openweathermap.org/data/2.5/forecast?lat="+current_lat+"&lon="+current_lng+"&units=metric&APPID="+openweather_api, function(data) {
 	// Success
 	}).done( function(data) {
+	var wind_dir = "";
+	function direction(in_val)
+	{
+		var degree = data.list[in_val].wind.deg;
+		
 
-	
-		var degree = data.list[0].wind.deg;
-		var wind_dir = "";
+		switch (true)
+		{
+			case (degree>337.5):
+			wind_dir = 'N';
+			break;
+			case (degree>292.5):
+			wind_dir = 'N';
+			break; 
+			case (degree>247.5):
+			wind_dir = 'W';
+			break; 
+			case (degree>202.5):
+			wind_dir = 'SW';
+			break; 
+			case (degree>157.5):
+			wind_dir = 'S';
+			break; 
+			case (degree>122.5):
+			wind_dir = 'SE';
+			break; 
+			case (degree>67.5):
+			wind_dir = 'E';
+			break; 
+			case (degree>22.5):
+			wind_dir = 'NE';
+		}
 
-				switch (true)
-				{
-				    case (degree>337.5):
-				      wind_dir = 'N';
-				      break;
-				    case (degree>292.5):
-				      wind_dir = 'N';
-				      break; 
-				   case (degree>247.5):
-				      wind_dir = 'W';
-				      break; 
-				   case (degree>202.5):
-				      wind_dir = 'SW';
-				      break; 
-				   case (degree>157.5):
-				      wind_dir = 'S';
-				      break; 
-				   case (degree>122.5):
-				      wind_dir = 'SE';
-				      break; 
-				   case (degree>67.5):
-				      wind_dir = 'E';
-				      break; 
-				   case (degree>22.5):
-				      wind_dir = 'NE';
-				      
-				}
-//cloning elements
-var template = $("section#forecast-0")
-for (var i = 1; i < 20; i++) { 
+	}
+	//cloning elements
+	var template = $("section#forecast-0")
+	for (var i = 1; i < 20; i++) 
+	{ 
 
-	template.clone()
-	.attr("id","forecast-"+i)
-	.appendTo('div#weather');
-	
-}
-
-
-
-for (var i = 0; i < 20; i++) { 
-
-var day = moment.unix(data.list[i].dt).format("DD");
-	
-if(Math.ceil(day/2) == day/2)
-{
-	$('div#location section#forecast-'+i).addClass('day-style-2');
-} 
-else 
-{
-	$('div#location section#forecast-'+i).addClass('day-style-1');
-}
-	var date_format = moment.unix(data.list[i].dt).format("ddd DD MMM hh:mm")
+		template.clone()
+		.attr("id","forecast-"+i)
+		.appendTo('div#weather');
+		
+	}
 
 
 
-				$('div#location section#forecast-'+i+' div#temp').text(Math.round(data.list[i].main.temp)+"°");
-				$('div#location section#forecast-'+i+' div#wind div#wind-speed div#wind-speed-val').text(data.list[i].wind.speed);
-				$('div#location section#forecast-'+i+' div#wind div#wind-dir').text(wind_dir);
-				$('div#location section#forecast-'+i+' div#pressure div#pressure-val').text(Math.round(data.list[i].main.pressure));
-				//$('div#location section#forecast-'+i+' div.title div#forecast-time').text(data.list[i].dt_txt);
-				$('div#location section#forecast-'+i+' div.title div.forecast-time').text(date_format);
-				$('div#location section#forecast-'+i+' div#icon img').attr("src","https://openweathermap.org/img/w/"+data.list[i].weather[0].icon+".png");
+	for (var i = 0; i < 20; i++)
+	{
+
+		var day = moment.unix(data.list[i].dt).format("DD");
+			
+		if(Math.ceil(day/2) == day/2)
+		{
+			$('div#location section#forecast-'+i).addClass('day-style-2');
+		} 
+		else 
+		{
+			$('div#location section#forecast-'+i).addClass('day-style-1');
+		}
+			var date_format = moment.unix(data.list[i].dt).format("ddd DD MMM HH:mm")
+
+		direction(i)
+
+		$('div#location section#forecast-'+i+' div#temp').text(Math.round(data.list[i].main.temp)+"°");
+		$('div#location section#forecast-'+i+' div#wind div#wind-speed div#wind-speed-val').text(data.list[i].wind.speed);
+		$('div#location section#forecast-'+i+' div#wind div#wind-dir').text(wind_dir);
+		$('div#location section#forecast-'+i+' div#pressure div#pressure-val').text(Math.round(data.list[i].main.pressure));
+		$('div#location section#forecast-'+i+' div.title div.forecast-time').text(date_format);
+		$('div#location section#forecast-'+i+' div#icon img').attr("src","https://openweathermap.org/img/w/"+data.list[i].weather[0].icon+".png");
 
 
-}
-
-var tmp_0 = Math.round(data.list[4].main.temp)
-var tmp_1 = Math.round(data.list[5].main.temp)
-var tmp_2 = Math.round(data.list[6].main.temp)
-var tmp_3 = Math.round(data.list[7].main.temp)
-var tmp_4 = Math.round(data.list[8].main.temp)
-
-var rain_0 = Math.round(data.list[4].rain)
-var rain_1 = Math.round(data.list[5].rain)
-var rain_2 = Math.round(data.list[6].rain)
-var rain_3 = Math.round(data.list[7].rain)
-var rain_4 = Math.round(data.list[8].rain)
-
-var date_0 = moment.unix(data.list[4].dt).format("HH:mm")
-var date_1 = moment.unix(data.list[5].dt).format("HH:mm")
-var date_2 = moment.unix(data.list[6].dt).format("HH:mm")
-var date_3 = moment.unix(data.list[7].dt).format("HH:mm")
-var date_4 = moment.unix(data.list[8].dt).format("HH:mm")
-
-
-
+	}
 
 
 	}).fail( function() {
@@ -352,9 +340,9 @@ var date_4 = moment.unix(data.list[8].dt).format("HH:mm")
 		2: 'Position unavailable',
 		3: 'Request timeout'
 		};
-  		//alert("Error: " + errors[error.code]);
-  		$('div#message div').text(errors[error.code]);
-  		getLocation() 
+		//alert("Error: " + errors[error.code]);
+		$('div#message div').text(errors[error.code]);
+		getLocation() 
 	}
 
 	getLocation();
@@ -365,6 +353,9 @@ var date_4 = moment.unix(data.list[8].dt).format("HH:mm")
 	updateMarker("init")
 
 
+///////////////////////////////
+////send current position by sms
+///////////////////////////////
 
 function send_sms()
 {
@@ -437,16 +428,25 @@ function startFinder(search_string)
 		finderNav_tabindex++;
 		if(finderNav_tabindex == 0)
 		{
-		$("div#custom-map-track").append('<div class="items" data-map="toner" tabindex="0">Toner <i>Map</i></div>');
-		$("div#custom-map-track").append('<div class="items" data-map="mapbox" tabindex="1">Mapbox <i>Map</i></div>');
-		$("div#custom-map-track").append('<div class="items" data-map="osm" tabindex="2">OSM <i>Map</i></div>');
-		if(openweather_api != "")
+			$("div#custom-map-track").append('<div class="items" data-map="toner" tabindex="0">Toner <i>Map</i></div>');
+			$("div#custom-map-track").append('<div class="items" data-map="osm" tabindex="1">OSM <i>Map</i></div>');
+			if(openweather_api != "")
+			{
+				$("div#custom-map-track").append('<div class="items" data-map="owm" tabindex="2">Weather <i>Map</i></div>');
+			}
+			$("div#custom-map-track").append('<div class="seperation"><h2>TRACKS</h2></div>');
+			finderNav_tabindex = 3;
+		}
+				if(fileinfo.name == "openweather.json")
 		{
-			$("div#custom-map-track").append('<div class="items" data-map="owm" tabindex="3">Weather <i>Map</i></div>');
+			finderNav_tabindex--;
+
 		}
-			finderNav_tabindex = 4;
+		if(fileinfo.name != "openweather.json")
+		{
+			$("div#custom-map-track").append('<div class="items" tabindex="'+finderNav_tabindex+'">'+fileinfo.name+'</div>');
+			
 		}
-		$("div#custom-map-track").append('<div class="items" tabindex="'+finderNav_tabindex+'">'+fileinfo.name+'</div>');
 		$('div#finder').find('div.items[tabindex=0]').focus();
 
 
@@ -473,13 +473,7 @@ function addGeoJson()
 				$('div#finder').css('display','none');
 				windowOpen = false;
 			}
-			if(item_value == "mapbox")
-			{
-				map.removeLayer(tilesLayer);
-				mapbox_map();
-				$('div#finder').css('display','none');
-				windowOpen = false;
-			}
+
 
 			if(item_value == "osm")
 			{
