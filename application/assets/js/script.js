@@ -378,6 +378,7 @@ function send_sms()
 
 
 
+
 //////////////////////////////////
 ////LOAD GEOSON & SWITCH MAPS/////
 //////////////////////////////////
@@ -395,28 +396,39 @@ function startFinder(search_string)
 	var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
 	finder.search(search_string);
 
-	finder.on("searchBegin", function (needle) 
-	{
-	});
+
 
 	finder.on("searchComplete", function (needle, filematchcount) 
 	{
+		
 		if(filematchcount == 0)
-		{
+		{		
 			$('div#finder-error').css('display','block')
-			$('div#finder-error').text('no file found')
+			$('div#finder-error').text('none geojson file found')
 			setTimeout(function() 
 			{
 				$('div#finder-error').css("display","none");
 			}, 4000);
+
+
+
+			$("div#custom-map-track").append('<div class="items" data-map="toner" tabindex="0">Toner <i>Map</i></div>');
+			$("div#custom-map-track").append('<div class="items" data-map="osm" tabindex="1">OSM <i>Map</i></div>');
+			finderNav_tabindex = 1;
+			if(openweather_api != "")
+			{
+				$("div#custom-map-track").append('<div class="items" data-map="owm" tabindex="2">Weather <i>Map</i></div>');
+				finderNav_tabindex = 2;
+			}
+
+			$('div#finder').css('display','block');
+			$('div#finder').find('div.items[tabindex=0]').focus();
+
+
 		}
 
 			
-		if(filematchcount > 0)
-		{
-			$('div#finder').css('display','block')
-			$('div#finder').find('div.items[tabindex=0]').focus();
-		}
+	
 
 
 	});
@@ -425,6 +437,7 @@ function startFinder(search_string)
 
 	finder.on("fileFound", function (file, fileinfo, storageName) 
 	{
+
 		finderNav_tabindex++;
 		if(finderNav_tabindex == 0)
 		{
@@ -437,7 +450,8 @@ function startFinder(search_string)
 			$("div#custom-map-track").append('<div class="seperation"><h2>TRACKS</h2></div>');
 			finderNav_tabindex = 3;
 		}
-				if(fileinfo.name == "openweather.json")
+
+		if(fileinfo.name == "openweather.json")
 		{
 			finderNav_tabindex--;
 
@@ -447,6 +461,7 @@ function startFinder(search_string)
 			$("div#custom-map-track").append('<div class="items" tabindex="'+finderNav_tabindex+'">'+fileinfo.name+'</div>');
 			
 		}
+		$('div#finder').css('display','block');
 		$('div#finder').find('div.items[tabindex=0]').focus();
 
 
@@ -860,6 +875,7 @@ var items = document.querySelectorAll('.items');
 	if(move == "+1" && i < finderNav_tabindex)
 	{
 		i++
+		
 		if(i <= finderNav_tabindex)
 		{
 			var items = document.querySelectorAll('.items');
@@ -882,6 +898,15 @@ var items = document.querySelectorAll('.items');
 	}
 
 }
+
+window.addEventListener('applicationready', function appReady(e) {
+  window.removeEventListener('applicationready', appReady);
+  window.addEventListener('webapps-launch', self);
+  window.addEventListener('webapps-close', self);
+  window.addEventListener('open-app', self);
+});
+
+
 
 
 
@@ -925,15 +950,19 @@ function handleKeyDown(evt) {
         break;
 
         case '2':
+         evt.preventDefault()
           showSearch();
         break;
 
         case '3':
-        	startFinder(".json");
+        	startFinder(".geojson");
         break; 
 
         case '4':
-        	
+       
+      test();
+    
+   	
         break;
 
         case '5':

@@ -24,9 +24,16 @@
 
 
   "permissions": {
-    "geolocation": {
-      "description": "Required to show user's location on map"
-    },
+  "geolocation": {
+    "description": "Required to show user's location on map"
+  },
+  "device-storage:sdcard": {
+  "description": "Read from sd-card",
+  "access": "readonly"
+  },
+
+  "device-storage:apps":{ "access": "readonly" },
+  "webapps-manage":{ },
 
 	"spatialnavigation-app-manage": {
 	"navigator.spatialNavigationEnabled": false
@@ -34,11 +41,10 @@
 
 	"systemXHR": {
 	"description": "Required to load remote content"
-	},
-   "device-storage:sdcard": {
+	}
 
- "access": "readwrite"
-    }
+
+
 
  
   }
