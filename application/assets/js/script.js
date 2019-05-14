@@ -127,14 +127,13 @@ var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
 						}
 
 						try {
-						   
-						} catch (e) {
-						    if (e instanceof SyntaxError) {
-						        alert("Json file is not valid");
-						        return;
-						    } else {
-						        
-						    }
+						} catch(e) {
+						if (e instanceof SyntaxError) {
+						alert("Json file is not valid");
+						return;
+						} else {
+
+						}
 
 						}
 								var data = JSON.parse(apiKey);
@@ -194,9 +193,6 @@ function updateMarker(option)
 
 		if(option == "init")
 		{
-		
-		
-
 		current_lng = position.coords.longitude;
 		current_lat = position.coords.latitude;
 		myMarker = L.marker([current_lat,current_lng]).addTo(map);
@@ -361,21 +357,16 @@ function send_sms()
 {
 	if($('div#location').css('display') == 'block')
 	{
-            var sms = new MozActivity({
-                name: "new",
-                data: {
-                    type: "websms/sms",
-                    number: "",
-                    body: ".."+ message_body
-                }
-            });
-        }
-}
-
-
-
-
-
+		var sms = new MozActivity({
+		name: "new",
+		data: {
+		type: "websms/sms",
+		number: "",
+		body: ".."+ message_body
+		}
+		});
+	}
+	}
 
 
 
@@ -463,6 +454,7 @@ function startFinder(search_string)
 		}
 		$('div#finder').css('display','block');
 		$('div#finder').find('div.items[tabindex=0]').focus();
+		windowOpen = true;
 
 
 	});
@@ -479,7 +471,7 @@ function addGeoJson()
 	{
 		//switch online maps
 		var item_value = $(document.activeElement).data('map');
-		if(item_value == "toner" || item_value =="mapbox" || item_value =="owm" || item_value =="osm")
+		if(item_value == "toner"  || item_value =="owm" || item_value =="osm")
 		{
 			if(item_value == "toner")
 			{
@@ -519,8 +511,6 @@ function addGeoJson()
 			finder.search($(document.activeElement).text());
 
 
-			
-
 			finder.on("fileFound", function (file, fileinfo, storageName) 
 			{
 				//file reader
@@ -558,7 +548,6 @@ function addGeoJson()
 
 						try {
 						   
-						    console.log(JSON.parse(mygpx));
 						} catch (e) {
 						    if (e instanceof SyntaxError) {
 						        alert("Json file is not valid");
@@ -576,6 +565,7 @@ function addGeoJson()
 								var myLayer = L.geoJSON().addTo(map);
 								myLayer.addData(JSON.parse(mygpx));
 								map.setZoom(12);
+								windowOpen == false;
 		
 
 				};
@@ -583,8 +573,6 @@ function addGeoJson()
 
 				reader.readAsText(file)
 
-			
-			
 			});
 		}
 
@@ -666,7 +654,7 @@ $('.leaflet-control-search').css('display','none')
 
 function showSearch()
 {
-	if($('.leaflet-control-search').css('display')=='none')
+	if($('.leaflet-control-search').css('display')=='none' && windowOpen == false)
 	{	
 		windowOpen = true;
 		$("div#window-status").text(windowOpen);
@@ -775,29 +763,24 @@ function ZoomMap(in_out)
 function zoom_speed()
 {
 	if(zoom_level < 6)
-    {
-    step = 1;
-    
-    
-    }
+	{
+	step = 1;
+	}
 
 
-      if(zoom_level > 6)
-    {
-    step = 0.1;
-    }
+	if(zoom_level > 6)
+	{
+		step = 0.1;
+	}
 
 
-    if(zoom_level > 11)
-    {
-    step = 0.001;
-    }
+	if(zoom_level > 11)
+	{
+		step = 0.001;
+	}
 
-
-    document.getElementById("zoom-level").innerHTML = "level "+zoom_level+" step "+step;
-
-
-    return step;
+	document.getElementById("zoom-level").innerHTML = "level "+zoom_level+" step "+step;
+	return step;
 }
 
 
@@ -869,6 +852,9 @@ function MovemMap(direction)
 
 }
 
+//////////////////////
+//FINDER NAVIGATION//
+/////////////////////
 
 function nav (move) {
 var items = document.querySelectorAll('.items');
@@ -893,18 +879,12 @@ var items = document.querySelectorAll('.items');
 			var items = document.querySelectorAll('.items');
 			var targetElement = items[i];
 			targetElement.focus();
-    
 		}
 	}
 
 }
 
-window.addEventListener('applicationready', function appReady(e) {
-  window.removeEventListener('applicationready', appReady);
-  window.addEventListener('webapps-launch', self);
-  window.addEventListener('webapps-close', self);
-  window.addEventListener('open-app', self);
-});
+
 
 
 
@@ -932,42 +912,33 @@ function handleKeyDown(evt) {
 			ZoomMap("out");
 			unload_map(true);
 			send_sms();
-			
-        break;
+		break;
 
-        case 'Enter':
-        addGeoJson();
+		case 'Enter':
+			addGeoJson();
+		break;
 
-        break;
-
-        case '0':
-          showMan();
-        break; 
+		case '0':
+			showMan();
+		break; 
 
 
-        case '1':
-          updateMarker();
-        break;
+		case '1':
+			updateMarker();
+		break;
 
-        case '2':
-         evt.preventDefault()
-          showSearch();
-        break;
+		case '2':
+			evt.preventDefault()
+			showSearch();
+		break;
 
-        case '3':
-        	startFinder(".geojson");
-        break; 
+		case '3':
+			startFinder(".geojson");
+		break; 
 
-        case '4':
-       
-      test();
-    
-   	
-        break;
-
-        case '5':
-        	updateMarker(true);
-        break;
+		case '5':
+		 updateMarker(true);
+		break;
 
 
 		case 'ArrowRight':
