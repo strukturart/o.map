@@ -12,7 +12,7 @@ var new_lat = 0;
 var new_lng = 0;
 var curPos = 0;
 var myMarker = "";
-var finderNav_tabindex = -1;
+var finderNav_tabindex = 0;
 var i = 0;
 var map_or_track;
 var windowOpen = false;
@@ -23,7 +23,6 @@ var openweather_api = "";
 
 $("div#window-status").text(windowOpen);
 
-getOWMkey()
 
 //leaflet add basic map
 var map = L.map('map-container', {
@@ -31,6 +30,9 @@ var map = L.map('map-container', {
   dragging: false,
   keyboard: true
 }).fitWorld();
+
+L.control.scale({position:'topright',metric:true,imperial:false}).addTo(map);
+
 
 ////////////////////
 ////MAPS////////////
@@ -61,16 +63,12 @@ function owm_map()
 	'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'	
 	});
 
-
-
-	
-map.addLayer(tilesLayer);
+	map.addLayer(tilesLayer);
 }
 
 
 function osm_map()
 {
-	
 	var tilesUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 	tilesLayer = L.tileLayer(tilesUrl,{
 	maxZoom: 18,
@@ -84,29 +82,37 @@ function osm_map()
 
 osm_map()
 
+
 /////////////////////////
 //get Openweather Api Key
 /////////////////////////
-function getOWMkey()
+function read_json()
 {
-var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
+	var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
+	finder.search("osm-map.json");
 
 
 	finder.on("empty", function (needle) 
 	{
-	    //alert("no sdcard found, no openweathermap api-key found");
-	    return;
+		alert("no sdcard found");
+		return;
 	});
 
-	finder.search("openweather.json");
-
-
+	finder.on("searchComplete", function (needle, filematchcount) 
+	{
+		
+		if(filematchcount == 0)
+		{
+			//alert("no markers.json file found");
+			return;
+		}
+	})
 
 	finder.on("fileFound", function (file, fileinfo, storageName) 
 	{
 		//file reader
 
-		var apiKey="";
+		var markers_file="";
 		var reader = new FileReader()
 
 
@@ -119,7 +125,7 @@ var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
 				reader.onloadend = function (event) 
 				{
 
-						apiKey = event.target.result
+						markers_file = event.target.result
 						
 						//check if json valid
 						var printError = function(error, explicit) {
@@ -136,14 +142,30 @@ var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
 						}
 
 						}
-								var data = JSON.parse(apiKey);
-								openweather_api  = data.api_key;
+								var data = JSON.parse(markers_file);
+								//alert(data)
+
+								var markers_group = L.featureGroup();
+								map.addLayer(markers_group);
+
+								$.each(data, function (index, value) {
+
+									if(value.lat)
+									{
+										$("div#markers").append('<div class="items" data-map="marker" data-lat="' + value.lat +'" data-lng="' + value.lng +'">' + value.marker_name +'</div>');
+									}
+									openweather_api = value.api_key
+								})
+
+
+
+								
 
 				};
 				reader.readAsText(file)
 			});
-}	
-
+}
+read_json()
 ////////////////////
 ////GEOLOCATION/////
 ///////////////////
@@ -187,7 +209,6 @@ function updateMarker(option)
 		if(option == true)
 		{
 			$('div#location').css('display','block')
-			getOWMkey()
 			windowOpen = true;
 		}
 
@@ -376,50 +397,40 @@ function send_sms()
 
 
 
-function startFinder(search_string)
-{					
-	finderNav_tabindex = -1;
-	$("div#custom-map-track").empty();
-	windowOpen = true;
+function startFinder()
+{			
 	
-	i = 0;
+	
+	
+
+	$("div#tracks").empty();
+	$("div#maps").empty();
 	//get file list
 	var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
-	finder.search(search_string);
+	finder.search(".geojson");
 
 
 
 	finder.on("searchComplete", function (needle, filematchcount) 
 	{
-		
-		if(filematchcount == 0)
-		{		
-			$('div#finder-error').css('display','block')
-			$('div#finder-error').text('none geojson file found')
-			setTimeout(function() 
-			{
-				$('div#finder-error').css("display","none");
-			}, 4000);
+
+	$("div#maps").append('<div class="items" data-map="toner">Toner <i>Map</i></div>');
+	$("div#maps").append('<div class="items" data-map="osm">OSM <i>Map</i></div>');
+	if(openweather_api != "")
+	{
+		$("div#maps").append('<div class="items" data-map="owm">Weather <i>Map</i></div>');
+	}
+
+	$('div.items').each(function(index, value){
+		var $div = $(this)
+	$div.attr("tabindex",index);
+	});
 
 
+		$('div#finder').css('display','block');
+		$('div#finder').find('div.items[tabindex=0]').focus();
+		windowOpen = true;
 
-			$("div#custom-map-track").append('<div class="items" data-map="toner" tabindex="0">Toner <i>Map</i></div>');
-			$("div#custom-map-track").append('<div class="items" data-map="osm" tabindex="1">OSM <i>Map</i></div>');
-			finderNav_tabindex = 1;
-			if(openweather_api != "")
-			{
-				$("div#custom-map-track").append('<div class="items" data-map="owm" tabindex="2">Weather <i>Map</i></div>');
-				finderNav_tabindex = 2;
-			}
-
-			$('div#finder').css('display','block');
-			$('div#finder').find('div.items[tabindex=0]').focus();
-
-
-		}
-
-			
-	
 
 
 	});
@@ -429,35 +440,13 @@ function startFinder(search_string)
 	finder.on("fileFound", function (file, fileinfo, storageName) 
 	{
 
-		finderNav_tabindex++;
-		if(finderNav_tabindex == 0)
-		{
-			$("div#custom-map-track").append('<div class="items" data-map="toner" tabindex="0">Toner <i>Map</i></div>');
-			$("div#custom-map-track").append('<div class="items" data-map="osm" tabindex="1">OSM <i>Map</i></div>');
-			if(openweather_api != "")
-			{
-				$("div#custom-map-track").append('<div class="items" data-map="owm" tabindex="2">Weather <i>Map</i></div>');
-			}
-			$("div#custom-map-track").append('<div class="seperation"><h2>TRACKS</h2></div>');
-			finderNav_tabindex = 3;
-		}
-
-		if(fileinfo.name == "openweather.json")
-		{
-			finderNav_tabindex--;
-
-		}
-		if(fileinfo.name != "openweather.json")
-		{
-			$("div#custom-map-track").append('<div class="items" tabindex="'+finderNav_tabindex+'">'+fileinfo.name+'</div>');
-			
-		}
-		$('div#finder').css('display','block');
-		$('div#finder').find('div.items[tabindex=0]').focus();
-		windowOpen = true;
-
+	$("div#tracks").append('<div class="items">'+fileinfo.name+'</div>');
 
 	});
+
+
+
+
 
 
 }
@@ -471,7 +460,7 @@ function addGeoJson()
 	{
 		//switch online maps
 		var item_value = $(document.activeElement).data('map');
-		if(item_value == "toner"  || item_value =="owm" || item_value =="osm")
+		if(item_value == "toner"  || item_value =="owm" || item_value =="osm" || item_value =="marker")
 		{
 			if(item_value == "toner")
 			{
@@ -496,6 +485,18 @@ function addGeoJson()
 				map.removeLayer(tilesLayer);
 				osm_map();
 				owm_map();
+				$('div#finder').css('display','none');
+				windowOpen = false;
+			}
+
+			if(item_value == "marker")
+			{
+				var item_lng = $(document.activeElement).data('lng');
+				var item_lat = $(document.activeElement).data('lat');
+
+				L.marker([item_lat , item_lng]).addTo(map);
+				map.setView([item_lat, item_lng], 13);
+
 				$('div#finder').css('display','none');
 				windowOpen = false;
 			}
@@ -580,8 +581,6 @@ function addGeoJson()
 	}
 
 }
-
-
 
 
 
@@ -736,6 +735,9 @@ function closeWindow()
 
 function ZoomMap(in_out)
 {
+	//remove leaflet attribution to have more space
+	$('.leaflet-control-attribution').hide()
+
 	$("div#window-status").text(windowOpen);
 	var current_zoom_level = map.getZoom();
 	if(windowOpen == false)
@@ -807,6 +809,11 @@ function unload_map(trueFalse)
 }
 
 
+/////////////////////
+//MAP NAVIGATION//
+/////////////////////
+
+
 function MovemMap(direction)
 {
 	if(windowOpen != true)
@@ -857,28 +864,32 @@ function MovemMap(direction)
 /////////////////////
 
 function nav (move) {
-var items = document.querySelectorAll('.items');
-	if(move == "+1" && i < finderNav_tabindex)
+	var items = document.querySelectorAll('.items');
+	if(move == "+1")
 	{
-		i++
-		
-		if(i <= finderNav_tabindex)
+		//alert(i+":"+items.length)
+		if(i < items.length-1)
 		{
-			var items = document.querySelectorAll('.items');
-			var targetElement = items[i];
-			targetElement.focus();
-
+			
+				i++
+				var items = document.querySelectorAll('.items');
+				var targetElement = items[i];
+				targetElement.focus();
+			
 		}
 	}
 
-	if(move == "-1" &&  i > 0)
+
+	if(move == "-1")
 	{
-		i--
-		if(i >= 0)
+		if(i > 0)
+	
 		{
+			i--
 			var items = document.querySelectorAll('.items');
 			var targetElement = items[i];
 			targetElement.focus();
+			
 		}
 	}
 
@@ -933,7 +944,8 @@ function handleKeyDown(evt) {
 		break;
 
 		case '3':
-			startFinder(".geojson");
+			evt.preventDefault()
+			startFinder();
 		break; 
 
 		case '5':
