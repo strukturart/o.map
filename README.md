@@ -6,8 +6,27 @@ This is an Open Street Map app for the Nokia 88104G - [Gerda](https://gerda.tech
 + Send your position by sms
 + Import Tracks (geoJson)
 
-If you want to use the weather feature, you need to get an API key from openweathermap.org. Then you need to create a file called openweather.json on your sd-card and add the following content: {"api_key": your-api-key "}
+If you want to use the weather feature, you need to get an API key from openweathermap.org. Then you need to create a file called osm-map.json on your sd-card and add the following content: 
+```
+[	
+		{
+			"marker_name":"marker1",
+			"lat":"47",
+			"lng":"8"
+		},
+		
+		{
+			"marker_name":"marker2",
+			"lat":"47",
+			"lng":"10"
+		},
 
+		{
+		"api_key":"1234567890"
+		}
+	
+]
+```
 
 ![image-1](/example/image-1.png)
 ![image-2](/example/image-2.png)
@@ -20,9 +39,9 @@ If you want to use the weather feature, you need to get an API key from openweat
 + **Cursor** Moving the map
 + **key 1** update marker
 + **key 2** search
-+ **key 3** load geoJson track or load Map
++ **key 3** load geoJson track,add MapLayer or add Markers 
 + **key 5** show geolocation data and weather
-+ **key #** show man-page
++ **key 0** show man-page
 
 ### GeoJson
 + Online tool: [geojson.io](http://geojson.io/#map=1/-55/228)
