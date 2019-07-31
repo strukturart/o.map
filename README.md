@@ -1,4 +1,4 @@
-This is an Open Street Map app for the Nokia 88104G - [Gerda](https://gerda.tech/) 
+This is an Open Street Map app for the Nokia 81104G - [Gerda](https://gerda.tech/) 
 
 ### Features
 + Map
