@@ -28,9 +28,9 @@ If you want to use the weather feature, you need to get an API key from openweat
 ]
 ```
 
-![image-1](/example/image-1.png)
-![image-2](/example/image-2.png)
-![image-2](/example/image-3.png)
+![image-1](/images/image-1.png)
+![image-2](/images/image-2.png)
+![image-2](/images/image-3.png)
 
 
 
