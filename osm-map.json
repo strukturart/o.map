@@ -1,4 +1,6 @@
-[	
+[
+	
+		
 		{
 			"marker_name":"marker1",
 			"lat":"47",
@@ -12,7 +14,14 @@
 		},
 
 		{
-		"api_key":"1234567890"
+		"api_key":"664532d681348"
+		},
+	
+		{
+			"default_position":{
+				"position_lat":"7",
+				"position_long":"24"
+			}
 		}
 	
 ]

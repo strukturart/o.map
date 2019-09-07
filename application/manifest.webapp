@@ -17,30 +17,9 @@
   },
 	
   "developer": {
-	"name": "strukturart",
-	"url": "https://strukturart.com"
+	"name":"strukturart",
+	"url":"https://github.com/strukturart/osm-map"
   },
-
-
-
-  "activities": {
-    "view": {
-      "filters": {
-        "type": "url",
-        "url": {
-          "required":true, 
-          "regexp": "(https://www.openstreetmap.org/)*"
-        }
-      },
-      "disposition": "window",
-	"href": "/index.html"
-
-    }
-  },
-
-
-
-
 
 
 
@@ -54,7 +33,6 @@
   },
 
   "device-storage:apps":{ "access": "readonly" },
-  "webapps-manage":{ },
 
 	"spatialnavigation-app-manage": {
 	"navigator.spatialNavigationEnabled": false
@@ -62,12 +40,7 @@
 
 	"systemXHR": {
 	"description": "Required to load remote content"
-	}
-
-
-
-
- 
+	} 
   }
 
 }

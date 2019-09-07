@@ -1,4 +1,4 @@
- $(document).ready(function() {
+$(document).ready(function() {
 
 
 //Global Vars
@@ -18,6 +18,8 @@ var map_or_track;
 var windowOpen = false;
 var message_body = "";
 var openweather_api = "";
+var default_position_lat = "";
+var default_position_long = "";
 
 
 
@@ -143,7 +145,6 @@ function read_json()
 
 						}
 								var data = JSON.parse(markers_file);
-								//alert(data)
 
 								var markers_group = L.featureGroup();
 								map.addLayer(markers_group);
@@ -154,7 +155,18 @@ function read_json()
 									{
 										$("div#markers").append('<div class="items" data-map="marker" data-lat="' + value.lat +'" data-lng="' + value.lng +'">' + value.marker_name +'</div>');
 									}
-									openweather_api = value.api_key
+									
+									if(value.api_key)
+									{
+										openweather_api = value.api_key;
+									}
+
+									if(value.default_position)
+									{
+										default_position_long = Number(value.default_position.position_long);
+										default_position_lat = Number(value.default_position.position_lat);
+
+									}
 								})
 
 
@@ -197,7 +209,10 @@ function updateMarker(option)
 
 		else 
 		{
-		  alert("Geolocation is not supported by this browser");
+			alert("Geolocation is not supported by this browser");
+			$('div#location').css('display','none')
+			$('div#message div').text("");
+			$('div#message').css('display', 'none');
 		}
 
 	}
@@ -214,8 +229,27 @@ function updateMarker(option)
 
 		if(option == "init")
 		{
-		current_lng = position.coords.longitude;
-		current_lat = position.coords.latitude;
+
+			if(default_position_lat != "")
+			{
+				current_lng = default_position_long;
+				current_lat = default_position_lat;
+				map.setView([default_position_lat, default_position_long], 13);
+				myMarker = L.marker([default_position_lat, default_position_long]).addTo(map);
+				zoom_speed();
+				setTimeout(function() 
+		{
+				$('div#location').css('display','none')
+				$('div#message div').text("");
+				$('div#message').css('display', 'none');
+		},4000);
+				return false;
+			}
+
+			
+				current_lng = position.coords.longitude;
+				current_lat = position.coords.latitude;
+					
 		myMarker = L.marker([current_lat,current_lng]).addTo(map);
 		map.setView([position.coords.latitude, position.coords.longitude], 13);
 		zoom_speed();
@@ -230,7 +264,11 @@ function updateMarker(option)
 
 			
 
+			
+
+			
 		return false;
+
 
 		}
 
@@ -256,113 +294,111 @@ function updateMarker(option)
 			 $("div#weather").css("display","none")
 		}
 
-else
-{
-	
-	var hello =$.getJSON( "https://api.openweathermap.org/data/2.5/forecast?lat="+current_lat+"&lon="+current_lng+"&units=metric&APPID="+openweather_api, function(data) {
-	// Success
-	}).done( function(data) {
-	var wind_dir = "";
-	function direction(in_val)
-	{
-		var degree = data.list[in_val].wind.deg;
-		
-
-		switch (true)
+		else
 		{
-			case (degree>337.5):
-			wind_dir = 'N';
-			break;
-			case (degree>292.5):
-			wind_dir = 'N';
-			break; 
-			case (degree>247.5):
-			wind_dir = 'W';
-			break; 
-			case (degree>202.5):
-			wind_dir = 'SW';
-			break; 
-			case (degree>157.5):
-			wind_dir = 'S';
-			break; 
-			case (degree>122.5):
-			wind_dir = 'SE';
-			break; 
-			case (degree>67.5):
-			wind_dir = 'E';
-			break; 
-			case (degree>22.5):
-			wind_dir = 'NE';
+			var hello =$.getJSON( "https://api.openweathermap.org/data/2.5/forecast?lat="+current_lat+"&lon="+current_lng+"&units=metric&APPID="+openweather_api, function(data) {
+			// Success
+			}).done( function(data) {
+			var wind_dir = "";
+			function direction(in_val)
+			{
+				var degree = data.list[in_val].wind.deg;
+				
+
+				switch (true)
+				{
+					case (degree>337.5):
+					wind_dir = 'N';
+					break;
+					case (degree>292.5):
+					wind_dir = 'N';
+					break; 
+					case (degree>247.5):
+					wind_dir = 'W';
+					break; 
+					case (degree>202.5):
+					wind_dir = 'SW';
+					break; 
+					case (degree>157.5):
+					wind_dir = 'S';
+					break; 
+					case (degree>122.5):
+					wind_dir = 'SE';
+					break; 
+					case (degree>67.5):
+					wind_dir = 'E';
+					break; 
+					case (degree>22.5):
+					wind_dir = 'NE';
+				}
+
+			}
+			//cloning elements
+			var template = $("section#forecast-0")
+			for (var i = 1; i < 20; i++) 
+			{ 
+
+				template.clone()
+				.attr("id","forecast-"+i)
+				.appendTo('div#weather');
+				
+			}
+
+
+
+			for (var i = 0; i < 20; i++)
+			{
+
+				var day = moment.unix(data.list[i].dt).format("DD");
+					
+				if(Math.ceil(day/2) == day/2)
+				{
+					$('div#location section#forecast-'+i).addClass('day-style-2');
+				} 
+				else 
+				{
+					$('div#location section#forecast-'+i).addClass('day-style-1');
+				}
+					var date_format = moment.unix(data.list[i].dt).format("ddd DD MMM HH:mm")
+
+				direction(i)
+
+				$('div#location section#forecast-'+i+' div#temp').text(Math.round(data.list[i].main.temp)+"°");
+				$('div#location section#forecast-'+i+' div#wind div#wind-speed div#wind-speed-val').text(data.list[i].wind.speed);
+				$('div#location section#forecast-'+i+' div#wind div#wind-dir').text(wind_dir);
+				$('div#location section#forecast-'+i+' div#pressure div#pressure-val').text(Math.round(data.list[i].main.pressure));
+				$('div#location section#forecast-'+i+' div.title div.forecast-time').text(date_format);
+				$('div#location section#forecast-'+i+' div#icon img').attr("src","https://openweathermap.org/img/w/"+data.list[i].weather[0].icon+".png");
+
+
+			}
+
+
+			}).fail( function() {
+			   alert("Error: Please check API-Key or Internet-Connection")
+			}).always( function() {
+			  // Complete
+			});
 		}
 
-	}
-	//cloning elements
-	var template = $("section#forecast-0")
-	for (var i = 1; i < 20; i++) 
-	{ 
 
-		template.clone()
-		.attr("id","forecast-"+i)
-		.appendTo('div#weather');
-		
-	}
+			message_body = "My position: "+"https://www.openstreetmap.org/?mlat="+current_lat+"&mlon="+current_lng+"&zoom=14#map=14/"+current_lat+"/"+current_lng;
 
+			}
 
+			function displayError(error) 
+			{
 
-	for (var i = 0; i < 20; i++)
-	{
+				var errors = { 
+				1: 'Permission denied',
+				2: 'Position unavailable',
+				3: 'Request timeout'
+				};
+				$('div#message div').text(errors[error.code]);
+				getLocation() 
+			}
 
-		var day = moment.unix(data.list[i].dt).format("DD");
-			
-		if(Math.ceil(day/2) == day/2)
-		{
-			$('div#location section#forecast-'+i).addClass('day-style-2');
-		} 
-		else 
-		{
-			$('div#location section#forecast-'+i).addClass('day-style-1');
-		}
-			var date_format = moment.unix(data.list[i].dt).format("ddd DD MMM HH:mm")
-
-		direction(i)
-
-		$('div#location section#forecast-'+i+' div#temp').text(Math.round(data.list[i].main.temp)+"°");
-		$('div#location section#forecast-'+i+' div#wind div#wind-speed div#wind-speed-val').text(data.list[i].wind.speed);
-		$('div#location section#forecast-'+i+' div#wind div#wind-dir').text(wind_dir);
-		$('div#location section#forecast-'+i+' div#pressure div#pressure-val').text(Math.round(data.list[i].main.pressure));
-		$('div#location section#forecast-'+i+' div.title div.forecast-time').text(date_format);
-		$('div#location section#forecast-'+i+' div#icon img').attr("src","https://openweathermap.org/img/w/"+data.list[i].weather[0].icon+".png");
-
-
-	}
-
-
-	}).fail( function() {
-	   alert("error api access")
-	}).always( function() {
-	  // Complete
-	});
-}
-
-
-		message_body = "My position: "+"https://www.openstreetmap.org/?mlat="+current_lat+"&mlon="+current_lng+"&zoom=14#map=14/"+current_lat+"/"+current_lng;
-
-	}
-
-	function displayError(error) 
-	{
-
-		var errors = { 
-		1: 'Permission denied',
-		2: 'Position unavailable',
-		3: 'Request timeout'
-		};
-		//alert("Error: " + errors[error.code]);
-		$('div#message div').text(errors[error.code]);
-		getLocation() 
-	}
-
-	getLocation();
+			getLocation();
 
 
 }
@@ -999,9 +1035,5 @@ if (e.message) {
 
 
   });
-
-
-
-
 
 
