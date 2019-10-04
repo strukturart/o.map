@@ -5,14 +5,15 @@ $(document).ready(function() {
 var step = 0.001;
 var current_lng = 0;
 var current_lat = 0;
+var accuracy = 0;
+var altitude = 0;
+
 var zoom_level = 18;
 var current_zoom_level = 18;
-var altitude = "not found";
 var new_lat = 0;
 var new_lng = 0;
 var curPos = 0;
 var myMarker = "";
-var finderNav_tabindex = 0;
 var i = 0;
 var map_or_track;
 var windowOpen = false;
@@ -20,6 +21,8 @@ var message_body = "";
 var openweather_api = "";
 var default_position_lat = "";
 var default_position_long = "";
+var tabIndex = 0;
+var debug = true;
 
 
 
@@ -57,6 +60,8 @@ function toner_map()
 
 function owm_map()
 {
+
+	
 	
 	var tilesUrl = 'https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid='+openweather_api;
 	tilesLayer = L.tileLayer(tilesUrl,{
@@ -69,6 +74,7 @@ function owm_map()
 }
 
 
+
 function osm_map()
 {
 	var tilesUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -79,7 +85,290 @@ function osm_map()
 	});
 
 	map.addLayer(tilesLayer);
+
 }
+
+var rain_image_url = [];
+var rain_image_url_time = [];
+var loop= -1;
+var init = true;
+var rainlayer;
+
+function get_rain_images()
+{
+	for(var i = 1; i < 270; i++)
+	{
+	rain_weather_url = moment().subtract(i, 'minute').format('YYYYMMDD.HHmm') 
+	rain_time = moment().subtract(i, 'minute').format('YYYY-MM-DD,HH:mm') 
+
+	var filter = moment().subtract(i, 'minute').format('mm') 
+	if(filter == 15 || filter == 30 || filter == 45 || filter == 0)
+	 {
+	   //first 8 not because no image exist 
+	   if(i >8)
+	   {
+	   
+	  //push urls's in array
+		rain_image_url.push ("http://www.radareu.cz/data/radar/radar.anim."+rain_weather_url+".0.png");
+		rain_image_url_time.push (rain_time);
+	 }
+	 } 
+	}
+	rain_image_url.reverse()
+	rain_image_url_time.reverse()
+
+}
+
+get_rain_images()
+
+
+
+function remove_layer()
+{
+	map.eachLayer(function (layer) 
+	{
+		map.removeLayer(layer);
+		$("div#output").css("display","none")
+	});
+}
+
+var rainlayer0;
+var rainlayer1;
+var rainlayer2;
+var rainlayer3;
+var rainlayer4;
+var rainlayer5;
+
+var rainlayers = [rainlayer0,rainlayer1,rainlayer2,rainlayer3,rainlayer4,rainlayer5]
+
+
+function remove_rain_overlayers()
+{
+	/*
+	for (var i =0; 0 < rainlayers.length+1; i++)
+	if (map.hasLayer(rainlayers[i])) 
+	{
+		map.removeLayer(rainlayers[i]);
+	}
+
+	*/
+
+	if (map.hasLayer(rainlayer0)) 
+	{
+		map.removeLayer(rainlayer0);
+	}
+
+	if (map.hasLayer(rainlayer1)) 
+	{
+		map.removeLayer(rainlayer1);
+	}
+	if (map.hasLayer(rainlayer2)) 
+	{
+		map.removeLayer(rainlayer2);
+	}
+	if (map.hasLayer(rainlayer3)) 
+	{
+		map.removeLayer(rainlayer3);
+	}
+	if (map.hasLayer(rainlayer4)) 
+	{
+		map.removeLayer(rainlayer4);
+	}
+	if (map.hasLayer(rainlayer5)) 
+	{
+		map.removeLayer(rainlayer5);
+	}
+	
+}
+
+
+
+function rain_layer()
+{ 
+	if(windowOpen == "rainmap")
+	{
+		loop++;
+		imageBounds = [[72.62025190354672,-14.618225054687514],[30.968189526345665,45.314636273437486]];
+			$("div#output").css("display","block")
+
+			if(loop == 0)
+			{
+				if(map.hasLayer(rainlayer0) == false)
+				{
+					rainlayer0 = L.imageOverlay(rain_image_url[0], imageBounds).addTo(map);
+
+					rainlayer0.on("load", function (event) {
+						rainlayer0.setOpacity(0.5);
+					});
+					rainlayer0.on("error", function (event) {
+						alert("image can't load")
+					});
+				}
+		
+				else
+				{
+					rainlayer5.setOpacity(0.0);
+					rainlayer0.setOpacity(0.5);
+				}
+
+			$("div#output").text("");
+			$("div#output").text(rain_image_url_time[loop]);
+			}	
+
+
+			
+
+			if(loop == 1)
+			{
+				if(map.hasLayer(rainlayer1) == false)
+				{
+					rainlayer1 = L.imageOverlay(rain_image_url[1], imageBounds).addTo(map);
+
+					rainlayer1.on("load", function (event) {
+						rainlayer0.setOpacity(0.0);
+						rainlayer1.setOpacity(0.5);
+					});
+					rainlayer1.on("error", function (event) {
+						alert("image can't load")
+					});
+				}
+				else
+				{
+					rainlayer0.setOpacity(0.0);
+					rainlayer1.setOpacity(0.5);
+					
+				}
+
+			$("div#output").text("");
+			$("div#output").text(rain_image_url_time[loop]);
+			}
+
+
+			
+
+
+			if(loop == 2)
+			{
+				if(map.hasLayer(rainlayer2) == false)
+				{
+					rainlayer2 = L.imageOverlay(rain_image_url[2], imageBounds).addTo(map);
+
+					rainlayer2.on("load", function (event) {
+					rainlayer0.setOpacity(0.0);
+					rainlayer1.setOpacity(0.0);
+					rainlayer2.setOpacity(0.5);
+					});
+					rainlayer2.on("error", function (event) {
+						alert("image can't load")
+					});
+
+				}
+				else
+				{
+					rainlayer0.setOpacity(0.0);
+					rainlayer1.setOpacity(0.0);
+					rainlayer2.setOpacity(0.5);	
+				}
+
+			$("div#output").text("");
+			$("div#output").text(rain_image_url_time[loop]);
+			}	
+
+
+			if(loop == 3)
+			{
+				if(map.hasLayer(rainlayer3) == false)
+				{
+					rainlayer3 = L.imageOverlay(rain_image_url[3], imageBounds).addTo(map);
+
+					rainlayer3.on("load", function (event) {
+						rainlayer2.setOpacity(0.0);
+						rainlayer3.setOpacity(0.5);
+					});
+					rainlayer3.on("error", function (event) {
+						alert("image can't load")
+					});
+				}
+				else
+				{
+					rainlayer0.setOpacity(0.0);
+					rainlayer1.setOpacity(0.0);
+					rainlayer2.setOpacity(0.0);	
+					rainlayer3.setOpacity(0.5);
+				}
+
+			$("div#output").text("");
+			$("div#output").text(rain_image_url_time[loop]);
+			}	
+
+
+			if(loop == 4)
+			{
+				if(map.hasLayer(rainlayer4) == false)
+				{
+					rainlayer4 = L.imageOverlay(rain_image_url[4], imageBounds).addTo(map);
+
+					rainlayer4.on("load", function (event) {
+						rainlayer3.setOpacity(0.0);
+						rainlayer4.setOpacity(0.5);
+					});
+					rainlayer4.on("error", function (event) {
+						alert("image can't load")
+					});
+				}
+				else
+				{
+					rainlayer0.setOpacity(0.0);
+					rainlayer1.setOpacity(0.0);
+					rainlayer2.setOpacity(0.0);	
+					rainlayer3.setOpacity(0.0);
+					rainlayer4.setOpacity(0.5);
+				}
+
+			$("div#output").text("");
+			$("div#output").text(rain_image_url_time[loop]);
+			}
+
+
+			if(loop == 5)
+			{
+				if(map.hasLayer(rainlayer5) == false)
+				{
+					rainlayer5 = L.imageOverlay(rain_image_url[5], imageBounds).addTo(map);
+
+					rainlayer5.on("load", function (event) {
+						rainlayer4.setOpacity(0.0);
+						rainlayer5.setOpacity(0.5);
+					});
+					rainlayer5.on("error", function (event) {
+						alert("image can't load")
+					});
+				}
+				else
+				{
+					rainlayer0.setOpacity(0.0);
+					rainlayer1.setOpacity(0.0);
+					rainlayer2.setOpacity(0.0);	
+					rainlayer3.setOpacity(0.0);
+					rainlayer4.setOpacity(0.0);
+					rainlayer5.setOpacity(0.5);
+				}
+
+			$("div#output").text("");
+			$("div#output").text(rain_image_url_time[loop]);
+			}
+
+
+		if(loop == 5)
+		{
+			loop = -1
+		}
+	}
+
+
+}
+
+
 
 
 osm_map()
@@ -161,23 +450,17 @@ function read_json()
 										openweather_api = value.api_key;
 									}
 
-									if(value.default_position)
-									{
-										default_position_long = Number(value.default_position.position_long);
-										default_position_lat = Number(value.default_position.position_lat);
-
-									}
+									
 								})
-
-
-
-								
 
 				};
 				reader.readAsText(file)
 			});
 }
 read_json()
+
+
+
 ////////////////////
 ////GEOLOCATION/////
 ///////////////////
@@ -185,235 +468,104 @@ read_json()
 ////MARKER SET AND UPDATE/////////
 /////////////////////////
 $('div#message div').text("Welcome");
-setTimeout(function() 
-		{
-			$('div#message div').text("Searching position");
-		},3000);
-
-
-function updateMarker(option)
-{
-	function getLocation() 
+	setTimeout(function() 
 	{
+		
 
-		if (navigator.geolocation) 
-		{
-			var timeoutVal = 10 * 1000 * 1000;
-			navigator.geolocation.getCurrentPosition
-			(
-				displayPosition, 
-				displayError,
-				{ enableHighAccuracy: true, timeout: timeoutVal, maximumAge: 0 }
-			);
-		}
+		$('div#message').css("display","none")
 
-		else 
-		{
-			alert("Geolocation is not supported by this browser");
-			$('div#location').css('display','none')
-			$('div#message div').text("");
-			$('div#message').css('display', 'none');
-		}
+	},4000);
+
+
+
+function getLocation(option) 
+{
+
+var options = {
+  enableHighAccuracy: true,
+  timeout: 10000,
+  maximumAge: 0
+};
+
+function success(pos) 
+{
+	var crd = pos.coords;
+
+	current_lat = crd.latitude;
+	current_lng = crd.longitude;
+	current_alt = crd.altitude;
+	accuracy = crd.accuracy;
+
+	if(option == "share")
+	{
+		share_position()
 
 	}
 
-
-
-	function displayPosition(position) 
-	{
-		if(option == true)
-		{
-			$('div#location').css('display','block')
-			windowOpen = true;
-		}
-
 		if(option == "init")
 		{
+			
+			myMarker = L.marker([current_lat,current_lng]).addTo(map);
+			map.setView([current_lat, current_lng], 13);
+			zoom_speed();
 
-			if(default_position_lat != "")
+
+			setTimeout(function() 
 			{
-				current_lng = default_position_long;
-				current_lat = default_position_lat;
-				map.setView([default_position_lat, default_position_long], 13);
-				myMarker = L.marker([default_position_lat, default_position_long]).addTo(map);
-				zoom_speed();
-				setTimeout(function() 
-		{
-				$('div#location').css('display','none')
-				$('div#message div').text("");
-				$('div#message').css('display', 'none');
-		},4000);
-				return false;
-			}
-
+					$('div#location').css('display','none')
+					$('div#message div').text("");
+					$('div#message').css('display', 'none');
+			},4000);
 			
-				current_lng = position.coords.longitude;
-				current_lat = position.coords.latitude;
-					
-		myMarker = L.marker([current_lat,current_lng]).addTo(map);
-		map.setView([position.coords.latitude, position.coords.longitude], 13);
-		zoom_speed();
-
-
-		setTimeout(function() 
-		{
-				$('div#location').css('display','none')
-				$('div#message div').text("");
-				$('div#message').css('display', 'none');
-		},4000);
-
-			
-
-			
-
-			
-		return false;
-
-
+			return false;
 		}
 
-		myMarker.setLatLng([position.coords.latitude, position.coords.longitude]).update();
-		map.flyTo( new L.LatLng(position.coords.latitude, position.coords.longitude),16);
-		zoom_speed()
+		if(option == "updateMarker")
+		{
 
-		current_lng = position.coords.longitude;
-		current_lat = position.coords.latitude;
-		altitude = position.coords.altitude;
+		myMarker.setLatLng([current_lat, current_lng]).update();
+		map.flyTo( new L.LatLng(current_lat, current_lng),16);
+		zoom_speed()
 
 		$('div#location div#lat').text("Lat "+current_lat.toFixed(5));
 		$('div#location div#lng').text("Lng "+current_lng.toFixed(5));
+		/*
 		if(altitude != null)
 		{
 			$('div#location div#altitude').text("alt "+altitude.toFixed(5));
 		}
-
-
-	
-		if(openweather_api == "")
-		{
-			 $("div#weather").css("display","none")
+	*/
 		}
-
-		else
-		{
-			var hello =$.getJSON( "https://api.openweathermap.org/data/2.5/forecast?lat="+current_lat+"&lon="+current_lng+"&units=metric&APPID="+openweather_api, function(data) {
-			// Success
-			}).done( function(data) {
-			var wind_dir = "";
-			function direction(in_val)
-			{
-				var degree = data.list[in_val].wind.deg;
-				
-
-				switch (true)
-				{
-					case (degree>337.5):
-					wind_dir = 'N';
-					break;
-					case (degree>292.5):
-					wind_dir = 'N';
-					break; 
-					case (degree>247.5):
-					wind_dir = 'W';
-					break; 
-					case (degree>202.5):
-					wind_dir = 'SW';
-					break; 
-					case (degree>157.5):
-					wind_dir = 'S';
-					break; 
-					case (degree>122.5):
-					wind_dir = 'SE';
-					break; 
-					case (degree>67.5):
-					wind_dir = 'E';
-					break; 
-					case (degree>22.5):
-					wind_dir = 'NE';
-				}
-
-			}
-			//cloning elements
-			var template = $("section#forecast-0")
-			for (var i = 1; i < 20; i++) 
-			{ 
-
-				template.clone()
-				.attr("id","forecast-"+i)
-				.appendTo('div#weather');
-				
-			}
-
-
-
-			for (var i = 0; i < 20; i++)
-			{
-
-				var day = moment.unix(data.list[i].dt).format("DD");
-					
-				if(Math.ceil(day/2) == day/2)
-				{
-					$('div#location section#forecast-'+i).addClass('day-style-2');
-				} 
-				else 
-				{
-					$('div#location section#forecast-'+i).addClass('day-style-1');
-				}
-					var date_format = moment.unix(data.list[i].dt).format("ddd DD MMM HH:mm")
-
-				direction(i)
-
-				$('div#location section#forecast-'+i+' div#temp').text(Math.round(data.list[i].main.temp)+"°");
-				$('div#location section#forecast-'+i+' div#wind div#wind-speed div#wind-speed-val').text(data.list[i].wind.speed);
-				$('div#location section#forecast-'+i+' div#wind div#wind-dir').text(wind_dir);
-				$('div#location section#forecast-'+i+' div#pressure div#pressure-val').text(Math.round(data.list[i].main.pressure));
-				$('div#location section#forecast-'+i+' div.title div.forecast-time').text(date_format);
-				$('div#location section#forecast-'+i+' div#icon img').attr("src","https://openweathermap.org/img/w/"+data.list[i].weather[0].icon+".png");
-
-
-			}
-
-
-			}).fail( function() {
-			   alert("Error: Please check API-Key or Internet-Connection")
-			}).always( function() {
-			  // Complete
-			});
-		}
-
-
-			message_body = "My position: "+"https://www.openstreetmap.org/?mlat="+current_lat+"&mlon="+current_lng+"&zoom=14#map=14/"+current_lat+"/"+current_lng;
-
-			}
-
-			function displayError(error) 
-			{
-
-				var errors = { 
-				1: 'Permission denied',
-				2: 'Position unavailable',
-				3: 'Request timeout'
-				};
-				$('div#message div').text(errors[error.code]);
-				getLocation() 
-			}
-
-			getLocation();
-
 
 }
 
-	updateMarker("init")
+function error(err) {
+  alert(err.code +" / "+err.message);
+}
+
+
+
+navigator.geolocation.getCurrentPosition(success, error, options);
+
+}
+
+
+
+getLocation("init")
+
 
 
 ///////////////////////////////
 ////send current position by sms
 ///////////////////////////////
 
-function send_sms()
+function share_position()
 {
-	if($('div#location').css('display') == 'block')
-	{
+
+	message_body = "https://www.openstreetmap.org/?mlat="+current_lat+"&mlon="+current_lng+"&zoom=14#map=14/"+current_lat+"/"+current_lng;
+
+	
+	
 		var sms = new MozActivity({
 		name: "new",
 		data: {
@@ -422,7 +574,8 @@ function send_sms()
 		body: ".."+ message_body
 		}
 		});
-	}
+	
+	
 	}
 
 
@@ -441,6 +594,8 @@ function startFinder()
 
 	$("div#tracks").empty();
 	$("div#maps").empty();
+	$("div#layers").empty();
+	$("div#output").css("display","none")
 	//get file list
 	var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
 	finder.search(".geojson");
@@ -452,6 +607,8 @@ function startFinder()
 
 	$("div#maps").append('<div class="items" data-map="toner">Toner <i>Map</i></div>');
 	$("div#maps").append('<div class="items" data-map="osm">OSM <i>Map</i></div>');
+	$("div#layers").append('<div class="items" data-map="rain">Rain</div>');
+
 	if(openweather_api != "")
 	{
 		$("div#maps").append('<div class="items" data-map="owm">Weather <i>Map</i></div>');
@@ -466,7 +623,7 @@ function startFinder()
 		$('div#finder').css('display','block');
 		$('div#finder').find('div.items[tabindex=0]').focus();
 		windowOpen = true;
-
+		tabIndex = 0;
 
 
 	});
@@ -480,27 +637,30 @@ function startFinder()
 
 	});
 
-
-
-
-
-
 }
 
 
 
 
-function addGeoJson()
+function addMapLayers()
 {
-	if ($(".items").is(":focus")) 
+	if ($(".items").is(":focus") && windowOpen == true) 
 	{
+	
+		
+
+	
 		//switch online maps
 		var item_value = $(document.activeElement).data('map');
-		if(item_value == "toner"  || item_value =="owm" || item_value =="osm" || item_value =="marker")
+
+		if(item_value == "toner"  || item_value =="owm" || item_value =="osm" || item_value =="marker" || item_value =="rain" || item_value =="share")
 		{
+
 			if(item_value == "toner")
 			{
+				//remove_layer();
 				map.removeLayer(tilesLayer);
+				remove_rain_overlayers();
 				toner_map();
 				$('div#finder').css('display','none');
 				windowOpen = false;
@@ -509,29 +669,53 @@ function addGeoJson()
 
 			if(item_value == "osm")
 			{
+				remove_rain_overlayers();
 				map.removeLayer(tilesLayer);
 				osm_map();
 				$('div#finder').css('display','none');
 				windowOpen = false;
+			}
+
+			if(item_value == "rain")
+			{
+				remove_rain_overlayers();
+				map.removeLayer(tilesLayer);
+				osm_map();
+				rain_layer();
+				map.setZoom(3);
+				$('div#finder').css('display','none');
+				windowOpen = "rainmap";
+
+
 			}
 
 
 			if(item_value == "owm")
 			{
+				remove_rain_overlayers();
 				map.removeLayer(tilesLayer);
 				osm_map();
 				owm_map();
 				$('div#finder').css('display','none');
+				$("div#output").css("display","block")
 				windowOpen = false;
+			}
+
+			if(item_value == "share")
+			{
+				remove_rain_overlayers();
+				osm_map();
+				getLocation("share")
+
 			}
 
 			if(item_value == "marker")
 			{
-				var item_lng = $(document.activeElement).data('lng');
-				var item_lat = $(document.activeElement).data('lat');
+				current_lng = $(document.activeElement).data('lng');
+				current_lat = $(document.activeElement).data('lat');
 
-				L.marker([item_lat , item_lng]).addTo(map);
-				map.setView([item_lat, item_lng], 13);
+				L.marker([current_lat , current_lng]).addTo(map);
+				map.setView([current_lat , current_lng], 13);
 
 				$('div#finder').css('display','none');
 				windowOpen = false;
@@ -552,20 +736,14 @@ function addGeoJson()
 			{
 				//file reader
 
-				var mygpx="";
+				var geojson_data="";
 				var reader = new FileReader();
-
-
-
 
 				reader.onerror = function(event) 
 				{
 					alert('shit happens')
 					reader.abort();
 				};
-
-
-
 
 				reader.onloadend = function (event) 
 				{
@@ -575,8 +753,7 @@ function addGeoJson()
 						L.removeLayer(myLayer) 
 					}
 
-
-						mygpx = event.target.result
+						geojson_data = event.target.result
 						
 						//check if json valid
 						var printError = function(error, explicit) {
@@ -600,9 +777,9 @@ function addGeoJson()
 								//if valid add layer
 								$('div#finder div#question').css('opacity','1');
 								var myLayer = L.geoJSON().addTo(map);
-								myLayer.addData(JSON.parse(mygpx));
-								map.setZoom(12);
-								windowOpen == false;
+								myLayer.addData(JSON.parse(geojson_data));
+								map.setZoom(10);
+								windowOpen = false;
 		
 
 				};
@@ -727,27 +904,6 @@ function killSearch()
 
 
 
-
-
-
-
-
-////////////////////////
-////MAN PAGE////////////
-////////////////////////
-
-
-
-function showMan()
-{
-
-	$('div#man-page').css('display','block');
-	$('div#man-page').find("input").focus();
-	windowOpen = true;
-
-}
-
-
 function closeWindow()
 {
 
@@ -776,7 +932,7 @@ function ZoomMap(in_out)
 
 	$("div#window-status").text(windowOpen);
 	var current_zoom_level = map.getZoom();
-	if(windowOpen == false)
+	if(windowOpen != true)
 	{
 		if(in_out == "in")
 		{ current_zoom_level = current_zoom_level + 1
@@ -900,32 +1056,33 @@ function MovemMap(direction)
 /////////////////////
 
 function nav (move) {
-	var items = document.querySelectorAll('.items');
-	if(move == "+1")
+	if(windowOpen == true)
 	{
-		//alert(i+":"+items.length)
-		if(i < items.length-1)
+
+
+
+		var items = document.querySelectorAll('.items');
+		if(move == "+1")
 		{
-			
-				i++
-				var items = document.querySelectorAll('.items');
-				var targetElement = items[i];
-				targetElement.focus();
-			
+			if(tabIndex < items.length-1)
+			{
+				
+					tabIndex++
+					$('div#finder div.items[tabindex='+tabIndex+']').focus()
+
+			}
 		}
-	}
 
 
-	if(move == "-1")
-	{
-		if(i > 0)
-	
+		if(move == "-1")
 		{
-			i--
-			var items = document.querySelectorAll('.items');
-			var targetElement = items[i];
-			targetElement.focus();
-			
+			if(tabIndex > 0)
+		
+			{
+				tabIndex--
+				$('div#finder div.items[tabindex='+tabIndex+']').focus()
+				
+			}
 		}
 	}
 
@@ -948,6 +1105,19 @@ function handleKeyDown(evt) {
 
 		switch (evt.key) {
 
+		case 'Backspace':
+		evt.preventDefault();
+		if(windowOpen == false)
+		{
+			window.close()
+		}
+		if(windowOpen == true)
+		{
+			$('div#finder').css('display','none');
+			windowOpen = false;
+		}
+		break;
+
 		case 'SoftLeft':
 			killSearch();
 			ZoomMap("in");
@@ -958,20 +1128,19 @@ function handleKeyDown(evt) {
 		case 'SoftRight':
 			ZoomMap("out");
 			unload_map(true);
-			send_sms();
 		break;
 
 		case 'Enter':
-			addGeoJson();
+			addMapLayers();
+			rain_layer();
 		break;
 
 		case '0':
-			showMan();
 		break; 
 
 
 		case '1':
-			updateMarker();
+			getLocation("updateMarker") 
 		break;
 
 		case '2':
@@ -983,11 +1152,6 @@ function handleKeyDown(evt) {
 			evt.preventDefault()
 			startFinder();
 		break; 
-
-		case '5':
-		 updateMarker(true);
-		break;
-
 
 		case 'ArrowRight':
 			MovemMap("right")

@@ -4,7 +4,7 @@
 <head>
 	
 	<title>OSM-Map</title>
-	<meta http-equiv="Content-Security-Policy" content="default-src 'self'  https://nominatim.openstreetmap.org https://api.tiles.mapbox.com/* https://api.openweathermap.org/ https://tile.openweathermap.org/ http://maps.openweathermap.org/https://openweathermap.org/ https://tile.openstreetmap.org/">
+	<meta http-equiv="Content-Security-Policy" content="default-src 'self' http://www.radareu.cz/* https://nominatim.openstreetmap.org https://api.tiles.mapbox.com/* https://api.openweathermap.org/ https://tile.openweathermap.org/ http://maps.openweathermap.org/https://openweathermap.org/ https://tile.openstreetmap.org/">
 
 
 
@@ -36,44 +36,15 @@
 /////////////////////////
 -->
 
-<div id="location" class="flex justify-content-center align-item-center width-100">
+<div id="location" class="flex justify-content-center align-item-center width-100 height-100">
 	<div>
 		<div id="lat"></div>
 		<div id="lng"></div>
 		<div id="altitude"></div>
-		<div id="weather">
-
-
-		<section id="forecast-0">
-			<div class="width-100 title flex justify-content-spacearound"><div class="forecast-time"></div></div>
-			<div id="weather-bar" class="flex align-item-center justify-content-spacearound">
-				<div id="icon"><img src=""></div>
-				<div id="temp"></div>
-			</div>
-			<div id="weather-bar" class="flex align-item-center justify-content-spacearound">
-				<div id="wind" class="flex align-item-center">
-					<div id="wind-dir"></div>
-					<div id="wind-speed">
-						<div id="wind-speed-val"></div>
-						<div id="wind-speed-unit">m/sec</div>
-					</div>
-				</div>
-				<div id="pressure">
-					<div id="pressure-val"></div>
-					<div id="pressure-unit">hpa</div>
-				</div>
-			</div>
-		</section>
-
-
-		</div>
-
-
-
 	</div>
+
 	<div id="button-set">
 		<div class="flex width-100 justify-content-spacebetween">
-			<div id="close">close</div>
 			<div id="share">share position</div>
 		</div>
 	</div>
@@ -99,6 +70,9 @@
 	<h2>MAPS</h2>
 	<div id="maps"></div>
 
+	<h2>LAYERS</h2>
+	<div id="layers"></div>
+
 	<h2>TRACKS</h2>
 	<div id="tracks"></div>
 
@@ -106,9 +80,14 @@
 	<h2>Markers</h2>
 	<div id="markers"></div>
 
+	<h2>Share my position</h2>
+	<div id="share">
+
+		<div class="items" data-map="share">share by sms</div>
+	</div>
+
 	
 	<div id="finder-error"></div>
-	<div id="close">cancel</div>
 
 	<div id="question" class="width-100 height-100 flex">
 		<div id="question-text">Do you want unload the current map ?</div>

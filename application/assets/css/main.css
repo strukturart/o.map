@@ -80,7 +80,6 @@ div#message div
 }
 
 
-
 /*///////////////////////////
 ///HELPER////////////////*/
 
@@ -110,6 +109,16 @@ div#window-status
 }
 
 
+div#output
+{
+	position:fixed;
+	top:10px;
+	left:5px;
+	background:black;
+	color:white;
+	z-index: 1000;
+	display:none;
+}
 
 /*///////////////////////////
 ///FINDER////////////////*/
