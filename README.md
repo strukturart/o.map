@@ -9,7 +9,6 @@ If you want to use the openweathermap, you need to get an API key from openweath
 
 
 
-![image-1](/images/image-1.png)
 ![image-2](/images/image-2.png)
 ![image-2](/images/image-3.png)
 
