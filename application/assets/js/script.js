@@ -24,7 +24,8 @@ var default_position_long = "";
 var tabIndex = 0;
 var debug = true;
 
-
+//remove leaflet attribution to have more space
+$('.leaflet-control-attribution').hide()
 
 $("div#window-status").text(windowOpen);
 
@@ -56,13 +57,27 @@ function toner_map()
 
 }
 
+function opentopo_map()
+{
+	var tilesUrl = 'https://tile.opentopomap.org/{z}/{x}/{y}.png'
+	tilesLayer = L.tileLayer(tilesUrl,{
+	maxZoom: 18,
+	attribution: 'Map data &copy;<div> © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)</div>'	
+	});
+
+	map.addLayer(tilesLayer);
+
+	setTimeout(function() 
+	{
+		$('.leaflet-control-attribution').hide()
+	},4000);
+
+}
 
 
 function owm_map()
 {
 
-	
-	
 	var tilesUrl = 'https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid='+openweather_api;
 	tilesLayer = L.tileLayer(tilesUrl,{
 	maxZoom: 18,
@@ -139,47 +154,15 @@ var rainlayer3;
 var rainlayer4;
 var rainlayer5;
 
-var rainlayers = [rainlayer0,rainlayer1,rainlayer2,rainlayer3,rainlayer4,rainlayer5]
-
 
 function remove_rain_overlayers()
 {
-	/*
-	for (var i =0; 0 < rainlayers.length+1; i++)
-	if (map.hasLayer(rainlayers[i])) 
-	{
-		map.removeLayer(rainlayers[i]);
-	}
-
-	*/
-
-	if (map.hasLayer(rainlayer0)) 
-	{
-		map.removeLayer(rainlayer0);
-	}
-
-	if (map.hasLayer(rainlayer1)) 
-	{
-		map.removeLayer(rainlayer1);
-	}
-	if (map.hasLayer(rainlayer2)) 
-	{
-		map.removeLayer(rainlayer2);
-	}
-	if (map.hasLayer(rainlayer3)) 
-	{
-		map.removeLayer(rainlayer3);
-	}
-	if (map.hasLayer(rainlayer4)) 
-	{
-		map.removeLayer(rainlayer4);
-	}
-	if (map.hasLayer(rainlayer5)) 
-	{
-		map.removeLayer(rainlayer5);
-	}
 	
+	$('.leaflet-image-layer').css('display', 'none');
 }
+
+
+
 
 
 
@@ -187,6 +170,7 @@ function rain_layer()
 { 
 	if(windowOpen == "rainmap")
 	{
+		$('.leaflet-image-layer').css('display', 'block');
 		loop++;
 		imageBounds = [[72.62025190354672,-14.618225054687514],[30.968189526345665,45.314636273437486]];
 			$("div#output").css("display","block")
@@ -467,15 +451,6 @@ read_json()
 //////////////////////////
 ////MARKER SET AND UPDATE/////////
 /////////////////////////
-$('div#message div').text("Welcome");
-	setTimeout(function() 
-	{
-		
-
-		$('div#message').css("display","none")
-
-	},4000);
-
 
 
 function getLocation(option) 
@@ -502,45 +477,41 @@ function success(pos)
 
 	}
 
-		if(option == "init")
-		{
-			
-			myMarker = L.marker([current_lat,current_lng]).addTo(map);
-			map.setView([current_lat, current_lng], 13);
-			zoom_speed();
+	if(option == "init")
+	{
+		
+		myMarker = L.marker([current_lat,current_lng]).addTo(map);
+		map.setView([current_lat, current_lng], 13);
+		zoom_speed();
+		$('div#message div').text("");
+		return false;
+	}
 
+	if(option == "updateMarker")
+	{
 
-			setTimeout(function() 
-			{
-					$('div#location').css('display','none')
-					$('div#message div').text("");
-					$('div#message').css('display', 'none');
-			},4000);
-			
-			return false;
-		}
+	myMarker.setLatLng([current_lat, current_lng]).update();
+	map.flyTo( new L.LatLng(current_lat, current_lng),16);
+	zoom_speed()
 
-		if(option == "updateMarker")
-		{
+	$('div#location div#lat').text("Lat "+current_lat.toFixed(5));
+	$('div#location div#lng').text("Lng "+current_lng.toFixed(5));
+	$('div#location div#altitude').text("alt "+altitude.toFixed(5));
 
-		myMarker.setLatLng([current_lat, current_lng]).update();
-		map.flyTo( new L.LatLng(current_lat, current_lng),16);
-		zoom_speed()
-
-		$('div#location div#lat').text("Lat "+current_lat.toFixed(5));
-		$('div#location div#lng').text("Lng "+current_lng.toFixed(5));
-		/*
-		if(altitude != null)
-		{
-			$('div#location div#altitude').text("alt "+altitude.toFixed(5));
-		}
-	*/
-		}
+	}
 
 }
 
 function error(err) {
-  alert(err.code +" / "+err.message);
+  //alert(err.code +" / "+err.message);
+  $('div#message div').text("Error geolocation");
+  $('div#message').css("display","block")
+
+  	setTimeout(function() 
+	{
+		$('div#message').css("display","none")
+
+	},4000);
 }
 
 
@@ -549,9 +520,16 @@ navigator.geolocation.getCurrentPosition(success, error, options);
 
 }
 
+$('div#message div').text("Welcome");
+	setTimeout(function() 
+	{
+		$('div#message').css("display","none")
+		getLocation("init")
+
+	},4000);
 
 
-getLocation("init")
+
 
 
 
@@ -564,19 +542,16 @@ function share_position()
 
 	message_body = "https://www.openstreetmap.org/?mlat="+current_lat+"&mlon="+current_lng+"&zoom=14#map=14/"+current_lat+"/"+current_lng;
 
-	
-	
-		var sms = new MozActivity({
+	var sms = new MozActivity({
 		name: "new",
 		data: {
-		type: "websms/sms",
-		number: "",
-		body: ".."+ message_body
+			type: "websms/sms",
+			number: "",
+			body: ".."+ message_body
 		}
-		});
+	});
 	
-	
-	}
+}
 
 
 
@@ -590,8 +565,6 @@ function startFinder()
 {			
 	
 	
-	
-
 	$("div#tracks").empty();
 	$("div#maps").empty();
 	$("div#layers").empty();
@@ -607,6 +580,8 @@ function startFinder()
 
 	$("div#maps").append('<div class="items" data-map="toner">Toner <i>Map</i></div>');
 	$("div#maps").append('<div class="items" data-map="osm">OSM <i>Map</i></div>');
+	$("div#maps").append('<div class="items" data-map="otm">OpenTopo <i>Map</i></div>');
+
 	$("div#layers").append('<div class="items" data-map="rain">Rain</div>');
 
 	if(openweather_api != "")
@@ -616,7 +591,7 @@ function startFinder()
 
 	$('div.items').each(function(index, value){
 		var $div = $(this)
-	$div.attr("tabindex",index);
+		$div.attr("tabindex",index);
 	});
 
 
@@ -632,12 +607,12 @@ function startFinder()
 
 	finder.on("fileFound", function (file, fileinfo, storageName) 
 	{
-
-	$("div#tracks").append('<div class="items">'+fileinfo.name+'</div>');
-
+		$("div#tracks").append('<div class="items" data-map="geojson">'+fileinfo.name+'</div>');
 	});
 
 }
+
+
 
 
 
@@ -653,14 +628,14 @@ function addMapLayers()
 		//switch online maps
 		var item_value = $(document.activeElement).data('map');
 
-		if(item_value == "toner"  || item_value =="owm" || item_value =="osm" || item_value =="marker" || item_value =="rain" || item_value =="share")
+		if(item_value == "toner"  || item_value =="owm" || item_value =="osm" || item_value =="otm" || item_value =="marker" || item_value =="rain" || item_value =="share")
 		{
 
 			if(item_value == "toner")
 			{
 				//remove_layer();
 				map.removeLayer(tilesLayer);
-				remove_rain_overlayers();
+				remove_rain_overlayers()
 				toner_map();
 				$('div#finder').css('display','none');
 				windowOpen = false;
@@ -669,20 +644,29 @@ function addMapLayers()
 
 			if(item_value == "osm")
 			{
-				remove_rain_overlayers();
+				remove_rain_overlayers()
 				map.removeLayer(tilesLayer);
 				osm_map();
 				$('div#finder').css('display','none');
 				windowOpen = false;
 			}
 
+
+			if(item_value == "otm")
+			{
+				remove_rain_overlayers()
+				map.removeLayer(tilesLayer);
+				opentopo_map();
+				$('div#finder').css('display','none');
+				windowOpen = false;
+			}
+
 			if(item_value == "rain")
 			{
-				remove_rain_overlayers();
 				map.removeLayer(tilesLayer);
 				osm_map();
 				rain_layer();
-				map.setZoom(3);
+				map.setZoom(5);
 				$('div#finder').css('display','none');
 				windowOpen = "rainmap";
 
@@ -692,7 +676,7 @@ function addMapLayers()
 
 			if(item_value == "owm")
 			{
-				remove_rain_overlayers();
+				remove_rain_overlayers()
 				map.removeLayer(tilesLayer);
 				osm_map();
 				owm_map();
@@ -724,10 +708,8 @@ function addMapLayers()
 		}
 
 		//add geoJson data
-		else
+		if(item_value == "geojson")
 		{
-
-
 			var finder = new Applait.Finder({ type: "sdcard", debugMode: true });
 			finder.search($(document.activeElement).text());
 
@@ -774,12 +756,12 @@ function addMapLayers()
 
 						}
 
-								//if valid add layer
-								$('div#finder div#question').css('opacity','1');
-								var myLayer = L.geoJSON().addTo(map);
-								myLayer.addData(JSON.parse(geojson_data));
-								map.setZoom(10);
-								windowOpen = false;
+						//if valid add layer
+						$('div#finder div#question').css('opacity','1');
+						var myLayer = L.geoJSON().addTo(map);
+						myLayer.addData(JSON.parse(geojson_data));
+						map.setZoom(8);
+						windowOpen = false;
 		
 
 				};
@@ -810,11 +792,8 @@ function addMapLayers()
     for(var i in rawjson)
     { 
       disp = rawjson[i].display_name.split(',');  
-
       key = disp[0] +', '+ disp[1];
-      
       loc = L.latLng( rawjson[i].lat, rawjson[i].lon );
-      
       json[ key ]= loc; //key,value format
     }
     
@@ -822,21 +801,21 @@ function addMapLayers()
   }
       
   var mobileOpts = {
-    url: 'https://nominatim.openstreetmap.org/search?format=json&q={s}',
-    jsonpParam: 'json_callback',
-    formatData: formatJSON, 
-    textPlaceholder: 'Search...',
-    autoType: true,
-    tipAutoSubmit: true,
-    autoCollapse: true,
-    collapsed: false,
-    autoCollapseTime: 1000,
-    delayType: 800, //with mobile device typing is more slow
-    marker: {
-      icon: true
-    }   
-  };
-  
+	url: 'https://nominatim.openstreetmap.org/search?format=json&q={s}',
+	jsonpParam: 'json_callback',
+	formatData: formatJSON, 
+	textPlaceholder: 'Search...',
+	autoType: true,
+	tipAutoSubmit: true,
+	autoCollapse: true,
+	collapsed: false,
+	autoCollapseTime: 1000,
+	delayType: 800, 
+	marker: {
+		icon: true
+	}
+	};
+
   var searchControl =  new L.Control.Search(mobileOpts);
 
 
@@ -912,35 +891,43 @@ function closeWindow()
 	windowOpen = false;
 
 
-	$('div#man-page').css('display','none')
-	windowOpen = false;
-
 
 	$('div#location').css('display','none')
 	windowOpen = false;
-
-
-
-
 
 }
 
 function ZoomMap(in_out)
 {
-	//remove leaflet attribution to have more space
-	$('.leaflet-control-attribution').hide()
+
 
 	$("div#window-status").text(windowOpen);
 	var current_zoom_level = map.getZoom();
 	if(windowOpen != true)
 	{
 		if(in_out == "in")
-		{ current_zoom_level = current_zoom_level + 1
-			map.setZoom(current_zoom_level);
+		{ 
+
+			if(windowOpen == "rainmap" && current_zoom_level < 5)
+			{
+				alert(current_zoom_level)
+				current_zoom_level = current_zoom_level + 1
+				map.setZoom(current_zoom_level);
+			}
+
+			if(windowOpen == false)
+			{
+				current_zoom_level = current_zoom_level + 1
+				map.setZoom(current_zoom_level);
+			}
+				
+			
+
 		}
 
 		if(in_out == "out")
-		{current_zoom_level = current_zoom_level - 1
+		{
+			current_zoom_level = current_zoom_level - 1
 			map.setZoom(current_zoom_level);
 		}
 		
@@ -1107,7 +1094,7 @@ function handleKeyDown(evt) {
 
 		case 'Backspace':
 		evt.preventDefault();
-		if(windowOpen == false)
+		if(windowOpen == false || windowOpen == "rainmap")
 		{
 			window.close()
 		}
@@ -1122,7 +1109,6 @@ function handleKeyDown(evt) {
 			killSearch();
 			ZoomMap("in");
 			unload_map(false);
-			closeWindow();
 		break;
 
 		case 'SoftRight':
@@ -1134,9 +1120,6 @@ function handleKeyDown(evt) {
 			addMapLayers();
 			rain_layer();
 		break;
-
-		case '0':
-		break; 
 
 
 		case '1':
