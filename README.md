@@ -28,8 +28,9 @@ If you want to use the openweathermap, you need to get an API key from openweath
 + **Cursor** Moving the map
 + **key 1** update marker
 + **key 2** search
-+ **key 3** load geoJson track,add MapLayer or add Markers 
-
++ **key 3** load geoJson track,add MapLayer, add Markers, settings
+For Nokia8110 user -> It is possible with closed slider that the app runs :-)
+Settings -> screenlock disable
 ### GeoJson
 + Online tool: [geojson.io](http://geojson.io/#map=1/-55/228)
 + Validation: [geojsonlint](http://geojsonlint.com/)
