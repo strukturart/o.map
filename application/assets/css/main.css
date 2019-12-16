@@ -1,457 +1,331 @@
-
 /*GENERAL*/
 
 :root {
     --color-one: black;
     --color-two: yellow;
-    --color-three:silver;
-    --color-four:rgb(99,99,99);
-    --color-five:rgb(38,38,38);
-    --color-six:rgb(78,206,144);
-    --color-seven:gainsboro;
- 
-}
-*, *:before, *:after 
-{
-  
-  border:0px;
-  padding:0px;
-  margin:0px;
-  box-sizing: border-box;
+    --color-three: silver;
+    --color-four: rgb(99, 99, 99);
+    --color-five: rgb(38, 38, 38);
+    --color-six: rgb(78, 206, 144);
+    --color-seven: gainsboro;
 }
 
-*::-webkit-scrollbar 
-{
-	width: 0!important;
-	background-color:transparent!Important;
-	display:none!Important;
+*,
+*:before,
+*:after {
+    border: 0px;
+    padding: 0px;
+    margin: 0px;
+    box-sizing: border-box;
+}
+
+*::-webkit-scrollbar {
+    width: 0!important;
+    background-color: transparent!Important;
+    display: none!Important;
+}
+
+html,
+body {
+    font-weight: 100;
+    width: 100%;
+    position: relative;
+    margin: 0px;
+    padding: 0px;
+    font-size: 0.95rem;
+    line-height: 1.4rem;
+    -webkit-appearance: none;
+    height: 100%;
+    margin: 0;
 }
 
 
-html,body
-{
+/*///////////////////////////
+///TOAST////////////////*/
 
-	font-weight: 100;
-	width:100%;
-	position:relative;
-	margin:0px;
-	padding:0px;  
-	font-size:0.95rem;
-	line-height:1.4rem;
-	-webkit-appearance: none;
-	height: 100%;
-	margin: 0;
+div#toast {
+    position: fixed;
+    height: auto;
+    overflow: none;
+    top: -100px;
+    background: black;
+    color: white;
+    z-index: 2000;
+    min-width: 100%;
+    padding: 5px;
 }
-
 
 
 /*///////////////////////////
 ///MAP////////////////*/
 
-div#map-container
-{ 
-	height: 100%;
-	width: 100vw;
+div#map-container {
+    height: 100%;
+    width: 100%;
 }
-
 
 
 /*///////////////////////////
 ///MESSAGE////////////////*/
 
-div#message
-{
-	position:absolute;
-	z-index:2000;
-	left:0;
-	top:0;
-	background:black;
-	color:white;
-	font-size: 14px;
-	padding:5px;
+div#message {
+    position: absolute;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    background: black;
+    color: white;
+    font-size: 14px;
+    padding: 5px;
 }
 
-div#message div
-{
-	background:black;
-	color:white;
-	font-size: 14px;
-	padding:3px;
+div#message div {
+    background: black;
+    color: white;
+    font-size: 14px;
+    padding: 3px;
 }
 
 
 /*///////////////////////////
 ///HELPER////////////////*/
 
-
-div#zoom-level
-{
-	position:absolute;
-	z-index: 1000;
-	top:10px;
-	left:10px;
-	background:black;
-	color:white;
-	font-size: 16px;
-	display:none;
+div#zoom-level {
+    position: absolute;
+    z-index: 1000;
+    top: 10px;
+    left: 10px;
+    background: black;
+    color: white;
+    font-size: 16px;
+    display: none;
 }
 
-div#window-status
-{
-	position:fixed;
-	top:10px;
-	left:5px;
-	background:black;
-	color:white;
-	z-index: 1000;
-	display:none;
-
+div#window-status {
+    position: fixed;
+    top: 10px;
+    left: 5px;
+    background: black;
+    color: white;
+    z-index: 1000;
+    display: none;
 }
 
-
-div#output
-{
-	position:fixed;
-	top:10px;
-	left:5px;
-	background:black;
-	color:white;
-	z-index: 1000;
-	display:none;
+div#output {
+    position: fixed;
+    top: 10px;
+    left: 5px;
+    background: black;
+    color: white;
+    z-index: 1000;
+    display: none;
 }
+
 
 /*///////////////////////////
 ///FINDER////////////////*/
 
-div#finder
-{
-	position:absolute;
-	z-index:1000;
-	top:0px;
-	left:0px;
-	background:black;
-	padding:5px;
-	color:white;
-	display:none;
+div#finder {
+    position: absolute;
+    z-index: 1000;
+    top: 0px;
+    left: 0px;
+    background: black;
+    padding: 5px;
+    color: white;
+    display: none;
 }
 
-div#finder h2
-{
-	font-size:14px;
-	font-weight:bold;
-	margin:5px 0 5px 0!Important;
+div#finder h2 {
+    font-size: 14px;
+    font-weight: bold;
+    margin: 5px 0 5px 0!Important;
 }
 
-
-
-div#finder-error
-{
-	position:absolute;
-	z-index:2;
-	top:50%;
-	left:50%;
-	margin:-7px 0 0 -50px;
-	width:92px;
-	background:black;
-	color:white;
-	font-size:14px;
-	padding:3px;
-	display:none;
+div#finder-error {
+    position: absolute;
+    z-index: 2;
+    top: 50%;
+    left: 50%;
+    margin: -7px 0 0 -50px;
+    width: 92px;
+    background: black;
+    color: white;
+    font-size: 14px;
+    padding: 3px;
+    display: none;
 }
 
-
-div#finder div#custom-map-track
-{
-	background:black;
-	color:white;
-	font-size:14px;
-	margin:0 0 3px 0;
-	padding:3px;
-	max-height:80%;
-	overflow: scroll;
+div#finder div#custom-map-track {
+    background: black;
+    color: white;
+    font-size: 14px;
+    margin: 0 0 3px 0;
+    padding: 3px;
+    max-height: 80%;
+    overflow: scroll;
 }
 
-div#finder div#close
-{
-	background:black;
-	color:white;
-	font-size:14px;
-	padding:3px;
-	position:absolute;
-	bottom:5px;
-	left:5px;
-	min-width:100vw;
-
-
+div#finder div#close {
+    background: black;
+    color: white;
+    font-size: 14px;
+    padding: 3px;
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    min-width: 100vw;
 }
 
-div#finder div:focus
-{
-	background:yellow;
-	color:black;
+div#finder div:focus {
+    background: yellow;
+    color: black;
 }
 
-div#finder div#question
-{
-	background:black;
-	color:white;
-	font-size:14px;
-	position:absolute;
-	top:0;
-	left:0;
-	z-index:3000;
-	opacity:0;
-	
+div#finder div#question {
+    background: black;
+    color: white;
+    font-size: 14px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 3000;
+    opacity: 0;
 }
 
-div#finder div#question div#question-text
-{
-	padding:50px 30px  0 30px;
-	text-align: center;
-	
+div#finder div#question div#question-text {
+    padding: 50px 30px 0 30px;
+    text-align: center;
 }
+
 
 /*///////////////////////////
 ///SEARCH////////////////*/
 
-
-div#search
-{
-  display:none;
-  position:absolute;
-  z-index:1000;
-  top:0;
-  background:none;
-  padding:0px;
+div#search {
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    bottom: 0px;
+    background: black;
+    padding: 0px;
+    height: 30px;
+    color: white;
+    width: 100%;
 }
 
-
-div#search div#close
-{
-	background:black;
-	color:white;
-	font-size:14px;
-	padding:3px;
-	position:absolute;
-	bottom:0px;
-	left:0px;
-	min-width:60px;
+div#search div.button {
+    background: black;
+    color: white;
+    font-size: 14px;
+    padding: 3px;
+    max-width: 60px;
+    min-width: 60px;
 }
-
-
-
 
 
 /*///////////////////////////
 ///MAN-PAGE////////////////*/
 
-
-div#man-page
-{
-  display:none;
-  position:absolute;
-  z-index:1000;
-  top:0;
-  background:black;
-  color:white;
-  font-size: 12px;
-  padding:5px 5px 50px 5px;
-  overflow-y:hidden; 
-  overflow-x:scroll;
+div#man-page {
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    top: 0;
+    background: black;
+    color: white;
+    font-size: 12px;
+    padding: 5px 5px 50px 5px;
+    overflow-y: hidden;
+    overflow-x: scroll;
 }
 
-div#man-page h1
-{
-  font-weight: 800;
-  margin:0 0 10px 0;
-  font-size:14px;
-  color:blue;
-
+div#man-page h1 {
+    font-weight: 800;
+    margin: 0 0 10px 0;
+    font-size: 14px;
 }
 
-div#man-page h2
-{
-  color:blue;
-  font-size:12px;
+div#man-page h2 {
+    font-size: 12px;
 }
 
-div#man-page li div
-{
- padding:0 0 0 10px;
-
+div#man-page li div {
+    padding: 0 0 0 10px;
 }
-
-
-div#man-page div#close
-{
-	background:black;
-	color:white;
-	font-size:14px;
-	padding:3px;
-	position:fixed;
-	bottom:5px;
-	left:5px;
-	min-width:100vw;
-}
-
-
 
 
 /*///////////////////////////
 ///LOCATION////////////////*/
 
-
-div#location
-{
-  position:absolute;
-  z-index:1000;
-  left:0;
-  top:0;
-  background:black;
-  color:white;
-  font-size: 14px;
-  padding:5px 10px 50px 5px;
-  display:none;
-  overflow: hidden;
+div#location {
+    position: absolute;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    background: black;
+    color: white;
+    font-size: 14px;
+    padding: 5px 10px 50px 5px;
+    display: none;
+    overflow: hidden;
 }
 
-
-div#location div#button-set
-{
-	position:fixed!Important;
-	bottom:0px;
-	height:30px;
-	background:black;
+div#location div#button-set {
+    position: fixed!Important;
+    bottom: 0px;
+    height: 30px;
+    background: black;
 }
 
-
-div#location div#button-set div div#close
-{
-	background:black;
-	color:white;
-	font-size:14px;
-	padding:3px;
-	min-width:100px;
+div#location div#button-set div div#close {
+    background: black;
+    color: white;
+    font-size: 14px;
+    padding: 3px;
+    min-width: 100px;
 }
 
-div#location div#button-set div div#share
-{
-	background:black;
-	color:white;
-	font-size:14px;
-	padding:3px 10px 3px 3px;
-	text-align: right;
-	min-width:70px;
+div#location div#button-set div div#share {
+    background: black;
+    color: white;
+    font-size: 14px;
+    padding: 3px 10px 3px 3px;
+    text-align: right;
+    min-width: 70px;
 }
 
-div#location div#lat
-{
-	background:black;
-	color:white;
-	font-size: 14px;
-	padding:3px;
+div#location div#lat {
+    background: black;
+    color: white;
+    font-size: 14px;
+    padding: 3px;
 }
 
-div#location div#lng
-{
-	background:black;
-	color:white;
-	font-size: 14px;
-	padding:3px;
+div#location div#lng {
+    background: black;
+    color: white;
+    font-size: 14px;
+    padding: 3px;
 }
 
-div#location div#altitude
-{
-	background:black;
-	color:white;
-	font-size: 14px;
-	padding:3px;
+div#location div#altitude {
+    background: black;
+    color: white;
+    font-size: 14px;
+    padding: 3px;
 }
 
-
-div#location div#weather
-{
-	margin:10px 0 0 0;
-}
-
-div#location div#temp
-{
-	font-size:1.7rem;
-}
-
-
-div#location div#weather section
-{
-	border-top:2px dashed white;
-	margin: 0 0 0px 0;
-	padding:12px 5px 12px 5px;
-
-}
-
-div#location div#weather div#weather-bar div#icon
-{
-	margin:8px 0 0 0;
-}
-
-div#location div#weather div.forecast-time
-{
-
-
-}
-
-
-div#location div#weather div#wind-dir
-{
-	font-size:1.7rem;
-	max-height:1.7rem!Important;
-}
-
-div#location div#weather div#wind-speed
-{
-	font-size:0.7rem;
-	max-height:1.7rem!Important;
-	margin:-10px 0 0 0;
-}
-
-
-
-div#location div#weather div#wind-speed div#wind-speed-val
-{
-	max-height:0.7rem;
-
-}
-
-div#location div#weather div#wind-speed div#wind-speed-unit
-{
-	max-height:0.7rem;
-}
-
-.day-style-1
-{
-	background:rgba(0,0,255,0.6);
-}
-
-.day-style-2
-{
-	background:rgba(11,135,61,0.6);
-}
-
-
-section.chart
-{
-
-  border:none!Important;
-  margin:50px 0 0 0;
-  max-width:240px!Important;
-  display: none;
-}
 
 /* KaiOS portrait devices (240x320) */
-@media only screen and (orientation : portrait) {
-  /* styles */
+
+@media only screen and (orientation: portrait) {
+    /* styles */
 }
 
+
 /* KaiOS landscape devices (320x240) */
+
 @media screen and (orientation: landscape) {
-  /* styles */
+    /* styles */
 }

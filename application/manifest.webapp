@@ -24,15 +24,25 @@
 
 
   "permissions": {
-  "geolocation": {
+	"geolocation": {
 	"description": "Required to show user's location on map"
-  },
-  "device-storage:sdcard": {
-  "description": "Read from sd-card",
-  "access": "readonly"
-  },
+	},
+	"device-storage:sdcard": {
+	"description": "Read from sd-card",
+	"access": "readonly"
+	},
+	"settings":
+	{
+		"access":"readwrite"
+	},
 
-  "device-storage:apps":{ "access": "readonly" },
+	"wake-lock":{},
+	"power":{},
+	"desktop-notification":{},
+
+
+
+	"device-storage:apps":{ "access": "readonly" },
 
 	"spatialnavigation-app-manage": {
 	"navigator.spatialNavigationEnabled": false
