@@ -1,4 +1,4 @@
-![logo](/images/logo.png)
+![logo](/images/logo.png) 
 This is an Open Street Map app for the Nokia 81104G - [Gerda](https://gerda.tech/) 
 
 ### Features
