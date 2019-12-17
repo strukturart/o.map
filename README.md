@@ -41,3 +41,11 @@ Settings -> screenlock disable
 
 ### Thank you
 + Ivan from the Bananna Hackers Group
+
+## Donation
+
+You like the app and you have enough money
+
+<a href="https://www.buymeacoffee.com/vj6Q8lR" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/lato-orange.png" alt="Buy Me A Coffee" style="height: 25px !important;width: 108px !important;" ></a>
+
+
