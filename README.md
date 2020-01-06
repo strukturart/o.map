@@ -1,15 +1,17 @@
 ![logo](/images/logo.png) 
 
-This is an Open Street Map app for the Nokia 81104G - [Gerda](https://gerda.tech/) 
+This is an Open Street Map app for the Nokia 81104G
 
 ### Features
 + Map
 + Send your position by sms
 + Import Tracks (geoJson)
++ save your position
 
 If you want to use the openweathermap, you need to get an API key from openweathermap.org. Then you need to create a file called osm-map.json please check my example [file](/osm-map.json)
 
-
+For Nokia8110 user -> It is possible with closed slider that the app runs :-)
+Settings -> screenlock disable
 
 ![image-2](/images/image-2.png)
 ![image-2](/images/image-3.png)
@@ -19,6 +21,7 @@ If you want to use the openweathermap, you need to get an API key from openweath
 + Openstreetmap
 + Open Topo Map
 + Tonner Map
++ Open Weather Map
 
 ## Layers
 + Euro Rainmap
@@ -28,16 +31,23 @@ If you want to use the openweathermap, you need to get an API key from openweath
 + **Cursor** Moving the map
 + **key 1** update marker
 + **key 2** search
-+ **key 3** load geoJson track,add MapLayer, add Markers, settings
-For Nokia8110 user -> It is possible with closed slider that the app runs :-)
-Settings -> screenlock disable
-### GeoJson
-+ Online tool: [geojson.io](http://geojson.io/#map=1/-55/228)
-+ Validation: [geojsonlint](http://geojsonlint.com/)
-+ GeoJson Map: [geojson Map] https://geojson-maps.ash.ms/
++ **key 3** open menu
++ **key 4** turn lock screen off to use the app with closed slider
++ **key 5** set new marker and save on sdcard
 
-### How to jailbrak your phone
-[Gerda](https://gerda.tech/)
+
 
 ### Thank you
-+ Ivan from the Bananna Hackers Group
++ https://sites.google.com/view/bananahackers/home
+
+
+## Dependencies
+- https://jquery.com/
+- https://leafletjs.com/
+
+## Donation
+You like the app and you have enough money please support me.
+
+<a target="_blank" href="https://www.buymeacoffee.com/vj6Q8lR"><img src="/images/support.svg" alt="Buy me a coffee"></a>
+
+

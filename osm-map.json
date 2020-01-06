@@ -1,22 +1,24 @@
-[
-	
-		
-		{
-			"marker_name":"marker1",
-			"lat":"47",
-			"lng":"8"
-		},
-		
-		{
-			"marker_name":"marker2",
-			"lat":"47",
-			"lng":"10"
-		},
+[{
+        "markers": [{
+                "marker_name": 1578242052,
+                "lat": 47.14461499359459,
+                "lng": 8.250206433236599
+            },
+            {
+                "marker_name": 1578266137,
+                "lat": 47.14461499359459,
+                "lng": 47.14461499359459
+            }
 
-		{
-		"api_key":"664532d681348"
-		}
-	
-
-	
+        ]
+    },
+    {
+        "api_key": "ee574b079ea964532d681348"
+    },
+    {
+        "default_position": {
+            "position_lat": "20",
+            "position_long": "7"
+        }
+    }
 ]
