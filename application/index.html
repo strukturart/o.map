@@ -21,7 +21,7 @@
 
 </head>
 
-<body>
+<body class="width-100 height-100">
 
 
     <div id="message" class="flex justify-content-center align-item-center width-100 height-100">
@@ -74,6 +74,35 @@
 -->
 
     <div id="finder" class="flex justify-content-center align-item-center width-100 height-100">
+        <h2>Options</h2>
+        <div id="settings">
+            <div class="items update-position" data-map="update-position">
+                <div class="flex justify-content-spacebetween">
+                    <div>update geolocation</div>
+                    <div>1</div>
+                </div>
+            </div>
+            <div class="items" data-map="search">
+                <div class="flex justify-content-spacebetween">
+                    <div>search</div>
+                    <div>2</div>
+                </div>
+            </div>
+            <div class="items setting-autoupdate-geolocation" data-map="setting-autoupdate-geolocation">save position as marker</div>
+            <div class="items disable-screenlock" data-map="disable-screenlock">
+                <div class="flex justify-content-spacebetween">
+                    <div>disable screenlock</div>
+                    <div>4</div>
+                </div>
+            </div>
+
+            <div class="items" data-map="savelocation">
+                <div class="flex justify-content-spacebetween">
+                    <div>save position as marker</div>
+                    <div>5</div>
+                </div>
+            </div>
+        </div>
         <h2>MAPS</h2>
         <div id="maps"></div>
 
@@ -91,11 +120,7 @@
         <div id="share">
             <div class="items" data-map="share">share by sms</div>
         </div>
-        <h2>Settings</h2>
-        <div id="settings">
-            <div class="items setting-screenlock" data-map="setting-screenlock">screenlock disabled</div>
-            <div class="items setting-geoloc-autoupdate" data-map="setting-geoloc-autoupdate">geolocation</div>
-        </div>
+
 
 
         <div id="finder-error"></div>

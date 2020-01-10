@@ -134,6 +134,7 @@ div#finder {
     padding: 5px;
     color: white;
     display: none;
+    overflow: hidden;
 }
 
 div#finder h2 {
