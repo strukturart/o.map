@@ -226,40 +226,9 @@ div#search div.button {
 
 
 /*///////////////////////////
-///MAN-PAGE////////////////*/
-
-div#man-page {
-    display: none;
-    position: absolute;
-    z-index: 1000;
-    top: 0;
-    background: black;
-    color: white;
-    font-size: 12px;
-    padding: 5px 5px 50px 5px;
-    overflow-y: hidden;
-    overflow-x: scroll;
-}
-
-div#man-page h1 {
-    font-weight: 800;
-    margin: 0 0 10px 0;
-    font-size: 14px;
-}
-
-div#man-page h2 {
-    font-size: 12px;
-}
-
-div#man-page li div {
-    padding: 0 0 0 10px;
-}
-
-
-/*///////////////////////////
 ///LOCATION////////////////*/
 
-div#location {
+div#coordinations {
     position: absolute;
     z-index: 1000;
     left: 0;
@@ -272,14 +241,14 @@ div#location {
     overflow: hidden;
 }
 
-div#location div#button-set {
+div#coordinations div#button-set {
     position: fixed!Important;
     bottom: 0px;
     height: 30px;
     background: black;
 }
 
-div#location div#button-set div div#close {
+div#coordinations div#button-set div div#close {
     background: black;
     color: white;
     font-size: 14px;
@@ -287,7 +256,7 @@ div#location div#button-set div div#close {
     min-width: 100px;
 }
 
-div#location div#button-set div div#share {
+div#coordinations div#button-set div div#share {
     background: black;
     color: white;
     font-size: 14px;
@@ -296,21 +265,21 @@ div#location div#button-set div div#share {
     min-width: 70px;
 }
 
-div#location div#lat {
+div#coordinations div#lat {
     background: black;
     color: white;
     font-size: 14px;
     padding: 3px;
 }
 
-div#location div#lng {
+div#coordinations div#lng {
     background: black;
     color: white;
     font-size: 14px;
     padding: 3px;
 }
 
-div#location div#altitude {
+div#coordinations div#altitude {
     background: black;
     color: white;
     font-size: 14px;

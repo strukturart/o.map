@@ -31,7 +31,7 @@ If you want to use the openweathermap, you need to get an API key from openweath
 + **key 1** update marker
 + **key 2** search
 + **key 3** load geoJson track,add MapLayer, add Markers, settings
-+ **key 4** autoupdate marker on/off
++ **key 4** watch position on/off
 + **key 5** save position as marker on sd-card 
 
 For Nokia8110 user -> It is possible with closed slider that the app runs :-)

@@ -40,17 +40,13 @@
 /////////////////////////
 -->
 
-    <div id="location" class="flex justify-content-center align-item-center width-100 height-100">
+    <div id="coordinations" class="flex justify-content-center align-item-center width-100 height-100">
         <div>
             <div id="lat"></div>
             <div id="lng"></div>
             <div id="altitude"></div>
-        </div>
-
-        <div id="button-set">
-            <div class="flex width-100 justify-content-spacebetween">
-                <div id="share">share position</div>
-            </div>
+            <div id="heading"></div>
+            <div id="time"></div>
         </div>
     </div>
 
@@ -105,6 +101,13 @@
                     <div>5</div>
                 </div>
             </div>
+
+            <div class="items" data-map="coordinations">
+                <div class="flex justify-content-spacebetween">
+                    <div>coordinations</div>
+                    <div>6</div>
+                </div>
+            </div>
         </div>
         <h2>MAPS</h2>
         <div id="maps"></div>
@@ -137,52 +140,6 @@
         </div>
     </div>
 
-    <!--
-///////////////
-///DEBUG//////
-//////////////
--->
-
-    <div id="output"></div>
-    <div id="zoom-level"></div>
-    <div id="window-status"></div>
-
-
-
-    <!--
-///////////////
-///MAN//////
-//////////////
--->
-
-    <div id="man-page" class="flex justify-content-center align-item-center width-100 height-100">
-        <h1>Manual</h1>
-        <ul>
-            <li>
-                <h2>Soft-keys</h2>
-                <div>Zoom the map</div>
-            </li>
-            <li>
-                <h2>Cursor </h2>
-                <div>Moving the map</div>
-            </li>
-            <li>
-                <h2>key 1</h2>
-                <div>update Geolocation</div>
-            </li>
-            <li>
-                <h2>key 2 </h2>
-                <div>search</div>
-            </li>
-            <li>
-                <h2>key 3 </h2>
-                <div>add Track / Map / Marker</div>
-            </li>
-        </ul>
-    </div>
-
-
-
 </body>
 
 </html>
@@ -195,4 +152,5 @@
 <script defer src="assets/js/tile.stamen.1.3.0.js"></script>
 <script defer src="assets/js/leaflet-openweathermap.js"></script>
 <script defer src="assets/js/helper.js"></script>
+<script defer src="assets/js/rainlayer.js"></script>
 <script defer src="app.js"></script>

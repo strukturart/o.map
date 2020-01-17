@@ -124,216 +124,9 @@ $(document).ready(function() {
 
 
 
-    //rain map
+    //rain layer
     /////////
-
-    let rain_image_url = [];
-    let rain_image_url_time = [];
-    let loop = -1;
-    let init = true;
-    let rainlayer;
-
-    function get_rain_images() {
-        for (let i = 1; i < 270; i++) {
-            let rain_weather_url = moment().subtract(i, 'minute').format('YYYYMMDD.HHmm')
-            let rain_time = moment().subtract(i, 'minute').format('YYYY-MM-DD,HH:mm')
-
-            let filter = moment().subtract(i, 'minute').format('mm')
-            if (filter == 15 || filter == 30 || filter == 45 || filter == 0) {
-                //first 8 not because no image exist 
-                if (i > 8) {
-
-                    //push urls's in array
-                    rain_image_url.push("http://www.radareu.cz/data/radar/radar.anim." + rain_weather_url + ".0.png");
-                    rain_image_url_time.push(rain_time);
-                }
-            }
-        }
-        rain_image_url.reverse()
-        rain_image_url_time.reverse()
-
-    }
-
-    get_rain_images()
-
-
-
-    function remove_layer() {
-        map.eachLayer(function(layer) {
-            map.removeLayer(layer);
-            $("div#output").css("display", "none")
-        });
-    }
-
-    let rainlayer0;
-    let rainlayer1;
-    let rainlayer2;
-    let rainlayer3;
-    let rainlayer4;
-
-
-    function remove_rain_overlayers() {
-
-        $('.leaflet-image-layer').css('display', 'none');
-    }
-
-
-
-
-
-    function rain_layer() {
-
-        if (windowOpen == "map") {
-            $('.leaflet-image-layer').css('display', 'block');
-
-
-            loop++;
-            imageBounds = [
-                [72.62025190354672, -14.618225054687514],
-                [30.968189526345665, 45.314636273437486]
-            ];
-            $("div#output").css("display", "block")
-
-            if (loop == 0) {
-                if (map.hasLayer(rainlayer0) == false) {
-                    rainlayer0 = L.imageOverlay(rain_image_url[0], imageBounds).addTo(map);
-
-                    rainlayer0.on("load", function(event) {
-                        rainlayer0.setOpacity(0.5);
-                    });
-                    rainlayer0.on("error", function(event) {
-                        toaster("image can't load")
-                    });
-                } else {
-                    rainlayer4.setOpacity(0.0);
-                    rainlayer0.setOpacity(0.5);
-                }
-
-                $("div#output").text("");
-                $("div#output").text(rain_image_url_time[loop]);
-            }
-
-
-
-
-            if (loop == 1) {
-                if (map.hasLayer(rainlayer1) == false) {
-                    rainlayer1 = L.imageOverlay(rain_image_url[1], imageBounds).addTo(map);
-
-                    rainlayer1.on("load", function(event) {
-                        rainlayer0.setOpacity(0.0);
-                        rainlayer1.setOpacity(0.5);
-                    });
-                    rainlayer1.on("error", function(event) {
-                        alert("image can't load")
-                    });
-                } else {
-                    rainlayer0.setOpacity(0.0);
-                    rainlayer1.setOpacity(0.5);
-
-                }
-
-                $("div#output").text("");
-                $("div#output").text(rain_image_url_time[loop]);
-            }
-
-
-
-
-
-            if (loop == 2) {
-                if (map.hasLayer(rainlayer2) == false) {
-                    rainlayer2 = L.imageOverlay(rain_image_url[2], imageBounds).addTo(map);
-
-                    rainlayer2.on("load", function(event) {
-                        rainlayer0.setOpacity(0.0);
-                        rainlayer1.setOpacity(0.0);
-                        rainlayer2.setOpacity(0.5);
-                    });
-                    rainlayer2.on("error", function(event) {
-                        alert("image can't load")
-                    });
-
-                } else {
-                    rainlayer0.setOpacity(0.0);
-                    rainlayer1.setOpacity(0.0);
-                    rainlayer2.setOpacity(0.5);
-                }
-
-                $("div#output").text("");
-                $("div#output").text(rain_image_url_time[loop]);
-            }
-
-
-            if (loop == 3) {
-                if (map.hasLayer(rainlayer3) == false) {
-                    rainlayer3 = L.imageOverlay(rain_image_url[3], imageBounds).addTo(map);
-
-                    rainlayer3.on("load", function(event) {
-                        rainlayer2.setOpacity(0.0);
-                        rainlayer3.setOpacity(0.5);
-                    });
-                    rainlayer3.on("error", function(event) {
-                        alert("image can't load")
-                    });
-                } else {
-                    rainlayer0.setOpacity(0.0);
-                    rainlayer1.setOpacity(0.0);
-                    rainlayer2.setOpacity(0.0);
-                    rainlayer3.setOpacity(0.5);
-                }
-
-                $("div#output").text("");
-                $("div#output").text(rain_image_url_time[loop]);
-            }
-
-
-            if (loop == 4) {
-                if (map.hasLayer(rainlayer4) == false) {
-                    rainlayer4 = L.imageOverlay(rain_image_url[4], imageBounds).addTo(map);
-
-                    rainlayer4.on("load", function(event) {
-                        rainlayer3.setOpacity(0.0);
-                        rainlayer4.setOpacity(0.5);
-                    });
-                    rainlayer4.on("error", function(event) {
-                        alert("image can't load")
-                    });
-                } else {
-                    rainlayer0.setOpacity(0.0);
-                    rainlayer1.setOpacity(0.0);
-                    rainlayer2.setOpacity(0.0);
-                    rainlayer3.setOpacity(0.0);
-                    rainlayer4.setOpacity(0.5);
-                }
-
-                $("div#output").text("");
-                $("div#output").text(rain_image_url_time[loop]);
-            }
-
-
-
-            if (loop == 4) {
-                loop = -1
-            }
-
-        }
-
-    }
-
-
-    let rain_layer_animation;
-
-    function rain_layer_animation_start() {
-        rain_layer_animation = setInterval(rain_layer, 1500);
-    }
-
-    function rain_layer_animation_stop() {
-        clearInterval(rain_layer_animation);
-    }
-
-
-
+    // from assets/js/rainlayer.js
 
     /////////////////////////
     //get Openweather Api Key
@@ -427,18 +220,19 @@ $(document).ready(function() {
         function success(pos) {
             let crd = pos.coords;
 
+
             current_lat = crd.latitude;
             current_lng = crd.longitude;
             current_alt = crd.altitude;
-            accuracy = crd.accuracy;
+            current_heading = crd.heading;
 
 
 
-            if (option == "save_position") {
+            if (option == "save_marker" || option == "delete_marker") {
 
 
                 let sdcard = navigator.getDeviceStorages("sdcard");
-                let filename = moment().format("DD.MM.YYYY, hh:mm");
+                let filename = moment().format("DD.MM.YYYY, HH:MM");
 
 
 
@@ -461,7 +255,21 @@ $(document).ready(function() {
                             return false;
                         }
 
-                        data[0].markers.push({ "marker_name": filename, "lat": current_lat, "lng": current_lng });
+                        if (option == "save_marker") {
+                            data[0].markers.push({ "marker_name": filename, "lat": current_lat, "lng": current_lng });
+                        }
+
+                        if (option == "delete_marker") {
+                            $.each(data[0].markers, function(index, value) {
+                                if (value.marker_name == $(document.activeElement).text()) {
+                                    delete data[0].markers[{ index }];
+
+                                }
+
+                            })
+
+                        }
+
                         let extData = JSON.stringify(data);
 
                         deleteFile(1, "osm-map/osm-map.json", "")
@@ -473,7 +281,7 @@ $(document).ready(function() {
                             let requestAdd = sdcard[1].addNamed(file, "osm-map/osm-map.json");
 
                             requestAdd.onsuccess = function() {
-                                toaster('Marker saved successfully');
+                                toaster('Marker update successfully');
                                 L.marker([current_lat, current_lng]).addTo(map);
                                 map.setView([current_lat, current_lng], 13);
 
@@ -506,6 +314,10 @@ $(document).ready(function() {
                 map.setView([current_lat, current_lng], 13);
                 zoom_speed();
                 $('div#message div').text("");
+
+                $('div#coordinations div#lat').text("Lat " + current_lat.toFixed(5));
+                $('div#coordinations div#lng').text("Lng " + current_lng.toFixed(5));
+                $('div#coordinations div#altitude').text("alt " + altitude.toFixed(5));
                 return false;
             }
 
@@ -515,15 +327,12 @@ $(document).ready(function() {
                 map.flyTo(new L.LatLng(current_lat, current_lng), 16);
                 zoom_speed()
 
-                $('div#location div#lat').text("Lat " + current_lat.toFixed(5));
-                $('div#location div#lng').text("Lng " + current_lng.toFixed(5));
-                $('div#location div#altitude').text("alt " + altitude.toFixed(5));
+                $('div#coordinations div#lat').text("Lat " + current_lat.toFixed(5));
+                $('div#coordinations div#lng').text("Lng " + current_lng.toFixed(5));
+                $('div#coordinations div#altitude').text("alt " + current_alt);
+                $('div#coordinations div#heading').text("heading " + current_heading);
 
             }
-
-
-
-
 
         }
 
@@ -547,8 +356,23 @@ $(document).ready(function() {
         if (state_geoloc == "not-activ") {
 
             function showLocation(position) {
+                let crd = position.coords;
+
+                current_lat = crd.latitude;
+                current_lng = crd.longitude;
+                current_alt = crd.altitude;
+                current_heading = crd.heading;
+
 
                 map.flyTo(new L.LatLng(position.coords.latitude, position.coords.longitude));
+                myMarker.setLatLng([current_lat, current_lng]).update();
+
+                $('div#coordinations div#lat').text("Lat " + current_lat.toFixed(5));
+                $('div#coordinations div#lng').text("Lng " + current_lng.toFixed(5));
+                $('div#coordinations div#altitude').text("alt " + current_alt);
+                $('div#coordinations div#heading').text("heading " + current_heading);
+
+
                 state_geoloc = "activ";
 
 
@@ -667,7 +491,7 @@ $(document).ready(function() {
 
 
 
-    function addMapLayers() {
+    function addMapLayers(param) {
         if ($(".items").is(":focus") && windowOpen == "finder") {
 
             //switch online maps
@@ -751,22 +575,31 @@ $(document).ready(function() {
                 showSearch();
             }
 
+            if (item_value == "coordinations") {
+
+                coordinations("show")
+            }
+
             if (item_value == "savelocation") {
 
-                getLocation("save_position");
+                getLocation("save_marker");
             }
 
             if (item_value == "marker") {
-                current_lng = $(document.activeElement).data('lng');
-                current_lat = $(document.activeElement).data('lat');
+                if (param == "add-marker") {
+                    current_lng = $(document.activeElement).data('lng');
+                    current_lat = $(document.activeElement).data('lat');
+                    L.marker([current_lat, current_lng]).addTo(map);
+                    map.setView([current_lat, current_lng], 13);
+                    $('div#finder').css('display', 'none');
+                    windowOpen = "map";
 
+                }
 
+                if (param == "delete-marker") {
+                    getLocation("delete_marker")
+                }
 
-                L.marker([current_lat, current_lng]).addTo(map);
-                map.setView([current_lat, current_lng], 13);
-
-                $('div#finder').css('display', 'none');
-                windowOpen = "map";
             }
 
 
@@ -820,6 +653,23 @@ $(document).ready(function() {
 
         }
 
+    }
+    ////////////////////////////////////////
+    ////COORDINATIONS PANEL/////////////////
+    ///////////////////////////////////////
+
+    function coordinations(param) {
+        if (param == "show") {
+            $("div#coordinations").css("display", "block");
+            $("div#finder").css("display", "none");
+            windowOpen = "coordinations";
+
+        }
+
+        if (param == "hide") {
+            $("div#coordinations").css("display", "none");
+            windowOpen = "map";
+        }
     }
 
 
@@ -1016,7 +866,9 @@ $(document).ready(function() {
     }
 
 
-
+    /////////////////////
+    ////ZOOM MAP/////////
+    ////////////////////
 
 
     function ZoomMap(in_out) {
@@ -1075,7 +927,6 @@ $(document).ready(function() {
             step = 0.001;
         }
 
-        document.getElementById("zoom-level").innerHTML = "level " + zoom_level + " step " + step;
         return step;
     }
 
@@ -1108,24 +959,21 @@ $(document).ready(function() {
         if (windowOpen == "map") {
             if (direction == "left") {
                 zoom_speed()
-                $('div#location div#lat').text(current_lat);
-                $('div#location div#lng').text(current_lng);
+
                 current_lng = current_lng - step;
                 map.panTo(new L.LatLng(current_lat, current_lng));
             }
 
             if (direction == "right") {
                 zoom_speed()
-                $('div#location div#lat').text(current_lat);
-                $('div#location div#lng').text(current_lng);
+
                 current_lng = current_lng + step;
                 map.panTo(new L.LatLng(current_lat, current_lng));
             }
 
             if (direction == "up") {
                 zoom_speed()
-                $('div#location div#lat').text(current_lat);
-                $('div#location div#lng').text(current_lng);
+
                 current_lat = current_lat + step;
                 map.panTo(new L.LatLng(current_lat, current_lng));
 
@@ -1133,8 +981,7 @@ $(document).ready(function() {
 
             if (direction == "down") {
                 zoom_speed()
-                $('div#location div#lat').text(current_lat);
-                $('div#location div#lng').text(current_lng);
+
                 current_lat = current_lat - step;
                 map.panTo(new L.LatLng(current_lat, current_lng));
 
@@ -1187,22 +1034,75 @@ $(document).ready(function() {
 
 
 
-    //////////////////////////
-    ////KEYPAD TRIGGER////////////
-    /////////////////////////
+    //////////////////////////////
+    ////KEYPAD HANDLER////////////
+    //////////////////////////////
 
 
 
-    function handleKeyDown(evt) {
+    let longpress = false;
+    const longpress_timespan = 1000;
+    let timeout;
+
+    function repeat_action(param) {
+        switch (param.key) {
+            case 'ArrowUp':
+                MovemMap("up")
+                break;
+
+            case 'ArrowDown':
+                MovemMap("down")
+                break;
+
+            case 'ArrowLeft':
+                MovemMap("left")
+                break;
+
+            case 'ArrowRight':
+                MovemMap("right")
+                break;
+
+            case 'Enter':
+                break;
+        }
+    }
+
+    //////////////
+    ////LONGPRESS
+    /////////////
 
 
-        switch (evt.key) {
+    function longpress_action(param) {
+        switch (param.key) {
+            case 'ArrowUp':
+                break;
 
+            case 'ArrowDown':
+                break;
+
+            case 'ArrowLeft':
+                break;
+
+            case 'ArrowRight':
+                break;
+
+            case 'Enter':
+                addMapLayers("delete-marker");
+                break;
+        }
+    }
+
+
+    ///////////////
+    ////SHORTPRESS
+    //////////////
+
+    function shortpress_action(param) {
+        switch (param.key) {
             case 'Backspace':
-                evt.preventDefault();
+                param.preventDefault();
                 if (windowOpen == "map") {
                     let lk_state = localStorageWriteRead("lockscreen_state", "");
-                    toaster(lk_state)
                     if (lk_state == "disabled") {
                         setScreenlockPasscode(false);
                     }
@@ -1211,7 +1111,7 @@ $(document).ready(function() {
                         setScreenlockPasscode(true);
                     }
 
-                    toaster("Goodbye")
+                    toaster("Goodbye");
 
                     setTimeout(function() {
                         window.close();
@@ -1223,6 +1123,12 @@ $(document).ready(function() {
                     windowOpen = "map";
 
                 }
+
+                if (windowOpen == "coordinations") {
+                    coordinations("hide")
+                }
+
+
                 break;
 
             case 'SoftLeft':
@@ -1237,7 +1143,11 @@ $(document).ready(function() {
                 break;
 
             case 'Enter':
-                addMapLayers();
+
+
+                addMapLayers("add-marker");
+
+
                 break;
 
             case '0':
@@ -1249,12 +1159,12 @@ $(document).ready(function() {
                 break;
 
             case '2':
-                evt.preventDefault()
+                param.preventDefault()
                 showSearch();
                 break;
 
             case '3':
-                evt.preventDefault()
+                param.preventDefault()
                 startFinder();
 
                 break;
@@ -1265,7 +1175,11 @@ $(document).ready(function() {
                 break;
 
             case '5':
-                savePosition();
+                getLocation("save_marker");
+                break;
+
+            case '6':
+                coordinations("show");
                 break;
 
             case 'ArrowRight':
@@ -1285,27 +1199,43 @@ $(document).ready(function() {
                 MovemMap("down")
                 nav("+1")
                 break;
+        }
+    }
 
+    /////////////////////////////////
+    ////shortpress / longpress logic
+    ////////////////////////////////
+
+    function handleKeyDown(evt) {
+        if (!evt.repeat) {
+            longpress = false;
+            timeout = setTimeout(() => {
+                longpress = true;
+                longpress_action(evt);
+            }, longpress_timespan);
         }
 
-    };
-
+        if (evt.repeat) {
+            longpress = false;
+            repeat_action(evt);
+        }
+    }
 
     function handleKeyUp(evt) {
-
-
-        switch (evt.key) {
-            case '4':
-
-                break;
-
+        clearTimeout(timeout);
+        if (!longpress) {
+            shortpress_action(evt);
         }
     }
 
 
 
+
+
+
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('keyup', handleKeyUp);
+
 
 
     //////////////////////////
