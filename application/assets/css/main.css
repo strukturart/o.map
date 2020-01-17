@@ -134,6 +134,7 @@ div#finder {
     padding: 5px;
     color: white;
     display: none;
+    overflow: hidden;
 }
 
 div#finder h2 {
@@ -186,8 +187,8 @@ div#finder div#question {
     background: black;
     color: white;
     font-size: 14px;
-    position: absolute;
-    top: 0;
+    position: fixed;
+    bottom: 0;
     left: 0;
     z-index: 3000;
     opacity: 0;

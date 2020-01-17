@@ -1,3 +1,6 @@
+"use strict";
+
+
 function notify(param_title, param_text, param_silent) {
 
     var options = {
@@ -36,9 +39,70 @@ function toaster(text) {
     $("div#toast").animate({ top: "0px" }, 1000, "linear", function() {
 
 
-        $("div#toast").delay(2000).animate({ top: "-100px" }, 1000);
+        $("div#toast").delay(3000).animate({ top: "-100px" }, 3000);
 
 
     });
 
 }
+
+function localStorageWriteRead(item, value) {
+    if (item != "" && value != "") {
+        localStorage.setItem(item, value)
+    }
+
+
+    return localStorage.getItem(item)
+
+}
+
+
+//delete file
+function deleteFile(storage, path, notification) {
+    let sdcard = navigator.getDeviceStorages("sdcard");
+
+    let requestDel = sdcard[storage].delete(path);
+
+    requestDel.onsuccess = function() {
+        if (notification == "notification") {
+            toaster('File "' + name + '" successfully deleted frome the sdcard storage area');
+        }
+    }
+
+    requestDel.onerror = function() {
+        toaster('Unable to delete the file: ' + this.error);
+    }
+
+}
+
+
+
+
+
+function filePicker() {
+
+    let activity = new MozActivity({
+        // The name of the activity the app wants to delegate the action
+        name: "pick"
+
+        // Data required by the activity. Each application acting as an activity handler 
+        // can have it's own requirement for the activity. If the data does not fulfill
+        // all the requirement of any activity handler, the error event will be sent
+        // otherwise, the event sent depend on the activity handler itself.
+        /*
+        data: {
+            type: "image/jpeg"
+        }
+        */
+    });
+
+    activity.onsuccess = function() {
+        toaster("Activity successfuly handled");
+
+        this.result.blob;
+    }
+
+    activity.onerror = function() {
+        toaster("The activity encouter en error: " + this.error);
+    }
+};
