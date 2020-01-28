@@ -33,6 +33,7 @@ If you want to use the openweathermap, you need to get an API key from openweath
 + **key 3** load geoJson track,add MapLayer, add Markers, settings
 + **key 4** watch position on/off
 + **key 5** save position as marker on sd-card 
+to delete the marker open with 3 the menu select der marker and press long enter
 
 For Nokia8110 user -> It is possible with closed slider that the app runs :-)
 Settings -> screenlock disable

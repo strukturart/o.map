@@ -19,7 +19,7 @@ $(document).ready(function() {
     let myMarker = "";
     let i = 0;
     let map_or_track;
-    let windowOpen = "";
+    let windowOpen = "map";
     let message_body = "";
     let openweather_api = "";
     let default_position_lat = "";
@@ -131,7 +131,15 @@ $(document).ready(function() {
     /////////////////////////
     //get Openweather Api Key
     /////////////////////////
-    function read_json() {
+    function read_json(option) {
+
+        rain_layer_animation_stop()
+        $("div#tracks").empty();
+        $("div#maps").empty();
+        $("div#layers").empty();
+        $("div#markers").empty();
+
+
         let finder = new Applait.Finder({ type: "sdcard", debugMode: false });
         finder.search("osm-map.json");
 
@@ -143,6 +151,7 @@ $(document).ready(function() {
 
         finder.on("searchComplete", function(needle, filematchcount) {
 
+
             if (filematchcount == 0) {
                 toaster("no osm-map.json found");
                 return;
@@ -150,6 +159,12 @@ $(document).ready(function() {
         })
 
         finder.on("fileFound", function(file, fileinfo, storageName) {
+
+
+            $("div#maps").append('<div class="items" data-map="toner">Toner <i>Map</i></div>');
+            $("div#maps").append('<div class="items" data-map="osm">OSM <i>Map</i></div>');
+            $("div#maps").append('<div class="items" data-map="otm">OpenTopo <i>Map</i></div>');
+            $("div#layers").append('<div class="items" data-map="rain">Rain</div>');
 
             let markers_file = "";
             let reader = new FileReader()
@@ -175,6 +190,7 @@ $(document).ready(function() {
 
 
 
+                //add markers and openweatermap
                 $.each(data, function(index, value) {
 
                     if (value.markers) {
@@ -185,16 +201,54 @@ $(document).ready(function() {
 
                     if (value.api_key) {
                         openweather_api = value.api_key;
+                        $("div#maps").append('<div class="items" data-map="owm">Open Weather <i>Map</i></div>');
+
                     }
 
 
                 })
+
+
+
+                if (option == "finder") {
+
+                    windowOpen = "finder";
+                    let finder = new Applait.Finder({ type: "sdcard", debugMode: false });
+                    finder.search(".geojson");
+
+                    finder.on("searchComplete", function(needle, filematchcount) {
+
+
+                        //set tabindex
+                        $('div.items').each(function(index, value) {
+                            let $div = $(this)
+                            $div.attr("tabindex", index);
+                        });
+
+
+                        $('div#finder').css('display', 'block');
+                        $('div#finder').find('div.items[tabindex=0]').focus();
+                        tabIndex = 0;
+
+                    });
+
+
+                    finder.on("fileFound", function(file, fileinfo, storageName) {
+                        $("div#tracks").append('<div class="items" data-map="geojson">' + fileinfo.name + '</div>');
+                    });
+
+                }
 
             };
             reader.readAsText(file)
         });
     }
     read_json()
+
+
+
+
+
 
 
 
@@ -209,7 +263,9 @@ $(document).ready(function() {
 
     function getLocation(option) {
 
-        toaster("seeking position");
+        if (option != "delete_marker") {
+            toaster("seeking position");
+        }
 
         let options = {
             enableHighAccuracy: true,
@@ -260,15 +316,21 @@ $(document).ready(function() {
                         }
 
                         if (option == "delete_marker") {
-                            $.each(data[0].markers, function(index, value) {
-                                if (value.marker_name == $(document.activeElement).text()) {
-                                    delete data[0].markers[{ index }];
+                            var markers = [];
 
+                            $.each(data[0].markers, function(index, value) {
+                                if (value.marker_name != $(document.activeElement).text()) {
+                                    markers.push(value);
                                 }
 
                             })
+                            data[0].markers = markers;
+
+
+
 
                         }
+
 
                         let extData = JSON.stringify(data);
 
@@ -281,12 +343,27 @@ $(document).ready(function() {
                             let requestAdd = sdcard[1].addNamed(file, "osm-map/osm-map.json");
 
                             requestAdd.onsuccess = function() {
-                                toaster('Marker update successfully');
-                                L.marker([current_lat, current_lng]).addTo(map);
-                                map.setView([current_lat, current_lng], 13);
+                                if (option == "delete_marker") {
+                                    toaster('Marker deleted');
+                                    document.activeElement.style.display = "none";
+                                    //set tabindex
+                                    $('div.items').each(function(index, value) {
+                                        let $div = $(this)
+                                        $div.attr("tabindex", index);
+                                    });
+                                    $('div#finder').find('div.items[tabindex=0]').focus();
+                                    tabIndex = 0;
 
-                                $('div#finder').css('display', 'none');
-                                windowOpen = "map";
+                                }
+                                if (option == "save_marker") {
+                                    toaster('Marker saved');
+                                    L.marker([current_lat, current_lng]).addTo(map);
+                                    map.setView([current_lat, current_lng], 13);
+
+                                    $('div#finder').css('display', 'none');
+                                    windowOpen = "map";
+                                }
+
 
                             }
 
@@ -434,61 +511,6 @@ $(document).ready(function() {
 
 
 
-    //////////////////////////////////
-    ////LOAD GEOSON & SWITCH MAPS/////
-    //////////////////////////////////
-
-
-
-    function startFinder() {
-
-        windowOpen = "finder";
-
-        rain_layer_animation_stop()
-        $("div#tracks").empty();
-        $("div#maps").empty();
-        $("div#layers").empty();
-        $("div#output").css("display", "none")
-            //get file list
-        let finder = new Applait.Finder({ type: "sdcard", debugMode: false });
-        finder.search(".geojson");
-
-        finder.on("searchComplete", function(needle, filematchcount) {
-
-            $("div#maps").append('<div class="items" data-map="toner">Toner <i>Map</i></div>');
-            $("div#maps").append('<div class="items" data-map="osm">OSM <i>Map</i></div>');
-            $("div#maps").append('<div class="items" data-map="otm">OpenTopo <i>Map</i></div>');
-
-            $("div#layers").append('<div class="items" data-map="rain">Rain</div>');
-
-            if (openweather_api != "") {
-                $("div#maps").append('<div class="items" data-map="owm">Weather <i>Map</i></div>');
-            }
-
-            $('div.items').each(function(index, value) {
-                let $div = $(this)
-                $div.attr("tabindex", index);
-            });
-
-
-            $('div#finder').css('display', 'block');
-            $('div#finder').find('div.items[tabindex=0]').focus();
-            tabIndex = 0;
-
-
-        });
-
-
-
-        finder.on("fileFound", function(file, fileinfo, storageName) {
-            $("div#tracks").append('<div class="items" data-map="geojson">' + fileinfo.name + '</div>');
-        });
-
-    }
-
-
-
-
 
 
     function addMapLayers(param) {
@@ -627,18 +649,18 @@ $(document).ready(function() {
                             L.removeLayer(myLayer)
                         }
 
-                        geojson_data = event.target.result
-
                         //check if json valid
-                        let printError = function(error, explicit) {
-                            console.log("[${explicit ? 'EXPLICIT' : 'INEXPLICIT'}] ${error.name}: ${error.message}");
+                        try {
+                            geojson_data = JSON.parse(event.target.result);
+                        } catch (e) {
+                            toaster("Json is not valid")
+                            return false;
                         }
-
 
                         //if valid add layer
                         $('div#finder div#question').css('opacity', '1');
                         myLayer = L.geoJSON().addTo(map);
-                        myLayer.addData(JSON.parse(geojson_data));
+                        myLayer.addData(geojson_data);
                         map.setZoom(8);
                         windowOpen = "map";
 
@@ -1101,6 +1123,17 @@ $(document).ready(function() {
         switch (param.key) {
             case 'Backspace':
                 param.preventDefault();
+                if (windowOpen == "finder") {
+                    $('div#finder').css('display', 'none');
+                    windowOpen = "map";
+                    return false
+
+                }
+
+                if (windowOpen == "coordinations") {
+                    coordinations("hide");
+                    return false;
+                }
                 if (windowOpen == "map") {
                     let lk_state = localStorageWriteRead("lockscreen_state", "");
                     if (lk_state == "disabled") {
@@ -1118,16 +1151,6 @@ $(document).ready(function() {
                     }, 4000);
 
                 }
-                if (windowOpen == "finder") {
-                    $('div#finder').css('display', 'none');
-                    windowOpen = "map";
-
-                }
-
-                if (windowOpen == "coordinations") {
-                    coordinations("hide")
-                }
-
 
                 break;
 
@@ -1143,11 +1166,7 @@ $(document).ready(function() {
                 break;
 
             case 'Enter':
-
-
                 addMapLayers("add-marker");
-
-
                 break;
 
             case '0':
@@ -1165,8 +1184,7 @@ $(document).ready(function() {
 
             case '3':
                 param.preventDefault()
-                startFinder();
-
+                read_json("finder")
                 break;
 
             case '4':
@@ -1208,6 +1226,7 @@ $(document).ready(function() {
 
     function handleKeyDown(evt) {
         if (!evt.repeat) {
+            evt.preventDefault();
             longpress = false;
             timeout = setTimeout(() => {
                 longpress = true;
@@ -1222,6 +1241,7 @@ $(document).ready(function() {
     }
 
     function handleKeyUp(evt) {
+        evt.preventDefault();
         clearTimeout(timeout);
         if (!longpress) {
             shortpress_action(evt);
