@@ -56,6 +56,39 @@ div#toast {
 }
 
 
+/*/////////////////
+USER INPUT////////////////*/
+
+div#user-input {
+    position: fixed;
+    height: 60px;
+    bottom: -80px;
+    background: gray;
+    color: white;
+    z-index: 2000;
+    padding: 5px;
+}
+
+div#user-input input {
+    margin: 5px 0 5px 0;
+    height: 20px;
+    width: 90%;
+    font-size: 1.1rem;
+}
+
+div#user-input div#button-bar {
+    background: black;
+    height: 25px;
+}
+
+div#user-input div#button-bar div {
+    background: black;
+    color: white;
+    height: 20px;
+    padding: 2px;
+}
+
+
 /*///////////////////////////
 ///MAP////////////////*/
 

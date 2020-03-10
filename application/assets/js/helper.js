@@ -46,6 +46,33 @@ function toaster(text) {
 
 }
 
+let wp;
+
+function user_imput(param, file_name) {
+    if (param == "open") {
+        $("div#user-input").animate({ bottom: "0px" }, 1000, "linear");
+        $("div#user-input input").focus();
+        $("div#user-input input").val(file_name)
+        wp = windowOpen;
+        windowOpen = "user-input";
+    }
+    if (param == "close") {
+        $("div#user-input").animate({ bottom: "-1000px" }, 1000, "linear");
+        $("div#user-input input").blur();
+        windowOpen = wp;
+
+    }
+
+    if (param == "return") {
+        let input_value = $("div#user-input input").val();
+        $("div#user-input").animate({ bottom: "-1000px" }, 1000, "linear");
+        $("div#user-input input").blur();
+        windowOpen = wp;
+        return input_value;
+
+    }
+}
+
 function localStorageWriteRead(item, value) {
     if (item != "" && value != "") {
         localStorage.setItem(item, value)
