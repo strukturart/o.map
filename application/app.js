@@ -18,7 +18,7 @@ let windowOpen = "map";
 let message_body = "";
 let openweather_api = "";
 let tabIndex = 0;
-let debug = "false";
+let debug = "true";
 
 let tilesLayer;
 let tileLayer;
@@ -29,6 +29,10 @@ let savesearch = "false";
 
 let search_current_lng;
 let search_current_lat;
+
+
+
+
 
 
 $(document).ready(function() {
@@ -57,7 +61,39 @@ $(document).ready(function() {
 
     L.control.scale({ position: 'topright', metric: true, imperial: false }).addTo(map);
 
+    ////////////////////
+    ////RULER///////////
+    ///////////////////
+    var ruler_activ = "";
 
+    function ruler() {
+
+        if (ruler_activ == "") {
+            L.control.ruler().addTo(map);
+
+        }
+
+        if (ruler_activ === true) {
+            $("div.leaflet-ruler").remove();
+
+            ruler_activ = false
+            navigator.spatialNavigationEnabled = false;
+            L.control.ruler().remove();
+            $("div.leaflet-ruler").removeClass("leaflet-ruler-clicked")
+
+            return false;
+        } else {
+            L.control.ruler().remove();
+
+            navigator.spatialNavigationEnabled = true;
+
+            ruler_activ = true
+            $("div.leaflet-ruler").addClass("leaflet-ruler-clicked")
+            return false;
+        }
+
+
+    }
     ////////////////////
     ////MAPS////////////
     ///////////////////
@@ -115,6 +151,9 @@ $(document).ready(function() {
         map.addLayer(tilesLayer);
 
     }
+
+
+
 
 
 
@@ -208,6 +247,8 @@ $(document).ready(function() {
                 if (option == "finder") {
 
                     windowOpen = "finder";
+
+                    //search geojson
                     let finder = new Applait.Finder({ type: "sdcard", debugMode: false });
                     finder.search(".geojson");
 
@@ -230,6 +271,33 @@ $(document).ready(function() {
 
                     finder.on("fileFound", function(file, fileinfo, storageName) {
                         $("div#tracks").append('<div class="items" data-map="geojson">' + fileinfo.name + '</div>');
+                    });
+
+
+                    //search gpx
+                    let finder_gpx = new Applait.Finder({ type: "sdcard", debugMode: false });
+
+                    finder_gpx.search(".gpx");
+
+                    finder_gpx.on("searchComplete", function(needle, filematchcount) {
+
+
+                        //set tabindex
+                        $('div.items').each(function(index, value) {
+                            let $div = $(this)
+                            $div.attr("tabindex", index);
+                        });
+
+
+                        $('div#finder').css('display', 'block');
+                        $('div#finder').find('div.items[tabindex=0]').focus();
+                        tabIndex = 0;
+
+                    });
+
+
+                    finder_gpx.on("fileFound", function(file, fileinfo, storageName) {
+                        $("div#tracks").append('<div class="items" data-map="gpx">' + fileinfo.name + '</div>');
                     });
 
                 }
@@ -341,10 +409,9 @@ $(document).ready(function() {
                         }
 
                         function save() {
+                            windowOpen = "save"
                             let extData = JSON.stringify(data);
-
                             deleteFile(1, "osm-map/osm-map.json", "")
-
 
                             setTimeout(function() {
 
@@ -509,25 +576,6 @@ $(document).ready(function() {
 
 
 
-    ///////////////////////////////
-    ////send current position by sms
-    ///////////////////////////////
-
-    function share_position() {
-
-        message_body = "https://www.openstreetmap.org/#map=13/" + current_lat + "/" + current_lat
-
-        let sms = new MozActivity({
-            name: "new",
-            data: {
-                type: "websms/sms",
-                number: "",
-                body: ".." + message_body
-            }
-        });
-
-    }
-
 
 
     /////////////////////////
@@ -628,15 +676,44 @@ $(document).ready(function() {
                 saveMarker();
 
             }
-
+            let marker_count = -1;
+            let marker_array = [];
             if (item_value == "marker") {
                 if (param == "add-marker") {
-                    current_lng = $(document.activeElement).data('lng');
-                    current_lat = $(document.activeElement).data('lat');
-                    L.marker([current_lat, current_lng]).addTo(map);
-                    map.setView([current_lat, current_lng], 13);
+
+                    marker_count++
+                    marker_lng = $(document.activeElement).data('lng');
+                    marker_lat = $(document.activeElement).data('lat');
+
+
+                    var new_marker = L.marker([marker_lat, marker_lng]).addTo(map);
+                    map.setView([marker_lat, marker_lng], 13);
                     $('div#finder').css('display', 'none');
+                    var distance = getDistance([marker_lat, marker_lng], [current_lat, current_lng])
+                    distance = distance.toFixed(0) / 1000 + " km";
+
+                    new_marker.bindTooltip(distance).openTooltip();
+
+
+                    //update tooltip
+                    //store lat lng in array
+                    marker_array.push([marker_lat, marker_lng])
+
+                    setInterval(() => {
+
+                        marker_array.forEach(marker => {
+                            var distance = getDistance([marker[0], marker[1]], [current_lat, current_lng])
+                            distance = distance.toFixed(0) / 1000 + " km";
+                            new_marker.bindTooltip(distance).update();
+
+                        });
+
+
+                    }, 10000);
+
                     windowOpen = "map";
+
+
 
                 }
 
@@ -684,7 +761,45 @@ $(document).ready(function() {
                         myLayer = L.geoJSON().addTo(map);
                         myLayer.addData(geojson_data);
                         map.setZoom(8);
-                        windowOpen = "map";
+                        windowOpen = "finder";
+
+                    };
+
+
+                    reader.readAsText(file)
+
+                });
+            }
+
+            //add gpx data
+            if (item_value == "gpx") {
+                let finder = new Applait.Finder({ type: "sdcard", debugMode: false });
+                finder.search($(document.activeElement).text());
+
+
+                finder.on("fileFound", function(file, fileinfo, storageName) {
+                    //file reader
+
+                    let geojson_data = "";
+                    let reader = new FileReader();
+
+                    reader.onerror = function(event) {
+                        alert('shit happens')
+                        reader.abort();
+                    };
+
+                    reader.onloadend = function(event) {
+
+                        //toaster(event.target.result)
+                        var gpx = event.target.result; // URL to your GPX file or the GPX itself
+                        $('div#finder div#question').css('opacity', '1');
+
+                        new L.GPX(gpx, { async: true }).on('loaded', function(e) {
+                            map.fitBounds(e.target.getBounds());
+                        }).addTo(map)
+
+                        map.setZoom(8);
+                        windowOpen = "finder";
 
                     };
 
@@ -698,6 +813,8 @@ $(document).ready(function() {
         }
 
     }
+
+
     ////////////////////////////////////////
     ////COORDINATIONS PANEL/////////////////
     ///////////////////////////////////////
@@ -715,101 +832,6 @@ $(document).ready(function() {
             windowOpen = "map";
         }
     }
-
-
-
-    ////////////////////////////////////////
-    ////SCREEN OFF ONLY Nokia8110////////////
-    ///////////////////////////////////////
-
-
-
-
-    function screenWakeLock(param1) {
-        if (param1 == "lock") {
-            lock = window.navigator.requestWakeLock("screen");
-        }
-
-        if (param1 == "unlock") {
-            if (lock.topic == "screen") {
-                lock.unlock();
-            }
-        }
-    }
-
-
-
-
-
-
-    function setScreenlockPasscode(state) {
-
-
-        let lock = navigator.mozSettings.createLock();
-        //getting lockscreen setting value on start the app
-        // to know how to set the value on the same vaule on 
-        //closing the app
-
-
-
-        if (state == "get") {
-            let setting = lock.get('lockscreen.enabled');
-            setting.onsuccess = function() {
-                if (setting.result["lockscreen.enabled"] == false) {
-                    let lk_state = localStorageWriteRead("lockscreen_state", "disabled");
-                }
-
-                if (setting.result["lockscreen.enabled"] == true) {
-                    let lk_state = localStorageWriteRead("lockscreen_state", "enabled");
-                }
-            }
-        }
-
-
-
-
-        //set setting
-        let result = lock.set({
-
-            'lockscreen.enabled': state
-
-        });
-
-
-        result.onsuccess = function() {
-            //alert("The setting has been changed");
-        }
-
-        result.onerror = function() {
-            //alert("An error occure, the setting remain unchanged");
-        }
-    }
-
-
-    setTimeout(function() {
-        setScreenlockPasscode("get")
-    }, 4000);
-
-
-
-    function lockScreenDisabler() {
-
-        let power = window.navigator.mozPower;
-
-        screenWakeLock("lock");
-        setScreenlockPasscode(false);
-
-
-        function screenLockListener(topic, state) {
-            $("div.setting-screenlock").css('color', 'silver').css('font-style', 'italic');
-        }
-        power.addWakeLockListener(screenLockListener);
-
-
-
-
-    }
-
 
 
 
@@ -915,6 +937,101 @@ $(document).ready(function() {
     }
 
 
+
+
+    ////////////////////////////////////////
+    ////SCREEN OFF ONLY Nokia8110////////////
+    ///////////////////////////////////////
+
+
+
+
+    function screenWakeLock(param1) {
+        if (param1 == "lock") {
+            lock = window.navigator.requestWakeLock("screen");
+        }
+
+        if (param1 == "unlock") {
+            if (lock.topic == "screen") {
+                lock.unlock();
+            }
+        }
+    }
+
+
+
+
+
+
+    function setScreenlockPasscode(state) {
+
+
+        let lock = navigator.mozSettings.createLock();
+        //getting lockscreen setting value on start the app
+        // to know how to set the value on the same vaule on 
+        //closing the app
+
+
+
+        if (state == "get") {
+            let setting = lock.get('lockscreen.enabled');
+            setting.onsuccess = function() {
+                if (setting.result["lockscreen.enabled"] === false) {
+                    let lk_state = localStorageWriteRead("lockscreen_state", "disabled");
+                }
+
+                if (setting.result["lockscreen.enabled"] === true) {
+                    let lk_state = localStorageWriteRead("lockscreen_state", "enabled");
+                }
+            }
+        }
+
+
+
+
+        //set setting
+        let result = lock.set({
+
+            'lockscreen.enabled': state
+
+        });
+
+
+        result.onsuccess = function() {
+            //alert("The setting has been changed");
+        }
+
+        result.onerror = function() {
+            //alert("An error occure, the setting remain unchanged");
+        }
+    }
+
+
+    setTimeout(function() {
+        setScreenlockPasscode("get")
+    }, 4000);
+
+
+
+    function lockScreenDisabler() {
+
+        let power = window.navigator.mozPower;
+
+        screenWakeLock("lock");
+        setScreenlockPasscode(false);
+
+
+        function screenLockListener(topic, state) {
+            $("div.setting-screenlock").css('color', 'silver').css('font-style', 'italic');
+        }
+        power.addWakeLockListener(screenLockListener);
+
+    }
+
+
+
+
+
     /////////////////////
     ////ZOOM MAP/////////
     ////////////////////
@@ -983,14 +1100,14 @@ $(document).ready(function() {
     function unload_map(trueFalse) {
         if ($("div#finder").css('display') == 'block') {
 
-            if (trueFalse == true) {
+            if (trueFalse === true) {
                 map.removeLayer(tilesLayer);
                 $('div#finder').css('display', 'none');
                 $('div#finder div#question').css('opacity', '0');
                 windowOpen = "map";
             }
 
-            if (trueFalse == false) {
+            if (trueFalse === false) {
                 $('div#finder').css('display', 'none');
                 $('div#finder div#question').css('opacity', '0');
                 windowOpen = "map";
@@ -1123,20 +1240,12 @@ $(document).ready(function() {
 
     function longpress_action(param) {
         switch (param.key) {
-            case 'ArrowUp':
-                break;
 
-            case 'ArrowDown':
-                break;
-
-            case 'ArrowLeft':
-                break;
-
-            case 'ArrowRight':
-                break;
 
             case 'Enter':
-                addMapLayers("delete-marker");
+                if (windowOpen == "finder") {
+                    addMapLayers("delete-marker");
+                }
                 break;
         }
     }
@@ -1232,10 +1341,6 @@ $(document).ready(function() {
 
                 break;
 
-            case '0':
-                showMan();
-                break;
-
             case '1':
                 getLocation("update_marker")
                 break;
@@ -1262,6 +1367,11 @@ $(document).ready(function() {
             case '6':
                 coordinations("show");
                 break;
+
+            case '7':
+                ruler();
+                break;
+
 
             case 'ArrowRight':
                 MovemMap("right")
@@ -1319,24 +1429,22 @@ $(document).ready(function() {
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('keyup', handleKeyUp);
 
-
-
     //////////////////////////
     ////BUG OUTPUT////////////
     /////////////////////////
+    if (debug) {
 
+        $(window).on("error", function(evt) {
 
-    $(window).on("error", function(evt) {
-
-        console.log("jQuery error event:", evt);
-        let e = evt.originalEvent; // get the javascript event
-        console.log("original event:", e);
-        if (e.message) {
-            alert("Error:\n\t" + e.message + "\nLine:\n\t" + e.lineno + "\nFile:\n\t" + e.filename);
-        } else {
-            alert("Error:\n\t" + e.type + "\nElement:\n\t" + (e.srcElement || e.target));
-        }
-    });
-
+            console.log("jQuery error event:", evt);
+            var e = evt.originalEvent; // get the javascript event
+            console.log("original event:", e);
+            if (e.message) {
+                alert("Error:\n\t" + e.message + "\nLine:\n\t" + e.lineno + "\nFile:\n\t" + e.filename);
+            } else {
+                alert("Error:\n\t" + e.type + "\nElement:\n\t" + (e.srcElement || e.target));
+            }
+        });
+    }
 
 });
