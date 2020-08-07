@@ -3,13 +3,8 @@
   "name": "osm-map",
   "description": "OpenStreetMap",
   "launch_path": "/index.html",
-  "type": "certified",
-   "fullscreen": "true",
-
-
-
-
-
+  "type": "privileged",
+  "fullscreen": "true",
 
   "icons": {
 	"56": "/icons/icon-56-56.png",
@@ -31,18 +26,9 @@
 	"description": "Read from sd-card",
 	"access": "readwrite"
 	},
-	"settings":
-	{
-		"access":"readwrite"
-	},
 
 	"wake-lock":{},
 	"power":{},
-	"desktop-notification":{},
-
-
-
-	"device-storage:apps":{ "access": "readonly" },
 
 	"spatialnavigation-app-manage": {
 	"navigator.spatialNavigationEnabled": false

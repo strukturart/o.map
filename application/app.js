@@ -647,7 +647,6 @@ $(document).ready(function() {
             if (item_value == "autoupdate-geolocation") {
                 windowOpen = "map";
                 $('div#finder').css('display', 'none');
-                lockScreenDisabler();
                 geolocationWatch();
             }
 
@@ -959,74 +958,6 @@ $(document).ready(function() {
     }
 
 
-
-
-
-
-    function setScreenlockPasscode(state) {
-
-
-        let lock = navigator.mozSettings.createLock();
-        //getting lockscreen setting value on start the app
-        // to know how to set the value on the same vaule on 
-        //closing the app
-
-
-
-        if (state == "get") {
-            let setting = lock.get('lockscreen.enabled');
-            setting.onsuccess = function() {
-                if (setting.result["lockscreen.enabled"] === false) {
-                    let lk_state = localStorageWriteRead("lockscreen_state", "disabled");
-                }
-
-                if (setting.result["lockscreen.enabled"] === true) {
-                    let lk_state = localStorageWriteRead("lockscreen_state", "enabled");
-                }
-            }
-        }
-
-
-
-
-        //set setting
-        let result = lock.set({
-
-            'lockscreen.enabled': state
-
-        });
-
-
-        result.onsuccess = function() {
-            //alert("The setting has been changed");
-        }
-
-        result.onerror = function() {
-            //alert("An error occure, the setting remain unchanged");
-        }
-    }
-
-
-    setTimeout(function() {
-        setScreenlockPasscode("get")
-    }, 4000);
-
-
-
-    function lockScreenDisabler() {
-
-        let power = window.navigator.mozPower;
-
-        screenWakeLock("lock");
-        setScreenlockPasscode(false);
-
-
-        function screenLockListener(topic, state) {
-            $("div.setting-screenlock").css('color', 'silver').css('font-style', 'italic');
-        }
-        power.addWakeLockListener(screenLockListener);
-
-    }
 
 
 
@@ -1356,8 +1287,9 @@ $(document).ready(function() {
                 break;
 
             case '4':
-                lockScreenDisabler();
                 geolocationWatch();
+                screenWakeLock("lock")
+
                 break;
 
             case '5':
