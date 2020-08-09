@@ -37,6 +37,60 @@ let search_current_lat;
 
 $(document).ready(function() {
 
+
+
+    navigator.mozSetMessageHandler('activity', function(activityRequest) {
+        var option = activityRequest.source;
+
+        if (option.name == 'open') {
+            loadGPX(option.data.url)
+        }
+
+    })
+
+    /////////////////////////
+    /////Load GPX///////////
+    ///////////////////////
+    function loadGPX(filename) {
+        let finder = new Applait.Finder({ type: "sdcard", debugMode: false });
+        finder.search(filename);
+
+
+        finder.on("fileFound", function(file, fileinfo, storageName) {
+            //file reader
+
+            let reader = new FileReader();
+
+            reader.onerror = function(event) {
+                alert("can't read file")
+                reader.abort();
+            };
+
+            reader.onloadend = function(event) {
+
+                //toaster(event.target.result)
+                var gpx = event.target.result; // URL to your GPX file or the GPX itself
+
+                new L.GPX(gpx, { async: true }).on('loaded', function(e) {
+                    map.fitBounds(e.target.getBounds());
+                }).addTo(map)
+
+                map.setZoom(8);
+                $('div#finder').css('display', 'none');
+                windowOpen = "map";
+
+
+
+            };
+
+
+            reader.readAsText(file)
+
+        })
+    }
+
+
+
     //remove leaflet attribution to have more space
     $('.leaflet-control-attribution').hide();
 
@@ -772,40 +826,44 @@ $(document).ready(function() {
 
             //add gpx data
             if (item_value == "gpx") {
-                let finder = new Applait.Finder({ type: "sdcard", debugMode: false });
-                finder.search($(document.activeElement).text());
+                loadGPX($(document.activeElement).text())
+                    /*
+                    let finder = new Applait.Finder({ type: "sdcard", debugMode: false });
+                    finder.search($(document.activeElement).text());
 
 
-                finder.on("fileFound", function(file, fileinfo, storageName) {
-                    //file reader
+                    finder.on("fileFound", function(file, fileinfo, storageName) {
+                        //file reader
 
-                    let geojson_data = "";
-                    let reader = new FileReader();
+                        let geojson_data = "";
+                        let reader = new FileReader();
 
-                    reader.onerror = function(event) {
-                        alert('shit happens')
-                        reader.abort();
-                    };
+                        reader.onerror = function(event) {
+                            alert('shit happens')
+                            reader.abort();
+                        };
 
-                    reader.onloadend = function(event) {
+                        reader.onloadend = function(event) {
 
-                        //toaster(event.target.result)
-                        var gpx = event.target.result; // URL to your GPX file or the GPX itself
-                        $('div#finder div#question').css('opacity', '1');
+                            //toaster(event.target.result)
+                            var gpx = event.target.result; // URL to your GPX file or the GPX itself
+                            $('div#finder div#question').css('opacity', '1');
 
-                        new L.GPX(gpx, { async: true }).on('loaded', function(e) {
-                            map.fitBounds(e.target.getBounds());
-                        }).addTo(map)
+                            new L.GPX(gpx, { async: true }).on('loaded', function(e) {
+                                map.fitBounds(e.target.getBounds());
+                            }).addTo(map)
 
-                        map.setZoom(8);
-                        windowOpen = "finder";
+                            map.setZoom(8);
+                            windowOpen = "finder";
 
-                    };
+                        };
 
 
-                    reader.readAsText(file)
+                        reader.readAsText(file)
 
-                });
+                    });
+
+                    */
             }
 
 
@@ -1204,14 +1262,6 @@ $(document).ready(function() {
                     return false;
                 }
                 if (windowOpen == "map") {
-                    let lk_state = localStorageWriteRead("lockscreen_state", "");
-                    if (lk_state == "disabled") {
-                        setScreenlockPasscode(false);
-                    }
-
-                    if (lk_state == "enabled") {
-                        setScreenlockPasscode(true);
-                    }
 
                     toaster("Goodbye");
 
@@ -1288,7 +1338,6 @@ $(document).ready(function() {
 
             case '4':
                 geolocationWatch();
-                screenWakeLock("lock")
 
                 break;
 

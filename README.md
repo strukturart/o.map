@@ -35,8 +35,7 @@ If you want to use the openweathermap, you need to get an API key from openweath
 + **key 5** save position as marker on sd-card <br>
 to delete the marker open with 3 the menu select der marker and press long enter (+- 5sec)
 
-For Nokia8110 user -> It is possible with closed slider that the app runs :-)
-Settings -> screenlock disable
+
 ### GeoJson
 + Online tool: [geojson.io](http://geojson.io/#map=1/-55/228)
 + Validation: [geojsonlint](http://geojsonlint.com/)
