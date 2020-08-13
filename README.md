@@ -22,7 +22,6 @@ If you want to use the openweathermap, you need to get an API key from openweath
 + Tonner Map
 
 ## Layers
-+ Euro Rainmap
 + OpenWeatherMap
 
 ### Manual
