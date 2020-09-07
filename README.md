@@ -7,6 +7,9 @@ This is an Open Street Map app for the Nokia 81104G
 + Send your position by sms
 + Import Tracks (geoJson)
 + Save your position
++ open .gpx files
++ search locations
++ open openstreetmap link to marker
 
 If you want to use the openweathermap, you need to get an API key from openweathermap.org. Then you need to create a file called osm-map.json please check my example [file](/osm-map.json)
 
@@ -31,7 +34,7 @@ If you want to use the openweathermap, you need to get an API key from openweath
 + **key 2** search
 + **key 3** load geoJson track,add MapLayer, add Markers, settings
 + **key 4** watch position on/off
-+ **key 5** save position as marker on sd-card <br>
++ **key 5** save position or search result as marker on sd-card <br>
 to delete the marker open with 3 the menu select der marker and press long enter (+- 5sec)
 
 
