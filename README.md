@@ -36,6 +36,8 @@ If you want to use the openweathermap, you need to get an API key from openweath
 + **key 4** watch position on/off
 + **key 5** save position or search result as marker on sd-card <br>
 to delete the marker open with 3 the menu select der marker and press long enter (+- 5sec)
++ **key 6** show lat lon alt dir
++ **key 7** 
 
 
 ### GeoJson
