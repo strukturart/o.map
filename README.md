@@ -5,7 +5,7 @@ This is an Open Street Map app for the Nokia 81104G
 ### Features
 + Map
 + Send your position by sms
-+ Import Tracks (geoJson)
++ Import Tracks (geoJson / gpx)
 + Save your position
 + open .gpx files
 + search locations
@@ -37,7 +37,7 @@ If you want to use the openweathermap, you need to get an API key from openweath
 + **key 5** save position or search result as marker on sd-card <br>
 to delete the marker open with 3 the menu select der marker and press long enter (+- 5sec)
 + **key 6** show lat lon alt dir
-+ **key 7** 
++ **key 7** measure distance
 
 
 ### GeoJson
