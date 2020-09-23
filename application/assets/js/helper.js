@@ -33,18 +33,17 @@ function notify(param_title, param_text, param_silent) {
 
 }
 
-function toaster(text) {
+function toaster(text, time) {
 
-    $("div#toast").text(text)
+    $("div#toast").html("<div>" + text + "</div>")
     $("div#toast").animate({ top: "0px" }, 1000, "linear", function() {
-
-
-        $("div#toast").delay(3000).animate({ top: "-100px" }, 3000);
-
-
+        $("div#toast").delay(3000).animate({ top: "-100px" }, time);
     });
 
+
 }
+
+
 
 let wp;
 
@@ -105,31 +104,27 @@ function deleteFile(storage, path, notification) {
 
 
 
+//bottom bar
+function bottom_bar(left, center, right) {
+    $("div#bottom-bar div#button-left").text(left)
+    $("div#bottom-bar div#button-center").text(center)
+    $("div#bottom-bar div#button-right").text(right)
+}
 
-function filePicker() {
 
-    let activity = new MozActivity({
-        // The name of the activity the app wants to delegate the action
-        name: "pick"
 
-        // Data required by the activity. Each application acting as an activity handler 
-        // can have it's own requirement for the activity. If the data does not fulfill
-        // all the requirement of any activity handler, the error event will be sent
-        // otherwise, the event sent depend on the activity handler itself.
-        /*
-        data: {
-            type: "image/jpeg"
+
+
+
+function screenWakeLock(param1) {
+    let lock;
+    if (param1 == "lock") {
+        lock = window.navigator.requestWakeLock("screen");
+    }
+
+    if (param1 == "unlock") {
+        if (lock.topic == "screen") {
+            lock.unlock();
         }
-        */
-    });
-
-    activity.onsuccess = function() {
-        toaster("Activity successfuly handled");
-
-        this.result.blob;
     }
-
-    activity.onerror = function() {
-        toaster("The activity encouter en error: " + this.error);
-    }
-};
+}
