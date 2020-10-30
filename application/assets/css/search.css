@@ -1,6 +1,18 @@
 /*https://www.devbridge.com/sourcery/components/jquery-autocomplete/
 */
 
+div#olc {
+    position: fixed;
+    top: 30px;
+    height: 20px;
+    padding: 5px;
+    background: white;
+    color: black;
+    z-index: 3000;
+    width: 100%;
+    display: none;
+}
+
 div#search-box {
     background: green;
     width: 100%;

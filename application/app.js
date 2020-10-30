@@ -904,6 +904,8 @@ $(document).ready(function() {
         $('div#search-box').css('display', 'none');
         $('div#search-box').find("input").val("");
         $('div#search-box').find("input").blur();
+        $("div#olc").css("display", "none")
+
         windowOpen = "map";
     }
 
@@ -1239,6 +1241,19 @@ $(document).ready(function() {
                 break;
 
             case 'Enter':
+                if (windowOpen == "search") {
+
+                    L.marker([olc_lat_lng[0], olc_lat_lng[1]]).addTo(map);
+                    map.setView([olc_lat_lng[0], olc_lat_lng[1]], 13);
+
+                    hideSearch()
+
+                    current_lat = Number(olc_lat_lng[0]);
+                    current_lng = Number(olc_lat_lng[1]);
+
+                    toaster("press 5 to save the marker", 2000)
+                    break;
+                }
 
                 addMapLayers("add-marker");
 
