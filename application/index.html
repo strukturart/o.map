@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="assets/css/leaflet-search.css" />
     <link rel="stylesheet" href="assets/css/leaflet-openweathermap.css" />
     <link rel="stylesheet" href="assets/css/leaflet-ruler.css" />
+    <link rel="stylesheet" href="assets/css/search.css" />
+
 
 
 
@@ -29,14 +31,27 @@
     <div id="toast" class="width-100">
     </div>
 
+    <div id="search-box">
+        <input type="text" id="search" />
+    </div>
+    <div id="olc"></div>
+
     <div id="user-input" class="width-100 flex justify-content-spacearound">
         <input type="text">
-        <div id="button-bar" class="flex justify-content-spacebetween width-100">
-            <div>close</div>
+        <div id="button-bar-save" class="flex justify-content-spacebetween width-100">
+            <div>cancel</div>
             <div>save</div>
         </div>
     </div>
 
+
+    <div id="bottom-bar">
+        <div class="inner flex justify-content-spacebetween width-100">
+            <div id="button-left"></div>
+            <div id="button-center"></div>
+            <div id="button-right"></div>
+        </div>
+    </div>
 
 
     <div id='map-container'></div>
@@ -58,19 +73,7 @@
     </div>
 
     <!--
-////////////////
-///SEARCH//////
-//////////////
--->
 
-    <div id="search" class="width-100">
-        <div class="flex justify-content-spacebetween width-100">
-            <div class="button">close</div>
-            <div class="button">search</div>
-        </div>
-    </div>
-
-    <!--
 //////////////////////
 ///FINDER ITEMS//////
 /////////////////////
@@ -149,6 +152,9 @@
 
         <div id="finder-error"></div>
 
+
+
+
         <div id="question" class="width-100 height-100 flex">
             <div id="question-text">Do you want unload the current map ?</div>
             <div id="answer" class="flex width-100 justify-content-spacebetween algin-item-end">
@@ -161,8 +167,9 @@
     <script defer src="assets/js/jQuery-3.1.0.js"></script>
     <script defer src="assets/js/moments.min.js"></script>
     <script defer src="assets/js/applait.finder.min.js"></script>
+    <script defer src="assets/js/olc.js"></script>
     <script defer src="assets/leaflet/leaflet.js"></script>
-    <script defer src="assets/js/leaflet-search.js"></script>
+    <script defer src="assets/js/jquery.autocomplete.min.js"></script>
     <script defer src="assets/js/tile.stamen.1.3.0.js"></script>
     <script defer src="assets/js/leaflet-openweathermap.js"></script>
     <script defer src="assets/js/leaflet-ruler.js"></script>
@@ -172,6 +179,8 @@
     <script defer src="assets/js/helper.js"></script>
     <script defer src="assets/js/share-position.js"></script>
     <script defer src="assets/js/calc_distance.js"></script>
+    <script defer src="assets/js/search.js"></script>
+
 
 
 

@@ -46,6 +46,11 @@ to delete the marker open with 3 the menu select der marker and press long enter
 + GeoJson Map: [geojson Map] https://geojson-maps.ash.ms/
 
 
+### Search
+The search can be opened with key 2, you can search for locations or start the search with / and then enter an open location code
+[open location code](https://en.wikipedia.org/wiki/Open_Location_Code)
+
+
 ### Thank you
 + [Bananna Hackers Group](https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/bananahackers)
 

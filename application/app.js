@@ -1,9 +1,12 @@
+"use strict";
+
 let step = 0.001;
-let current_lng = 0;
-let current_lat = 0;
-let current_alt = 0;
+let current_lng;
+let current_lat;
+let current_alt;
 let accuracy = 0;
-let altitude = 0;
+let altitude;
+let current_heading;
 
 
 
@@ -18,35 +21,57 @@ let windowOpen = "map";
 let message_body = "";
 let openweather_api = "";
 let tabIndex = 0;
-let debug = "true";
+let debug = true;
 
 let tilesLayer;
 let tileLayer;
 let myLayer;
 let tilesUrl;
 let state_geoloc = "not-activ";
-let savesearch = "false";
+let savesearch = false;
 
 let search_current_lng;
 let search_current_lat;
 
 
+let map;
+let open_url = false;
+let marker_latlng = false;
 
+let file_path;
+let storage_name;
 
 
 
 $(document).ready(function() {
 
-
-
     navigator.mozSetMessageHandler('activity', function(activityRequest) {
         var option = activityRequest.source;
-
+        //gpx
         if (option.name == 'open') {
             loadGPX(option.data.url)
         }
+        //link
+        if (option.name == 'view') {
+            open_url = true;
+            const url_split = option.data.url.split("/");
+            current_lat = url_split[url_split.length - 2];
+            current_lng = url_split[url_split.length - 1];
+
+            //remove !numbers
+            current_lat = current_lat.replace(/[A-Za-z?=&]+/gi, "");
+            current_lng = current_lng.replace(/[A-Za-z?=&]+/gi, "");
+            current_lat = Number(current_lat);
+            current_lng = Number(current_lng);
+            myMarker = L.marker([current_lat, current_lng]).addTo(map);
+            map.setView([current_lat, current_lng], 13);
+            zoom_speed();
+
+            toaster(current_lat + " /" + current_lng, 5000)
+        }
 
     })
+
 
     /////////////////////////
     /////Load GPX///////////
@@ -62,13 +87,12 @@ $(document).ready(function() {
             let reader = new FileReader();
 
             reader.onerror = function(event) {
-                alert("can't read file")
+                toaster("can't read file", 3000)
                 reader.abort();
             };
 
             reader.onloadend = function(event) {
 
-                //toaster(event.target.result)
                 var gpx = event.target.result; // URL to your GPX file or the GPX itself
 
                 new L.GPX(gpx, { async: true }).on('loaded', function(e) {
@@ -91,14 +115,17 @@ $(document).ready(function() {
 
 
 
-    //remove leaflet attribution to have more space
-    $('.leaflet-control-attribution').hide();
 
     //welcome message
     $('div#message div').text("Welcome");
     setTimeout(function() {
         $('div#message').css("display", "none")
-        getLocation("init");
+            //get location if not an activity open url
+        if (open_url === false) {
+            getLocation("init");
+            toaster("Press 3<br> to open the menu", 5000)
+
+        }
         ///set default map
         opentopo_map();
         windowOpen = "map";
@@ -107,7 +134,7 @@ $(document).ready(function() {
 
 
     //leaflet add basic map
-    let map = L.map('map-container', {
+    map = L.map('map-container', {
         zoomControl: false,
         dragging: false,
         keyboard: true
@@ -207,21 +234,11 @@ $(document).ready(function() {
     }
 
 
-
-
-
-
-
-    //rain layer
-    /////////
-    // from assets/js/rainlayer.js
-
     /////////////////////////
-    //get Openweather Api Key
+    //read json to build menu
     /////////////////////////
     function read_json(option) {
 
-        rain_layer_animation_stop()
         $("div#tracks").empty();
         $("div#maps").empty();
         $("div#layers").empty();
@@ -241,25 +258,23 @@ $(document).ready(function() {
 
 
             if (filematchcount == 0) {
-                toaster("no osm-map.json found");
+                toaster("no osm-map.json file found.Please create this file, otherwise you can only use the app to a limited extent.", 2000);
                 return;
             }
         })
 
         finder.on("fileFound", function(file, fileinfo, storageName) {
-
-
+            file_path = fileinfo.path + "/" + fileinfo.name
+            storage_name = storageName;
             $("div#maps").append('<div class="items" data-map="toner">Toner <i>Map</i></div>');
             $("div#maps").append('<div class="items" data-map="osm">OSM <i>Map</i></div>');
             $("div#maps").append('<div class="items" data-map="otm">OpenTopo <i>Map</i></div>');
-            $("div#layers").append('<div class="items" data-map="rain">Rain</div>');
 
-            let markers_file = "";
             let reader = new FileReader()
 
 
             reader.onerror = function(event) {
-                alert('shit happens')
+                toaster("can't read file")
                 reader.abort();
             };
 
@@ -272,7 +287,7 @@ $(document).ready(function() {
                 try {
                     data = JSON.parse(event.target.result);
                 } catch (e) {
-                    toaster("Json is not valid")
+                    toaster("File is not valid", 2000)
                     return false;
                 }
 
@@ -383,18 +398,14 @@ $(document).ready(function() {
 
     let filename;
 
-    //options
-    //save_search_marker
-    //save_marker
-    //delete_marker
-    //share
-    //init
-    //update_marker
+
 
     function getLocation(option) {
 
+        marker_latlng = false;
+
         if (option == "init" || option == "update_marker" || option == "share") {
-            toaster("seeking position");
+            toaster("seeking position", 3000);
         }
 
         let options = {
@@ -411,118 +422,8 @@ $(document).ready(function() {
             current_heading = crd.heading;
 
 
-
-            if (option == "save_marker" || option == "delete_marker" || option == "save_search_marker") {
-
-
-                let sdcard = navigator.getDeviceStorages("sdcard");
-                let request = sdcard[1].get("osm-map/osm-map.json");
-
-
-                request.onsuccess = function() {
-
-                    let fileget = this.result;
-                    let reader = new FileReader();
-
-                    reader.addEventListener("loadend", function(event) {
-
-
-                        let data;
-                        //check if json valid
-                        try {
-                            data = JSON.parse(event.target.result);
-                        } catch (e) {
-                            toaster("Json is not valid")
-                            return false;
-                        }
-
-                        if (option == "save_marker") {
-                            data[0].markers.push({ "marker_name": filename, "lat": current_lat, "lng": current_lng });
-                            save();
-                        }
-
-                        if (option == "save_search_marker") {
-                            data[0].markers.push({ "marker_name": filename, "lat": search_current_lat, "lng": search_current_lng });
-                            save();
-                            savesearch = "false";
-                        }
-
-                        if (option == "delete_marker") {
-                            var markers = [];
-
-                            $.each(data[0].markers, function(index, value) {
-                                if (value.marker_name != $(document.activeElement).text()) {
-                                    markers.push(value);
-                                }
-
-                            })
-                            data[0].markers = markers;
-
-                            save();
-
-                        }
-
-                        function save() {
-                            windowOpen = "save"
-                            let extData = JSON.stringify(data);
-                            deleteFile(1, "osm-map/osm-map.json", "")
-
-                            setTimeout(function() {
-
-                                let file = new Blob([extData], { type: "application/json" });
-                                let requestAdd = sdcard[1].addNamed(file, "osm-map/osm-map.json");
-
-                                requestAdd.onsuccess = function() {
-                                    if (option == "delete_marker") {
-                                        toaster('Marker deleted');
-                                        document.activeElement.style.display = "none";
-                                        //set tabindex
-                                        $('div.items').each(function(index, value) {
-                                            let $div = $(this)
-                                            $div.attr("tabindex", index);
-                                        });
-                                        $('div#finder').find('div.items[tabindex=0]').focus();
-                                        tabIndex = 0;
-
-                                    }
-                                    if (option == "save_marker") {
-                                        toaster('Marker saved');
-                                        L.marker([current_lat, current_lng]).addTo(map);
-                                        map.setView([current_lat, current_lng], 13);
-
-                                        $('div#finder').css('display', 'none');
-                                        windowOpen = "map";
-                                    }
-                                    if (option == "save_search_marker") {
-                                        toaster('search saved');
-                                        map.setView([search_current_lat, search_current_lng], 13);
-
-                                        windowOpen = "map";
-                                    }
-
-
-                                }
-
-                                requestAdd.onerror = function() {
-                                    toaster('Unable to write the file: ' + this.error);
-                                }
-
-
-                            }, 2000);
-                        }
-
-
-
-
-                    })
-                    reader.readAsText(fileget);
-                }
-            }
-
-
             if (option == "share") {
                 share_position()
-
             }
 
             if (option == "init") {
@@ -531,23 +432,14 @@ $(document).ready(function() {
                 map.setView([current_lat, current_lng], 13);
                 zoom_speed();
                 $('div#message div').text("");
-
-                $('div#coordinations div#lat').text("Lat " + current_lat.toFixed(5));
-                $('div#coordinations div#lng').text("Lng " + current_lng.toFixed(5));
-                $('div#coordinations div#altitude').text("alt " + altitude.toFixed(5));
                 return false;
             }
 
-            if (option == "update_marker") {
+            if (option == "update_marker" && current_lat != "") {
 
                 myMarker.setLatLng([current_lat, current_lng]).update();
                 map.flyTo(new L.LatLng(current_lat, current_lng), 16);
                 zoom_speed()
-
-                $('div#coordinations div#lat').text("Lat " + current_lat.toFixed(5));
-                $('div#coordinations div#lng').text("Lng " + current_lng.toFixed(5));
-                $('div#coordinations div#altitude').text("alt " + current_alt);
-                $('div#coordinations div#heading').text("heading " + current_heading);
 
             }
 
@@ -555,7 +447,15 @@ $(document).ready(function() {
 
 
         function error(err) {
-            toaster("Position not found");
+            toaster("Position not found", 2000);
+            current_lat = 0;
+            current_lng = 0;
+            current_alt = 0;
+
+            map.setView([current_lat, current_lng], 13);
+            zoom_speed();
+            $('div#message div').text("");
+            return false;
         }
 
 
@@ -563,8 +463,14 @@ $(document).ready(function() {
 
     }
 
+    ///////////
+    //watch position
+    //////////
+
 
     function geolocationWatch() {
+        marker_latlng = false;
+
         let watchID;
         let geoLoc = navigator.geolocation;
         let state;
@@ -584,22 +490,16 @@ $(document).ready(function() {
                 map.flyTo(new L.LatLng(position.coords.latitude, position.coords.longitude));
                 myMarker.setLatLng([current_lat, current_lng]).update();
 
-                $('div#coordinations div#lat').text("Lat " + current_lat.toFixed(5));
-                $('div#coordinations div#lng').text("Lng " + current_lng.toFixed(5));
-                $('div#coordinations div#altitude').text("alt " + current_alt);
-                $('div#coordinations div#heading').text("heading " + current_heading);
-
-
-                state_geoloc = "activ";
+                state_geoloc = true;
 
 
             }
 
             function errorHandler(err) {
                 if (err.code == 1) {
-                    toaster("Error: Access is denied!");
+                    toaster("Error: Access is denied!", 2000);
                 } else if (err.code == 2) {
-                    toaster("Error: Position is unavailable!");
+                    toaster("Error: Position is unavailable!", 2000);
                 }
             }
 
@@ -608,19 +508,144 @@ $(document).ready(function() {
 
                 let options = { timeout: 60000 };
                 watchID = geoLoc.watchPosition(showLocation, errorHandler, options);
-                toaster("watching postion started");
+                toaster("watching postion started", 2000);
             } else {
-                toaster("Sorry, browser does not support geolocation!");
+                toaster("Sorry, browser does not support geolocation!", 2000);
             }
         }
 
 
 
-        if (state_geoloc == "activ") {
+        if (state_geoloc === true) {
             geoLoc.clearWatch(watchID);
-            state_geoloc = "not-activ";
-            toaster("watching postion stopped");
+            state_geoloc = false;
+            toaster("watching postion stopped", 2000);
 
+        }
+
+    }
+
+
+
+    ///////////
+    //save/delete marker
+    //////////
+
+    function save_delete_marker(option) {
+
+
+
+
+        if (option == "save_marker" || option == "delete_marker") {
+
+
+            let sdcard = navigator.getDeviceStorages("sdcard");
+            //let request = sdcard[1].get("osm-map/osm-map.json");
+            let request = sdcard[1].get(file_path);
+
+
+            request.onsuccess = function() {
+
+                let fileget = this.result;
+                let reader = new FileReader();
+
+                reader.addEventListener("loadend", function(event) {
+
+
+                    let data;
+                    //check if json valid
+                    try {
+                        data = JSON.parse(event.target.result);
+                    } catch (e) {
+                        toaster("Json is not valid", 3000)
+                        return false;
+                    }
+
+                    if (option == "save_marker") {
+                        data[0].markers.push({ "marker_name": filename, "lat": current_lat, "lng": current_lng });
+                        save();
+                    }
+
+
+
+                    if (option == "delete_marker") {
+
+
+                        var markers = [];
+
+                        $.each(data[0].markers, function(index, value) {
+                            if (value.marker_name != $(document.activeElement).text()) {
+                                markers.push(value);
+                            }
+
+                        })
+                        data[0].markers = markers;
+
+
+
+
+
+                        save();
+
+                    }
+
+                    function save() {
+                        windowOpen = "save"
+                        let extData = JSON.stringify(data);
+                        //deleteFile(1, "osm-map/osm-map.json", "")
+                        deleteFile(1, file_path, "")
+
+
+
+                        setTimeout(function() {
+
+                            let file = new Blob([extData], { type: "application/json" });
+                            //let requestAdd = sdcard[1].addNamed(file, "osm-map/osm-map.json");
+                            let requestAdd = sdcard[1].addNamed(file, file_path);
+
+
+                            requestAdd.onsuccess = function() {
+                                if (option == "delete_marker") {
+                                    toaster('Marker deleted', 2000);
+                                    $(":focus").css("display", "none")
+                                        //set tabindex
+                                    $('div.items').each(function(index, value) {
+                                        let $div = $(this)
+                                        $div.attr("tabindex", index);
+                                    });
+                                    $('div#finder').find('div.items[tabindex=0]').focus();
+                                    tabIndex = 0;
+                                    windowOpen = "finder";
+
+
+                                }
+                                if (option == "save_marker") {
+                                    toaster('Marker saved', 2000);
+                                    L.marker([current_lat, current_lng]).addTo(map);
+                                    map.setView([current_lat, current_lng], 13);
+
+                                    $('div#finder').css('display', 'none');
+                                    windowOpen = "map";
+                                }
+
+
+
+                            }
+
+                            requestAdd.onerror = function() {
+                                toaster('Unable to write the file: ' + this.error, 2000);
+                            }
+
+
+                        }, 2000);
+                    }
+
+
+
+
+                })
+                reader.readAsText(fileget);
+            }
         }
 
     }
@@ -632,9 +657,14 @@ $(document).ready(function() {
 
 
 
+
     /////////////////////////
     /////MENU///////////////
     ////////////////////////
+    let marker_lng;
+    let marker_lat;
+
+
 
     function addMapLayers(param) {
         if ($(".items").is(":focus") && windowOpen == "finder") {
@@ -643,9 +673,9 @@ $(document).ready(function() {
             let item_value = $(document.activeElement).data('map');
 
 
+
             if (item_value == "toner") {
                 map.removeLayer(tilesLayer);
-                remove_rain_overlayers()
                 toner_map();
                 $('div#finder').css('display', 'none');
                 windowOpen = "map";
@@ -653,7 +683,6 @@ $(document).ready(function() {
 
 
             if (item_value == "osm") {
-                remove_rain_overlayers()
                 map.removeLayer(tilesLayer);
                 osm_map();
                 $('div#finder').css('display', 'none');
@@ -662,35 +691,21 @@ $(document).ready(function() {
 
 
             if (item_value == "otm") {
-                remove_rain_overlayers()
                 map.removeLayer(tilesLayer);
                 opentopo_map();
                 $('div#finder').css('display', 'none');
                 windowOpen = "map";
             }
 
-            if (item_value == "rain") {
-                map.removeLayer(tilesLayer);
-                osm_map();
-                rain_layer_animation_start();
-                map.setZoom(2);
-                $('div#finder').css('display', 'none');
-                windowOpen = "map";
-            }
-
-
             if (item_value == "owm") {
-                remove_rain_overlayers()
                 map.removeLayer(tilesLayer);
                 osm_map();
                 owm_map();
                 $('div#finder').css('display', 'none');
-                $("div#output").css("display", "block")
                 windowOpen = "map";
             }
 
             if (item_value == "share") {
-                remove_rain_overlayers();
                 osm_map();
                 getLocation("share")
 
@@ -725,19 +740,20 @@ $(document).ready(function() {
             }
 
             if (item_value == "savelocation") {
-
-                saveMarker();
+                save_delete_marker("save_marker")
 
             }
             let marker_count = -1;
             let marker_array = [];
             if (item_value == "marker") {
                 if (param == "add-marker") {
+                    //to know it is not the current position
+                    marker_latlng = true;
 
                     marker_count++
-                    marker_lng = $(document.activeElement).data('lng');
-                    marker_lat = $(document.activeElement).data('lat');
 
+                    marker_lng = Number($(document.activeElement).data('lng'));
+                    marker_lat = Number($(document.activeElement).data('lat'));
 
                     var new_marker = L.marker([marker_lat, marker_lng]).addTo(map);
                     map.setView([marker_lat, marker_lng], 13);
@@ -766,12 +782,10 @@ $(document).ready(function() {
 
                     windowOpen = "map";
 
-
-
                 }
 
                 if (param == "delete-marker") {
-                    getLocation("delete_marker")
+                    save_delete_marker("delete_marker")
                 }
 
             }
@@ -805,7 +819,7 @@ $(document).ready(function() {
                         try {
                             geojson_data = JSON.parse(event.target.result);
                         } catch (e) {
-                            toaster("Json is not valid")
+                            toaster("Json is not valid", 2000)
                             return false;
                         }
 
@@ -827,43 +841,6 @@ $(document).ready(function() {
             //add gpx data
             if (item_value == "gpx") {
                 loadGPX($(document.activeElement).text())
-                    /*
-                    let finder = new Applait.Finder({ type: "sdcard", debugMode: false });
-                    finder.search($(document.activeElement).text());
-
-
-                    finder.on("fileFound", function(file, fileinfo, storageName) {
-                        //file reader
-
-                        let geojson_data = "";
-                        let reader = new FileReader();
-
-                        reader.onerror = function(event) {
-                            alert('shit happens')
-                            reader.abort();
-                        };
-
-                        reader.onloadend = function(event) {
-
-                            //toaster(event.target.result)
-                            var gpx = event.target.result; // URL to your GPX file or the GPX itself
-                            $('div#finder div#question').css('opacity', '1');
-
-                            new L.GPX(gpx, { async: true }).on('loaded', function(e) {
-                                map.fitBounds(e.target.getBounds());
-                            }).addTo(map)
-
-                            map.setZoom(8);
-                            windowOpen = "finder";
-
-                        };
-
-
-                        reader.readAsText(file)
-
-                    });
-
-                    */
             }
 
 
@@ -877,9 +854,21 @@ $(document).ready(function() {
     ///////////////////////////////////////
 
     function coordinations(param) {
+        let update_view;
         if (param == "show") {
-            $("div#coordinations").css("display", "block");
+            getLocation("update_marker");
+            update_view = setInterval(() => {
+                if (current_lat != "" && current_lng != "") {
+
+                    $('div#coordinations div#lat').text("Lat " + current_lat.toFixed(5));
+                    $('div#coordinations div#lng').text("Lng " + current_lng.toFixed(5));
+                    $('div#coordinations div#altitude').text("alt " + current_alt);
+                    $('div#coordinations div#heading').text("heading " + current_heading);
+                }
+            }, 1000);
+
             $("div#finder").css("display", "none");
+            $("div#coordinations").css("display", "block");
             windowOpen = "coordinations";
 
         }
@@ -887,9 +876,10 @@ $(document).ready(function() {
         if (param == "hide") {
             $("div#coordinations").css("display", "none");
             windowOpen = "map";
+            clearInterval(update_view);
+
         }
     }
-
 
 
     //////////////////////////
@@ -897,129 +887,27 @@ $(document).ready(function() {
     /////////////////////////
 
 
-    function formatJSON(rawjson) {
-        let json = {},
-            key, loc, disp = [];
-
-        for (let i in rawjson) {
-            disp = rawjson[i].display_name.split(',');
-            key = disp[0] + ', ' + disp[1];
-            loc = L.latLng(rawjson[i].lat, rawjson[i].lon);
-            json[key] = loc; //key,value format
-        }
-
-        savesearch = "false";
-
-        return json;
-    }
-
-    let mobileOpts = {
-        url: 'https://nominatim.openstreetmap.org/search?format=json&q={s}',
-        jsonpParam: 'json_callback',
-        formatData: formatJSON,
-        textPlaceholder: 'Search...',
-        autoType: true,
-        tipAutoSubmit: true,
-        autoCollapse: true,
-        collapsed: false,
-        autoCollapseTime: 1000,
-        delayType: 800,
-        marker: {
-            icon: true
-        }
-    };
-
-    let searchControl = new L.Control.Search(mobileOpts);
-
-
-    searchControl.on('search:locationfound', function(e) {
-
-
-        curPos = e.latlng;
-
-        current_lng = curPos.lng;
-        current_lat = curPos.lat;
-
-        search_current_lng = curPos.lng;
-        search_current_lat = curPos.lat;
-
-        save_search = "true";
-        killSearch()
-
-        toaster("press 5 if you want save your search result as marker");
-        savesearch = "true";
-
-
-    })
-
-    map.addControl(searchControl);
-
-
-    $('.leaflet-control-search').css('display', 'none')
-
-
 
     function showSearch() {
-        if ($('.leaflet-control-search').css('display') == 'none' && windowOpen == "map") {
 
-            $('.leaflet-control-search').css('display', 'block');
-            windowOpen = "search";
-            setTimeout(function() {
-                $('.leaflet-control-search').find("input").focus();
-                $('.leaflet-control-search').find("input").val("");
-            }, 1000);
-            $('div#search').css('display', 'block');
-
-        } else {
-            $('.leaflet-control-search').css('display', 'none');
-            $('.leaflet-control-search').find("input").val("");
-            windowOpen = "map";
-
-
-        }
-    }
-
-
-    function killSearch() {
-
-        if ($('.leaflet-control-search').css('display') == 'block') {
-            $('div#search').css('display', 'none');
-            $('.leaflet-control-search').css('display', 'none');
-            $('.leaflet-control-search').find("input").val("");
-            $('.leaflet-control-search').find("input").blur();
-            windowOpen = "map";
-
-        }
+        bottom_bar("close", "select", "")
+        $('div#search-box').css('display', 'block');
+        $('div#search-box').find("input").focus();
+        $("div#bottom-bar").css("display", "block")
+        windowOpen = "search";
 
     }
 
 
+    function hideSearch() {
+        $("div#bottom-bar").css("display", "none")
+        $('div#search-box').css('display', 'none');
+        $('div#search-box').find("input").val("");
+        $('div#search-box').find("input").blur();
+        $("div#olc").css("display", "none")
 
-
-    ////////////////////////////////////////
-    ////SCREEN OFF ONLY Nokia8110////////////
-    ///////////////////////////////////////
-
-
-
-
-    function screenWakeLock(param1) {
-        if (param1 == "lock") {
-            lock = window.navigator.requestWakeLock("screen");
-        }
-
-        if (param1 == "unlock") {
-            if (lock.topic == "screen") {
-                lock.unlock();
-            }
-        }
+        windowOpen = "map";
     }
-
-
-
-
-
-
 
     /////////////////////
     ////ZOOM MAP/////////
@@ -1029,10 +917,10 @@ $(document).ready(function() {
     function ZoomMap(in_out) {
 
         let current_zoom_level = map.getZoom();
-        if (windowOpen == "map" && $('.leaflet-control-search').css('display') == 'none') {
+        if (windowOpen == "map" && $('div#search-box').css('display') == 'none') {
             if (in_out == "in") {
 
-                if (windowOpen == "rainmap" && current_zoom_level < 5) {
+                if (current_zoom_level < 5) {
                     current_zoom_level = current_zoom_level + 1
                     map.setZoom(current_zoom_level);
                 }
@@ -1109,37 +997,70 @@ $(document).ready(function() {
     //MAP NAVIGATION//
     /////////////////////
 
-
     function MovemMap(direction) {
-        if (windowOpen == "map") {
-            if (direction == "left") {
-                zoom_speed()
+        if (!marker_latlng) {
+            if (windowOpen == "map") {
+                if (direction == "left") {
+                    zoom_speed()
 
-                current_lng = current_lng - step;
-                map.panTo(new L.LatLng(current_lat, current_lng));
+                    current_lng = current_lng - step;
+                    map.panTo(new L.LatLng(current_lat, current_lng));
+                }
+
+                if (direction == "right") {
+                    zoom_speed()
+
+                    current_lng = current_lng + step;
+                    map.panTo(new L.LatLng(current_lat, current_lng));
+                }
+
+                if (direction == "up") {
+                    zoom_speed()
+
+                    current_lat = current_lat + step;
+                    map.panTo(new L.LatLng(current_lat, current_lng));
+
+                }
+
+                if (direction == "down") {
+                    zoom_speed()
+
+                    current_lat = current_lat - step;
+                    map.panTo(new L.LatLng(current_lat, current_lng));
+
+                }
             }
+        }
 
-            if (direction == "right") {
-                zoom_speed()
+        //when marker is not current location
+        //to calculate distance between current position and marker
+        if (marker_latlng) {
+            if (windowOpen == "map") {
+                if (direction == "left") {
+                    zoom_speed()
+                    marker_lng = marker_lng - step;
+                    map.panTo(new L.LatLng(marker_lat, marker_lng));
+                }
 
-                current_lng = current_lng + step;
-                map.panTo(new L.LatLng(current_lat, current_lng));
-            }
+                if (direction == "right") {
+                    zoom_speed()
+                    marker_lng = marker_lng + step;
+                    map.panTo(new L.LatLng(marker_lat, marker_lng));
+                }
 
-            if (direction == "up") {
-                zoom_speed()
+                if (direction == "up") {
+                    zoom_speed()
+                    marker_lat = marker_lat + step;
+                    map.panTo(new L.LatLng(marker_lat, marker_lng));
 
-                current_lat = current_lat + step;
-                map.panTo(new L.LatLng(current_lat, current_lng));
+                }
 
-            }
+                if (direction == "down") {
+                    zoom_speed()
+                    marker_lat = marker_lat - step;
+                    map.panTo(new L.LatLng(marker_lat, marker_lng));
 
-            if (direction == "down") {
-                zoom_speed()
-
-                current_lat = current_lat - step;
-                map.panTo(new L.LatLng(current_lat, current_lng));
-
+                }
             }
         }
 
@@ -1262,9 +1183,7 @@ $(document).ready(function() {
                     return false;
                 }
                 if (windowOpen == "map") {
-
-                    toaster("Goodbye");
-
+                    toaster("Goodbye", 2000);
                     setTimeout(function() {
                         window.close();
                     }, 4000);
@@ -1274,16 +1193,27 @@ $(document).ready(function() {
                 break;
 
             case 'SoftLeft':
-                killSearch();
+
+
+                if (windowOpen == "search") {
+
+                    hideSearch();
+                    return false;
+                }
+
                 if (windowOpen == "finder") {
 
                     unload_map(false);
+                    return false;
+
                 }
 
 
 
                 if (windowOpen == "map") {
                     ZoomMap("in");
+                    return false;
+
                 }
 
 
@@ -1305,18 +1235,25 @@ $(document).ready(function() {
                 }
                 if (windowOpen == "user-input") {
                     filename = user_imput("return")
-                    if (savesearch == "true") {
-                        getLocation("save_search_marker")
-
-                    } else {
-                        getLocation("save_marker")
-
-                    }
+                    save_delete_marker("save_marker")
 
                 }
                 break;
 
             case 'Enter':
+                if (windowOpen == "search") {
+
+                    L.marker([olc_lat_lng[0], olc_lat_lng[1]]).addTo(map);
+                    map.setView([olc_lat_lng[0], olc_lat_lng[1]], 13);
+
+                    hideSearch()
+
+                    current_lat = Number(olc_lat_lng[0]);
+                    current_lng = Number(olc_lat_lng[1]);
+
+                    toaster("press 5 to save the marker", 2000)
+                    break;
+                }
 
                 addMapLayers("add-marker");
 
@@ -1338,6 +1275,7 @@ $(document).ready(function() {
 
             case '4':
                 geolocationWatch();
+                screenWakeLock("lock")
 
                 break;
 
@@ -1352,6 +1290,11 @@ $(document).ready(function() {
             case '7':
                 ruler();
                 break;
+
+            case '0':
+                break;
+
+
 
 
             case 'ArrowRight':
