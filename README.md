@@ -18,6 +18,10 @@ If you want to use the openweathermap, you need to get an API key from openweath
 ![image-2](/images/image-2.png)
 ![image-2](/images/image-3.png)
 ![image-4](/images/image-4.png)
+![image-5](/images/image-5.png)
+![image-6](/images/image-6.png)
+
+
 
 ## Maps
 + Openstreetmap
@@ -30,6 +34,7 @@ If you want to use the openweathermap, you need to get an API key from openweath
 ### Manual
 + **Soft-keys** Zoom the map
 + **Cursor** Moving the map
++ **key 0** show center
 + **key 1** update marker
 + **key 2** search
 + **key 3** load geoJson track,add MapLayer, add Markers, settings
