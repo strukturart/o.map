@@ -102,9 +102,6 @@ $(document).ready(function() {
                 map.setZoom(8);
                 $('div#finder').css('display', 'none');
                 windowOpen = "map";
-
-
-
             };
 
 
@@ -429,7 +426,7 @@ $(document).ready(function() {
             if (option == "init") {
 
                 myMarker = L.marker([current_lat, current_lng]).addTo(map);
-                map.setView([current_lat, current_lng], 13);
+                map.setView([current_lat, current_lng], 18);
                 zoom_speed();
                 $('div#message div').text("");
                 return false;
@@ -528,6 +525,28 @@ $(document).ready(function() {
 
 
     ///////////
+    //SET MARKER////
+    //////////
+    window.marker_cross = function() {
+
+        let elem = document.getElementById("marker-target-cross")
+        let style = getComputedStyle(elem)
+        if (style.display == "none") {
+            elem.style.display = "block"
+            toaster("press 5 to add a marker and save it", 5000)
+            return true;
+
+        } else {
+            elem.style.display = "none"
+            return true;
+
+        }
+
+    }
+
+
+
+    ///////////
     //save/delete marker
     //////////
 
@@ -540,7 +559,6 @@ $(document).ready(function() {
 
 
             let sdcard = navigator.getDeviceStorages("sdcard");
-            //let request = sdcard[1].get("osm-map/osm-map.json");
             let request = sdcard[1].get(file_path);
 
 
@@ -592,15 +610,11 @@ $(document).ready(function() {
                     function save() {
                         windowOpen = "save"
                         let extData = JSON.stringify(data);
-                        //deleteFile(1, "osm-map/osm-map.json", "")
                         deleteFile(1, file_path, "")
-
-
 
                         setTimeout(function() {
 
                             let file = new Blob([extData], { type: "application/json" });
-                            //let requestAdd = sdcard[1].addNamed(file, "osm-map/osm-map.json");
                             let requestAdd = sdcard[1].addNamed(file, file_path);
 
 
@@ -956,6 +970,7 @@ $(document).ready(function() {
 
 
     function zoom_speed() {
+        toaster(zoom_level)
         if (zoom_level < 6) {
             step = 1;
         }
@@ -968,6 +983,10 @@ $(document).ready(function() {
 
         if (zoom_level > 11) {
             step = 0.001;
+        }
+
+        if (zoom_level > 14) {
+            step = 0.0001;
         }
 
         return step;
@@ -1292,6 +1311,7 @@ $(document).ready(function() {
                 break;
 
             case '0':
+                marker_cross();
                 break;
 
 

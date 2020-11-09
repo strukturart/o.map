@@ -23,12 +23,8 @@ $(document).ready(function() {
 
                 })
             }
-
-
         },
         onSearchStart: function() {
-
-
 
         },
         onSearchError: function(query, jqXHR, textStatus, errorThrown) {
@@ -40,8 +36,6 @@ $(document).ready(function() {
             addMarker(lat_lon[0], lat_lon[1])
         }
 
-
-
     })
 
 
@@ -49,28 +43,18 @@ $(document).ready(function() {
 
     //add marker
     function addMarker(lat, lng) {
-        L.marker([lat, lng]).addTo(map);
         map.setView([lat, lng], 13);
         hideSearch()
-
         current_lat = Number(lat);
         current_lng = Number(lng);
-
-        toaster("press 5 to save the marker", 2000)
-
-
+        window.parent.marker_cross()
     }
-
-
-
 
     //////////////////////////
     ////SEARCH BOX////////////
     /////////////////////////
 
-
-
-    function showSearch() {
+    window.showSearch = function() {
         $('#search').autocomplete().enable();
 
         bottom_bar("close", "select", "")
@@ -85,7 +69,7 @@ $(document).ready(function() {
     }
 
 
-    function hideSearch() {
+    window.hideSearch = function() {
         $("div#bottom-bar").css("display", "none")
         $('div#search-box').css('display', 'none');
         $('div#search-box').find("input").val("");
