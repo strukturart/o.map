@@ -60,6 +60,9 @@ The search can be opened with key 2, you can search for locations or start the s
 + [Bananna Hackers Group](https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/bananahackers)
 + Luxferre [olc](https://gist.github.com/plugnburn/95de231ff94130f1de8eb2a2afaf8516)
 
+### License
+[UNLICENSE](UNLICENSE)
+
 ## Donation
 If you use the app often, please donate an amount to me.
 <br>

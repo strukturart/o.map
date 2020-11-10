@@ -17,7 +17,7 @@ let new_lng = 0;
 let curPos = 0;
 let myMarker = "";
 let i = 0;
-let windowOpen = "map";
+let windowOpen;
 let message_body = "";
 let openweather_api = "";
 let tabIndex = 0;
@@ -59,7 +59,9 @@ $(document).ready(function() {
         }
         ///set default map
         opentopo_map();
-        windowOpen = "map";
+        setTimeout(() => {
+            windowOpen = "map";
+        }, 2000);
 
     }, 4000);
 
@@ -312,6 +314,42 @@ $(document).ready(function() {
 
 
 
+    /////////////////////////
+    /////Load GPX///////////
+    ///////////////////////
+    function loadGPX(filename) {
+        let finder = new Applait.Finder({ type: "sdcard", debugMode: false });
+        finder.search(filename);
+
+
+        finder.on("fileFound", function(file, fileinfo, storageName) {
+            //file reader
+
+            let reader = new FileReader();
+
+            reader.onerror = function(event) {
+                toaster("can't read file", 3000)
+                reader.abort();
+            };
+
+            reader.onloadend = function(event) {
+
+                var gpx = event.target.result; // URL to your GPX file or the GPX itself
+
+                new L.GPX(gpx, { async: true }).on('loaded', function(e) {
+                    map.fitBounds(e.target.getBounds());
+                }).addTo(map)
+
+                map.setZoom(8);
+                $('div#finder').css('display', 'none');
+                windowOpen = "map";
+            };
+
+
+            reader.readAsText(file)
+
+        })
+    }
 
 
 
