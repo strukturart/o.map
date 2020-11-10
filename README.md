@@ -34,13 +34,13 @@ If you want to use the openweathermap, you need to get an API key from openweath
 ### Manual
 + **Soft-keys** Zoom the map
 + **Cursor** Moving the map
-+ **key 0** show center
++ **key enter** show center (helpfull to set marker)
 + **key 1** update marker
 + **key 2** search
 + **key 3** load geoJson track,add MapLayer, add Markers, settings
 + **key 4** watch position on/off
 + **key 5** save position or search result as marker on sd-card <br>
-to delete the marker open with 3 the menu select der marker and press long enter (+- 5sec)
+to delete the marker open with 3 the menu select the marker and press long enter (+- 5sec)
 + **key 6** show lat lon alt dir
 + **key 7** measure distance
 

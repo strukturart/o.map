@@ -47,6 +47,7 @@ $(document).ready(function() {
         hideSearch()
         current_lat = Number(lat);
         current_lng = Number(lng);
+        document.getElementById("marker-target-cross").style.dispaly = "none";
         window.parent.marker_cross()
     }
 

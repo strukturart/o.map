@@ -36,8 +36,9 @@ function notify(param_title, param_text, param_silent) {
 function toaster(text, time) {
 
     $("div#toast").html("<div>" + text + "</div>")
+
     $("div#toast").animate({ top: "0px" }, 1000, "linear", function() {
-        $("div#toast").delay(3000).animate({ top: "-100px" }, time);
+        $("div#toast").delay(3000).animate({ top: "-360px" }, time);
     });
 
 

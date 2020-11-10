@@ -11,7 +11,7 @@ let current_heading;
 
 
 let zoom_level;
-let current_zoom_level = 6;
+let current_zoom_level;
 let new_lat = 0;
 let new_lng = 0;
 let curPos = 0;
@@ -125,7 +125,7 @@ $(document).ready(function() {
     function opentopo_map() {
         tilesUrl = 'https://tile.opentopomap.org/{z}/{x}/{y}.png'
         tilesLayer = L.tileLayer(tilesUrl, {
-            maxZoom: 6,
+            maxZoom: 17,
             attribution: 'Map data &copy;<div> © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)</div>'
         });
 
@@ -360,7 +360,7 @@ $(document).ready(function() {
             if (option == "init") {
 
                 myMarker = L.marker([current_lat, current_lng]).addTo(map);
-                map.setView([current_lat, current_lng], 18);
+                map.setView([current_lat, current_lng], 14);
                 zoom_speed();
                 $('div#message div').text("");
                 return false;
@@ -467,7 +467,7 @@ $(document).ready(function() {
         let style = getComputedStyle(elem)
         if (style.display == "none") {
             elem.style.display = "block"
-            toaster("press 5 to add a marker and save it", 5000)
+            toaster("<br>press 5<br>to add a marker and save it<br><br>press 0 <br>to share this position by sms", 5000)
             return true;
 
         } else {
@@ -691,7 +691,7 @@ $(document).ready(function() {
                 save_delete_marker("save_marker")
 
             }
-            let marker_count = -1;
+            //let marker_count = -1;
             let marker_array = [];
             if (item_value == "marker") {
                 if (param == "add-marker") {
@@ -853,7 +853,6 @@ $(document).ready(function() {
         $('div#search-box').find("input").val("");
         $('div#search-box').find("input").blur();
         $("div#olc").css("display", "none")
-
         windowOpen = "map";
     }
 
@@ -867,35 +866,14 @@ $(document).ready(function() {
         let current_zoom_level = map.getZoom();
         if (windowOpen == "map" && $('div#search-box').css('display') == 'none') {
             if (in_out == "in") {
-
-                if (current_zoom_level < 5) {
-                    current_zoom_level = current_zoom_level + 1
-                    map.setZoom(current_zoom_level);
-                }
-
-
-                if (windowOpen == "otm" && current_zoom_level < 16) {
-                    current_zoom_level = current_zoom_level + 1
-                    map.setZoom(current_zoom_level);
-                }
-
-                if (windowOpen == "map") {
-                    current_zoom_level = current_zoom_level + 1
-                    map.setZoom(current_zoom_level);
-                }
-
-
-
+                map.setZoom(current_zoom_level + 1);
             }
 
             if (in_out == "out") {
-                current_zoom_level = current_zoom_level - 1
-                map.setZoom(current_zoom_level);
+                map.setZoom(current_zoom_level - 1);
             }
 
-            zoom_level = current_zoom_level;
             zoom_speed();
-
         }
 
     }
@@ -904,27 +882,31 @@ $(document).ready(function() {
 
 
     function zoom_speed() {
+        zoom_level = map.getZoom();
+        console.log(zoom_level)
+
+
         if (zoom_level < 6) {
             step = 1;
             return step;
+            console.log(step)
         }
-
-
         if (zoom_level > 6) {
             step = 0.1;
-            return step;
+
         }
 
 
         if (zoom_level > 11) {
             step = 0.001;
-            return step;
         }
 
         if (zoom_level > 14) {
             step = 0.0001;
-            return step;
         }
+        return step;
+        console.log(step)
+
 
     }
 
@@ -1211,6 +1193,10 @@ $(document).ready(function() {
                     toaster("press 5 to save the marker", 2000)
                     break;
                 }
+                if (windowOpen == "map") {
+                    marker_cross();
+                    break;
+                }
 
                 addMapLayers("add-marker");
 
@@ -1249,7 +1235,7 @@ $(document).ready(function() {
                 break;
 
             case '0':
-                marker_cross();
+                window.share_position();
                 break;
 
 
