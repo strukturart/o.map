@@ -503,13 +503,25 @@ $(document).ready(function() {
 
         let elem = document.getElementById("marker-target-cross")
         let style = getComputedStyle(elem)
-        if (style.display == "none") {
-            elem.style.display = "block"
+        if (style.opacity == "0") {
+
+            $("#marker-target-cross").animate({
+                width: "50px",
+                height: "50px"
+            }, 3000, function() {});
+
+
+            elem.style.opacity = "1"
+
+
+            elem.style.color = 'red';
             toaster("<br>press 5<br>to add a marker and save it<br><br>press 0 <br>to share this position by sms", 5000)
             return true;
 
         } else {
-            elem.style.display = "none"
+            elem.style.opacity = "0"
+            elem.style.width = '0px';
+            elem.style.height = '0px';
             return true;
 
         }
