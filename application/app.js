@@ -45,8 +45,6 @@ let storage_name;
 
 $(document).ready(function() {
 
-
-
     //welcome message
     $('div#message div').text("Welcome");
     setTimeout(function() {
@@ -75,39 +73,6 @@ $(document).ready(function() {
 
     L.control.scale({ position: 'topright', metric: true, imperial: false }).addTo(map);
 
-    ////////////////////
-    ////RULER///////////
-    ///////////////////
-    var ruler_activ = "";
-
-    function ruler() {
-
-        if (ruler_activ == "") {
-            L.control.ruler().addTo(map);
-
-        }
-
-        if (ruler_activ === true) {
-            $("div.leaflet-ruler").remove();
-
-            ruler_activ = false
-            navigator.spatialNavigationEnabled = false;
-            L.control.ruler().remove();
-            $("div.leaflet-ruler").removeClass("leaflet-ruler-clicked")
-
-            return false;
-        } else {
-            L.control.ruler().remove();
-
-            navigator.spatialNavigationEnabled = true;
-
-            ruler_activ = true
-            $("div.leaflet-ruler").addClass("leaflet-ruler-clicked")
-            return false;
-        }
-
-
-    }
     ////////////////////
     ////MAPS////////////
     ///////////////////
@@ -312,6 +277,39 @@ $(document).ready(function() {
 
 
 
+    ////////////////////
+    ////RULER///////////
+    ///////////////////
+    var ruler_activ = "";
+
+    function ruler() {
+
+        if (ruler_activ == "") {
+            L.control.ruler().addTo(map);
+
+        }
+
+        if (ruler_activ === true) {
+            $("div.leaflet-ruler").remove();
+
+            ruler_activ = false
+            navigator.spatialNavigationEnabled = false;
+            L.control.ruler().remove();
+            $("div.leaflet-ruler").removeClass("leaflet-ruler-clicked")
+
+            return false;
+        } else {
+            L.control.ruler().remove();
+
+            navigator.spatialNavigationEnabled = true;
+
+            ruler_activ = true
+            $("div.leaflet-ruler").addClass("leaflet-ruler-clicked")
+            return false;
+        }
+
+
+    }
 
 
     /////////////////////////
@@ -362,7 +360,7 @@ $(document).ready(function() {
 
     //set filename by user imput
     function saveMarker() {
-        user_imput("open", moment().format("DD.MM.YYYY, HH:MM"));
+        user_input("open", moment().format("DD.MM.YYYY, HH:MM"));
     }
 
     let filename;
@@ -508,7 +506,7 @@ $(document).ready(function() {
             $("#marker-target-cross").animate({
                 width: "50px",
                 height: "50px"
-            }, 3000, function() {});
+            }, 2000, function() {});
 
 
             elem.style.opacity = "1"
@@ -619,9 +617,13 @@ $(document).ready(function() {
                                 }
                                 if (option == "save_marker") {
                                     toaster('Marker saved', 2000);
-                                    L.marker([current_lat, current_lng]).addTo(map);
-                                    map.setView([current_lat, current_lng], 13);
 
+                                    var markerOptions = {
+                                        keyboard: true
+                                    }
+                                    L.marker([current_lat, current_lng], markerOptions).addTo(map);
+
+                                    map.setView([current_lat, current_lng], 13);
                                     $('div#finder').css('display', 'none');
                                     windowOpen = "map";
                                 }
@@ -741,14 +743,11 @@ $(document).ready(function() {
                 save_delete_marker("save_marker")
 
             }
-            //let marker_count = -1;
             let marker_array = [];
             if (item_value == "marker") {
                 if (param == "add-marker") {
                     //to know it is not the current position
                     marker_latlng = true;
-
-                    marker_count++
 
                     marker_lng = Number($(document.activeElement).data('lng'));
                     marker_lat = Number($(document.activeElement).data('lat'));
@@ -853,25 +852,37 @@ $(document).ready(function() {
 
     function coordinations(param) {
         let update_view;
-        if (param == "show") {
-            getLocation("update_marker");
+        if ($("div#coordinations").css("display") == "none") {
+            $("div#finder").css("display", "none");
+            $("div#coordinations").css("display", "block");
+            //getLocation("update_marker");
             update_view = setInterval(() => {
                 if (current_lat != "" && current_lng != "") {
 
                     $('div#coordinations div#lat').text("Lat " + current_lat.toFixed(5));
                     $('div#coordinations div#lng').text("Lng " + current_lng.toFixed(5));
-                    $('div#coordinations div#altitude').text("alt " + current_alt);
-                    $('div#coordinations div#heading').text("heading " + current_heading);
+                    if (current_alt) {
+                        $('div#coordinations div#altitude').text("alt " + current_alt);
+                    } else {
+                        $('div#coordinations div#altitude').text("alt no data");
+                    }
+                    if (current_heading) {
+                        $('div#coordinations div#heading').text("heading " + current_heading);
+
+                    } else {
+                        $('div#coordinations div#heading').text("heading no data");
+
+                    }
+
                 }
             }, 1000);
 
-            $("div#finder").css("display", "none");
-            $("div#coordinations").css("display", "block");
-            windowOpen = "coordinations";
+
+            return true;
 
         }
 
-        if (param == "hide") {
+        if ($("div#coordinations").css("display") == "block") {
             $("div#coordinations").css("display", "none");
             windowOpen = "map";
             clearInterval(update_view);
@@ -939,7 +950,6 @@ $(document).ready(function() {
         if (zoom_level < 6) {
             step = 1;
             return step;
-            console.log(step)
         }
         if (zoom_level > 6) {
             step = 0.1;
@@ -955,7 +965,6 @@ $(document).ready(function() {
             step = 0.0001;
         }
         return step;
-        console.log(step)
 
 
     }
@@ -1206,7 +1215,7 @@ $(document).ready(function() {
 
 
                 if (windowOpen == "user-input") {
-                    user_imput("close")
+                    user_input("close")
                     return false;
                 }
                 break;
@@ -1223,7 +1232,7 @@ $(document).ready(function() {
 
                 }
                 if (windowOpen == "user-input") {
-                    filename = user_imput("return")
+                    filename = user_input("return")
                     save_delete_marker("save_marker")
 
                 }

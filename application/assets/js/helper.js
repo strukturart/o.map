@@ -48,7 +48,7 @@ function toaster(text, time) {
 
 let wp;
 
-function user_imput(param, file_name) {
+function user_input(param, file_name) {
     if (param == "open") {
         $("div#user-input").animate({ bottom: "0px" }, 1000, "linear");
         $("div#user-input input").focus();
