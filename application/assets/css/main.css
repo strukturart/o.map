@@ -105,16 +105,28 @@ div#map-container {
 
 div#marker-target-cross {
     border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    background: rgba(0, 255, 0, 0.2);
+    width: 0px;
+    height: 0px;
     border: 7px solid #000;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 900;
-    display: none;
+    opacity: 0;
+    animation: infinite;
+    animation-duration: 3s;
+    animation-name: am-color;
+    animation-direction: alternate;
+}
+
+@keyframes am-color {
+    from {
+        background-color: rgba(0, 255, 0, 0.2);
+    }
+    to {
+        background-color: rgba(209, 223, 14, 0.466);
+    }
 }
 
 
@@ -323,7 +335,7 @@ div#coordinations {
     z-index: 1000;
     left: 0;
     top: 0;
-    background: black;
+    background: none;
     color: white;
     font-size: 14px;
     padding: 5px 10px 50px 5px;
@@ -331,61 +343,15 @@ div#coordinations {
     overflow: hidden;
 }
 
-div#coordinations div#button-set {
-    position: fixed!Important;
-    bottom: 0px;
-    height: 30px;
-    background: black;
-}
-
-div#coordinations div#button-set div div#close {
-    background: black;
-    color: white;
-    font-size: 14px;
-    padding: 3px;
-    min-width: 100px;
-}
-
-div#coordinations div#button-set div div#share {
-    background: black;
-    color: white;
-    font-size: 14px;
-    padding: 3px 10px 3px 3px;
-    text-align: right;
-    min-width: 70px;
-}
-
-div#coordinations div#lat {
+div#coordinations div {
     background: black;
     color: white;
     font-size: 14px;
     padding: 3px;
 }
 
-div#coordinations div#lng {
-    background: black;
-    color: white;
-    font-size: 14px;
-    padding: 3px;
-}
+div#coordinations div#lat {}
 
-div#coordinations div#altitude {
-    background: black;
-    color: white;
-    font-size: 14px;
-    padding: 3px;
-}
+div#coordinations div#lng {}
 
-
-/* KaiOS portrait devices (240x320) */
-
-@media only screen and (orientation: portrait) {
-    /* styles */
-}
-
-
-/* KaiOS landscape devices (320x240) */
-
-@media screen and (orientation: landscape) {
-    /* styles */
-}
+div#coordinations div#altitude {}
