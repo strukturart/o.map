@@ -11,7 +11,7 @@ This is an Open Street Map app for the Nokia 81104G
 + search locations
 + open openstreetmap link to marker
 
-If you want to use the openweathermap, you need to get an API key from openweathermap.org. Then you need to create a file called osm-map.json please check my example [file](/osm-map.json)
+If you want to use the openweathermap, you need to get an API key from openweathermap.org. Then you need to create a file called omap.json please check my example [file](/omap.json)
 
 
 
@@ -20,13 +20,15 @@ If you want to use the openweathermap, you need to get an API key from openweath
 ![image-4](/images/image-4.png)
 ![image-5](/images/image-5.png)
 ![image-6](/images/image-6.png)
-
+![image-7](/images/image-7.png)
+![image-8](/images/image-8.png)
 
 
 ## Maps
 + Openstreetmap
 + Open Topo Map
 + Tonner Map
++ Moon Map
 
 ## Layers
 + OpenWeatherMap
@@ -57,8 +59,14 @@ The search can be opened with key 2, you can search for locations or start the s
 
 
 ### Thank you
++ Openstreetmap
++ OpenTopoMap
++ http://maps.stamen.com/toner/ Tonermap
++ https://www.openplanetary.org/ Moonmap
++ leaflet.js
 + [Bananna Hackers Group](https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/bananahackers)
 + Luxferre [olc](https://gist.github.com/plugnburn/95de231ff94130f1de8eb2a2afaf8516)
+
 
 ### License
 [UNLICENSE](UNLICENSE)
