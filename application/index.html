@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>OSM-Map</title>
+    <title>o.map</title>
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,6 +20,27 @@
 
     <div id="message" class="flex justify-content-center align-item-center width-100 height-100">
         <div></div>
+    </div>
+
+
+    <div id="goodbye" class="flex justify-content-center align-item-center width-100 height-100">
+        <div id="donation">
+            please support my work, <br>make a donation<br> Thank you!
+        </div>
+        <div id="ciao">
+            Goodbye<br>
+            <br>
+            <ul>
+                <li>Thank you</li>
+                <li>leafletjs</li>
+                <li>openstreetmap</li>
+                <li>opentopomap</li>
+                <li>bHackers community</li>
+            </ul>
+
+
+        </div>
+
     </div>
 
     <div id="toast" class="width-100">
@@ -81,7 +102,7 @@
     <div id="finder" class="flex justify-content-center align-item-center width-100 height-100">
         <h2>Options</h2>
         <div id="settings">
-            <div class="items update-position" data-map="update-position">
+            <div class="items update-position" tabindex="0" data-map="update-position">
                 <div class="flex justify-content-spacebetween">
                     <div>update geolocation</div>
                     <div>1</div>
@@ -145,15 +166,6 @@
         <h2>Markers</h2>
         <div id="markers"></div>
 
-
-
-
-
-        <div id="finder-error"></div>
-
-
-
-
         <div id="question" class="width-100 height-100 flex">
             <div id="question-text">Do you want unload the current map ?</div>
             <div id="answer" class="flex width-100 justify-content-spacebetween algin-item-end">
@@ -161,6 +173,7 @@
                 <div class="answer-yes">Yes</div>
             </div>
         </div>
+
     </div>
 
     <script defer src="assets/js/jQuery-3.1.0.js"></script>
@@ -180,6 +193,8 @@
     <script defer src="assets/js/share-position.js"></script>
     <script defer src="assets/js/calc_distance.js"></script>
     <script defer src="assets/js/search.js"></script>
+    <script defer src="assets/js/goodbye.js"></script>
+
 
 
 

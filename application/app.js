@@ -40,6 +40,7 @@ let marker_latlng = false;
 
 let file_path;
 let storage_name;
+let json_modified = false;
 
 
 
@@ -51,9 +52,13 @@ $(document).ready(function() {
         $('div#message').css("display", "none")
             //get location if not an activity open url
         if (open_url === false) {
+            read_json();
             getLocation("init");
             toaster("Press 3<br> to open the menu", 5000)
 
+            setTimeout(function() {
+                $('.leaflet-control-attribution').hide()
+            }, 8000);
         }
         ///set default map
         opentopo_map();
@@ -77,6 +82,19 @@ $(document).ready(function() {
     ////MAPS////////////
     ///////////////////
 
+    function moon_map() {
+        tilesUrl = 'https://cartocdn-gusc.global.ssl.fastly.net/opmbuilder/api/v1/map/named/opm-moon-basemap-v0-1/all/{z}/{x}/{y}.png'
+        tilesLayer = L.tileLayer(tilesUrl, {
+            maxZoom: 12,
+            minZoom: 2,
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+                '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
+        });
+
+        map.addLayer(tilesLayer);
+
+    }
+
     function toner_map() {
         tilesUrl = 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png'
         tilesLayer = L.tileLayer(tilesUrl, {
@@ -97,11 +115,6 @@ $(document).ready(function() {
         });
 
         map.addLayer(tilesLayer);
-
-        setTimeout(function() {
-            $('.leaflet-control-attribution').hide()
-        }, 4000);
-
     }
 
 
@@ -132,10 +145,12 @@ $(document).ready(function() {
     }
 
 
+
+
     /////////////////////////
     //read json to build menu
     /////////////////////////
-    function read_json(option) {
+    function read_json() {
 
         $("div#tracks").empty();
         $("div#maps").empty();
@@ -143,8 +158,14 @@ $(document).ready(function() {
         $("div#markers").empty();
 
 
+        $("div#maps").append('<div class="items" data-map="toner">Toner <i>Map</i></div>');
+        $("div#maps").append('<div class="items" data-map="osm">OSM <i>Map</i></div>');
+        $("div#maps").append('<div class="items" data-map="otm">OpenTopo <i>Map</i></div>');
+        $("div#maps").append('<div class="items" data-map="moon">Moon <i>Map</i></div>');
+
+
         let finder = new Applait.Finder({ type: "sdcard", debugMode: false });
-        finder.search("osm-map.json");
+        finder.search("omap.json");
 
 
         finder.on("empty", function(needle) {
@@ -156,7 +177,7 @@ $(document).ready(function() {
 
 
             if (filematchcount == 0) {
-                toaster("no osm-map.json file found.Please create this file, otherwise you can only use the app to a limited extent.", 2000);
+                toaster("no osm-map.json file found.Please create this file, otherwise you can only use the app to a limited extent.", 4000);
                 return;
             }
         })
@@ -164,12 +185,10 @@ $(document).ready(function() {
         finder.on("fileFound", function(file, fileinfo, storageName) {
             file_path = fileinfo.path + "/" + fileinfo.name
             storage_name = storageName;
-            $("div#maps").append('<div class="items" data-map="toner">Toner <i>Map</i></div>');
-            $("div#maps").append('<div class="items" data-map="osm">OSM <i>Map</i></div>');
-            $("div#maps").append('<div class="items" data-map="otm">OpenTopo <i>Map</i></div>');
+
+
 
             let reader = new FileReader()
-
 
             reader.onerror = function(event) {
                 toaster("can't read file")
@@ -177,8 +196,6 @@ $(document).ready(function() {
             };
 
             reader.onloadend = function(event) {
-
-
 
                 let data;
                 //check if json valid
@@ -188,8 +205,6 @@ $(document).ready(function() {
                     toaster("File is not valid", 2000)
                     return false;
                 }
-
-
 
                 //add markers and openweatermap
                 $.each(data, function(index, value) {
@@ -206,74 +221,103 @@ $(document).ready(function() {
 
                     }
 
-
                 })
 
 
+                find_gpx();
+                find_geojson();
 
-                if (option == "finder") {
-
-                    windowOpen = "finder";
-
-                    //search geojson
-                    let finder = new Applait.Finder({ type: "sdcard", debugMode: false });
-                    finder.search(".geojson");
-
-                    finder.on("searchComplete", function(needle, filematchcount) {
-
-
-                        //set tabindex
-                        $('div.items').each(function(index, value) {
-                            let $div = $(this)
-                            $div.attr("tabindex", index);
-                        });
-
-
-                        $('div#finder').css('display', 'block');
-                        $('div#finder').find('div.items[tabindex=0]').focus();
-                        tabIndex = 0;
-
-                    });
-
-
-                    finder.on("fileFound", function(file, fileinfo, storageName) {
-                        $("div#tracks").append('<div class="items" data-map="geojson">' + fileinfo.name + '</div>');
-                    });
-
-
-                    //search gpx
-                    let finder_gpx = new Applait.Finder({ type: "sdcard", debugMode: false });
-
-                    finder_gpx.search(".gpx");
-
-                    finder_gpx.on("searchComplete", function(needle, filematchcount) {
-
-
-                        //set tabindex
-                        $('div.items').each(function(index, value) {
-                            let $div = $(this)
-                            $div.attr("tabindex", index);
-                        });
-
-
-                        $('div#finder').css('display', 'block');
-                        $('div#finder').find('div.items[tabindex=0]').focus();
-                        tabIndex = 0;
-
-                    });
-
-
-                    finder_gpx.on("fileFound", function(file, fileinfo, storageName) {
-                        $("div#tracks").append('<div class="items" data-map="gpx">' + fileinfo.name + '</div>');
-                    });
-
+                if (json_modified) {
+                    json_modified = false;
                 }
 
             };
             reader.readAsText(file)
         });
     }
+
+
     read_json()
+
+
+
+    //////////////////////////////////
+    //READ GPX////////////////////////
+    /////////////////////////////////
+    let find_gpx = function() {
+
+        //search gpx
+        let finder_gpx = new Applait.Finder({ type: "sdcard", debugMode: false });
+
+        finder_gpx.search(".gpx");
+        finder_gpx.on("searchComplete", function(needle, filematchcount) {
+
+        });
+
+
+        finder_gpx.on("fileFound", function(file, fileinfo, storageName) {
+            $("div#tracks").append('<div class="items" data-map="gpx">' + fileinfo.name + '</div>');
+        });
+
+
+    }
+
+
+
+    //////////////////////////////////
+    //READ GEOJSON////////////////////////
+    /////////////////////////////////
+
+    let find_geojson = function() {
+
+        //search geojson
+        let finder = new Applait.Finder({ type: "sdcard", debugMode: false });
+        finder.search(".geojson");
+
+        finder.on("searchComplete", function(needle, filematchcount) {})
+
+
+
+        finder.on("fileFound", function(file, fileinfo, storageName) {
+            $("div#tracks").append('<div class="items" data-map="geojson">' + fileinfo.name + '</div>');
+        });
+
+    }
+
+
+    //////////////////////////////////
+    ///MENU//////////////////////////
+    /////////////////////////////////
+
+    let show_finder = function() {
+        if (json_modified) {
+            read_json()
+        } else {
+            finder_tabindex()
+            $('div#finder').find('div.items[tabindex=0]').focus();
+            $('div#finder').css('display', 'block');
+            windowOpen = "finder";
+        }
+    }
+
+
+
+
+    let finder_tabindex = function() {
+        //set tabindex
+        $('div.items').each(function(index, value) {
+            let $div = $(this)
+            $div.attr("tabindex", index);
+        });
+
+        $('div#finder').css('display', 'block');
+        $('div#finder').find('div.items[tabindex=0]').focus();
+        tabIndex = 0;
+
+    }
+
+
+
 
 
 
@@ -396,7 +440,7 @@ $(document).ready(function() {
             if (option == "init") {
 
                 myMarker = L.marker([current_lat, current_lng]).addTo(map);
-                map.setView([current_lat, current_lng], 14);
+                map.setView([current_lat, current_lng], 12);
                 zoom_speed();
                 $('div#message div').text("");
                 return false;
@@ -405,7 +449,7 @@ $(document).ready(function() {
             if (option == "update_marker" && current_lat != "") {
 
                 myMarker.setLatLng([current_lat, current_lng]).update();
-                map.flyTo(new L.LatLng(current_lat, current_lng), 12);
+                map.flyTo(new L.LatLng(current_lat, current_lng), 10);
                 zoom_speed()
 
             }
@@ -569,7 +613,7 @@ $(document).ready(function() {
 
 
                     if (option == "delete_marker") {
-
+                        json_modified = true;
 
                         var markers = [];
 
@@ -580,9 +624,6 @@ $(document).ready(function() {
 
                         })
                         data[0].markers = markers;
-
-
-
 
 
                         save();
@@ -601,6 +642,8 @@ $(document).ready(function() {
 
 
                             requestAdd.onsuccess = function() {
+                                json_modified = true;
+
                                 if (option == "delete_marker") {
                                     toaster('Marker deleted', 2000);
                                     $(":focus").css("display", "none")
@@ -612,6 +655,7 @@ $(document).ready(function() {
                                     $('div#finder').find('div.items[tabindex=0]').focus();
                                     tabIndex = 0;
                                     windowOpen = "finder";
+
 
 
                                 }
@@ -628,20 +672,14 @@ $(document).ready(function() {
                                     windowOpen = "map";
                                 }
 
-
-
                             }
 
                             requestAdd.onerror = function() {
                                 toaster('Unable to write the file: ' + this.error, 2000);
                             }
 
-
                         }, 2000);
                     }
-
-
-
 
                 })
                 reader.readAsText(fileget);
@@ -689,6 +727,14 @@ $(document).ready(function() {
                 windowOpen = "map";
             }
 
+            if (item_value == "moon") {
+                map.removeLayer(tilesLayer);
+                moon_map();
+                $('div#finder').css('display', 'none');
+                map.setZoom(4);
+                windowOpen = "map";
+            }
+
 
             if (item_value == "otm") {
                 map.removeLayer(tilesLayer);
@@ -708,7 +754,6 @@ $(document).ready(function() {
             if (item_value == "share") {
                 osm_map();
                 getLocation("share")
-
             }
 
 
@@ -723,7 +768,6 @@ $(document).ready(function() {
 
 
             if (item_value == "update-position") {
-
                 getLocation("update_marker")
             }
 
@@ -1179,10 +1223,8 @@ $(document).ready(function() {
                     return false;
                 }
                 if (windowOpen == "map") {
-                    toaster("Goodbye", 2000);
-                    setTimeout(function() {
-                        window.close();
-                    }, 4000);
+                    windowOpen = "";
+                    window.goodbye();
 
                 }
 
@@ -1272,7 +1314,8 @@ $(document).ready(function() {
 
             case '3':
                 param.preventDefault()
-                read_json("finder")
+                    //read_json("finder")
+                show_finder()
                 break;
 
             case '4':
