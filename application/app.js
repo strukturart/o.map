@@ -21,7 +21,7 @@ let windowOpen;
 let message_body = "";
 let openweather_api = "";
 let tabIndex = 0;
-let debug = true;
+let debug = false;
 
 let tilesLayer;
 let tileLayer;
@@ -907,11 +907,27 @@ $(document).ready(function() {
             $("div#finder").css("display", "none");
             $("div#coordinations").css("display", "block");
 
-            function myDisplayer(some) {
-                alert(some);
+
+
+            if (openweather_api != "") {
+                $("div#coordinations div#weather").css("display", "block");
+
+                function openweather_callback(some) {
+
+                    //document.getElementById("time").innerText = moment.unix(some.list[0].dt).format("ddd DD MMM HH:mm");
+                    document.getElementById("temp").innerText = some.list[0].main.temp + " °C"
+                    document.getElementById("icon").src = "https://openweathermap.org/img/w/" + some.list[0].weather[0].icon + ".png"
+                }
+
+                weather.openweather_call(current_lat, current_lng, openweather_api, openweather_callback)
+
             }
 
-            weather.openweather_call(current_lat, current_lng, openweather_api, myDisplayer)
+
+
+
+
+
 
 
 
@@ -921,15 +937,17 @@ $(document).ready(function() {
                     $('div#coordinations div#lat').text("Lat " + current_lat.toFixed(5));
                     $('div#coordinations div#lng').text("Lng " + current_lng.toFixed(5));
                     if (current_alt) {
+                        $('div#coordinations div#altitude').style.display = "block";
                         $('div#coordinations div#altitude').text("alt " + current_alt);
                     } else {
-                        $('div#coordinations div#altitude').text("alt no data");
+                        $('div#coordinations div#altitude').style.display = "none";
                     }
                     if (current_heading) {
+                        $('div#coordinations div#heading').style.display = "block";
                         $('div#coordinations div#heading').text("heading " + current_heading);
 
                     } else {
-                        $('div#coordinations div#heading').text("heading no data");
+                        $('div#coordinations div#heading').style.display = "none";
 
                     }
 
