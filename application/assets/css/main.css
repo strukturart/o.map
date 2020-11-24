@@ -84,6 +84,10 @@ body {
     display: none;
 }
 
+.debug {
+    outline: 1px solid red;
+}
+
 
 /*///////////////////////////
 ///TOAST////////////////*/
@@ -374,19 +378,38 @@ div#coordinations {
     z-index: 1000;
     left: 0;
     top: 0;
-    background: none;
+    background: rgba(0, 0, 0, 0.726);
     color: white;
     font-size: 14px;
-    padding: 5px 10px 50px 5px;
+    padding: 5px 10px 70px 5px;
     display: none;
     overflow: hidden;
 }
 
 div#coordinations div {
-    background: black;
+    background: none;
     color: white;
     font-size: 14px;
     padding: 3px;
+}
+
+div#coordinations div#weather {
+    width: 200px;
+    position: relative;
+    height: 40px;
+    background: none;
+    display: none;
+}
+
+div#coordinations div#weather div {
+    height: 15px;
+    margin: 0px 0 0 -2px;
+}
+
+div#coordinations div#weather div img {
+    height: 35px;
+    position: absolute;
+    margin: -5px 0 0 0;
 }
 
 div#coordinations div#lat {}

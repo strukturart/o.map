@@ -21,7 +21,7 @@ let windowOpen;
 let message_body = "";
 let openweather_api = "";
 let tabIndex = 0;
-let debug = true;
+let debug = false;
 
 let tilesLayer;
 let tileLayer;
@@ -164,6 +164,9 @@ $(document).ready(function() {
         $("div#maps").append('<div class="items" data-map="moon">Moon <i>Map</i></div>');
 
 
+
+
+
         let finder = new Applait.Finder({ type: "sdcard", debugMode: false });
         finder.search("omap.json");
 
@@ -224,8 +227,7 @@ $(document).ready(function() {
                 })
 
 
-                find_gpx();
-                find_geojson();
+
 
                 if (json_modified) {
                     json_modified = false;
@@ -262,6 +264,8 @@ $(document).ready(function() {
 
     }
 
+    find_gpx();
+
 
 
     //////////////////////////////////
@@ -283,6 +287,9 @@ $(document).ready(function() {
         });
 
     }
+
+    find_geojson();
+
 
 
     //////////////////////////////////
@@ -899,22 +906,48 @@ $(document).ready(function() {
         if ($("div#coordinations").css("display") == "none") {
             $("div#finder").css("display", "none");
             $("div#coordinations").css("display", "block");
-            //getLocation("update_marker");
+
+
+
+            if (openweather_api != "") {
+                $("div#coordinations div#weather").css("display", "block");
+
+                function openweather_callback(some) {
+
+                    //document.getElementById("time").innerText = moment.unix(some.list[0].dt).format("ddd DD MMM HH:mm");
+                    document.getElementById("temp").innerText = some.list[0].main.temp + " °C"
+                    document.getElementById("icon").src = "https://openweathermap.org/img/w/" + some.list[0].weather[0].icon + ".png"
+                }
+
+                weather.openweather_call(current_lat, current_lng, openweather_api, openweather_callback)
+
+            }
+
+
+
+
+
+
+
+
+
             update_view = setInterval(() => {
                 if (current_lat != "" && current_lng != "") {
 
                     $('div#coordinations div#lat').text("Lat " + current_lat.toFixed(5));
                     $('div#coordinations div#lng').text("Lng " + current_lng.toFixed(5));
                     if (current_alt) {
+                        $('div#coordinations div#altitude').style.display = "block";
                         $('div#coordinations div#altitude').text("alt " + current_alt);
                     } else {
-                        $('div#coordinations div#altitude').text("alt no data");
+                        $('div#coordinations div#altitude').style.display = "none";
                     }
                     if (current_heading) {
+                        $('div#coordinations div#heading').style.display = "block";
                         $('div#coordinations div#heading').text("heading " + current_heading);
 
                     } else {
-                        $('div#coordinations div#heading').text("heading no data");
+                        $('div#coordinations div#heading').style.display = "none";
 
                     }
 
