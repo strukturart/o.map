@@ -164,6 +164,9 @@ $(document).ready(function() {
         $("div#maps").append('<div class="items" data-map="moon">Moon <i>Map</i></div>');
 
 
+
+
+
         let finder = new Applait.Finder({ type: "sdcard", debugMode: false });
         finder.search("omap.json");
 
@@ -224,8 +227,7 @@ $(document).ready(function() {
                 })
 
 
-                find_gpx();
-                find_geojson();
+
 
                 if (json_modified) {
                     json_modified = false;
@@ -262,6 +264,8 @@ $(document).ready(function() {
 
     }
 
+    find_gpx();
+
 
 
     //////////////////////////////////
@@ -283,6 +287,9 @@ $(document).ready(function() {
         });
 
     }
+
+    find_geojson();
+
 
 
     //////////////////////////////////
@@ -899,7 +906,15 @@ $(document).ready(function() {
         if ($("div#coordinations").css("display") == "none") {
             $("div#finder").css("display", "none");
             $("div#coordinations").css("display", "block");
-            //getLocation("update_marker");
+
+            function myDisplayer(some) {
+                alert(some);
+            }
+
+            weather.openweather_call(current_lat, current_lng, openweather_api, myDisplayer)
+
+
+
             update_view = setInterval(() => {
                 if (current_lat != "" && current_lng != "") {
 
