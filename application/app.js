@@ -164,6 +164,11 @@ $(document).ready(function() {
         $("div#maps").append('<div class="items" data-map="moon">Moon <i>Map</i></div>');
 
 
+        find_gpx()
+        find_geojson();
+
+
+
 
 
 
@@ -239,7 +244,6 @@ $(document).ready(function() {
     }
 
 
-    read_json()
 
 
 
@@ -264,7 +268,6 @@ $(document).ready(function() {
 
     }
 
-    find_gpx();
 
 
 
@@ -288,7 +291,6 @@ $(document).ready(function() {
 
     }
 
-    find_geojson();
 
 
 
