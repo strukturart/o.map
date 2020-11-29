@@ -167,14 +167,8 @@ $(document).ready(function() {
         find_gpx()
         find_geojson();
 
-
-
-
-
-
         let finder = new Applait.Finder({ type: "sdcard", debugMode: false });
         finder.search("omap.json");
-
 
         finder.on("empty", function(needle) {
             toaster("no sdcard found");
@@ -193,8 +187,6 @@ $(document).ready(function() {
         finder.on("fileFound", function(file, fileinfo, storageName) {
             file_path = fileinfo.path + "/" + fileinfo.name
             storage_name = storageName;
-
-
 
             let reader = new FileReader()
 
@@ -230,8 +222,6 @@ $(document).ready(function() {
                     }
 
                 })
-
-
 
 
                 if (json_modified) {
@@ -282,16 +272,14 @@ $(document).ready(function() {
         finder.search(".geojson");
 
         finder.on("searchComplete", function(needle, filematchcount) {})
-
-
-
         finder.on("fileFound", function(file, fileinfo, storageName) {
             $("div#tracks").append('<div class="items" data-map="geojson">' + fileinfo.name + '</div>');
         });
 
     }
 
-
+    find_gpx()
+    find_geojson();
 
 
     //////////////////////////////////
@@ -449,6 +437,8 @@ $(document).ready(function() {
             if (option == "init") {
 
                 myMarker = L.marker([current_lat, current_lng]).addTo(map);
+                myMarker._icon.classList.add("marker-1");
+
                 map.setView([current_lat, current_lng], 12);
                 zoom_speed();
                 $('div#message div').text("");
@@ -805,9 +795,12 @@ $(document).ready(function() {
                     marker_lng = Number($(document.activeElement).data('lng'));
                     marker_lat = Number($(document.activeElement).data('lat'));
 
+
                     var new_marker = L.marker([marker_lat, marker_lng]).addTo(map);
                     map.setView([marker_lat, marker_lng], 13);
                     $('div#finder').css('display', 'none');
+
+
                     var distance = getDistance([marker_lat, marker_lng], [current_lat, current_lng])
                     distance = distance.toFixed(0) / 1000 + " km";
 
@@ -823,12 +816,14 @@ $(document).ready(function() {
                         marker_array.forEach(marker => {
                             var distance = getDistance([marker[0], marker[1]], [current_lat, current_lng])
                             distance = distance.toFixed(0) / 1000 + " km";
-                            new_marker.bindTooltip(distance).update();
+                            //new_marker.bindTooltip(distance).update();
 
                         });
 
 
                     }, 10000);
+
+
 
                     windowOpen = "map";
 
@@ -926,15 +921,13 @@ $(document).ready(function() {
             }
 
 
-
-
-
-
-
-
-
             update_view = setInterval(() => {
                 if (current_lat != "" && current_lng != "") {
+                    //when marker is loaded from menu
+                    if (marker_latlng) {
+                        current_lat = marker_lng
+                        current_lng = marker_lat
+                    }
 
                     $('div#coordinations div#lat').text("Lat " + current_lat.toFixed(5));
                     $('div#coordinations div#lng').text("Lng " + current_lng.toFixed(5));
