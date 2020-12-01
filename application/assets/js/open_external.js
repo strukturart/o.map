@@ -1,4 +1,5 @@
 navigator.mozSetMessageHandler('activity', function(activityRequest) {
+    alert("")
     var option = activityRequest.source;
     //gpx
     if (option.name == 'open') {
