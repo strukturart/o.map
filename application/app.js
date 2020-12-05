@@ -551,7 +551,7 @@ $(document).ready(function() {
 
 
     ///////////
-    //SET MARKER////
+    //SET MARKER CROSS////
     //////////
     window.marker_cross = function() {
 

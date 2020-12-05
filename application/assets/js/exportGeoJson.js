@@ -27,7 +27,7 @@ const geojson = ((_) => {
         let requestAdd = sdcard.addNamed(geojson_file, file_path_name);
 
         requestAdd.onsuccess = function() {
-            toaster('Export succesfull', 2000);
+            toaster('Export succesfull', 3000);
             windowOpen = "map";
         }
 
