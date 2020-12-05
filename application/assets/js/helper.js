@@ -53,13 +53,15 @@ function user_input(param, file_name) {
         $("div#user-input").animate({ bottom: "0px" }, 1000, "linear");
         $("div#user-input input").focus();
         $("div#user-input input").val(file_name)
-        wp = windowOpen;
+            //wp = windowOpen;
         windowOpen = "user-input";
     }
     if (param == "close") {
         $("div#user-input").animate({ bottom: "-1000px" }, 1000, "linear");
         $("div#user-input input").blur();
-        windowOpen = wp;
+        windowOpen = "map";
+
+        //windowOpen = wp;
 
     }
 
@@ -67,7 +69,7 @@ function user_input(param, file_name) {
         let input_value = $("div#user-input input").val();
         $("div#user-input").animate({ bottom: "-1000px" }, 1000, "linear");
         $("div#user-input input").blur();
-        windowOpen = wp;
+        //windowOpen = wp;
         return input_value;
 
     }

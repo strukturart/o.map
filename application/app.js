@@ -42,7 +42,9 @@ let file_path;
 let storage_name;
 let json_modified = false;
 
+let markers_group = new L.FeatureGroup()
 
+let save_mode; // to check save geojson or update json
 
 
 $(document).ready(function() {
@@ -78,6 +80,9 @@ $(document).ready(function() {
     }).fitWorld();
 
     L.control.scale({ position: 'topright', metric: true, imperial: false }).addTo(map);
+    map.addLayer(markers_group);
+
+
 
     ////////////////////
     ////MAPS////////////
@@ -440,7 +445,7 @@ $(document).ready(function() {
 
             if (option == "init") {
 
-                myMarker = L.marker([current_lat, current_lng]).addTo(map);
+                myMarker = L.marker([current_lat, current_lng]).addTo(markers_group);
                 myMarker._icon.classList.add("marker-1");
 
                 map.setView([current_lat, current_lng], 12);
@@ -476,6 +481,10 @@ $(document).ready(function() {
         navigator.geolocation.getCurrentPosition(success, error, options);
 
     }
+
+
+
+
 
     ///////////
     //watch position
@@ -560,7 +569,7 @@ $(document).ready(function() {
 
 
             elem.style.color = 'red';
-            toaster("<br>press 5<br>to add a marker and save it<br><br>press 0 <br>to share this position by sms", 5000)
+            toaster("<br>press 5<br>to add a marker and save it<br>press 0 <br>to share this position by sms", 5000)
             return true;
 
         } else {
@@ -580,9 +589,6 @@ $(document).ready(function() {
     //////////
 
     function save_delete_marker(option) {
-
-
-
 
         if (option == "save_marker" || option == "delete_marker") {
 
@@ -668,7 +674,8 @@ $(document).ready(function() {
                                     var markerOptions = {
                                         keyboard: true
                                     }
-                                    L.marker([current_lat, current_lng], markerOptions).addTo(map);
+                                    let new_marker = L.marker([current_lat, current_lng], markerOptions)
+                                    markers_group.addLayer(new_marker)
 
                                     map.setView([current_lat, current_lng], 13);
                                     $('div#finder').css('display', 'none');
@@ -690,8 +697,6 @@ $(document).ready(function() {
         }
 
     }
-
-
 
 
 
@@ -790,6 +795,12 @@ $(document).ready(function() {
                 save_delete_marker("save_marker")
 
             }
+
+            if (item_value == "export") {
+                $('div#finder').css('display', 'none');
+                save_mode = "geojson"
+                user_input("open")
+            }
             let marker_array = [];
             if (item_value == "marker") {
                 if (param == "add-marker") {
@@ -800,7 +811,10 @@ $(document).ready(function() {
                     marker_lat = Number($(document.activeElement).data('lat'));
 
 
-                    var new_marker = L.marker([marker_lat, marker_lng]).addTo(map);
+                    var new_marker = L.marker([marker_lat, marker_lng])
+                    new_marker.addTo(markers_group);
+
+                    //var new_marker = L.marker([marker_lat, marker_lng]).addTo(map);
                     map.setView([marker_lat, marker_lng], 13);
                     $('div#finder').css('display', 'none');
 
@@ -1183,36 +1197,36 @@ $(document).ready(function() {
     ////MOZ ACTIVITY////////////
     //////////////////////////////
 
+    if (navigator.mozSetMessageHandler) {
 
+        navigator.mozSetMessageHandler('activity', function(activityRequest) {
+            var option = activityRequest.source;
+            //gpx
+            if (option.name == 'open') {
+                loadGPX(option.data.url)
+            }
+            //link
+            if (option.name == 'view') {
+                open_url = true;
+                const url_split = option.data.url.split("/");
+                current_lat = url_split[url_split.length - 2];
+                current_lng = url_split[url_split.length - 1];
 
-    navigator.mozSetMessageHandler('activity', function(activityRequest) {
-        var option = activityRequest.source;
-        //gpx
-        if (option.name == 'open') {
-            loadGPX(option.data.url)
-        }
-        //link
-        if (option.name == 'view') {
-            open_url = true;
-            const url_split = option.data.url.split("/");
-            current_lat = url_split[url_split.length - 2];
-            current_lng = url_split[url_split.length - 1];
+                //remove !numbers
+                current_lat = current_lat.replace(/[A-Za-z?=&]+/gi, "");
+                current_lng = current_lng.replace(/[A-Za-z?=&]+/gi, "");
+                current_lat = Number(current_lat);
+                current_lng = Number(current_lng);
 
-            //remove !numbers
-            current_lat = current_lat.replace(/[A-Za-z?=&]+/gi, "");
-            current_lng = current_lng.replace(/[A-Za-z?=&]+/gi, "");
-            current_lat = Number(current_lat);
-            current_lng = Number(current_lng);
+                myMarker = L.marker([current_lat, current_lng]).addTo(map);
+                map.setView([current_lat, current_lng], 13);
+                zoom_speed();
 
-            myMarker = L.marker([current_lat, current_lng]).addTo(map);
-            map.setView([current_lat, current_lng], 13);
-            zoom_speed();
+            }
 
-        }
+        })
 
-    })
-
-
+    }
 
 
 
@@ -1286,7 +1300,7 @@ $(document).ready(function() {
 
                 if (windowOpen == "coordinations") {
                     coordinations("hide");
-                    return false;
+                    break;
                 }
                 if (windowOpen == "map") {
                     windowOpen = "";
@@ -1297,17 +1311,14 @@ $(document).ready(function() {
                 break;
 
             case 'SoftLeft':
-            case '8':
 
 
                 if (windowOpen == "search") {
-
                     hideSearch();
-                    return false;
+                    break;
                 }
 
                 if (windowOpen == "finder") {
-
                     unload_map(false);
                     return false;
 
@@ -1318,18 +1329,20 @@ $(document).ready(function() {
                 if (windowOpen == "map") {
                     ZoomMap("in");
                     return false;
-
                 }
 
 
                 if (windowOpen == "user-input") {
                     user_input("close")
-                    return false;
+                    save_mode = ""
+
+                    break;
                 }
+
+
                 break;
 
             case 'SoftRight':
-            case '9':
                 if (windowOpen == "finder") {
 
                     unload_map(true);
@@ -1339,11 +1352,20 @@ $(document).ready(function() {
                     ZoomMap("out");
 
                 }
-                if (windowOpen == "user-input") {
+
+                if (windowOpen == "user-input" && save_mode == "geojson") {
+                    geojson.save_geojson(user_input("return") + ".geojson")
+                    save_mode = ""
+                    break;
+                }
+
+                if (windowOpen == "user-input" && save_mode != "geojson") {
                     filename = user_input("return")
                     save_delete_marker("save_marker")
-
                 }
+
+
+
                 break;
 
             case 'Enter':
@@ -1380,7 +1402,6 @@ $(document).ready(function() {
 
             case '3':
                 param.preventDefault()
-                    //read_json("finder")
                 show_finder()
                 break;
 
@@ -1399,8 +1420,21 @@ $(document).ready(function() {
                 break;
 
             case '7':
+
                 ruler();
                 break;
+
+            case '8':
+                save_mode = "geojson"
+                user_input("open")
+                break;
+
+
+
+            case '9':
+                L.marker([current_lat, current_lng]).addTo(markers_group);
+                break;
+
 
             case '0':
                 window.share_position();

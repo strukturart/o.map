@@ -5,7 +5,8 @@
     <title>o.map</title>
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.webapp" type="application/x-web-app-manifest+json" />
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1" />
     <link rel="stylesheet" href="assets/css/main.css" />
     <link rel="stylesheet" href="assets/css/grid.css" />
     <link rel="stylesheet" href="assets/leaflet/leaflet.css" />
@@ -155,6 +156,13 @@
                 </div>
             </div>
 
+            <div class="items" data-map="export">
+                <div class="flex justify-content-spacebetween">
+                    <div>export markers</div>
+                    <div>8</div>
+                </div>
+            </div>
+
             <div class="items" data-map="share">
                 <div class="flex justify-content-spacebetween">
                     <div class="items" data-map="share">share by sms</div>
@@ -199,6 +207,9 @@
     <script defer src="app.js"></script>
     <script defer src="assets/js/rainlayer.js"></script>
     <script defer src="assets/js/helper.js"></script>
+    <script defer src="assets/js/exportGeoJson.js"></script>
+
+
     <script defer src="assets/js/share-position.js"></script>
     <script defer src="assets/js/calc_distance.js"></script>
     <script defer src="assets/js/search.js"></script>
