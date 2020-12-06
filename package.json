@@ -1,0 +1,30 @@
+{
+  "name": "omap",
+  "version": "1.0.0",
+  "description": "Open Street Map App",
+  "main": "index.js",
+  "scripts": {
+    "formatting:test": "npx prettier --check .",
+    "formatting:fix": "npx prettier --write .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "package": "./tools/build.sh && ./tools/package.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/strukturart/o.map"
+  },
+  "author": "strukturart <https://github.com/strukturart>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/strukturart/o.map/issues"
+  },
+  "devDependencies": {
+    "prettier": "2.1.1",
+    "terser": "^5.3.0"
+  },
+  "homepage": "https://github.com/strukturart/o.map#readme",
+  "dependencies": {
+    "mustache": "^4.0.1",
+    "simplebar": "^5.3.0"
+  }
+}
