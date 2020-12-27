@@ -310,19 +310,6 @@ div#finder h2 {
   margin: 5px 0 5px 0 !important;
 }
 
-div#finder-error {
-  position: absolute;
-  z-index: 2;
-  top: 50%;
-  left: 50%;
-  margin: -7px 0 0 -50px;
-  width: 92px;
-  background: black;
-  color: white;
-  font-size: 14px;
-  padding: 3px;
-  display: none;
-}
 
 div#finder div#custom-map-track {
   background: black;
@@ -331,7 +318,7 @@ div#finder div#custom-map-track {
   margin: 0 0 3px 0;
   padding: 3px;
   max-height: 80%;
-  overflow: scroll;
+  //overflow: scroll;
 }
 
 div#finder div#close {
@@ -406,13 +393,4 @@ div#coordinations div#weather div img {
   height: 35px;
   position: absolute;
   margin: -5px 0 0 0;
-}
-
-div#coordinations div#lat {
-}
-
-div#coordinations div#lng {
-}
-
-div#coordinations div#altitude {
 }

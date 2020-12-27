@@ -40,8 +40,10 @@ $(document).ready(function () {
     hideSearch();
     current_lat = Number(lat);
     current_lng = Number(lng);
-    document.getElementById("marker-target-cross").style.dispaly = "none";
-    window.parent.marker_cross();
+    //document.getElementById("marker-target-cross").style.dispaly = "none";
+    // window.parent.marker_cross();
+    L.marker([current_lat, current_lng]).addTo(markers_group);
+    toaster("press 5 to save the search result as marker");
   }
 
   //////////////////////////
@@ -57,7 +59,10 @@ $(document).ready(function () {
     $("div#search-box").css("display", "block");
     $("div#search-box").find("input").focus();
     $("div#bottom-bar").css("display", "block");
-
+    toaster(
+      "you can search for locations, names or OLC. To search for OLC, start your search query with /",
+      3000
+    );
     windowOpen = "search";
   };
 
@@ -86,7 +91,6 @@ $(document).ready(function () {
       $("div.autocomplete-suggestion").css("display", "none");
       $("div#olc").css("display", "block");
       $("#olc").text(OLC.decode(input_val));
-      //to do
 
       let ll = String(OLC.decode(input_val));
 
@@ -94,7 +98,6 @@ $(document).ready(function () {
         olc_lat_lng = ll.split(",");
         map.setView([olc_lat_lng[0], olc_lat_lng[1]], 13);
       }
-      //return olc_lat_lng;
     }
 
     if (n == false) {

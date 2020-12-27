@@ -30,23 +30,47 @@ function notify(param_title, param_text, param_silent) {
 function toaster(text, time) {
   $("div#toast").html("<div>" + text + "</div>");
 
-  $("div#toast").animate({ top: "0px" }, 1000, "linear", function () {
-    $("div#toast").delay(3000).animate({ top: "-360px" }, time);
-  });
+  $("div#toast").animate(
+    {
+      top: "0px",
+    },
+    1000,
+    "linear",
+    function () {
+      $("div#toast").delay(3000).animate(
+        {
+          top: "-360px",
+        },
+        time
+      );
+    }
+  );
 }
 
 let wp;
 
 function user_input(param, file_name) {
   if (param == "open") {
-    $("div#user-input").animate({ bottom: "0px" }, 1000, "linear");
+    $("div#user-input").animate(
+      {
+        bottom: "0px",
+      },
+      1000,
+      "linear"
+    );
     $("div#user-input input").focus();
     $("div#user-input input").val(file_name);
     //wp = windowOpen;
     windowOpen = "user-input";
   }
   if (param == "close") {
-    $("div#user-input").animate({ bottom: "-1000px" }, 1000, "linear");
+    $("div#user-input").animate(
+      {
+        bottom: "-1000px",
+      },
+      1000,
+      "linear"
+    );
     $("div#user-input input").blur();
     windowOpen = "map";
 
@@ -55,7 +79,13 @@ function user_input(param, file_name) {
 
   if (param == "return") {
     let input_value = $("div#user-input input").val();
-    $("div#user-input").animate({ bottom: "-1000px" }, 1000, "linear");
+    $("div#user-input").animate(
+      {
+        bottom: "-1000px",
+      },
+      1000,
+      "linear"
+    );
     $("div#user-input input").blur();
     //windowOpen = wp;
     return input_value;
