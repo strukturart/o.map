@@ -5,13 +5,14 @@ This is an Open Street Map app for the Nokia 81104G
 ### Features
 
 - Map
-- Send your position by sms
+- share your position
 - Import Tracks (geoJson / gpx)
 - Export markers (geoJson)
 - Save your position
 - open .gpx files
 - search locations
-- open openstreetmap link to marker
+- rainradar
+- open openstreetmap link
 
 If you want to use the openweathermap, you need to get an API key from openweathermap.org. Then you need to create a file called omap.json please check my example [file](/omap.json)
 
@@ -65,6 +66,7 @@ The search can be opened with key 2, you can search for locations or start the s
 - OpenTopoMap
 - http://maps.stamen.com/toner/ Tonermap
 - https://www.openplanetary.org/ Moonmap
+- https://www.rainviewer.com/api.html
 - leaflet.js
 - [Bananna Hackers Group](https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/bananahackers)
 - Luxferre [olc](https://gist.github.com/plugnburn/95de231ff94130f1de8eb2a2afaf8516)

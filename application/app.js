@@ -63,7 +63,7 @@ $(document).ready(function () {
             }, 8000);
         }
         ///set default map
-        opentopo_map();
+        maps.opentopo_map();
         setTimeout(() => {
             windowOpen = "map";
         }, 2000);
@@ -85,67 +85,7 @@ $(document).ready(function () {
         .addTo(map);
     map.addLayer(markers_group);
 
-    ////////////////////
-    ////MAPS////////////
-    ///////////////////
 
-    function moon_map() {
-        tilesUrl =
-            "https://cartocdn-gusc.global.ssl.fastly.net/opmbuilder/api/v1/map/named/opm-moon-basemap-v0-1/all/{z}/{x}/{y}.png";
-        tilesLayer = L.tileLayer(tilesUrl, {
-            maxZoom: 12,
-            minZoom: 2,
-            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-                '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
-        });
-
-        map.addLayer(tilesLayer);
-    }
-
-    function toner_map() {
-        tilesUrl = "https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png";
-        tilesLayer = L.tileLayer(tilesUrl, {
-            maxZoom: 18,
-            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-                '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
-        });
-
-        map.addLayer(tilesLayer);
-    }
-
-    function opentopo_map() {
-        tilesUrl = "https://tile.opentopomap.org/{z}/{x}/{y}.png";
-        tilesLayer = L.tileLayer(tilesUrl, {
-            maxZoom: 17,
-            attribution: "Map data &copy;<div> © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)</div>",
-        });
-
-        map.addLayer(tilesLayer);
-    }
-
-    function owm_map() {
-        tilesUrl =
-            "https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=" +
-            openweather_api;
-        tilesLayer = L.tileLayer(tilesUrl, {
-            maxZoom: 18,
-            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-                '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
-        });
-
-        map.addLayer(tilesLayer);
-    }
-
-    function osm_map() {
-        tilesUrl = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-        tilesLayer = L.tileLayer(tilesUrl, {
-            maxZoom: 18,
-            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-                '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
-        });
-
-        map.addLayer(tilesLayer);
-    }
 
     /////////////////////////
     //read json to build menu
@@ -167,6 +107,10 @@ $(document).ready(function () {
         );
         $("div#maps").append(
             '<div class="items" data-map="moon">Moon <i>Map</i></div>'
+        );
+
+        $("div#maps").append(
+            '<div class="items" data-map="weather">Weather <i>Map</i></div>'
         );
 
         find_gpx();
@@ -656,23 +600,30 @@ $(document).ready(function () {
             //switch online maps
             let item_value = $(document.activeElement).data("map");
 
+            if (item_value == "weather") {
+                map.removeLayer(tilesLayer);
+                maps.weather_map();
+                $("div#finder").css("display", "none");
+                windowOpen = "map";
+            }
+
             if (item_value == "toner") {
                 map.removeLayer(tilesLayer);
-                toner_map();
+                maps.toner_map();
                 $("div#finder").css("display", "none");
                 windowOpen = "map";
             }
 
             if (item_value == "osm") {
                 map.removeLayer(tilesLayer);
-                osm_map();
+                maps.osm_map();
                 $("div#finder").css("display", "none");
                 windowOpen = "map";
             }
 
             if (item_value == "moon") {
                 map.removeLayer(tilesLayer);
-                moon_map();
+                maps.moon_map();
                 $("div#finder").css("display", "none");
                 map.setZoom(4);
                 windowOpen = "map";
@@ -680,21 +631,21 @@ $(document).ready(function () {
 
             if (item_value == "otm") {
                 map.removeLayer(tilesLayer);
-                opentopo_map();
+                maps.opentopo_map();
                 $("div#finder").css("display", "none");
                 windowOpen = "map";
             }
 
             if (item_value == "owm") {
                 map.removeLayer(tilesLayer);
-                osm_map();
-                owm_map();
+                //maps.osm_map();
+                maps.owm_map();
                 $("div#finder").css("display", "none");
                 windowOpen = "map";
             }
 
             if (item_value == "share") {
-                osm_map();
+                maps.opentopo_map();
                 getLocation("share");
             }
 

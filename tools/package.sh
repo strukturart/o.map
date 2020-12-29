@@ -9,7 +9,7 @@ rm ../build/omap.zip || true
 echo "{\"version\": 1,\"manifestURL\":\"app://omap.org/manifest.webapp\"}" > ../build/tmp/metadata.json
 
 
-cd build/app
+cd ../build/app
 zip -qr ../tmp/application.zip .
 
 cd ../tmp

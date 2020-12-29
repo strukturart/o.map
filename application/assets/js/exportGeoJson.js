@@ -17,7 +17,9 @@ const geojson = ((_) => {
 
     let extData = JSON.stringify(collection);
 
-    let geojson_file = new Blob([extData], { type: "application/json" });
+    let geojson_file = new Blob([extData], {
+      type: "application/json"
+    });
     let sdcard = navigator.getDeviceStorage("sdcard");
     let requestAdd = sdcard.addNamed(geojson_file, file_path_name);
 
@@ -32,5 +34,7 @@ const geojson = ((_) => {
     };
   };
 
-  return { save_geojson };
+  return {
+    save_geojson
+  };
 })();
