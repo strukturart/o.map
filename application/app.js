@@ -47,10 +47,10 @@ if (!navigator.geolocation) {
     toaster("Your browser does't support geolocation!", 2000);
 }
 
-$(document).ready(function() {
+$(document).ready(function () {
     //welcome message
     $("div#message div").text("Welcome");
-    setTimeout(function() {
+    setTimeout(function () {
         $("div#message").css("display", "none");
         //get location if not an activity open url
         if (open_url === false) {
@@ -58,7 +58,7 @@ $(document).ready(function() {
             getLocation("init");
             toaster("Press 3<br> to open the menu", 5000);
 
-            setTimeout(function() {
+            setTimeout(function () {
                 $(".leaflet-control-attribution").hide();
             }, 8000);
         }
@@ -178,12 +178,12 @@ $(document).ready(function() {
         });
         finder.search("omap.json");
 
-        finder.on("empty", function(needle) {
+        finder.on("empty", function (needle) {
             toaster("no sdcard found");
             return;
         });
 
-        finder.on("searchComplete", function(needle, filematchcount) {
+        finder.on("searchComplete", function (needle, filematchcount) {
             if (filematchcount == 0) {
                 toaster(
                     "no osm-map.json file found. Please create this file, otherwise you can only use the app to a limited extent.",
@@ -193,18 +193,18 @@ $(document).ready(function() {
             }
         });
 
-        finder.on("fileFound", function(file, fileinfo, storageName) {
+        finder.on("fileFound", function (file, fileinfo, storageName) {
             file_path = fileinfo.path + "/" + fileinfo.name;
             storage_name = storageName;
 
             let reader = new FileReader();
 
-            reader.onerror = function(event) {
+            reader.onerror = function (event) {
                 toaster("can't read file");
                 reader.abort();
             };
 
-            reader.onloadend = function(event) {
+            reader.onloadend = function (event) {
                 let data;
                 //check if json valid
                 try {
@@ -215,9 +215,9 @@ $(document).ready(function() {
                 }
 
                 //add markers and openweatermap
-                $.each(data, function(index, value) {
+                $.each(data, function (index, value) {
                     if (value.markers) {
-                        $.each(value.markers, function(index, item) {
+                        $.each(value.markers, function (index, item) {
                             $("div#markers").append(
                                 '<div class="items" data-map="marker" data-lat="' +
                                 item.lat +
@@ -249,7 +249,7 @@ $(document).ready(function() {
     //////////////////////////////////
     //READ GPX////////////////////////
     /////////////////////////////////
-    let find_gpx = function() {
+    let find_gpx = function () {
         //search gpx
         let finder_gpx = new Applait.Finder({
             type: "sdcard",
@@ -257,9 +257,9 @@ $(document).ready(function() {
         });
 
         finder_gpx.search(".gpx");
-        finder_gpx.on("searchComplete", function(needle, filematchcount) {});
+        finder_gpx.on("searchComplete", function (needle, filematchcount) {});
 
-        finder_gpx.on("fileFound", function(file, fileinfo, storageName) {
+        finder_gpx.on("fileFound", function (file, fileinfo, storageName) {
             $("div#tracks").append(
                 '<div class="items" data-map="gpx">' + fileinfo.name + "</div>"
             );
@@ -270,7 +270,7 @@ $(document).ready(function() {
     //READ GEOJSON////////////////////////
     /////////////////////////////////
 
-    let find_geojson = function() {
+    let find_geojson = function () {
         //search geojson
         let finder = new Applait.Finder({
             type: "sdcard",
@@ -278,8 +278,8 @@ $(document).ready(function() {
         });
         finder.search(".geojson");
 
-        finder.on("searchComplete", function(needle, filematchcount) {});
-        finder.on("fileFound", function(file, fileinfo, storageName) {
+        finder.on("searchComplete", function (needle, filematchcount) {});
+        finder.on("fileFound", function (file, fileinfo, storageName) {
             $("div#tracks").append(
                 '<div class="items" data-map="geojson">' + fileinfo.name + "</div>"
             );
@@ -293,7 +293,7 @@ $(document).ready(function() {
     ///MENU//////////////////////////
     /////////////////////////////////
 
-    let show_finder = function() {
+    let show_finder = function () {
         if (json_modified) {
             read_json();
         } else {
@@ -304,9 +304,9 @@ $(document).ready(function() {
         }
     };
 
-    let finder_tabindex = function() {
+    let finder_tabindex = function () {
         //set tabindex
-        $("div.items").each(function(index, value) {
+        $("div.items").each(function (index, value) {
             let $div = $(this);
             $div.attr("tabindex", index);
         });
@@ -356,23 +356,23 @@ $(document).ready(function() {
         });
         finder.search(filename);
 
-        finder.on("fileFound", function(file, fileinfo, storageName) {
+        finder.on("fileFound", function (file, fileinfo, storageName) {
             //file reader
 
             let reader = new FileReader();
 
-            reader.onerror = function(event) {
+            reader.onerror = function (event) {
                 toaster("can't read file", 3000);
                 reader.abort();
             };
 
-            reader.onloadend = function(event) {
+            reader.onloadend = function (event) {
                 var gpx = event.target.result; // URL to your GPX file or the GPX itself
 
                 new L.GPX(gpx, {
                         async: true,
                     })
-                    .on("loaded", function(e) {
+                    .on("loaded", function (e) {
                         map.fitBounds(e.target.getBounds());
                     })
                     .addTo(map);
@@ -396,6 +396,7 @@ $(document).ready(function() {
     //set filename by user imput
     function saveMarker() {
         user_input("open", moment().format("DD.MM.YYYY, HH:MM"));
+        document.getElementById("user-input-description").innerText = "Save marker position in omap.json"
     }
 
     let filename;
@@ -459,11 +460,12 @@ $(document).ready(function() {
     ///////////
     //watch position
     //////////
+    let watchID;
 
     function geolocationWatch() {
         marker_latlng = false;
         console.log(state_geoloc)
-        let watchID;
+
         let geoLoc = navigator.geolocation;
 
         if (state_geoloc == false) {
@@ -513,7 +515,7 @@ $(document).ready(function() {
     ///////////
     //SET MARKER CROSS////
     //////////
-    window.marker_cross = function() {
+    window.marker_cross = function () {
         let elem = document.getElementById("marker-target-cross");
         let style = getComputedStyle(elem);
         if (style.opacity == "0") {
@@ -522,7 +524,7 @@ $(document).ready(function() {
                     height: "50px",
                 },
                 2000,
-                function() {}
+                function () {}
             );
 
             elem.style.opacity = "1";
@@ -550,11 +552,11 @@ $(document).ready(function() {
             let sdcard = navigator.getDeviceStorages("sdcard");
             let request = sdcard[1].get(file_path);
 
-            request.onsuccess = function() {
+            request.onsuccess = function () {
                 let fileget = this.result;
                 let reader = new FileReader();
 
-                reader.addEventListener("loadend", function(event) {
+                reader.addEventListener("loadend", function (event) {
                     let data;
                     //check if json valid
                     try {
@@ -578,7 +580,7 @@ $(document).ready(function() {
 
                         var markers = [];
 
-                        $.each(data[0].markers, function(index, value) {
+                        $.each(data[0].markers, function (index, value) {
                             if (value.marker_name != $(document.activeElement).text()) {
                                 markers.push(value);
                             }
@@ -593,20 +595,20 @@ $(document).ready(function() {
                         let extData = JSON.stringify(data);
                         deleteFile(1, file_path, "");
 
-                        setTimeout(function() {
+                        setTimeout(function () {
                             let file = new Blob([extData], {
                                 type: "application/json",
                             });
                             let requestAdd = sdcard[1].addNamed(file, file_path);
 
-                            requestAdd.onsuccess = function() {
+                            requestAdd.onsuccess = function () {
                                 json_modified = true;
 
                                 if (option == "delete_marker") {
                                     toaster("Marker deleted", 2000);
                                     $(":focus").css("display", "none");
                                     //set tabindex
-                                    $("div.items").each(function(index, value) {
+                                    $("div.items").each(function (index, value) {
                                         let $div = $(this);
                                         $div.attr("tabindex", index);
                                     });
@@ -632,7 +634,7 @@ $(document).ready(function() {
                                 }
                             };
 
-                            requestAdd.onerror = function() {
+                            requestAdd.onerror = function () {
                                 toaster("Unable to write the file: " + this.error, 2000);
                             };
                         }, 2000);
@@ -787,18 +789,18 @@ $(document).ready(function() {
                 });
                 finder.search($(document.activeElement).text());
 
-                finder.on("fileFound", function(file, fileinfo, storageName) {
+                finder.on("fileFound", function (file, fileinfo, storageName) {
                     //file reader
 
                     let geojson_data = "";
                     let reader = new FileReader();
 
-                    reader.onerror = function(event) {
+                    reader.onerror = function (event) {
                         alert("shit happens");
                         reader.abort();
                     };
 
-                    reader.onloadend = function(event) {
+                    reader.onloadend = function (event) {
                         if (myLayer) {
                             L.removeLayer(myLayer);
                         }
@@ -1084,7 +1086,7 @@ $(document).ready(function() {
     //////////////////////////////
 
     if (navigator.mozSetMessageHandler) {
-        navigator.mozSetMessageHandler("activity", function(activityRequest) {
+        navigator.mozSetMessageHandler("activity", function (activityRequest) {
             var option = activityRequest.source;
             //gpx
             if (option.name == "open") {
@@ -1285,6 +1287,8 @@ $(document).ready(function() {
             case "8":
                 save_mode = "geojson";
                 user_input("open");
+                document.getElementById("user-input-description").innerText = "Export markers as geojson file"
+
                 break;
 
             case "9":
@@ -1350,7 +1354,7 @@ $(document).ready(function() {
     ////BUG OUTPUT////////////
     /////////////////////////
     if (debug) {
-        $(window).on("error", function(evt) {
+        $(window).on("error", function (evt) {
             console.log("jQuery error event:", evt);
             var e = evt.originalEvent; // get the javascript event
             console.log("original event:", e);
