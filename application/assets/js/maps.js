@@ -29,7 +29,10 @@
         function opentopo_map() {
             tilesUrl = "https://tile.opentopomap.org/{z}/{x}/{y}.png";
             tilesLayer = L.tileLayer(tilesUrl, {
+                useCache: true,
+                crossOrigin: true,
                 maxZoom: 17,
+                useOnlyCache: true,
                 attribution: "Map data &copy;<div> © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)</div>",
             });
 
@@ -65,10 +68,10 @@
 
 
             fetch('https://api.rainviewer.com/public/maps.json')
-                .then(function (response) {
+                .then(function(response) {
                     return response.json();
                 })
-                .then(function (data) {
+                .then(function(data) {
 
                     let weather_url = "https://tilecache.rainviewer.com/v2/radar/" + data[data.length - 4] + "/256/{z}/{x}/{y}/2/1_1.png";
                     let weather_layer = L.tileLayer(weather_url);
@@ -137,7 +140,7 @@
                     toaster(moment.unix(data[data.length - 1]).format("DD.MM.YYYY, HH:MM"), 3000)
 
                 })
-                .catch(function (err) {
+                .catch(function(err) {
                     toaster("Can't load weather data", 3000)
                 })
 
