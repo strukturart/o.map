@@ -2,6 +2,21 @@
     ////MAPS////////////
     ///////////////////
     const maps = (() => {
+
+        let caching_events = function() {
+            // Listen to cache hits and misses and spam the console
+            // The cache hits and misses are only from this layer, not from the WMS layer.
+            tilesLayer.on('tilecachehit', function(ev) {
+                console.log('Cache hit: ', ev.url);
+            });
+            tilesLayer.on('tilecachemiss', function(ev) {
+                console.log('Cache miss: ', ev.url);
+            });
+            tilesLayer.on('tilecacheerror', function(ev) {
+                console.log('Cache error: ', ev.tile, ev.error);
+            });
+        }
+
         function moon_map() {
             tilesUrl =
                 "https://cartocdn-gusc.global.ssl.fastly.net/opmbuilder/api/v1/map/named/opm-moon-basemap-v0-1/all/{z}/{x}/{y}.png";
@@ -13,6 +28,7 @@
             });
 
             map.addLayer(tilesLayer);
+            caching_events()
         }
 
         function toner_map() {
@@ -24,19 +40,26 @@
             });
 
             map.addLayer(tilesLayer);
+            caching_events()
+
         }
+
 
         function opentopo_map() {
             tilesUrl = "https://tile.opentopomap.org/{z}/{x}/{y}.png";
             tilesLayer = L.tileLayer(tilesUrl, {
                 useCache: true,
                 crossOrigin: true,
+                //useOnlyCache: true,
                 maxZoom: 17,
-                useOnlyCache: true,
                 attribution: "Map data &copy;<div> © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)</div>",
             });
 
             map.addLayer(tilesLayer);
+            caching_events()
+
+
+
         }
 
         function owm_map() {
@@ -50,6 +73,8 @@
             });
 
             map.addLayer(tilesLayer);
+            caching_events()
+
         }
 
         function osm_map() {
@@ -61,6 +86,8 @@
             });
 
             map.addLayer(tilesLayer);
+            caching_events()
+
         }
 
 
@@ -92,7 +119,7 @@
                         maxZoom: 18
                     });
 
-                    map.addLayer(tilesLayer);
+                    //map.addLayer(tilesLayer);
                     map.addLayer(weather_layer);
                     map.addLayer(weather_layer1);
                     map.addLayer(weather_layer2);
