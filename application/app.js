@@ -43,11 +43,22 @@ let markers_group = new L.FeatureGroup();
 
 let save_mode; // to check save geojson or update json
 
+let settings;
+let caching_time = 86400000
+let zoom_depth = 4;
+
+
+
 if (!navigator.geolocation) {
     toaster("Your browser does't support geolocation!", 2000);
 }
 
 $(document).ready(function() {
+
+
+
+
+
     //welcome message
     $("div#message div").text("Welcome");
     setTimeout(function() {
@@ -56,6 +67,10 @@ $(document).ready(function() {
         if (open_url === false) {
             read_json();
             getLocation("init");
+
+
+
+
             toaster("Press 3<br> to open the menu", 5000);
 
             setTimeout(function() {
@@ -63,6 +78,7 @@ $(document).ready(function() {
             }, 8000);
         }
         ///set default map
+
         maps.opentopo_map();
         setTimeout(() => {
             windowOpen = "map";
@@ -602,7 +618,6 @@ $(document).ready(function() {
             let item_value = $(document.activeElement).data("map");
 
             if (item_value == "weather") {
-                //map.removeLayer(tilesLayer);
                 maps.weather_map();
                 $("div#finder").css("display", "none");
                 windowOpen = "map";
@@ -639,7 +654,6 @@ $(document).ready(function() {
 
             if (item_value == "owm") {
                 map.removeLayer(tilesLayer);
-                //maps.osm_map();
                 maps.owm_map();
                 $("div#finder").css("display", "none");
                 windowOpen = "map";
@@ -682,6 +696,10 @@ $(document).ready(function() {
 
             if (item_value == "add-marker-icon") {
                 toaster("please close the menu and press key 9 to set a marker.", 3000);
+            }
+
+            if (item_value == "setting") {
+                show_setting()
             }
 
             if (item_value == "photo") {
@@ -784,6 +802,55 @@ $(document).ready(function() {
         }
     }
 
+
+    //////////////////////////
+    ////SETTINGS////////////
+    /////////////////////////
+
+    let show_setting = function() {
+
+
+
+        $("div#setting").css("display", "block")
+        $("div#finder").css("display", "none")
+        bottom_bar("save", "", "back")
+        tabIndex = 1;
+        windowOpen = "setting";
+
+        $("input#owm-key").focus()
+
+    }
+
+    let close_setting = function() {
+        $("div#setting").css("display", "none")
+        bottom_bar("", "", "")
+        show_finder();
+
+    }
+
+    let save_settings = function() {
+
+        localStorageWriteRead("owm-key", document.getElementById("owm-key").value)
+        localStorageWriteRead("cache-time", document.getElementById("cache-time").value)
+        localStorageWriteRead("cache-zoom", document.getElementById("cache-zoom").value)
+        toaster("saved successfully", 2000)
+    }
+
+    let load_settings = function() {
+        document.getElementById("owm-key").value = localStorage.getItem("owm-key")
+        document.getElementById("cache-time").value = localStorage.getItem("cache-time")
+        document.getElementById("cache-zoom").value = localStorage.getItem("cache-zoom")
+
+        return settings = [localStorage.getItem("owm-key"), localStorage.getItem("cache-time"), localStorage.getItem("cache-zoom")]
+    }
+
+    load_settings();
+
+
+
+
+
+
     ////////////////////////////////////////
     ////COORDINATIONS PANEL/////////////////
     ///////////////////////////////////////
@@ -850,6 +917,9 @@ $(document).ready(function() {
             clearInterval(update_view);
         }
     }
+
+
+
 
     //////////////////////////
     ////SEARCH BOX////////////
@@ -1002,6 +1072,19 @@ $(document).ready(function() {
     /////////////////////
 
     function nav(move) {
+
+        if (windowOpen == "setting") {
+            let tcount = $("div#setting > [tabindex]").length
+            if (move == "+1" && tabIndex < tcount) {
+                tabIndex++;
+                $("[tabindex='" + tabIndex + "']").focus();
+            }
+            if (move == "-1" && tabIndex > 1) {
+                tabIndex--;
+                $("[tabindex='" + tabIndex + "']").focus();
+            }
+
+        }
         if (windowOpen == "finder") {
             let items = document.querySelectorAll(".items");
             if (move == "+1") {
@@ -1113,14 +1196,14 @@ $(document).ready(function() {
     //////////////
 
     function shortpress_action(param) {
+
+
         switch (param.key) {
             case "Backspace":
-                param.preventDefault();
-
                 if (windowOpen == "finder") {
                     $("div#finder").css("display", "none");
                     windowOpen = "map";
-                    return false;
+                    break;
                 }
 
                 if (windowOpen == "coordinations") {
@@ -1130,11 +1213,20 @@ $(document).ready(function() {
                 if (windowOpen == "map") {
                     windowOpen = "";
                     window.goodbye();
+                    break;
                 }
 
                 break;
 
             case "SoftLeft":
+            case "n":
+
+                if (windowOpen == "setting") {
+                    save_settings();
+                    break;
+                }
+
+
                 if (windowOpen == "search") {
                     hideSearch();
                     break;
@@ -1142,30 +1234,41 @@ $(document).ready(function() {
 
                 if (windowOpen == "finder") {
                     unload_map(false);
-                    return false;
+                    break;
+
                 }
 
                 if (windowOpen == "map") {
                     ZoomMap("in");
-                    return false;
+                    break;
+
                 }
 
                 if (windowOpen == "user-input") {
                     user_input("close");
                     save_mode = "";
-
                     break;
                 }
 
                 break;
 
             case "SoftRight":
+            case "m":
+
+                if (windowOpen == "setting") {
+                    close_setting();
+                    break;
+                }
                 if (windowOpen == "finder") {
                     unload_map(true);
+                    break;
+
                 }
 
                 if (windowOpen == "map") {
                     ZoomMap("out");
+                    break;
+
                 }
 
                 if (windowOpen == "user-input" && save_mode == "geojson") {
@@ -1177,6 +1280,8 @@ $(document).ready(function() {
                 if (windowOpen == "user-input" && save_mode != "geojson") {
                     filename = user_input("return");
                     save_delete_marker("save_marker");
+                    break;
+
                 }
 
                 break;
@@ -1199,58 +1304,66 @@ $(document).ready(function() {
                     break;
                 }
 
+                if (document.activeElement == document.getElementById("clear-cache")) {
+                    maps.delete_cache()
+                    break;
+                }
+
                 addMapLayers("add-marker");
 
                 break;
 
             case "1":
-                getLocation("update_marker");
+                if (windowOpen == "map") getLocation("update_marker");
                 break;
 
             case "2":
-                param.preventDefault();
-                showSearch();
+                if (windowOpen == "map") showSearch();
                 break;
 
             case "3":
-                param.preventDefault();
-                show_finder();
+                if (windowOpen == "map") show_finder();
                 break;
 
             case "4":
-                geolocationWatch();
-                screenWakeLock("lock");
+                if (windowOpen == "map") {
+                    geolocationWatch();
+                    screenWakeLock("lock");
+                }
 
                 break;
 
             case "5":
-                saveMarker();
+                if (windowOpen == "map") saveMarker();
                 break;
 
             case "6":
-                coordinations("show");
+                if (windowOpen == "map") coordinations("show");
                 break;
 
             case "7":
-                ruler();
+                if (windowOpen == "map") ruler();
                 break;
 
             case "8":
-                save_mode = "geojson";
-                user_input("open");
-                document.getElementById("user-input-description").innerText = "Export markers as geojson file"
+                if (windowOpen == "map") {
+                    save_mode = "geojson";
+                    user_input("open");
+                    document.getElementById("user-input-description").innerText = "Export markers as geojson file"
+                }
 
                 break;
 
             case "9":
-                L.marker([current_lat, current_lng]).addTo(markers_group);
+                if (windowOpen == "map") L.marker([current_lat, current_lng]).addTo(markers_group);
                 break;
 
             case "0":
-                mozactivity.share_position();
+                if (windowOpen == "map") mozactivity.share_position();
                 break;
 
-            case "n":
+            case "#":
+            case "b":
                 maps.caching_tiles();
                 break;
 
@@ -1280,8 +1393,9 @@ $(document).ready(function() {
     ////////////////////////////////
 
     function handleKeyDown(evt) {
+        if (evt.key == "Backspace") evt.preventDefault();
         if (!evt.repeat) {
-            evt.preventDefault();
+            //evt.preventDefault();
             longpress = false;
             timeout = setTimeout(() => {
                 longpress = true;
@@ -1296,7 +1410,9 @@ $(document).ready(function() {
     }
 
     function handleKeyUp(evt) {
-        evt.preventDefault();
+        //evt.preventDefault();
+        if (evt.key == "Backspace") evt.preventDefault();
+
         clearTimeout(timeout);
         if (!longpress) {
             shortpress_action(evt);

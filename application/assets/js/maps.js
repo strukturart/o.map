@@ -5,7 +5,6 @@
 
         let caching_events = function() {
             // Listen to cache hits and misses and spam the console
-            // The cache hits and misses are only from this layer, not from the WMS layer.
             tilesLayer.on('tilecachehit', function(ev) {
                 //console.log('Cache hit: ', ev.url);
             });
@@ -19,32 +18,49 @@
 
 
         let caching_tiles = function() {
+            top_bar("", "dowloading", "")
             opentopo_map.useCache = true;
-
             opentopo_map.saveToCache = true;
+
             let swLat = map.getBounds()._southWest.lat
             let swLng = map.getBounds()._southWest.lng
             let neLat = map.getBounds()._northEast.lat
             let neLng = map.getBounds()._northEast.lng
+            console.log(swLat + "/" + swLng + "/" + neLat + "/" + neLng)
 
-            var bbox = L.latLngBounds(L.latLng(swLat, -swLng), L.latLng(neLat, neLng));
-            tilesLayer.seed(bbox, 0, 8);
+            var bbox = L.latLngBounds(L.latLng(swLat, swLng), L.latLng(neLat, neLng));
+            tilesLayer.seed(bbox, 0, Number(zoom_depth));
 
 
             // Display seed progress on console
             tilesLayer.on('seedprogress', function(seedData) {
                 var percent = 100 - Math.floor(seedData.remainingLength / seedData.queueLength * 100);
                 console.log('Seeding ' + percent + '% done');
+                document.querySelector("div#top-bar div.button-center").innerText = percent + "%"
+
             });
             tilesLayer.on('seedend', function(seedData) {
-                toaster("Downloads finished");
+                document.querySelector("div#top-bar div.button-center").innerText = "Downloads finished"
+                setTimeout(() => {
+                    top_bar("", "", "")
+                }, 2000);
+
             });
+
+            tilesLayer.on('error', function(seedData) {
+                document.querySelector("div#top-bar div.button-center").innerText = seedData
+            });
+
+            tilesLayer.on('seedstart', function(seedData) {
+                document.querySelector("div#top-bar div.button-center").innerText = seedData
+            });
+
 
         }
 
         let delete_cache = function() {
             tilesLayer._db.destroy().then(function(response) {
-                // success
+                toaster("map cache deleted", 3000)
             }).catch(function(err) {
                 console.log(err);
             });
@@ -81,16 +97,21 @@
         }
 
 
-
-
         function opentopo_map() {
+
+
+            //caching settings from settings panel
+            caching_time = Number(settings[1]) * 86400000
+            zoom_depth = Number(settings[2])
+
+
             tilesUrl = "https://tile.opentopomap.org/{z}/{x}/{y}.png";
             tilesLayer = L.tileLayer(tilesUrl, {
                 useCache: true,
                 saveToCache: true,
                 crossOrigin: true,
-                cacheMaxAge: 86400000,
-                //useOnlyCache: true,
+                cacheMaxAge: caching_time,
+                useOnlyCache: false,
                 maxZoom: 17,
                 attribution: "Map data &copy;<div> © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)</div>",
             });
