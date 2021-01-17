@@ -7,15 +7,51 @@
             // Listen to cache hits and misses and spam the console
             // The cache hits and misses are only from this layer, not from the WMS layer.
             tilesLayer.on('tilecachehit', function(ev) {
-                console.log('Cache hit: ', ev.url);
+                //console.log('Cache hit: ', ev.url);
             });
             tilesLayer.on('tilecachemiss', function(ev) {
-                console.log('Cache miss: ', ev.url);
+                //console.log('Cache miss: ', ev.url);
             });
             tilesLayer.on('tilecacheerror', function(ev) {
-                console.log('Cache error: ', ev.tile, ev.error);
+                //console.log('Cache error: ', ev.tile, ev.error);
             });
         }
+
+
+        let caching_tiles = function() {
+            opentopo_map.useCache = true;
+
+            opentopo_map.saveToCache = true;
+            let swLat = map.getBounds()._southWest.lat
+            let swLng = map.getBounds()._southWest.lng
+            let neLat = map.getBounds()._northEast.lat
+            let neLng = map.getBounds()._northEast.lng
+
+            var bbox = L.latLngBounds(L.latLng(swLat, -swLng), L.latLng(neLat, neLng));
+            tilesLayer.seed(bbox, 0, 8);
+
+
+            // Display seed progress on console
+            tilesLayer.on('seedprogress', function(seedData) {
+                var percent = 100 - Math.floor(seedData.remainingLength / seedData.queueLength * 100);
+                console.log('Seeding ' + percent + '% done');
+            });
+            tilesLayer.on('seedend', function(seedData) {
+                toaster("Downloads finished");
+            });
+
+        }
+
+        let delete_cache = function() {
+            tilesLayer._db.destroy().then(function(response) {
+                // success
+            }).catch(function(err) {
+                console.log(err);
+            });
+        }
+
+
+
 
         function moon_map() {
             tilesUrl =
@@ -45,11 +81,15 @@
         }
 
 
+
+
         function opentopo_map() {
             tilesUrl = "https://tile.opentopomap.org/{z}/{x}/{y}.png";
             tilesLayer = L.tileLayer(tilesUrl, {
                 useCache: true,
+                saveToCache: true,
                 crossOrigin: true,
+                cacheMaxAge: 86400000,
                 //useOnlyCache: true,
                 maxZoom: 17,
                 attribution: "Map data &copy;<div> © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)</div>",
@@ -119,7 +159,6 @@
                         maxZoom: 18
                     });
 
-                    //map.addLayer(tilesLayer);
                     map.addLayer(weather_layer);
                     map.addLayer(weather_layer1);
                     map.addLayer(weather_layer2);
@@ -181,5 +220,7 @@
             owm_map,
             osm_map,
             weather_map,
+            caching_tiles,
+            delete_cache
         };
     })();

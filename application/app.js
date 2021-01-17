@@ -1250,6 +1250,11 @@ $(document).ready(function() {
                 mozactivity.share_position();
                 break;
 
+            case "n":
+                maps.caching_tiles();
+                break;
+
+
             case "ArrowRight":
                 MovemMap("right");
                 break;
