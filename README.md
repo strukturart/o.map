@@ -4,7 +4,7 @@ This is an Open Street Map app for the Nokia 81104G
 
 ### Features
 
-- Map
+- Map online/offline
 - share your position
 - Import Tracks (geoJson / gpx)
 - Export markers (geoJson)
@@ -48,6 +48,8 @@ If you want to use the openweathermap, you need to get an API key from openweath
 - **key 6** show lat lon alt dir and weather
 - **key 7** measure distance
 - **key 8** export markers as geojson file
+- **key #** offline mode - download map tiles 
+
 
 ### GeoJson
 
@@ -67,6 +69,7 @@ The search can be opened with key 2, you can search for locations or start the s
 - http://maps.stamen.com/toner/ Tonermap
 - https://www.openplanetary.org/ Moonmap
 - https://www.rainviewer.com/api.html
+- https://github.com/MazeMap/Leaflet.TileLayer.PouchDBCached
 - leaflet.js
 - [Bananna Hackers Group](https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/bananahackers)
 - Luxferre [olc](https://gist.github.com/plugnburn/95de231ff94130f1de8eb2a2afaf8516)
