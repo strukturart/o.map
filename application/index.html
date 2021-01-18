@@ -33,10 +33,23 @@
                 <li>leafletjs</li>
                 <li>openstreetmap</li>
                 <li>opentopomap</li>
-                <li>rainviwer.com</li>
+                <li>rainviewer.com</li>
+                <li>mazemap.github</li>
                 <li>bHackers community ❤</li>
             </ul>
         </div>
+    </div>
+
+    <div id="setting">
+        <label for="owm-key">Openweathermap API-Key</label>
+        <input type="tel" pattern="^[0-9]*$" id="owm-key" tabindex="1" />
+        <br>
+        <h2>Offline maps</h2>
+        <label for="cache-time">After how many days should the maps be re-downloaded?</label>
+        <input type="tel" pattern="^[0-9]*$" id="cache-time" tabindex="2" />
+        <label for="cache-zoom">How much zoom level should be saved ?</label>
+        <input type="tel" pattern="^[0-9]*$" id="cache-zoom" tabindex="3" />
+        <button id="clear-cache" tabindex="4">clear offline cache</button>
     </div>
 
     <div id="toast" class="width-100"></div>
@@ -62,6 +75,15 @@
             <div id="button-right"></div>
         </div>
     </div>
+
+    <div id="top-bar">
+        <div class="inner flex justify-content-spacebetween width-100">
+            <div class="button-left"></div>
+            <div class="button-center"></div>
+            <div class="button-right"></div>
+        </div>
+    </div>
+
 
     <div id="map-container"></div>
 
@@ -121,6 +143,21 @@
                 <div class="flex justify-content-spacebetween">
                     <div>watch position on/off</div>
                     <div>4</div>
+                </div>
+            </div>
+
+
+            <div class="items" data-map="setting">
+                <div class="flex justify-content-spacebetween">
+                    <div>settings</div>
+                    <div></div>
+                </div>
+            </div>
+
+            <div class="items" data-map="cache-map">
+                <div class="flex justify-content-spacebetween">
+                    <div>cache map</div>
+                    <div>#</div>
                 </div>
             </div>
 
