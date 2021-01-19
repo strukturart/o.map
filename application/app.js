@@ -844,6 +844,25 @@ $(document).ready(function() {
         return settings = [localStorage.getItem("owm-key"), localStorage.getItem("cache-time"), localStorage.getItem("cache-zoom")]
     }
 
+
+    //qr scan listener
+    const qr_listener = document.querySelector("input#owm-key");
+    let qrscan = false;
+    qr_listener.addEventListener("focus", (event) => {
+        bottom_bar("save", "qr", "back");
+        qrscan = true
+        toaster("press enter to open the qr-code-scanner, it is helpfull for a long url", 3000)
+
+
+    });
+
+    qr_listener.addEventListener("blur", (event) => {
+        bottom_bar("save", "", "back");
+        qrscan = false
+
+
+    })
+
     load_settings();
 
 
@@ -1216,6 +1235,11 @@ $(document).ready(function() {
                     break;
                 }
 
+                if (window_status == "scan") {
+                    qr.stop_scan()
+                    break;
+                }
+
                 break;
 
             case "SoftLeft":
@@ -1306,6 +1330,17 @@ $(document).ready(function() {
 
                 if (document.activeElement == document.getElementById("clear-cache")) {
                     maps.delete_cache()
+                    break;
+                }
+
+                if (window_status == "settings" && qrscan == true) {
+                    window_status = "scan"
+
+                    qr.start_scan(function(callback) {
+                        let slug = callback
+                        document.getElementById("owm-key").value = slug
+                    });
+
                     break;
                 }
 
