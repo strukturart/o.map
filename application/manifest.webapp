@@ -53,6 +53,11 @@
       "access": "readwrite"
     },
 
+    "video-capture": {
+			"description": "Reading Codes using the Camera"
+			},
+
+
     "wake-lock": {},
     "power": {},
 
