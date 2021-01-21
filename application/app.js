@@ -43,9 +43,11 @@ let markers_group = new L.FeatureGroup();
 
 let save_mode; // to check save geojson or update json
 
-let settings;
 let caching_time = 86400000
 let zoom_depth = 4;
+
+let settings_data = settings.load_settings();
+
 
 
 
@@ -58,14 +60,14 @@ $(document).ready(function() {
 
 
 
-
     //welcome message
     $("div#message div").text("Welcome");
     setTimeout(function() {
         $("div#message").css("display", "none");
         //get location if not an activity open url
         if (open_url === false) {
-            read_json();
+            //read_json();
+            build_menu()
             getLocation("init");
 
 
@@ -105,10 +107,8 @@ $(document).ready(function() {
 
 
 
-    /////////////////////////
-    //read json to build menu
-    /////////////////////////
-    function read_json() {
+    let build_menu = function() {
+
         $("div#tracks").empty();
         $("div#maps").empty();
         $("div#layers").empty();
@@ -131,8 +131,27 @@ $(document).ready(function() {
             '<div class="items" data-map="weather">Weather <i>Map</i></div>'
         );
 
+
+        if (settings_data[0]) {
+
+            openweather_api = settings_data[0];
+            $("div#maps").append(
+                '<div class="items" data-map="owm">Open Weather <i>Map</i></div>'
+            );
+        }
+
         find_gpx();
         find_geojson();
+        read_json()
+
+    }
+    /////////////////////////
+    //read json to build menu
+    /////////////////////////
+    function read_json() {
+
+
+
 
         let finder = new Applait.Finder({
             type: "sdcard",
@@ -192,12 +211,10 @@ $(document).ready(function() {
                         });
                     }
 
-                    if (value.api_key) {
-                        openweather_api = value.api_key;
-                        $("div#maps").append(
-                            '<div class="items" data-map="owm">Open Weather <i>Map</i></div>'
-                        );
-                    }
+
+
+
+
                 });
 
                 if (json_modified) {
@@ -206,6 +223,10 @@ $(document).ready(function() {
             };
             reader.readAsText(file);
         });
+
+
+
+
     }
 
     //////////////////////////////////
@@ -257,7 +278,7 @@ $(document).ready(function() {
 
     let show_finder = function() {
         if (json_modified) {
-            read_json();
+            build_menu();
         } else {
             finder_tabindex();
             $("div#finder").find("div.items[tabindex=0]").focus();
@@ -828,22 +849,6 @@ $(document).ready(function() {
 
     }
 
-    let save_settings = function() {
-
-        localStorageWriteRead("owm-key", document.getElementById("owm-key").value)
-        localStorageWriteRead("cache-time", document.getElementById("cache-time").value)
-        localStorageWriteRead("cache-zoom", document.getElementById("cache-zoom").value)
-        toaster("saved successfully", 2000)
-    }
-
-    let load_settings = function() {
-        document.getElementById("owm-key").value = localStorage.getItem("owm-key")
-        document.getElementById("cache-time").value = localStorage.getItem("cache-time")
-        document.getElementById("cache-zoom").value = localStorage.getItem("cache-zoom")
-
-        return settings = [localStorage.getItem("owm-key"), localStorage.getItem("cache-time"), localStorage.getItem("cache-zoom")]
-    }
-
 
     //qr scan listener
     const qr_listener = document.querySelector("input#owm-key");
@@ -851,9 +856,6 @@ $(document).ready(function() {
     qr_listener.addEventListener("focus", (event) => {
         bottom_bar("save", "qr", "back");
         qrscan = true
-        toaster("press enter to open the qr-code-scanner, it is helpfull for a long url", 3000)
-
-
     });
 
     qr_listener.addEventListener("blur", (event) => {
@@ -863,7 +865,6 @@ $(document).ready(function() {
 
     })
 
-    load_settings();
 
 
 
@@ -1235,8 +1236,9 @@ $(document).ready(function() {
                     break;
                 }
 
-                if (window_status == "scan") {
+                if (windowOpen == "scan") {
                     qr.stop_scan()
+                    windowOpen = "setting"
                     break;
                 }
 
@@ -1246,7 +1248,7 @@ $(document).ready(function() {
             case "n":
 
                 if (windowOpen == "setting") {
-                    save_settings();
+                    settings.save_settings();
                     break;
                 }
 
@@ -1332,9 +1334,8 @@ $(document).ready(function() {
                     maps.delete_cache()
                     break;
                 }
-
-                if (window_status == "settings" && qrscan == true) {
-                    window_status = "scan"
+                if (windowOpen == "setting" && qrscan == true) {
+                    windowOpen = "scan"
 
                     qr.start_scan(function(callback) {
                         let slug = callback

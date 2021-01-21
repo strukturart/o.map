@@ -18,24 +18,25 @@
 
 
         let caching_tiles = function() {
-            top_bar("", "dowloading", "")
-            opentopo_map.useCache = true;
-            opentopo_map.saveToCache = true;
+
 
             let swLat = map.getBounds()._southWest.lat
             let swLng = map.getBounds()._southWest.lng
             let neLat = map.getBounds()._northEast.lat
             let neLng = map.getBounds()._northEast.lng
-            console.log(swLat + "/" + swLng + "/" + neLat + "/" + neLng)
 
             var bbox = L.latLngBounds(L.latLng(swLat, swLng), L.latLng(neLat, neLng));
-            tilesLayer.seed(bbox, 0, Number(zoom_depth));
+            tilesLayer.seed(bbox, 0, Number(settings.load_settings()[2]));
+
+            top_bar("", "downloading", "")
+
 
 
             // Display seed progress on console
             tilesLayer.on('seedprogress', function(seedData) {
                 var percent = 100 - Math.floor(seedData.remainingLength / seedData.queueLength * 100);
                 console.log('Seeding ' + percent + '% done');
+
                 document.querySelector("div#top-bar div.button-center").innerText = percent + "%"
 
             });
