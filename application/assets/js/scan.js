@@ -2,7 +2,6 @@ const qr = ((_) => {
     let video;
     let intv;
     let start_scan = function(callback) {
-        window_status = "scan";
         bottom_bar("", "", "");
 
         document.getElementById("qr-screen").style.display = "block";
@@ -81,9 +80,10 @@ const qr = ((_) => {
         });
 
         video.srcObject = null;
-        window_status = "settings";
 
         bottom_bar("save", "qr", "back");
+
+        windowOpen = "setting"
 
 
 

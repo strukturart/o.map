@@ -156,3 +156,23 @@ function screenWakeLock(param1) {
         }
     }
 }
+
+let add_file = function() {
+
+    var sdcard = navigator.getDeviceStorage("sdcard");
+    var file = new Blob([""], {
+        type: "application/json"
+    });
+
+    var request = sdcard.addNamed(file, "omap.json");
+
+    request.onsuccess = function() {
+        var name = this.result;
+        alert('File "' + name + '" successfully wrote on the sdcard storage area');
+    }
+
+    // An error typically occur if a file with the same name already exist
+    request.onerror = function() {
+        alert('Unable to write the file: ' + this.error);
+    }
+}

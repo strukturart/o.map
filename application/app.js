@@ -144,6 +144,7 @@ $(document).ready(function() {
         find_geojson();
         read_json()
 
+
     }
     /////////////////////////
     //read json to build menu
@@ -166,8 +167,10 @@ $(document).ready(function() {
 
         finder.on("searchComplete", function(needle, filematchcount) {
             if (filematchcount == 0) {
+                add_file()
+                read_json()
                 toaster(
-                    "no osm-map.json file found. Please create this file, otherwise you can only use the app to a limited extent.",
+                    "I just created the file omap.json, it will be used to save your markers.",
                     4000
                 );
                 return;
@@ -829,15 +832,11 @@ $(document).ready(function() {
     /////////////////////////
 
     let show_setting = function() {
-
-
-
         $("div#setting").css("display", "block")
         $("div#finder").css("display", "none")
         bottom_bar("save", "", "back")
         tabIndex = 1;
         windowOpen = "setting";
-
         $("input#owm-key").focus()
 
     }
@@ -861,7 +860,6 @@ $(document).ready(function() {
     qr_listener.addEventListener("blur", (event) => {
         bottom_bar("save", "", "back");
         qrscan = false
-
 
     })
 
@@ -1111,12 +1109,12 @@ $(document).ready(function() {
                 if (tabIndex < items.length - 1) {
                     tabIndex++;
                     $("div#finder div.items[tabindex=" + tabIndex + "]").focus();
+                    document.activeElement.scrollIntoView({
+                        block: "center"
+                    });
 
-                    $("html, body").animate({
-                            scrollTop: $(":focus").offset().top + "px",
-                        },
-                        "fast"
-                    );
+
+
                 }
             }
 
@@ -1124,12 +1122,11 @@ $(document).ready(function() {
                 if (tabIndex > 0) {
                     tabIndex--;
                     $("div#finder div.items[tabindex=" + tabIndex + "]").focus();
+                    document.activeElement.scrollIntoView({
+                        block: "center"
+                    });
 
-                    $("html, body").animate({
-                            scrollTop: $(":focus").offset().top + "px",
-                        },
-                        "fast"
-                    );
+
                 }
             }
         }
@@ -1216,11 +1213,13 @@ $(document).ready(function() {
     //////////////
 
     function shortpress_action(param) {
-
+        //reset
 
         switch (param.key) {
             case "Backspace":
+
                 if (windowOpen == "finder") {
+                    bottom_bar("", "", "")
                     $("div#finder").css("display", "none");
                     windowOpen = "map";
                     break;
@@ -1429,7 +1428,7 @@ $(document).ready(function() {
     ////////////////////////////////
 
     function handleKeyDown(evt) {
-        if (evt.key == "Backspace") evt.preventDefault();
+        if (evt.key == "Backspace" && !$("input").is(":focus")) evt.preventDefault();
         if (!evt.repeat) {
             //evt.preventDefault();
             longpress = false;

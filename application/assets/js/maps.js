@@ -3,6 +3,20 @@
     ///////////////////
     const maps = (() => {
 
+        //caching settings from settings panel
+        if (settings[1] != "") {
+            caching_time = Number(settings[1]) * 86400000
+        } else {
+            caching_time = 86400000;
+        }
+        if (settings[2] != "") {
+            zoom_depth = Number(settings[2])
+
+        } else {
+            zoom_depth = 5
+
+        }
+
         let caching_events = function() {
             // Listen to cache hits and misses and spam the console
             tilesLayer.on('tilecachehit', function(ev) {
@@ -18,24 +32,25 @@
 
 
         let caching_tiles = function() {
-            top_bar("", "dowloading", "")
-            opentopo_map.useCache = true;
-            opentopo_map.saveToCache = true;
+
 
             let swLat = map.getBounds()._southWest.lat
             let swLng = map.getBounds()._southWest.lng
             let neLat = map.getBounds()._northEast.lat
             let neLng = map.getBounds()._northEast.lng
-            console.log(swLat + "/" + swLng + "/" + neLat + "/" + neLng)
 
             var bbox = L.latLngBounds(L.latLng(swLat, swLng), L.latLng(neLat, neLng));
-            tilesLayer.seed(bbox, 0, Number(zoom_depth));
+            tilesLayer.seed(bbox, 0, Number(settings.load_settings()[2]));
+
+            top_bar("", "downloading", "")
+
 
 
             // Display seed progress on console
             tilesLayer.on('seedprogress', function(seedData) {
                 var percent = 100 - Math.floor(seedData.remainingLength / seedData.queueLength * 100);
                 console.log('Seeding ' + percent + '% done');
+
                 document.querySelector("div#top-bar div.button-center").innerText = percent + "%"
 
             });
@@ -73,6 +88,11 @@
             tilesUrl =
                 "https://cartocdn-gusc.global.ssl.fastly.net/opmbuilder/api/v1/map/named/opm-moon-basemap-v0-1/all/{z}/{x}/{y}.png";
             tilesLayer = L.tileLayer(tilesUrl, {
+                useCache: true,
+                saveToCache: false,
+                crossOrigin: true,
+                cacheMaxAge: caching_time,
+                useOnlyCache: false,
                 maxZoom: 12,
                 minZoom: 2,
                 attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
@@ -86,6 +106,11 @@
         function toner_map() {
             tilesUrl = "https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png";
             tilesLayer = L.tileLayer(tilesUrl, {
+                useCache: true,
+                saveToCache: false,
+                crossOrigin: true,
+                cacheMaxAge: caching_time,
+                useOnlyCache: false,
                 maxZoom: 18,
                 attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
                     '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
@@ -99,16 +124,10 @@
 
         function opentopo_map() {
 
-
-            //caching settings from settings panel
-            caching_time = Number(settings[1]) * 86400000
-            zoom_depth = Number(settings[2])
-
-
             tilesUrl = "https://tile.opentopomap.org/{z}/{x}/{y}.png";
             tilesLayer = L.tileLayer(tilesUrl, {
                 useCache: true,
-                saveToCache: true,
+                saveToCache: false,
                 crossOrigin: true,
                 cacheMaxAge: caching_time,
                 useOnlyCache: false,
@@ -128,6 +147,11 @@
                 "https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=" +
                 openweather_api;
             tilesLayer = L.tileLayer(tilesUrl, {
+                useCache: true,
+                saveToCache: false,
+                crossOrigin: true,
+                cacheMaxAge: caching_time,
+                useOnlyCache: false,
                 maxZoom: 18,
                 attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
                     '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
@@ -141,7 +165,13 @@
         function osm_map() {
             tilesUrl = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
             tilesLayer = L.tileLayer(tilesUrl, {
+                useCache: true,
+                saveToCache: false,
+                crossOrigin: true,
+                cacheMaxAge: caching_time,
+                useOnlyCache: false,
                 maxZoom: 18,
+
                 attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
                     '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
             });
