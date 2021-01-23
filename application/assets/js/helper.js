@@ -160,7 +160,7 @@ function screenWakeLock(param1) {
 let add_file = function() {
 
     var sdcard = navigator.getDeviceStorage("sdcard");
-    var file = new Blob([""], {
+    var file = new Blob(['[{"markers":[]}]'], {
         type: "application/json"
     });
 
@@ -168,7 +168,8 @@ let add_file = function() {
 
     request.onsuccess = function() {
         var name = this.result;
-        alert('File "' + name + '" successfully wrote on the sdcard storage area');
+        toaster("Please repeat the last action again.", 2000)
+
     }
 
     // An error typically occur if a file with the same name already exist

@@ -58,8 +58,6 @@ if (!navigator.geolocation) {
 $(document).ready(function() {
 
 
-
-
     //welcome message
     $("div#message div").text("Welcome");
     setTimeout(function() {
@@ -69,9 +67,6 @@ $(document).ready(function() {
             //read_json();
             build_menu()
             getLocation("init");
-
-
-
 
             toaster("Press 3<br> to open the menu", 5000);
 
@@ -151,9 +146,6 @@ $(document).ready(function() {
     /////////////////////////
     function read_json() {
 
-
-
-
         let finder = new Applait.Finder({
             type: "sdcard",
             debugMode: false,
@@ -167,12 +159,9 @@ $(document).ready(function() {
 
         finder.on("searchComplete", function(needle, filematchcount) {
             if (filematchcount == 0) {
+                file_path = "omap.json"
+                toaster("I will create the omap.json, all your markers will be saved there.", 2000)
                 add_file()
-                read_json()
-                toaster(
-                    "I just created the file omap.json, it will be used to save your markers.",
-                    4000
-                );
                 return;
             }
         });
@@ -536,6 +525,10 @@ $(document).ready(function() {
         if (option == "save_marker" || option == "delete_marker") {
             let sdcard = navigator.getDeviceStorages("sdcard");
             let request = sdcard[1].get(file_path);
+
+            request.onerror = function() {
+
+            }
 
             request.onsuccess = function() {
                 let fileget = this.result;
