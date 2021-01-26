@@ -1,6 +1,7 @@
 ![logo](/images/logo.png)
 
-omap is an openstreetmap app for kaios, it is not available on the official store. because i don't feel like annoying users with stupid advertising.
+O.Map is an openstreetmap app for KaiOs, it is not available on the official store. 
+Because I don't feel like annoying users with stupid advertising.
 
 ### Features
 
@@ -13,8 +14,6 @@ omap is an openstreetmap app for kaios, it is not available on the official stor
 - search locations
 - rainradar
 - open openstreetmap link
-
-If you want to use the openweathermap, you need to get an API key from openweathermap.org. Then you need to create a file called omap.json please check my example [file](/omap.json)
 
 ![image-2](/images/image-2.png)
 ![image-2](/images/image-3.png)
@@ -46,7 +45,7 @@ If you want to use the openweathermap, you need to get an API key from openweath
 - **key 4** watch position on/off
 - **key 5** save position or search result as marker on sd-card <br>
   to delete the marker open with 3 the menu select the marker and press long enter (+- 5sec)
-- **key 6** show lat lon alt dir and weather
+- **key 6** show lat lon alt dir and weather 
 - **key 7** measure distance
 - **key 8** export markers as geojson file
 - **key #** offline mode - download map tiles 
@@ -69,6 +68,8 @@ The search can be opened with key 2, you can search for locations or start the s
 ### Installation
 
 https://wiki.bananahackers.net/en/install-omnisd
+
+
 
 ### Thank you
 
