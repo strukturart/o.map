@@ -1,6 +1,6 @@
 ![logo](/images/logo.png)
 
-This is an Open Street Map app for the Nokia 81104G
+omap is an openstreetmap app for kaios, it is not available on the official store. because i don't feel like annoying users with stupid advertising.
 
 ### Features
 
@@ -33,6 +33,7 @@ If you want to use the openweathermap, you need to get an API key from openweath
 - OpenWeatherMap
 
 ## Layers
+- rain/snow layer
 
 ### Manual
 
@@ -51,16 +52,23 @@ If you want to use the openweathermap, you need to get an API key from openweath
 - **key #** offline mode - download map tiles 
 
 
+## import/export
+you have the possibility to import gpx and geojson. Markers can also be exported as geojson so that you can e.g. share them or edit them in another program.
+
+### Search
+
+The search can be opened with key 2, you can search for locations or start the search with / and then enter an open location code
+[open location code](https://en.wikipedia.org/wiki/Open_Location_Code)
+
 ### GeoJson
 
 - Online tool: [geojson.io](http://geojson.io/#map=1/-55/228)
 - Validation: [geojsonlint](http://geojsonlint.com/)
 - GeoJson Map: [geojson Map] https://geojson-maps.ash.ms/
 
-### Search
+### Installation
 
-The search can be opened with key 2, you can search for locations or start the search with / and then enter an open location code
-[open location code](https://en.wikipedia.org/wiki/Open_Location_Code)
+https://wiki.bananahackers.net/en/install-omnisd
 
 ### Thank you
 
