@@ -19,11 +19,13 @@ const mozactivity = (() => {
       name: "share",
       data: {
         type: "url",
-        url: url,
-      },
+        url: url
+      }
     });
 
-    activity.onsuccess = function () {};
+    activity.onsuccess = function () {
+      console.log("successfully shared");
+    };
 
     activity.onerror = function () {
       console.log("The activity encounter en error: " + this.error);
@@ -39,7 +41,7 @@ const mozactivity = (() => {
     });
 
     activity.onsuccess = function () {
-      toaster("back", 2000);
+      console.log("successfully");
     };
 
     activity.onerror = function () {

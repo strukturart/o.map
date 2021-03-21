@@ -203,10 +203,6 @@ $(document).ready(function() {
                         });
                     }
 
-
-
-
-
                 });
 
                 if (json_modified) {
@@ -677,8 +673,8 @@ $(document).ready(function() {
             }
 
             if (item_value == "share") {
-                maps.opentopo_map();
-                getLocation("share");
+                //maps.opentopo_map();
+                mozactivity.share_position();
             }
 
             if (item_value == "autoupdate-geolocation") {
@@ -1237,7 +1233,6 @@ $(document).ready(function() {
                 break;
 
             case "SoftLeft":
-            case "n":
 
                 if (windowOpen == "setting") {
                     settings.save_settings();
@@ -1271,7 +1266,6 @@ $(document).ready(function() {
                 break;
 
             case "SoftRight":
-            case "m":
 
                 if (windowOpen == "setting") {
                     close_setting();
@@ -1391,7 +1385,6 @@ $(document).ready(function() {
                 break;
 
             case "#":
-            case "b":
                 maps.caching_tiles();
                 break;
 
