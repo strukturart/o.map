@@ -14,13 +14,13 @@ const mozactivity = (() => {
     share(message_body);
   };
 
-  function share(url) {
+  let share = function (a) {
     let activity = new MozActivity({
       name: "share",
       data: {
         type: "url",
-        url: url
-      }
+        url: a,
+      },
     });
 
     activity.onsuccess = function () {
@@ -30,7 +30,7 @@ const mozactivity = (() => {
     activity.onerror = function () {
       console.log("The activity encounter en error: " + this.error);
     };
-  }
+  };
 
   const photo = function () {
     let activity = new MozActivity({
