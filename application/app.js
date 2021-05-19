@@ -1163,6 +1163,11 @@ $(document).ready(function () {
         $("div#finder").css("display", "none");
         windowOpen = "map";
         break;
+      case "enter":
+        if (windowOpen == "map") {
+          marker_cross();
+        }
+        break;
     }
   }
 
@@ -1269,10 +1274,6 @@ $(document).ready(function () {
           current_lng = Number(olc_lat_lng[1]);
 
           toaster("press 5 to save the marker", 2000);
-          break;
-        }
-        if (windowOpen == "map") {
-          marker_cross();
           break;
         }
 
