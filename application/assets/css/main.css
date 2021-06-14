@@ -201,6 +201,7 @@ div#cross {
 div#cross div {
   min-width: 10px;
   height: 10px;
+  filter: invert(100%);
 }
 
 div#cross div:nth-child(1) {

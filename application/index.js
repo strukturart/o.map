@@ -981,6 +981,13 @@ $(document).ready(function () {
   /////////////////////
 
   function MovemMap(direction) {
+    //invert cross hair
+    let p = helper.get_master_color();
+    let n = "rgb(" + p[0] + "," + p[1] + "," + p[2] + ")";
+    document.querySelectorAll("div#cross div")[0].style.borderColor = n;
+    document.querySelectorAll("div#cross div")[1].style.borderColor = n;
+    document.querySelectorAll("div#cross div")[2].style.borderColor = n;
+
     if (!marker_latlng) {
       if (windowOpen == "map") {
         if (direction == "left") {
