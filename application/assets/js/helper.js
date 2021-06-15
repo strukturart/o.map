@@ -152,9 +152,9 @@ function top_bar(left, center, right) {
   }
 }
 
-function screenWakeLock(param1) {
+function screenWakeLock(param) {
   let lock;
-  if (param1 == "lock") {
+  if (param == "lock") {
     lock = window.navigator.requestWakeLock("screen");
   }
 

@@ -1,6 +1,6 @@
 const mozactivity = (() => {
-  const share_position = function () {
-    message_body =
+  let share_position = function () {
+    let a =
       "https://www.openstreetmap.org/?mlat=" +
       current_lat +
       "&mlon=" +
@@ -11,10 +11,6 @@ const mozactivity = (() => {
       current_lng +
       "&layers=T";
 
-    share(message_body);
-  };
-
-  let share = function (a) {
     let activity = new MozActivity({
       name: "share",
       data: {

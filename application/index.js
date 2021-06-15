@@ -465,38 +465,6 @@ $(document).ready(function () {
   }
 
   ///////////
-  //SET MARKER CROSS////
-  //////////
-  window.marker_cross = function () {
-    let elem = document.getElementById("marker-target-cross");
-    let style = getComputedStyle(elem);
-    if (style.opacity == "0") {
-      $("#marker-target-cross").animate(
-        {
-          width: "50px",
-          height: "50px",
-        },
-        2000,
-        function () {}
-      );
-
-      elem.style.opacity = "1";
-
-      elem.style.color = "red";
-      toaster(
-        "<br>press 5<br>to add a marker and save it<br>press 0 <br>to share this position by sms",
-        5000
-      );
-      return true;
-    } else {
-      elem.style.opacity = "0";
-      elem.style.width = "0px";
-      elem.style.height = "0px";
-      return true;
-    }
-  };
-
-  ///////////
   //save/delete marker
   //////////
 
@@ -1161,20 +1129,15 @@ $(document).ready(function () {
 
   function longpress_action(param) {
     switch (param.key) {
-      case "Enter":
+      case "0":
         if (windowOpen == "finder") {
           addMapLayers("delete-marker");
+          return false;
         }
-        break;
 
-      case "0":
-        maps.weather_map();
-        $("div#finder").css("display", "none");
-        windowOpen = "map";
-        break;
-      case "enter":
         if (windowOpen == "map") {
-          marker_cross();
+          maps.weather_map();
+          return false;
         }
         break;
     }

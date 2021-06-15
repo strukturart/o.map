@@ -1,6 +1,6 @@
 ![logo](/images/logo.png)
 
-O.Map is an openstreetmap app for KaiOs, it is not available on the official store. 
+O.Map is an openstreetmap app for KaiOs, it is not available on the official store.
 Because I don't feel like annoying users with stupid advertising.
 
 ### Features
@@ -32,6 +32,7 @@ Because I don't feel like annoying users with stupid advertising.
 - OpenWeatherMap
 
 ## Layers
+
 - rain/snow layer
 
 ### Manual
@@ -39,19 +40,21 @@ Because I don't feel like annoying users with stupid advertising.
 - **Soft-keys** Zoom the map
 - **Cursor** Moving the map
 - **key enter** show center (helpfull to set marker)
+- **key 0** share position
+- **key 0 longpress** show weahter map
 - **key 1** update marker
 - **key 2** search
 - **key 3** open menu
 - **key 4** watch position on/off
 - **key 5** save position or search result as marker on sd-card <br>
   to delete the marker open with 3 the menu select the marker and press long enter (+- 5sec)
-- **key 6** show lat lon alt dir and weather 
+- **key 6** show lat lon alt dir and weather
 - **key 7** measure distance
 - **key 8** export markers as geojson file
-- **key #** offline mode - download map tiles 
-
+- **key #** offline mode - download map tiles
 
 ## import/export
+
 you have the possibility to import gpx and geojson. Markers can also be exported as geojson so that you can e.g. share them or edit them in another program.
 
 ### Search
@@ -65,11 +68,14 @@ The search can be opened with key 2, you can search for locations or start the s
 - Validation: [geojsonlint](http://geojsonlint.com/)
 - GeoJson Map: [geojson Map] https://geojson-maps.ash.ms/
 
-### Installation
+## How to install
 
-https://wiki.bananahackers.net/en/install-omnisd
-
-
+The app is not available through the https://www.kaiostech.com/store/ They are only accepting apps that are monetized using <a href="https://developer.kaiostech.com/submit-to-kaistore">KaiAds SDK</a>, and that's something I'm not interested in integrating.
+For this reason, you have to side-load (upload) the app to your phone if you want to use it.
+Martin Kaptein wrote a comprehensive, <a href="https://www.martinkaptein.com/blog/sideloading-and-deploying-apps-to-kai-os/">step-by-step article</a> that you can use to side-load the app. If you prefer a video, this one on YouTube walks you through the process.
+The Developer Portal also contains a guide, and if nothing seems to work, you can <a href="https://discord.com/invite/rQ93zEu">ask for help on Discord</a>.
+You can download the latest version from the Releases page.
+The app is not auto-updating. To update it, you have to follow the same steps you took when installing it.
 
 ### Thank you
 
