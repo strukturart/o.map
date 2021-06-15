@@ -39,9 +39,8 @@ Because I don't feel like annoying users with stupid advertising.
 
 - **Soft-keys** Zoom the map
 - **Cursor** Moving the map
-- **key enter** show center (helpfull to set marker)
 - **key 0** share position
-- **key 0 longpress** show weahter map
+- **key 0 longpress** show weather map
 - **key 1** update marker
 - **key 2** search
 - **key 3** open menu
