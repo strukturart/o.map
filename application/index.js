@@ -49,14 +49,14 @@ let zoom_depth = 4;
 let settings_data = settings.load_settings();
 
 if (!navigator.geolocation) {
-  toaster("Your browser does't support geolocation!", 2000);
+  toaster("Your device does't support geolocation!", 2000);
 }
 
 $(document).ready(function () {
   //welcome message
-  $("div#message div").text("Welcome");
+  document.querySelector("div#message div").innerText = "Welcome";
   setTimeout(function () {
-    $("div#message").css("display", "none");
+    document.querySelector("div#message").style.display = "none";
     //get location if not an activity open url
     if (open_url === false) {
       //read_json();
@@ -683,7 +683,7 @@ $(document).ready(function () {
 
           //var new_marker = L.marker([marker_lat, marker_lng]).addTo(map);
           map.setView([marker_lat, marker_lng], 13);
-          $("div#finder").css("display", "none");
+          document.querySelector("div#finder").style.display = "none";
 
           var distance = getDistance(
             [marker_lat, marker_lng],
@@ -704,7 +704,6 @@ $(document).ready(function () {
                 [current_lat, current_lng]
               );
               distance = distance.toFixed(0) / 1000 + " km";
-              //new_marker.bindTooltip(distance).update();
             });
           }, 10000);
 
@@ -893,7 +892,12 @@ $(document).ready(function () {
 
   function ZoomMap(in_out) {
     let current_zoom_level = map.getZoom();
-    if (windowOpen == "map" && $("div#search-box").css("display") == "none") {
+
+    if (
+      windowOpen == "map" &&
+      window.getComputedStyle(document.querySelector("div#search-box"))
+        .display == "none"
+    ) {
       if (in_out == "in") {
         map.setZoom(current_zoom_level + 1);
       }
@@ -944,20 +948,23 @@ $(document).ready(function () {
     }
   }
 
+  //jump to next marker
+
+  let l = markers_group.getLayers();
+  let index = 0;
+
+  let jump_to_layer = function () {
+    let l = markers_group.getLayers();
+    index = index + 1;
+    if (index > l.length - 1) index = 0;
+    map.setView(l[index]._latlng, current_zoom_level);
+  };
+
   /////////////////////
   //MAP NAVIGATION//
   /////////////////////
 
   function MovemMap(direction) {
-    //invert cross hair
-    /*
-    let p = helper.get_master_color();
-    let n = "rgb(" + p[0] + "," + p[1] + "," + p[2] + ")";
-    document.querySelectorAll("div#cross div")[0].style.borderColor = n;
-    document.querySelectorAll("div#cross div")[1].style.borderColor = n;
-    document.querySelectorAll("div#cross div")[2].style.borderColor = n;
-    
-*/
     if (!marker_latlng) {
       if (windowOpen == "map") {
         if (direction == "left") {
@@ -1317,6 +1324,11 @@ $(document).ready(function () {
 
       case "0":
         if (windowOpen == "map") mozactivity.share_position();
+        break;
+
+      case "*":
+        jump_to_layer();
+
         break;
 
       case "#":
