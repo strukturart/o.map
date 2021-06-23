@@ -25,7 +25,6 @@ let tilesLayer;
 let tileLayer;
 let myLayer;
 let tilesUrl;
-let state_geoloc = false;
 let savesearch = false;
 
 let search_current_lng;
@@ -52,37 +51,35 @@ if (!navigator.geolocation) {
   toaster("Your device does't support geolocation!", 2000);
 }
 
-$(document).ready(function () {
-  //welcome message
-  document.querySelector("div#message div").innerText = "Welcome";
+document.querySelector("div#message div").innerText = "Welcome";
+
+//leaflet add basic map
+map = L.map("map-container", {
+  zoomControl: false,
+  dragging: false,
+  keyboard: true,
+}).fitWorld();
+
+document.addEventListener("DOMContentLoaded", function () {
   setTimeout(function () {
     document.querySelector("div#message").style.display = "none";
+
     //get location if not an activity open url
     if (open_url === false) {
-      //read_json();
       build_menu();
       getLocation("init");
 
       toaster("Press 3<br> to open the menu", 5000);
 
       setTimeout(function () {
-        $(".leaflet-control-attribution").hide();
+        document.querySelector(".leaflet-control-attribution").style.display =
+          "none";
       }, 8000);
     }
     ///set default map
-
     maps.opentopo_map();
-    setTimeout(() => {
-      windowOpen = "map";
-    }, 2000);
+    windowOpen = "map";
   }, 4000);
-
-  //leaflet add basic map
-  map = L.map("map-container", {
-    zoomControl: false,
-    dragging: false,
-    keyboard: true,
-  }).fitWorld();
 
   L.control
     .scale({
@@ -91,34 +88,48 @@ $(document).ready(function () {
       imperial: false,
     })
     .addTo(map);
+
   map.addLayer(markers_group);
 
   let build_menu = function () {
-    $("div#tracks").empty();
-    $("div#maps").empty();
-    $("div#layers").empty();
-    $("div#markers").empty();
+    document.querySelector("div#tracks").innerHTML = "";
+    document.querySelector("div#maps").innerHTML = "";
+    document.querySelector("div#layers").innerHTML = "";
+    document.querySelector("div#markers").innerHTML = "";
 
-    $("div#maps").append(
+    let el = document.querySelector("div#maps");
+
+    el.insertAdjacentHTML(
+      "afterend",
       '<div class="items" data-map="toner">Toner <i>Map</i></div>'
     );
-    $("div#maps").append(
+    el.insertAdjacentHTML(
+      "afterend",
       '<div class="items" data-map="osm">OSM <i>Map</i></div>'
     );
-    $("div#maps").append(
+
+    el.insertAdjacentHTML(
+      "afterend",
       '<div class="items" data-map="otm">OpenTopo <i>Map</i></div>'
     );
-    $("div#maps").append(
+
+    el.insertAdjacentHTML(
+      "afterend",
       '<div class="items" data-map="moon">Moon <i>Map</i></div>'
     );
 
-    $("div#layers").append(
-      '<div class="items" data-map="weather">Weather <i>Map</i></div>'
-    );
+    document
+      .querySelector("div#layers")
+      .insertAdjacentHTML(
+        "afterend",
+        '<div class="items" data-map="weather">Weather <i>Map</i></div>'
+      );
 
     if (settings_data[0]) {
       openweather_api = settings_data[0];
-      $("div#maps").append(
+
+      el.insertAdjacentHTML(
+        "afterend",
         '<div class="items" data-map="owm">Open Weather <i>Map</i></div>'
       );
     }
@@ -214,9 +225,12 @@ $(document).ready(function () {
     finder_gpx.on("searchComplete", function (needle, filematchcount) {});
 
     finder_gpx.on("fileFound", function (file, fileinfo, storageName) {
-      $("div#tracks").append(
-        '<div class="items" data-map="gpx">' + fileinfo.name + "</div>"
-      );
+      document
+        .querySelector("div#tracks")
+        .insertAdjacentHTML(
+          "afterend",
+          '<div class="items" data-map="gpx">' + fileinfo.name + "</div>"
+        );
     });
   };
 
@@ -234,14 +248,15 @@ $(document).ready(function () {
 
     finder.on("searchComplete", function (needle, filematchcount) {});
     finder.on("fileFound", function (file, fileinfo, storageName) {
-      $("div#tracks").append(
-        '<div class="items" data-map="geojson">' + fileinfo.name + "</div>"
-      );
+      console.log("found");
+      document
+        .querySelector("div#tracks")
+        .insertAdjacentHTML(
+          "afterend",
+          '<div class="items" data-map="geojson">' + fileinfo.name + "</div>"
+        );
     });
   };
-
-  find_gpx();
-  find_geojson();
 
   //////////////////////////////////
   ///MENU//////////////////////////
@@ -253,7 +268,7 @@ $(document).ready(function () {
     } else {
       finder_tabindex();
       $("div#finder").find("div.items[tabindex=0]").focus();
-      $("div#finder").css("display", "block");
+      document.querySelector("div#finder").style.display = "block";
       windowOpen = "finder";
     }
   };
@@ -265,7 +280,7 @@ $(document).ready(function () {
       $div.attr("tabindex", index);
     });
 
-    $("div#finder").css("display", "block");
+    document.querySelector("div#finder").style.display = "block";
     $("div#finder").find("div.items[tabindex=0]").focus();
     tabIndex = 0;
   };
@@ -273,14 +288,14 @@ $(document).ready(function () {
   ////////////////////
   ////RULER///////////
   ///////////////////
-  var ruler_activ = "";
+  var ruler_activ = false;
 
   function ruler() {
-    if (ruler_activ == "") {
+    if (!ruler_activ) {
       L.control.ruler().addTo(map);
     }
 
-    if (ruler_activ === true) {
+    if (ruler_activ) {
       $("div.leaflet-ruler").remove();
 
       ruler_activ = false;
@@ -386,7 +401,7 @@ $(document).ready(function () {
 
         map.setView([current_lat, current_lng], 12);
         zoom_speed();
-        $("div#message div").text("");
+        document.querySelector("div#message div").innerText = "";
         return true;
       }
 
@@ -405,7 +420,7 @@ $(document).ready(function () {
 
       map.setView([current_lat, current_lng], 12);
       zoom_speed();
-      $("div#message div").text("");
+      document.querySelector("div#message div").innerText = "";
       return false;
     }
 
@@ -416,13 +431,14 @@ $(document).ready(function () {
   //watch position
   //////////
   let watchID;
+  let state_geoloc = false;
 
   function geolocationWatch() {
     marker_latlng = false;
 
     let geoLoc = navigator.geolocation;
 
-    if (state_geoloc == false) {
+    if (!state_geoloc) {
       function showLocation(position) {
         let crd = position.coords;
 
@@ -456,7 +472,7 @@ $(document).ready(function () {
       return true;
     }
 
-    if (state_geoloc == true) {
+    if (state_geoloc) {
       geoLoc.clearWatch(watchID);
       state_geoloc = false;
       toaster("watching postion stopped", 2000);
@@ -652,7 +668,7 @@ $(document).ready(function () {
       }
 
       if (item_value == "export") {
-        $("div#finder").css("display", "none");
+        document.querySelector("div#finder").style.display = "none";
         save_mode = "geojson";
         user_input("open");
       }
@@ -1147,6 +1163,13 @@ $(document).ready(function () {
           return false;
         }
         break;
+
+      case "Backspace":
+        if (windowOpen == "map") {
+          windowOpen = "";
+          window.goodbye();
+        }
+        break;
     }
   }
 
@@ -1168,11 +1191,6 @@ $(document).ready(function () {
 
         if (windowOpen == "coordinations") {
           coordinations("hide");
-          break;
-        }
-        if (windowOpen == "map") {
-          windowOpen = "";
-          window.goodbye();
           break;
         }
 
