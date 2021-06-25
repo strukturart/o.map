@@ -187,19 +187,24 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         //add markers and openweatermap
-        $.each(data, function (index, value) {
-          if (value.markers) {
-            $.each(value.markers, function (index, item) {
-              $("div#markers").append(
-                '<div class="items" data-map="marker" data-lat="' +
-                  item.lat +
-                  '" data-lng="' +
-                  item.lng +
-                  '">' +
-                  item.marker_name +
-                  "</div>"
-              );
-            });
+
+        data.forEach(function (index, value) {
+          if (index.markers) {
+            for (let t = 0; t < index.markers.length; t++) {
+              console.log(index.markers[t].lat);
+              document
+                .querySelector("div#markers")
+                .insertAdjacentHTML(
+                  "afterend",
+                  '<div class="items" data-map="marker" data-lat="' +
+                    index.markers[t].lat +
+                    '" data-lng="' +
+                    index.markers[t].lng +
+                    '">' +
+                    index.markers[t].marker_name +
+                    "</div>"
+                );
+            }
           }
         });
 
@@ -267,7 +272,7 @@ document.addEventListener("DOMContentLoaded", function () {
       build_menu();
     } else {
       finder_tabindex();
-      $("div#finder").find("div.items[tabindex=0]").focus();
+      document.querySelectorAll("div.items")[0].focus();
       document.querySelector("div#finder").style.display = "block";
       windowOpen = "finder";
     }
@@ -275,45 +280,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let finder_tabindex = function () {
     //set tabindex
-    $("div.items").each(function (index, value) {
-      let $div = $(this);
-      $div.attr("tabindex", index);
-    });
+    let items = document.querySelectorAll("div.items");
+    for (let i = 0; i < items.length; i++) {
+      items[i].setAttribute("tabIndex", i);
+    }
 
     document.querySelector("div#finder").style.display = "block";
-    $("div#finder").find("div.items[tabindex=0]").focus();
+    document.querySelectorAll("div.items")[0].focus();
     tabIndex = 0;
   };
-
-  ////////////////////
-  ////RULER///////////
-  ///////////////////
-  var ruler_activ = false;
-
-  function ruler() {
-    if (!ruler_activ) {
-      L.control.ruler().addTo(map);
-    }
-
-    if (ruler_activ) {
-      $("div.leaflet-ruler").remove();
-
-      ruler_activ = false;
-      navigator.spatialNavigationEnabled = false;
-      L.control.ruler().remove();
-      $("div.leaflet-ruler").removeClass("leaflet-ruler-clicked");
-
-      return false;
-    } else {
-      L.control.ruler().remove();
-
-      navigator.spatialNavigationEnabled = true;
-
-      ruler_activ = true;
-      $("div.leaflet-ruler").addClass("leaflet-ruler-clicked");
-      return false;
-    }
-  }
 
   /////////////////////////
   /////Load GPX///////////
@@ -597,28 +572,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (item_value == "weather") {
         maps.weather_map();
-        $("div#finder").css("display", "none");
-        windowOpen = "map";
+        document.querySelector("div#finder").style.display = "none";
       }
 
       if (item_value == "toner") {
         map.removeLayer(tilesLayer);
         maps.toner_map();
-        $("div#finder").css("display", "none");
+        document.querySelector("div#finder").style.display = "none";
         windowOpen = "map";
       }
 
       if (item_value == "osm") {
         map.removeLayer(tilesLayer);
         maps.osm_map();
-        $("div#finder").css("display", "none");
+        document.querySelector("div#finder").style.display = "none";
         windowOpen = "map";
       }
 
       if (item_value == "moon") {
         map.removeLayer(tilesLayer);
         maps.moon_map();
-        $("div#finder").css("display", "none");
+        document.querySelector("div#finder").style.display = "none";
         map.setZoom(4);
         windowOpen = "map";
       }
@@ -626,26 +600,25 @@ document.addEventListener("DOMContentLoaded", function () {
       if (item_value == "otm") {
         map.removeLayer(tilesLayer);
         maps.opentopo_map();
-        $("div#finder").css("display", "none");
+        document.querySelector("div#finder").style.display = "none";
         windowOpen = "map";
       }
 
       if (item_value == "owm") {
         map.removeLayer(tilesLayer);
         maps.owm_map();
-        $("div#finder").css("display", "none");
+        document.querySelector("div#finder").style.display = "none";
         windowOpen = "map";
       }
 
       if (item_value == "share") {
-        //maps.opentopo_map();
         mozactivity.share_position();
         return true;
       }
 
       if (item_value == "autoupdate-geolocation") {
         windowOpen = "map";
-        $("div#finder").css("display", "none");
+        document.querySelector("div#finder").style.display = "none";
         geolocationWatch();
       }
 
@@ -655,7 +628,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (item_value == "search") {
         windowOpen = "map";
-        $("div#finder").css("display", "none");
+        document.querySelector("div#finder").style.display = "none";
         showSearch();
       }
 
@@ -788,7 +761,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let show_setting = function () {
     $("div#setting").css("display", "block");
-    $("div#finder").css("display", "none");
+    document.querySelector("div#finder").style.display = "none";
     bottom_bar("save", "", "back");
     tabIndex = 1;
     windowOpen = "setting";
@@ -966,7 +939,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   //jump to next marker
 
-  let l = markers_group.getLayers();
+  //let l = markers_group.getLayers();
   let index = 0;
 
   let jump_to_layer = function () {
@@ -1322,7 +1295,7 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "7":
-        if (windowOpen == "map") ruler();
+        if (windowOpen == "map") module.ruler_toggle();
         break;
 
       case "8":
