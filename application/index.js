@@ -765,11 +765,11 @@ document.addEventListener("DOMContentLoaded", function () {
     bottom_bar("save", "", "back");
     tabIndex = 1;
     windowOpen = "setting";
-    $("input#owm-key").focus();
+    document.querySelector("input#owm-key").focus();
   };
 
   let close_setting = function () {
-    $("div#setting").css("display", "none");
+    document.querySelector("div#setting").style.display = "none";
     bottom_bar("", "", "");
     show_finder();
   };
@@ -790,15 +790,17 @@ document.addEventListener("DOMContentLoaded", function () {
   ////////////////////////////////////////
   ////COORDINATIONS PANEL/////////////////
   ///////////////////////////////////////
-
-  function coordinations(param) {
+  let corr_toogle = false;
+  function coordinations() {
     let update_view;
-    if ($("div#coordinations").css("display") == "none") {
-      $("div#finder").css("display", "none");
-      $("div#coordinations").css("display", "block");
+    if (!corr_toogle) {
+      corr_toogle = true;
+      document.querySelector("div#finder").style.display = "none";
+      document.querySelector("div#coordinations").style.display = "block";
 
       if (openweather_api != "") {
-        $("div#coordinations div#weather").css("display", "block");
+        document.querySelector("div#coordinations div#weather").style.display =
+          "block";
 
         function openweather_callback(some) {
           document.getElementById("temp").innerText =
@@ -825,21 +827,31 @@ document.addEventListener("DOMContentLoaded", function () {
             current_lng = marker_lat;
           }
 
-          $("div#coordinations div#lat").text("Lat " + current_lat.toFixed(5));
-          $("div#coordinations div#lng").text("Lng " + current_lng.toFixed(5));
+          document.querySelector("div#coordinations div#lat").innerText =
+            "Lat " + current_lat.toFixed(5);
+          document.querySelector("div#coordinations div#lng").innerText =
+            "Lng " + current_lng.toFixed(5);
           if (current_alt) {
-            $("div#coordinations div#altitude").style.display = "block";
-            $("div#coordinations div#altitude").text("alt " + current_alt);
+            document.querySelector(
+              "div#coordinations div#altitude"
+            ).style.display = "block";
+            document.querySelector("div#coordinations div#altitude").innerText =
+              "alt " + current_alt;
           } else {
-            $("div#coordinations div#altitude").style.display = "none";
+            document.querySelector(
+              "div#coordinations div#altitude"
+            ).style.display = "none";
           }
           if (current_heading) {
-            $("div#coordinations div#heading").style.display = "block";
-            $("div#coordinations div#heading").text(
-              "heading " + current_heading
-            );
+            document.querySelector(
+              "div#coordinations div#heading"
+            ).style.display = "block";
+            document.querySelector("div#coordinations div#heading").innerText =
+              "heading " + current_heading;
           } else {
-            $("div#coordinations div#heading").style.display = "none";
+            document.querySelector(
+              "div#coordinations div#heading"
+            ).style.display = "none";
           }
         }
       }, 1000);
@@ -847,10 +859,12 @@ document.addEventListener("DOMContentLoaded", function () {
       return true;
     }
 
-    if ($("div#coordinations").css("display") == "block") {
-      $("div#coordinations").css("display", "none");
+    if (corr_toogle) {
+      document.querySelector("div#coordinations").style.display = "none";
       windowOpen = "map";
       clearInterval(update_view);
+      corr_toogle = false;
+      
     }
   }
 
