@@ -864,7 +864,6 @@ document.addEventListener("DOMContentLoaded", function () {
       windowOpen = "map";
       clearInterval(update_view);
       corr_toogle = false;
-      
     }
   }
 
