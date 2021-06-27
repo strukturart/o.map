@@ -51,6 +51,7 @@ Because I don't feel like annoying users with stupid advertising.
 - **key 7** measure distance
 - **key 8** export markers as geojson file
 - **key #** offline mode - download map tiles
+- **key \*** jump between markers
 
 ## import/export
 
