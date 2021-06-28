@@ -136,7 +136,7 @@ document.addEventListener("DOMContentLoaded", function () {
       );
 
     if (settings_data[0]) {
-      openweather_api = settings_data[0];
+      openweather_api = localStorage.getItem("owm-key");
 
       el.insertAdjacentHTML(
         "afterend",
@@ -146,84 +146,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     find_gpx();
     find_geojson();
-    //read_json();
   };
-  /////////////////////////
-  //read json to build menu
-  /////////////////////////
-  function read_json() {
-    let finder = new Applait.Finder({
-      type: "sdcard",
-      debugMode: false,
-    });
-    finder.search("omap.json");
-
-    finder.on("empty", function (needle) {
-      toaster("no sdcard found");
-      return;
-    });
-
-    finder.on("searchComplete", function (needle, filematchcount) {
-      if (filematchcount == 0) {
-        file_path = "omap.json";
-        toaster(
-          "I will create the omap.json, all your markers will be saved there.",
-          2000
-        );
-        add_file();
-        return;
-      }
-    });
-
-    finder.on("fileFound", function (file, fileinfo, storageName) {
-      file_path = fileinfo.path + "/" + fileinfo.name;
-      storage_name = storageName;
-
-      let reader = new FileReader();
-
-      reader.onerror = function (event) {
-        toaster("can't read file");
-        reader.abort();
-      };
-
-      reader.onloadend = function (event) {
-        let data;
-        //check if json valid
-        try {
-          data = JSON.parse(event.target.result);
-        } catch (e) {
-          toaster("File is not valid", 2000);
-          return false;
-        }
-
-        //add markers and openweatermap
-
-        data.forEach(function (index, value) {
-          if (index.markers) {
-            for (let t = 0; t < index.markers.length; t++) {
-              document
-                .querySelector("div#tracksmarkers")
-                .insertAdjacentHTML(
-                  "afterend",
-                  '<div class="items" data-map="marker" data-lat="' +
-                    index.markers[t].lat +
-                    '" data-lng="' +
-                    index.markers[t].lng +
-                    '">' +
-                    index.markers[t].marker_name +
-                    "</div>"
-                );
-            }
-          }
-        });
-
-        if (json_modified) {
-          json_modified = false;
-        }
-      };
-      reader.readAsText(file);
-    });
-  }
 
   //////////////////////////////////
   //READ GPX////////////////////////
@@ -278,30 +201,24 @@ document.addEventListener("DOMContentLoaded", function () {
   let finder_tabindex = function () {
     //set tabindex
     let t = -1;
-    let items = document.querySelectorAll("div.item");
+    let items = document.querySelectorAll(".item");
+    let items_list = [];
     for (let i = 0; i < items.length; i++) {
       if (items[i].parentNode.style.display == "block") {
+        items_list.push(items[i]);
         t++;
-        items[i].setAttribute("tabIndex", t);
-        document.querySelector("[tabIndex='0']").focus();
-        document.querySelector("[tabIndex='0']").style.background = "pink";
-        tabIndex = 0;
+        items_list[items_list.length - 1].setAttribute("tabIndex", t);
+        items_list[0].focus();
       }
     }
-
     document.querySelector("div#finder").style.display = "block";
   };
 
   let show_finder = function () {
-    if (json_modified) {
-      build_menu();
-    } else {
-      finder_tabindex();
-      document.querySelectorAll("div.item")[0].focus();
-      document.querySelector("div#finder").style.display = "block";
-      finder_navigation("start");
-      windowOpen = "finder";
-    }
+    finder_tabindex();
+    document.querySelector("div#finder").style.display = "block";
+    finder_navigation("start");
+    windowOpen = "finder";
   };
 
   /////////////////////////
@@ -349,15 +266,6 @@ document.addEventListener("DOMContentLoaded", function () {
   //////////////////////////
   ////MARKER SET AND UPDATE/////////
   /////////////////////////
-
-  //set filename by user imput
-  function saveMarker() {
-    user_input("open", moment().format("DD.MM.YYYY, HH:MM"));
-    document.getElementById("user-input-description").innerText =
-      "Save marker position in omap.json";
-  }
-
-  let filename;
 
   function getLocation(option) {
     marker_latlng = false;
@@ -476,112 +384,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  ///////////
-  //save/delete marker
-  //////////
-
-  function save_delete_marker(option) {
-    if (option == "save_marker" || option == "delete_marker") {
-      let sdcard = navigator.getDeviceStorages("sdcard");
-      let request = sdcard[1].get(file_path);
-
-      request.onerror = function () {};
-
-      request.onsuccess = function () {
-        let fileget = this.result;
-        let reader = new FileReader();
-
-        reader.addEventListener("loadend", function (event) {
-          let data;
-          //check if json valid
-          try {
-            data = JSON.parse(event.target.result);
-          } catch (e) {
-            toaster("Json is not valid", 3000);
-            return false;
-          }
-
-          if (option == "save_marker") {
-            data[0].markers.push({
-              marker_name: filename,
-              lat: current_lat,
-              lng: current_lng,
-            });
-            save();
-          }
-
-          if (option == "delete_marker") {
-            json_modified = true;
-
-            var markers = [];
-
-            $.each(data[0].markers, function (index, value) {
-              if (value.marker_name != $(document.activeElement).text()) {
-                markers.push(value);
-              }
-            });
-            data[0].markers = markers;
-
-            save();
-          }
-
-          function save() {
-            windowOpen = "save";
-            let extData = JSON.stringify(data);
-            deleteFile(1, file_path, "");
-
-            setTimeout(function () {
-              let file = new Blob([extData], {
-                type: "application/json",
-              });
-              let requestAdd = sdcard[1].addNamed(file, file_path);
-
-              requestAdd.onsuccess = function () {
-                json_modified = true;
-
-                if (option == "delete_marker") {
-                  toaster("Marker deleted", 2000);
-                  document.activeElement.style.display = "none";
-                  //set tabindex
-                  finder_tabindex();
-                  tabIndex = 0;
-                  windowOpen = "finder";
-                }
-                if (option == "save_marker") {
-                  toaster("Marker saved", 2000);
-
-                  var markerOptions = {
-                    keyboard: true,
-                  };
-                  let new_marker = L.marker(
-                    [current_lat, current_lng],
-                    markerOptions
-                  );
-                  markers_group.addLayer(new_marker);
-
-                  map.setView([current_lat, current_lng], current_zoom_level);
-                  document.querySelector("div#finder").style.display = "none";
-                  windowOpen = "map";
-                }
-              };
-
-              requestAdd.onerror = function () {
-                toaster("Unable to write the file: " + this.error, 2000);
-              };
-            }, 2000);
-          }
-        });
-        reader.readAsText(fileget);
-      };
-    }
-  }
-
   /////////////////////////
   /////MENU///////////////
   ////////////////////////
-
-  let marker_lng;
-  let marker_lat;
 
   function addMapLayers(param) {
     if ((document.activeElement.className = "item" && windowOpen == "finder")) {
@@ -670,10 +475,6 @@ document.addEventListener("DOMContentLoaded", function () {
         toaster("please close the menu and press key 9 to set a marker.", 3000);
       }
 
-      if (item_value == "setting") {
-        show_setting();
-      }
-
       if (item_value == "photo") {
         mozactivity.photo();
       }
@@ -684,7 +485,7 @@ document.addEventListener("DOMContentLoaded", function () {
           type: "sdcard",
           debugMode: false,
         });
-        finder.search($(document.activeElement).text());
+        finder.search(document.activeElement.innerText);
 
         finder.on("fileFound", function (file, fileinfo, storageName) {
           //file reader
@@ -693,7 +494,6 @@ document.addEventListener("DOMContentLoaded", function () {
           let reader = new FileReader();
 
           reader.onerror = function (event) {
-            alert("shit happens");
             reader.abort();
           };
 
@@ -713,10 +513,10 @@ document.addEventListener("DOMContentLoaded", function () {
               // Marker Icon
               pointToLayer: function (feature, latlng) {
                 let t = L.marker(latlng);
-
-                t.bindTooltip("distance").openTooltip();
                 t.addTo(markers_group);
-                console.log(feature);
+                map.flyTo(latlng);
+                windowOpen = "map";
+                json_modified = true;
               },
 
               // Popup
@@ -735,7 +535,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       //add gpx data
       if (item_value == "gpx") {
-        loadGPX($(document.activeElement).text());
+        loadGPX(document.activeElement.innerText);
       }
     }
 
@@ -746,12 +546,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const qr_listener = document.querySelector("input#owm-key");
   let qrscan = false;
   qr_listener.addEventListener("focus", (event) => {
-    bottom_bar("save", "qr", "back");
+    bottom_bar("", "qr", "");
     qrscan = true;
   });
 
   qr_listener.addEventListener("blur", (event) => {
     qrscan = false;
+    bottom_bar("", "", "");
   });
 
   ////////////////////////////////////////
@@ -779,9 +580,11 @@ document.addEventListener("DOMContentLoaded", function () {
             ".png";
         }
 
+        let c = map.getCenter();
+
         weather.openweather_call(
-          current_lat,
-          current_lng,
+          c.lat,
+          c.lng,
           openweather_api,
           openweather_callback
         );
@@ -790,10 +593,7 @@ document.addEventListener("DOMContentLoaded", function () {
       update_view = setInterval(() => {
         if (current_lat != "" && current_lng != "") {
           //when marker is loaded from menu
-          if (marker_latlng) {
-            current_lat = marker_lng;
-            current_lng = marker_lat;
-          }
+
           let f = map.getCenter();
 
           document.querySelector("div#coordinations div#distance").innerText =
@@ -914,65 +714,39 @@ document.addEventListener("DOMContentLoaded", function () {
   /////////////////////
 
   function MovemMap(direction) {
-    if (!marker_latlng) {
-      if (windowOpen == "map" || windowOpen == "coordinations") {
-        if (direction == "left") {
-          zoom_speed();
+    //if (!marker_latlng) {
+    if (windowOpen == "map" || windowOpen == "coordinations") {
+      let n = map.getCenter();
 
-          current_lng = current_lng - step;
-          map.panTo(new L.LatLng(current_lat, current_lng));
-        }
+      current_lat = n.lat;
+      current_lng = n.lng;
 
-        if (direction == "right") {
-          zoom_speed();
+      if (direction == "left") {
+        zoom_speed();
 
-          current_lng = current_lng + step;
-          map.panTo(new L.LatLng(current_lat, current_lng));
-        }
-
-        if (direction == "up") {
-          zoom_speed();
-
-          current_lat = current_lat + step;
-          map.panTo(new L.LatLng(current_lat, current_lng));
-        }
-
-        if (direction == "down") {
-          zoom_speed();
-
-          current_lat = current_lat - step;
-          map.panTo(new L.LatLng(current_lat, current_lng));
-        }
+        current_lng = n.lng - step;
+        map.panTo(new L.LatLng(current_lat, current_lng));
       }
-    }
 
-    //when marker is not current location
-    //to calculate distance between current position and marker
-    if (marker_latlng) {
-      if (windowOpen == "map") {
-        if (direction == "left") {
-          zoom_speed();
-          marker_lng = marker_lng - step;
-          map.panTo(new L.LatLng(marker_lat, marker_lng));
-        }
+      if (direction == "right") {
+        zoom_speed();
 
-        if (direction == "right") {
-          zoom_speed();
-          marker_lng = marker_lng + step;
-          map.panTo(new L.LatLng(marker_lat, marker_lng));
-        }
+        current_lng = n.lng + step;
+        map.panTo(new L.LatLng(current_lat, current_lng));
+      }
 
-        if (direction == "up") {
-          zoom_speed();
-          marker_lat = marker_lat + step;
-          map.panTo(new L.LatLng(marker_lat, marker_lng));
-        }
+      if (direction == "up") {
+        zoom_speed();
 
-        if (direction == "down") {
-          zoom_speed();
-          marker_lat = marker_lat - step;
-          map.panTo(new L.LatLng(marker_lat, marker_lng));
-        }
+        current_lat = n.lat + step;
+        map.panTo(new L.LatLng(current_lat, current_lng));
+      }
+
+      if (direction == "down") {
+        zoom_speed();
+
+        current_lat = n.lat - step;
+        map.panTo(new L.LatLng(current_lat, current_lng));
       }
     }
   }
@@ -986,6 +760,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let finder_navigation = function (dir) {
     tabIndex = 0;
+    bottom_bar("", "", "");
 
     let d = document.querySelectorAll("div.panel");
     for (let b = 0; b < d.length; b++) {
@@ -1002,17 +777,15 @@ document.addEventListener("DOMContentLoaded", function () {
       if (count > finder_panels.length - 1) count = finder_panels.length - 1;
       document.getElementById(finder_panels[count]).style.display = "block";
       finder_tabindex();
-      console.log(count + "/" + finder_panels[count]);
     }
     if (dir == "-1") {
       count--;
       if (count < 0) count = 0;
       document.getElementById(finder_panels[count]).style.display = "block";
       finder_tabindex();
-      console.log(count + "/" + finder_panels[count]);
     }
 
-    top_bar("<", finder_panels[count], ">");
+    top_bar("◀", finder_panels[count], "▶");
   };
 
   function nav(move) {
@@ -1241,7 +1014,7 @@ document.addEventListener("DOMContentLoaded", function () {
           settings.save_settings();
           break;
         }
-        if (windowOpen == "setting" && qrscan == true) {
+        if (windowOpen == "finder" && qrscan == true) {
           windowOpen = "scan";
 
           qr.start_scan(function (callback) {
@@ -1265,7 +1038,12 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "3":
-        if (windowOpen == "map") show_finder();
+        console.log(windowOpen);
+
+        if (windowOpen == "map") {
+          show_finder();
+        }
+
         break;
 
       case "4":

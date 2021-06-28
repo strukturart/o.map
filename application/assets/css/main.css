@@ -104,6 +104,7 @@ div.panel {
 div#setting {
   top: 0;
   padding: 10px;
+  overflow: hidden;
 
   z-index: 2000;
   width: 100vw;
