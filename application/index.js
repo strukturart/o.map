@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
       build_menu();
       getLocation("init");
 
-      toaster("Press 3<br> to open the menu", 5000);
+      toaster("Press 3 to open the menu", 5000);
 
       setTimeout(function () {
         document.querySelector(".leaflet-control-attribution").style.display =
@@ -111,28 +111,28 @@ document.addEventListener("DOMContentLoaded", function () {
 
     el.insertAdjacentHTML(
       "afterend",
-      '<div class="items" data-map="toner">Toner <i>Map</i></div>'
+      '<div class="item" data-map="toner">Toner <i>Map</i></div>'
     );
     el.insertAdjacentHTML(
       "afterend",
-      '<div class="items" data-map="osm">OSM <i>Map</i></div>'
-    );
-
-    el.insertAdjacentHTML(
-      "afterend",
-      '<div class="items" data-map="otm">OpenTopo <i>Map</i></div>'
+      '<div class="item" data-map="osm">OSM <i>Map</i></div>'
     );
 
     el.insertAdjacentHTML(
       "afterend",
-      '<div class="items" data-map="moon">Moon <i>Map</i></div>'
+      '<div class="item" data-map="otm">OpenTopo <i>Map</i></div>'
+    );
+
+    el.insertAdjacentHTML(
+      "afterend",
+      '<div class="item" data-map="moon">Moon <i>Map</i></div>'
     );
 
     document
       .querySelector("div#layers")
       .insertAdjacentHTML(
         "afterend",
-        '<div class="items" data-map="weather">Weather <i>Map</i></div>'
+        '<div class="item" data-map="weather">Weather <i>Map</i></div>'
       );
 
     if (settings_data[0]) {
@@ -140,13 +140,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
       el.insertAdjacentHTML(
         "afterend",
-        '<div class="items" data-map="owm">Open Weather <i>Map</i></div>'
+        '<div class="item" data-map="owm">Open Weather <i>Map</i></div>'
       );
     }
 
     find_gpx();
     find_geojson();
-    read_json();
+    //read_json();
   };
   /////////////////////////
   //read json to build menu
@@ -243,7 +243,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .querySelector("div#tracksmarkers")
         .insertAdjacentHTML(
           "afterend",
-          '<div class="items" data-map="gpx">' + fileinfo.name + "</div>"
+          '<div class="item" data-map="gpx">' + fileinfo.name + "</div>"
         );
     });
   };
@@ -266,7 +266,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .querySelector("div#tracksmarkers")
         .insertAdjacentHTML(
           "afterend",
-          '<div class="items" data-map="geojson">' + fileinfo.name + "</div>"
+          '<div class="item" data-map="geojson">' + fileinfo.name + "</div>"
         );
     });
   };
@@ -275,27 +275,33 @@ document.addEventListener("DOMContentLoaded", function () {
   ///MENU//////////////////////////
   /////////////////////////////////
 
+  let finder_tabindex = function () {
+    //set tabindex
+    let t = -1;
+    let items = document.querySelectorAll("div.item");
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].parentNode.style.display == "block") {
+        t++;
+        items[i].setAttribute("tabIndex", t);
+        document.querySelector("[tabIndex='0']").focus();
+        document.querySelector("[tabIndex='0']").style.background = "pink";
+        tabIndex = 0;
+      }
+    }
+
+    document.querySelector("div#finder").style.display = "block";
+  };
+
   let show_finder = function () {
     if (json_modified) {
       build_menu();
     } else {
       finder_tabindex();
-      document.querySelectorAll("div.items")[0].focus();
+      document.querySelectorAll("div.item")[0].focus();
       document.querySelector("div#finder").style.display = "block";
+      finder_navigation("start");
       windowOpen = "finder";
     }
-  };
-
-  let finder_tabindex = function () {
-    //set tabindex
-    let items = document.querySelectorAll("div.items");
-    for (let i = 0; i < items.length; i++) {
-      items[i].setAttribute("tabIndex", i);
-    }
-
-    document.querySelector("div#finder").style.display = "block";
-    document.querySelectorAll("div.items")[0].focus();
-    tabIndex = 0;
   };
 
   /////////////////////////
@@ -573,16 +579,14 @@ document.addEventListener("DOMContentLoaded", function () {
   /////////////////////////
   /////MENU///////////////
   ////////////////////////
+
   let marker_lng;
   let marker_lat;
 
   function addMapLayers(param) {
-    if (
-      (document.activeElement.className = "items" && windowOpen == "finder")
-    ) {
+    if ((document.activeElement.className = "item" && windowOpen == "finder")) {
       //switch online maps
       let item_value = document.activeElement.getAttribute("data-map");
-      console.log(item_value);
 
       if (item_value == "weather") {
         maps.weather_map();
@@ -734,26 +738,9 @@ document.addEventListener("DOMContentLoaded", function () {
         loadGPX($(document.activeElement).text());
       }
     }
+
+    top_bar("", "", "");
   }
-
-  //////////////////////////
-  ////SETTINGS////////////
-  /////////////////////////
-
-  let show_setting = function () {
-    document.querySelector("div#setting").style.display = "block";
-    document.querySelector("div#finder").style.display = "none";
-    bottom_bar("save", "", "back");
-    tabIndex = 1;
-    windowOpen = "setting";
-    document.querySelector("input#owm-key").focus();
-  };
-
-  let close_setting = function () {
-    document.querySelector("div#setting").style.display = "none";
-    bottom_bar("", "", "");
-    show_finder();
-  };
 
   //qr scan listener
   const qr_listener = document.querySelector("input#owm-key");
@@ -764,7 +751,6 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   qr_listener.addEventListener("blur", (event) => {
-    bottom_bar("save", "", "back");
     qrscan = false;
   });
 
@@ -995,34 +981,57 @@ document.addEventListener("DOMContentLoaded", function () {
   //FINDER NAVIGATION//
   /////////////////////
 
-  function nav(move) {
-    if (windowOpen == "setting") {
-      let items = document.querySelectorAll(".item");
-      //alert(items.length);
+  let finder_panels = ["mapstracks", "settings", "shortcuts"];
+  let count = 0;
 
-      if (move == "+1" && tabIndex < items.length) {
-        tabIndex++;
-        items[tabIndex].focus();
-        document.activeElement.scrollIntoView({
-          block: "center",
-        });
-      }
-      if (move == "-1" && tabIndex > 0) {
-        tabIndex--;
-        items[tabIndex].focus();
-        document.activeElement.scrollIntoView({
-          block: "center",
-        });
-      }
+  let finder_navigation = function (dir) {
+    tabIndex = 0;
+
+    let d = document.querySelectorAll("div.panel");
+    for (let b = 0; b < d.length; b++) {
+      d[b].style.display = "none";
     }
+
+    if (dir == "start") {
+      document.getElementById(finder_panels[count]).style.display = "block";
+      finder_tabindex();
+    }
+
+    if (dir == "+1") {
+      count++;
+      if (count > finder_panels.length - 1) count = finder_panels.length - 1;
+      document.getElementById(finder_panels[count]).style.display = "block";
+      finder_tabindex();
+      console.log(count + "/" + finder_panels[count]);
+    }
+    if (dir == "-1") {
+      count--;
+      if (count < 0) count = 0;
+      document.getElementById(finder_panels[count]).style.display = "block";
+      finder_tabindex();
+      console.log(count + "/" + finder_panels[count]);
+    }
+
+    top_bar("<", finder_panels[count], ">");
+  };
+
+  function nav(move) {
     if (windowOpen == "finder") {
-      let items = document.querySelectorAll(".items");
+      //get items from current pannel
+      let items = document.querySelectorAll(".item");
+      let items_list = [];
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].parentNode.style.display == "block") {
+          items_list.push(items[i]);
+        }
+      }
+
       if (move == "+1") {
-        if (tabIndex < items.length - 1) {
+        if (tabIndex < items_list.length) {
           tabIndex++;
-          items[tabIndex].focus();
+          items_list[tabIndex].focus();
           document.activeElement.scrollIntoView({
-            block: "center",
+            block: "end",
           });
         }
       }
@@ -1030,9 +1039,9 @@ document.addEventListener("DOMContentLoaded", function () {
       if (move == "-1") {
         if (tabIndex > 0) {
           tabIndex--;
-          items[tabIndex].focus();
+          items_list[tabIndex].focus();
           document.activeElement.scrollIntoView({
-            block: "center",
+            block: "end",
           });
         }
       }
@@ -1133,14 +1142,15 @@ document.addEventListener("DOMContentLoaded", function () {
   //////////////
 
   function shortpress_action(param) {
-    //reset
-
     switch (param.key) {
       case "Backspace":
         if (windowOpen == "finder") {
+          top_bar("", "", "");
           bottom_bar("", "", "");
+
           document.querySelector("div#finder").style.display = "none";
           windowOpen = "map";
+
           break;
         }
 
@@ -1158,11 +1168,6 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "SoftLeft":
-        if (windowOpen == "setting") {
-          settings.save_settings();
-          break;
-        }
-
         if (windowOpen == "search") {
           hideSearch();
           break;
@@ -1182,11 +1187,6 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "SoftRight":
-        if (windowOpen == "setting") {
-          close_setting();
-          break;
-        }
-
         if (windowOpen == "map") {
           ZoomMap("out");
           break;
@@ -1232,6 +1232,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (document.activeElement == document.getElementById("clear-cache")) {
           maps.delete_cache();
+          break;
+        }
+
+        if (
+          document.activeElement == document.getElementById("save-settings")
+        ) {
+          settings.save_settings();
           break;
         }
         if (windowOpen == "setting" && qrscan == true) {
@@ -1312,15 +1319,22 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "#":
-        maps.caching_tiles();
+        if (windowOpen == "map") maps.caching_tiles();
         break;
 
       case "ArrowRight":
         MovemMap("right");
+
+        if (windowOpen == "finder") {
+          finder_navigation("+1");
+        }
         break;
 
       case "ArrowLeft":
         MovemMap("left");
+        if (windowOpen == "finder") {
+          finder_navigation("-1");
+        }
         break;
 
       case "ArrowUp":

@@ -92,20 +92,25 @@ img.marker-1 {
   filter: hue-rotate(120deg);
 }
 
+div.panel {
+  display: none;
+  margin: 40px 0 0 0;
+  height: 85vh;
+  color: white;
+  background: black;
+  overflow: hidden;
+}
+
 div#setting {
   top: 0;
   padding: 10px;
-  color: white;
-  background: black;
-  position: absolute;
+
   z-index: 2000;
   width: 100vw;
-  min-height: 100vh;
-
   display: none;
 }
 
-div#setting input {
+div#settings input {
   margin: 0 0 15px 0;
   width: 80%;
   display: block;
@@ -113,21 +118,21 @@ div#setting input {
   padding: 3px;
 }
 
-div#setting label {
+div#settings label {
   margin: 5px 0 0px 0;
   width: 80%;
   display: block;
 }
 
-div#setting input:focus {
+div#settings input:focus {
   outline: 2px solid yellow;
 }
 
-div#setting button {
+div#settings button {
   padding: 3px;
 }
 
-div#setting button:focus {
+div#settings button:focus {
   background: yellow;
 }
 
