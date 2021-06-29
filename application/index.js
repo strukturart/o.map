@@ -138,10 +138,12 @@ document.addEventListener("DOMContentLoaded", function () {
     if (settings_data[0]) {
       openweather_api = localStorage.getItem("owm-key");
 
-      el.insertAdjacentHTML(
-        "afterend",
-        '<div class="item" data-map="owm">Open Weather <i>Map</i></div>'
-      );
+      document
+        .querySelector("div#layers")
+        .insertAdjacentHTML(
+          "afterend",
+          '<div class="item" data-map="owm">Open Weather <i>Map</i></div>'
+        );
     }
 
     find_gpx();

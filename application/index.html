@@ -147,7 +147,6 @@
 
 
     <div id="finder" class="flex justify-content-center align-item-center width-100 height-100">
-        <div id="tab-bar"></div>
   
         <div class="panel" id="mapstracks">
             <h2>MAPS</h2>
@@ -163,22 +162,22 @@
             <div id="gpx"></div>
         </div>
         <div class="panel" id="settings">
+            <h2>Openweathermap</h2>
             <label for="owm-key">Openweathermap API-Key</label>
             <input type="tel" class="item" id="owm-key" tabindex="0" />
-            <br>
             <h2>Offline maps</h2>
             <label for="cache-time">After how many days should the maps be re-downloaded?</label>
             <input  class="item" type="tel" pattern="^[0-9]*$" id="cache-time" tabindex="1" />
             <label for="cache-zoom">How much zoom level should be saved ?</label>
             <input  class="item" type="tel" pattern="^[0-9]*$" min="0" max="18" id="cache-zoom" tabindex="2" />
             <button  class="item" id="clear-cache" tabindex="3">clear offline cache</button>
+            <h2>Export</h2>
             <label for="export-path">Export path</label>
             <input  class="item" type="text"   id="export-path" tabindex="4" />
             <button tabindex="5" class="item" id="save-settings">save</button>
         </div>
 
         <div class="panel" id="shortcuts">
-            <h2>SHORTCUTS</h2>
             <div class="item update-position" tabindex="0" data-map="update-position">
                 <div class="flex justify-content-spacebetween">
                     <div>update geolocation</div>
