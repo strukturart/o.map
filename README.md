@@ -51,6 +51,7 @@ Because I don't feel like annoying users with stupid advertising.
 - **key 7** measure distance
 - **key 8** export markers as geojson file
 - **key #** offline mode - download map tiles
+- **key \*** jump between markers
 
 ## import/export
 
@@ -90,7 +91,11 @@ The app is not auto-updating. To update it, you have to follow the same steps yo
 
 ### License
 
-[UNLICENSE](UNLICENSE)
+- o.map [UNLICENSE](UNLICENSE)
+- Leaflet - BSD-2-Clause License
+- Ajax AutoComplete - MIT License
+- leaflet.tilelayer.pouchdbcached MIT license
+- leaflet ruler MIT License
 
 ## Donation
 

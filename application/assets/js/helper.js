@@ -27,67 +27,52 @@ function notify(param_title, param_text, param_silent) {
   }
 }
 
-function toaster(text, time) {
-  $("div#toast").html("<div>" + text + "</div>");
+let toaster = function (text, time) {
+  document.querySelector("div#toast").innerText = text;
+  var elem = document.querySelector("div#toast");
+  var pos = -100;
+  var id = setInterval(down, 5);
+  var id2;
 
-  $("div#toast").animate(
-    {
-      top: "0px",
-    },
-    1000,
-    "linear",
-    function () {
-      $("div#toast").delay(3000).animate(
-        {
-          top: "-360px",
-        },
-        time
-      );
+  function down() {
+    if (pos == 0) {
+      clearInterval(id);
+      setTimeout(() => {
+        id2 = setInterval(up, 5);
+      }, time);
+    } else {
+      pos++;
+      elem.style.top = pos + "px";
     }
-  );
-}
+  }
 
-let wp;
+  function up() {
+    if (pos == -1000) {
+      clearInterval(id2);
+    } else {
+      pos--;
+      elem.style.top = pos + "px";
+    }
+  }
+};
 
 function user_input(param, file_name) {
   if (param == "open") {
-    $("div#user-input").animate(
-      {
-        bottom: "0px",
-      },
-      1000,
-      "linear"
-    );
-    $("div#user-input input").focus();
-    $("div#user-input input").val(file_name);
-    //wp = windowOpen;
+    document.querySelector("div#user-input").style.bottom = "0px";
+    document.querySelector("div#user-input input").focus();
+    document.querySelector("div#user-input input").value = file_name;
     windowOpen = "user-input";
   }
   if (param == "close") {
-    $("div#user-input").animate(
-      {
-        bottom: "-1000px",
-      },
-      1000,
-      "linear"
-    );
-    $("div#user-input input").blur();
+    document.querySelector("div#user-input").style.bottom = "-1000px";
+    document.querySelector("div#user-input input").blur();
     windowOpen = "map";
-
-    //windowOpen = wp;
   }
 
   if (param == "return") {
-    let input_value = $("div#user-input input").val();
-    $("div#user-input").animate(
-      {
-        bottom: "-1000px",
-      },
-      1000,
-      "linear"
-    );
-    $("div#user-input input").blur();
-    //windowOpen = wp;
+    let input_value = document.querySelector("div#user-input input").value;
+    document.querySelector("div#user-input").style.bottom = "-1000px";
+    document.querySelector("div#user-input input").blur();
     return input_value;
   }
 }
@@ -182,4 +167,20 @@ let add_file = function () {
   request.onerror = function () {
     alert("Unable to write the file: " + this.error);
   };
+};
+
+let now = function () {
+  let current_datetime = new Date();
+  let now =
+    current_datetime.getFullYear() +
+    "-" +
+    (current_datetime.getMonth() + 1) +
+    "-" +
+    current_datetime.getDate() +
+    current_datetime.getHours() +
+    "-" +
+    current_datetime.getMinutes() +
+    "-" +
+    current_datetime.getSeconds();
+  return now;
 };
