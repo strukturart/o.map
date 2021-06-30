@@ -205,7 +205,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let t = -1;
     let items = document.querySelectorAll(".item");
     let items_list = [];
-    for (let i = 0; i < items.length; i++) {
+    for (let i = 0; i < items.length - 1; i++) {
       if (items[i].parentNode.style.display == "block") {
         items_list.push(items[i]);
         t++;
@@ -391,7 +391,7 @@ document.addEventListener("DOMContentLoaded", function () {
   ////////////////////////
 
   function addMapLayers(param) {
-    if ((document.activeElement.className = "item" && windowOpen == "finder")) {
+    if (document.activeElement.className == "item" && windowOpen == "finder") {
       //switch online maps
       let item_value = document.activeElement.getAttribute("data-map");
 
@@ -430,7 +430,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       if (item_value == "owm") {
-        map.removeLayer(tilesLayer);
         maps.owm_map();
         document.querySelector("div#finder").style.display = "none";
         windowOpen = "map";
@@ -1027,7 +1026,11 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
-        addMapLayers("add-marker");
+        if (windowOpen == "finder") {
+          addMapLayers("add-marker");
+
+          break;
+        }
 
         break;
 

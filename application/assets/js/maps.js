@@ -200,7 +200,6 @@ const maps = (() => {
         return response.json();
       })
       .then(function (data) {
-        console.log(data);
 
         weather_url =
           "https://tilecache.rainviewer.com/v2/radar/" +
