@@ -132,7 +132,14 @@ document.addEventListener("DOMContentLoaded", function () {
       .querySelector("div#layers")
       .insertAdjacentHTML(
         "afterend",
-        '<div class="item" data-map="weather">Weather <i>Map</i></div>'
+        '<div class="item" data-map="weather">Weather <i>Layer</i></div>'
+      );
+
+    document
+      .querySelector("div#layers")
+      .insertAdjacentHTML(
+        "afterend",
+        '<div class="item" data-map="railway">Railway <i>Layer</i></div>'
       );
 
     if (settings_data[0]) {
@@ -142,7 +149,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .querySelector("div#layers")
         .insertAdjacentHTML(
           "afterend",
-          '<div class="item" data-map="owm">Open Weather <i>Map</i></div>'
+          '<div class="item" data-map="owm">Open Weather <i>Layer</i></div>'
         );
     }
 
@@ -430,7 +437,13 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       if (item_value == "owm") {
-        maps.owm_map();
+        maps.owm_layer();
+        document.querySelector("div#finder").style.display = "none";
+        windowOpen = "map";
+      }
+
+      if (item_value == "railway") {
+        maps.railway_layer();
         document.querySelector("div#finder").style.display = "none";
         windowOpen = "map";
       }

@@ -133,7 +133,7 @@ const maps = (() => {
     caching_events();
   }
 
-  function owm_map() {
+  function owm_layer() {
     tilesUrl =
       "https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=" +
       openweather_api;
@@ -172,6 +172,25 @@ const maps = (() => {
     caching_events();
   }
 
+  function railway_layer() {
+    tilesUrl = "https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png";
+
+    tilesLayer = L.tileLayer(tilesUrl, {
+      useCache: true,
+      saveToCache: false,
+      crossOrigin: true,
+      cacheMaxAge: caching_time,
+      useOnlyCache: false,
+      maxZoom: 18,
+
+      attribution:
+        'Daten <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap-Mitwirkende</a>, Grafik: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>',
+    });
+
+    map.addLayer(tilesLayer);
+    caching_events();
+  }
+
   let running = false;
   let k;
   let weather_layer,
@@ -200,7 +219,6 @@ const maps = (() => {
         return response.json();
       })
       .then(function (data) {
-
         weather_url =
           "https://tilecache.rainviewer.com/v2/radar/" +
           data[data.length - 5] +
@@ -324,9 +342,10 @@ const maps = (() => {
     moon_map,
     toner_map,
     opentopo_map,
-    owm_map,
+    owm_layer,
     osm_map,
     weather_map,
+    railway_layer,
     caching_tiles,
     delete_cache,
   };
