@@ -45,6 +45,13 @@ body {
   margin: 0;
 }
 
+h2 {
+  font-size: 1.1rem;
+  margin: 25px 0 5px 0;
+  color: gray;
+  text-transform: uppercase;
+}
+
 #goodbye {
   position: fixed;
   z-index: 20000;
@@ -92,42 +99,9 @@ img.marker-1 {
   filter: hue-rotate(120deg);
 }
 
-div#setting {
-  top: 0;
-  padding: 10px;
-  color: white;
-  background: black;
-  position: fixed;
-  z-index: 2000;
-  width: 100vw;
-  height: 100vh;
-  display: none;
-}
-
-div#setting input {
-  margin: 0 0 15px 0;
-  width: 80%;
-  display: block;
-  font-size: 1rem;
-  padding: 3px;
-}
-
-div#setting label {
-  margin: 5px 0 0px 0;
-  width: 80%;
-  display: block;
-}
-
-div#setting input:focus {
-  outline: 2px solid yellow;
-}
-
-div#setting button {
-  padding: 3px;
-}
-
-div#setting button:focus {
-  background: yellow;
+.earthquake-marker {
+  background: red;
+  border-radius: 50%;
 }
 
 /*///////////////////////////
@@ -399,12 +373,6 @@ div#finder {
   overflow: hidden;
 }
 
-div#finder h2 {
-  font-size: 14px;
-  font-weight: bold;
-  margin: 5px 0 5px 0 !important;
-}
-
 div#finder div#custom-map-track {
   background: black;
   color: white;
@@ -446,8 +414,50 @@ div#finder div#question div#question-text {
   text-align: center;
 }
 
-div#finder h2 {
-  margin: 15px 0 0 0 !important;
+div.panel {
+  display: none;
+  margin: 40px 0 0 0;
+  height: 85vh;
+  color: white;
+  background: black;
+  overflow: hidden;
+}
+
+div#setting {
+  top: 0;
+  padding: 10px;
+  overflow: hidden;
+
+  z-index: 2000;
+  width: 100vw;
+  display: none;
+}
+
+div#settings input {
+  margin: 0 0 15px 0;
+  width: 90%;
+  display: block;
+  font-size: 1rem;
+  padding: 3px;
+}
+
+div#settings label {
+  margin: 5px 0 5px 0;
+  width: 80%;
+  display: block;
+}
+
+div#settings input:focus {
+  border: 2px solid yellow;
+  background: silver;
+}
+
+div.panel button {
+  padding: 3px;
+}
+
+div.panel button:focus {
+  background: yellow;
 }
 
 /*/ //////////////////////////

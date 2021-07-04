@@ -7,7 +7,7 @@ $(document).ready(function () {
   const ac_selected_station = $("#search").autocomplete({
     serviceUrl:
       "https://nominatim.openstreetmap.org/search?format=json&addressdetails=0",
-    minChars: 2,
+    minChars: 1,
     showNoSuggestionNotice: true,
     paramName: "q",
     lookupLimit: 10,
@@ -40,8 +40,7 @@ $(document).ready(function () {
     hideSearch();
     current_lat = Number(lat);
     current_lng = Number(lng);
-    //document.getElementById("marker-target-cross").style.dispaly = "none";
-    // window.parent.marker_cross();
+ 
     L.marker([current_lat, current_lng]).addTo(markers_group);
     toaster("press 5 to save the search result as marker");
   }
