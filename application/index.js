@@ -139,6 +139,13 @@ document.addEventListener("DOMContentLoaded", function () {
       .querySelector("div#layers")
       .insertAdjacentHTML(
         "afterend",
+        '<div class="item" data-map="earthquake">Earthquake <i>Layer</i></div>'
+      );
+
+    document
+      .querySelector("div#layers")
+      .insertAdjacentHTML(
+        "afterend",
         '<div class="item" data-map="railway">Railway <i>Layer</i></div>'
       );
 
@@ -444,6 +451,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (item_value == "railway") {
         maps.railway_layer();
+        document.querySelector("div#finder").style.display = "none";
+        windowOpen = "map";
+      }
+
+      if (item_value == "earthquake") {
+        maps.earthquake_layer();
         document.querySelector("div#finder").style.display = "none";
         windowOpen = "map";
       }

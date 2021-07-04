@@ -99,6 +99,11 @@ img.marker-1 {
   filter: hue-rotate(120deg);
 }
 
+.earthquake-marker {
+  background: red;
+  border-radius: 50%;
+}
+
 /*///////////////////////////
 ///TOAST////////////////*/
 

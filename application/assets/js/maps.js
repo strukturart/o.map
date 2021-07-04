@@ -191,6 +191,57 @@ const maps = (() => {
     caching_events();
   }
 
+  function formatDate(date, format) {
+    const map = {
+      mm: date.getMonth() + 1,
+      dd: date.getDate(),
+      yy: date.getFullYear().toString().slice(-2),
+      yyyy: date.getFullYear(),
+    };
+
+    return format.replace(/mm|dd|yy|yyy/gi, (matched) => map[matched]);
+  }
+
+  let earthquake_layer = function () {
+    const today = new Date();
+    const two_days_before = new Date(Date.now() - 24 * 3600 * 1000);
+
+    console.log(formatDate(two_days_before, "yy-mm-dd"));
+
+    fetch(
+      "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2021-06-28&endtime=" +
+        formatDate(today, "yy-mm-dd")
+    )
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+        L.geoJSON(data, {
+          // Marker Icon
+          pointToLayer: function (feature, latlng) {
+            console.log(feature.properties.type);
+
+            if (feature.properties.type == "earthquake") {
+              let t = L.marker(latlng, {
+                icon: L.divIcon({
+                  html: '<i class="eq-marker" style="color: red"></i>',
+                  iconSize: [10, 10],
+                  className: "earthquake-marker",
+                }),
+              });
+              t.addTo(markers_group);
+              windowOpen = "map";
+            }
+          },
+
+          // Popup
+          onEachFeature: function (feature, layer) {
+            console.log(feature);
+          },
+        }).addTo(map);
+      });
+  };
+
   let running = false;
   let k;
   let weather_layer,
@@ -340,6 +391,7 @@ const maps = (() => {
   }
   return {
     moon_map,
+    earthquake_layer,
     toner_map,
     opentopo_map,
     owm_layer,
