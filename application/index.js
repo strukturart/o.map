@@ -782,7 +782,7 @@ document.addEventListener("DOMContentLoaded", function () {
   //FINDER NAVIGATION//
   /////////////////////
 
-  let finder_panels = ["mapstracks", "settings", "shortcuts"];
+  let finder_panels = ["mapstracks", "settings", "shortcuts", "impressum"];
   let count = 0;
 
   let finder_navigation = function (dir) {

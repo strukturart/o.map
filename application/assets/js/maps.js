@@ -133,11 +133,17 @@ const maps = (() => {
     caching_events();
   }
 
+  let owmLayer;
   function owm_layer() {
+    if (map.hasLayer(owmLayer)) {
+      map.removeLayer(owmLayer);
+      return false;
+    }
+
     tilesUrl =
       "https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=" +
       openweather_api;
-    tilesLayer = L.tileLayer(tilesUrl, {
+    owmLayer = L.tileLayer(tilesUrl, {
       useCache: true,
       saveToCache: false,
       crossOrigin: true,
@@ -149,7 +155,7 @@ const maps = (() => {
         '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
     });
 
-    map.addLayer(tilesLayer);
+    map.addLayer(owmLayer);
     caching_events();
   }
 
@@ -172,10 +178,16 @@ const maps = (() => {
     caching_events();
   }
 
+  let railwayLayer;
   function railway_layer() {
+    if (map.hasLayer(railwayLayer)) {
+      map.removeLayer(railwayLayer);
+      return false;
+    }
+
     tilesUrl = "https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png";
 
-    tilesLayer = L.tileLayer(tilesUrl, {
+    railwayLayer = L.tileLayer(tilesUrl, {
       useCache: true,
       saveToCache: false,
       crossOrigin: true,
@@ -187,7 +199,8 @@ const maps = (() => {
         'Daten <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap-Mitwirkende</a>, Grafik: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>',
     });
 
-    map.addLayer(tilesLayer);
+    map.addLayer(railwayLayer);
+    tt = true;
     caching_events();
   }
 
@@ -209,8 +222,11 @@ const maps = (() => {
     console.log(formatDate(two_days_before, "yy-mm-dd"));
 
     fetch(
-      "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2021-06-28&endtime=" +
+      "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=" +
+        formatDate(two_days_before, "yy-mm-dd") +
+        "&endtime=" +
         formatDate(today, "yy-mm-dd")
+      //"&latitude=47&longitude=7&maxradiuskm=1800"
     )
       .then(function (response) {
         return response.json();
@@ -219,8 +235,6 @@ const maps = (() => {
         L.geoJSON(data, {
           // Marker Icon
           pointToLayer: function (feature, latlng) {
-            console.log(feature.properties.type);
-
             if (feature.properties.type == "earthquake") {
               let t = L.marker(latlng, {
                 icon: L.divIcon({
@@ -228,7 +242,7 @@ const maps = (() => {
                   iconSize: [10, 10],
                   className: "earthquake-marker",
                 }),
-              });
+              }).openTooltip();
               t.addTo(markers_group);
               windowOpen = "map";
             }
