@@ -56,6 +56,7 @@ let setting = {
   owm_key: localStorage.getItem("owm-key"),
   cache_time: localStorage.getItem("cache-time"),
   cache_zoom: localStorage.getItem("cache-zoom"),
+  last_location: JSON.parse(localStorage.getItem("last_location")),
 };
 
 if (!navigator.geolocation) {
@@ -311,6 +312,10 @@ document.addEventListener("DOMContentLoaded", function () {
         mozactivity.share_position();
       }
 
+      //store location as fallout
+      let b = [crd.latitude, crd.longitude];
+      localStorage.setItem("last_location", JSON.stringify(b));
+
       if (option == "init") {
         myMarker = L.marker([current_lat, current_lng]).addTo(markers_group);
         myMarker._icon.classList.add("marker-1");
@@ -329,9 +334,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function error(err) {
-      toaster("Position not found", 2000);
-      current_lat = 0;
-      current_lng = 0;
+      toaster("Position not found, load last known position", 4000);
+
+      current_lat = setting.last_location[0];
+      current_lng = setting.last_location[1];
       current_alt = 0;
 
       map.setView([current_lat, current_lng], 12);
@@ -354,6 +360,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let geoLoc = navigator.geolocation;
 
+    if (state_geoloc) {
+      geoLoc.clearWatch(watchID);
+      state_geoloc = false;
+      toaster("watching postion stopped", 2000);
+      return true;
+    }
+
     if (!state_geoloc) {
       function showLocation(position) {
         let crd = position.coords;
@@ -366,6 +379,12 @@ document.addEventListener("DOMContentLoaded", function () {
         //store device location
         device_lat = crd.latitude;
         device_lng = crd.longitude;
+
+        //store location as fallout
+        localStorageWriteRead("last_location", position.coords);
+
+        let b = [crd.latitude, crd.longitude];
+        localStorage.setItem("last_location", JSON.stringify(b));
 
         map.flyTo(
           new L.LatLng(position.coords.latitude, position.coords.longitude)
@@ -388,14 +407,6 @@ document.addEventListener("DOMContentLoaded", function () {
       };
       watchID = geoLoc.watchPosition(showLocation, errorHandler, options);
       toaster("watching postion started", 2000);
-
-      return true;
-    }
-
-    if (state_geoloc) {
-      geoLoc.clearWatch(watchID);
-      state_geoloc = false;
-      toaster("watching postion stopped", 2000);
       return true;
     }
   }
