@@ -8,22 +8,22 @@ const maps = (() => {
   } else {
     caching_time = 86400000;
   }
-  if (settings[2] != "") {
-    zoom_depth = Number(settings[2]);
+  if (settings[3] != "") {
+    zoom_depth = localStorage.getItem("cache-zoom");
   } else {
-    zoom_depth = 5;
+    zoom_depth = 12;
   }
 
   let caching_events = function () {
     // Listen to cache hits and misses and spam the console
     tilesLayer.on("tilecachehit", function (ev) {
-      //console.log('Cache hit: ', ev.url);
+      console.log("Cache hit: ", ev.url);
     });
     tilesLayer.on("tilecachemiss", function (ev) {
-      //console.log('Cache miss: ', ev.url);
+      console.log("Cache miss: ", ev.url);
     });
     tilesLayer.on("tilecacheerror", function (ev) {
-      //console.log('Cache error: ', ev.tile, ev.error);
+      console.log("Cache error: ", ev.tile, ev.error);
     });
   };
 
@@ -34,7 +34,7 @@ const maps = (() => {
     let neLng = map.getBounds()._northEast.lng;
 
     var bbox = L.latLngBounds(L.latLng(swLat, swLng), L.latLng(neLat, neLng));
-    tilesLayer.seed(bbox, 0, Number(settings.load_settings()[2]));
+    tilesLayer.seed(bbox, 0, 12);
 
     top_bar("", "downloading", "");
 
