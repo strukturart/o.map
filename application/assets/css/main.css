@@ -129,7 +129,7 @@ div#toast {
   top: -100px;
   background: black;
   color: white;
-  z-index: 20000;
+  z-index: 7;
   min-width: 100%;
   padding: 5px;
 }
@@ -183,7 +183,7 @@ div#cross {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 5;
+  z-index: 3;
   opacity: 100;
 }
 
@@ -227,7 +227,7 @@ div#top-bar {
   top: 0px;
   left: 0px;
   height: 15px;
-  z-index: 5;
+  z-index: 6;
   background: black;
   display: none;
 }
@@ -268,7 +268,7 @@ div#bottom-bar {
   bottom: 10px;
   left: 0px;
   height: 15px;
-  z-index: 5;
+  z-index: 6;
   background: black;
   display: none;
 }
@@ -325,7 +325,7 @@ div#bottom-bar div#button-right {
 
 div#message {
   position: absolute;
-  z-index: 2000;
+  z-index: 5;
   left: 0;
   top: 0;
   background: black;
@@ -346,7 +346,7 @@ div#message div {
 
 div#finder {
   position: absolute;
-  z-index: 2;
+  z-index: 5;
   top: 0px;
   left: 0px;
   background: black;
@@ -448,7 +448,7 @@ div.panel button:focus {
 
 div#coordinations {
   position: absolute;
-  z-index: 1000;
+  z-index: 5;
   left: 0;
   top: 0;
   background: rgba(0, 0, 0, 0.726);
