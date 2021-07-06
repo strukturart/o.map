@@ -45,6 +45,10 @@ body {
   margin: 0;
 }
 
+p {
+  margin: 1rem 0 1rem 0;
+}
+
 h1 {
   font-size: 1.1rem;
   margin: 25px 0 5px 0;

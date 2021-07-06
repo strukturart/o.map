@@ -8,22 +8,22 @@ const maps = (() => {
   } else {
     caching_time = 86400000;
   }
-  if (settings[2] != "") {
-    zoom_depth = Number(settings[2]);
+  if (settings[3] != "") {
+    zoom_depth = localStorage.getItem("cache-zoom");
   } else {
-    zoom_depth = 5;
+    zoom_depth = 12;
   }
 
   let caching_events = function () {
     // Listen to cache hits and misses and spam the console
     tilesLayer.on("tilecachehit", function (ev) {
-      //console.log('Cache hit: ', ev.url);
+      //console.log("Cache hit: ", ev.url);
     });
     tilesLayer.on("tilecachemiss", function (ev) {
-      //console.log('Cache miss: ', ev.url);
+      //console.log("Cache miss: ", ev.url);
     });
     tilesLayer.on("tilecacheerror", function (ev) {
-      //console.log('Cache error: ', ev.tile, ev.error);
+      //console.log("Cache error: ", ev.tile, ev.error);
     });
   };
 
@@ -34,7 +34,7 @@ const maps = (() => {
     let neLng = map.getBounds()._northEast.lng;
 
     var bbox = L.latLngBounds(L.latLng(swLat, swLng), L.latLng(neLat, neLng));
-    tilesLayer.seed(bbox, 0, Number(settings.load_settings()[2]));
+    tilesLayer.seed(bbox, 0, 12);
 
     top_bar("", "downloading", "");
 
@@ -133,11 +133,17 @@ const maps = (() => {
     caching_events();
   }
 
+  let owmLayer;
   function owm_layer() {
+    if (map.hasLayer(owmLayer)) {
+      map.removeLayer(owmLayer);
+      return false;
+    }
+
     tilesUrl =
       "https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=" +
       openweather_api;
-    tilesLayer = L.tileLayer(tilesUrl, {
+    owmLayer = L.tileLayer(tilesUrl, {
       useCache: true,
       saveToCache: false,
       crossOrigin: true,
@@ -149,7 +155,7 @@ const maps = (() => {
         '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
     });
 
-    map.addLayer(tilesLayer);
+    map.addLayer(owmLayer);
     caching_events();
   }
 
@@ -172,10 +178,16 @@ const maps = (() => {
     caching_events();
   }
 
+  let railwayLayer;
   function railway_layer() {
+    if (map.hasLayer(railwayLayer)) {
+      map.removeLayer(railwayLayer);
+      return false;
+    }
+
     tilesUrl = "https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png";
 
-    tilesLayer = L.tileLayer(tilesUrl, {
+    railwayLayer = L.tileLayer(tilesUrl, {
       useCache: true,
       saveToCache: false,
       crossOrigin: true,
@@ -187,7 +199,8 @@ const maps = (() => {
         'Daten <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap-Mitwirkende</a>, Grafik: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>',
     });
 
-    map.addLayer(tilesLayer);
+    map.addLayer(railwayLayer);
+    tt = true;
     caching_events();
   }
 
@@ -202,15 +215,24 @@ const maps = (() => {
     return format.replace(/mm|dd|yy|yyy/gi, (matched) => map[matched]);
   }
 
+  let markers_group_eq = new L.FeatureGroup();
   let earthquake_layer = function () {
+    if (map.hasLayer(markers_group_eq)) {
+      map.removeLayer(markers_group_eq);
+      return false;
+    }
+
     const today = new Date();
     const two_days_before = new Date(Date.now() - 24 * 3600 * 1000);
 
     console.log(formatDate(two_days_before, "yy-mm-dd"));
 
     fetch(
-      "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2021-06-28&endtime=" +
+      "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=" +
+        formatDate(two_days_before, "yy-mm-dd") +
+        "&endtime=" +
         formatDate(today, "yy-mm-dd")
+      //"&latitude=47&longitude=7&maxradiuskm=1800"
     )
       .then(function (response) {
         return response.json();
@@ -219,8 +241,6 @@ const maps = (() => {
         L.geoJSON(data, {
           // Marker Icon
           pointToLayer: function (feature, latlng) {
-            console.log(feature.properties.type);
-
             if (feature.properties.type == "earthquake") {
               let t = L.marker(latlng, {
                 icon: L.divIcon({
@@ -228,8 +248,10 @@ const maps = (() => {
                   iconSize: [10, 10],
                   className: "earthquake-marker",
                 }),
-              });
-              t.addTo(markers_group);
+              }).openTooltip();
+              t.addTo(markers_group_eq);
+              map.addLayer(markers_group_eq);
+
               windowOpen = "map";
             }
           },

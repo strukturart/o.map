@@ -45,6 +45,13 @@ body {
   margin: 0;
 }
 
+h1 {
+  font-size: 1.1rem;
+  margin: 25px 0 5px 0;
+  color: gray;
+  text-transform: uppercase;
+}
+
 h2 {
   font-size: 1.1rem;
   margin: 25px 0 5px 0;
@@ -99,8 +106,16 @@ img.marker-1 {
   filter: hue-rotate(120deg);
 }
 
+/*///////////////////////////
+///MARKERS////////////////*/
+
 .earthquake-marker {
   background: red;
+  border-radius: 50%;
+}
+
+.defaulte-marker {
+  background: pink;
   border-radius: 50%;
 }
 
@@ -114,7 +129,7 @@ div#toast {
   top: -100px;
   background: black;
   color: white;
-  z-index: 20000;
+  z-index: 7;
   min-width: 100%;
   padding: 5px;
 }
@@ -157,6 +172,8 @@ div#user-input div#button-bar-save div {
 div#map-container {
   height: 100%;
   width: 100%;
+  position: absolute;
+  z-index: 2;
 }
 
 div#cross {
@@ -166,7 +183,7 @@ div#cross {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 1000;
+  z-index: 3;
   opacity: 100;
 }
 
@@ -210,7 +227,7 @@ div#top-bar {
   top: 0px;
   left: 0px;
   height: 15px;
-  z-index: 200000;
+  z-index: 6;
   background: black;
   display: none;
 }
@@ -251,7 +268,7 @@ div#bottom-bar {
   bottom: 10px;
   left: 0px;
   height: 15px;
-  z-index: 200000;
+  z-index: 6;
   background: black;
   display: none;
 }
@@ -308,7 +325,7 @@ div#bottom-bar div#button-right {
 
 div#message {
   position: absolute;
-  z-index: 2000;
+  z-index: 5;
   left: 0;
   top: 0;
   background: black;
@@ -324,46 +341,12 @@ div#message div {
   padding: 3px;
 }
 
-/*/ //////////////////////////
-///HELPER////////////////*/
-
-div#zoom-level {
-  position: absolute;
-  z-index: 1000;
-  top: 10px;
-  left: 10px;
-  background: black;
-  color: white;
-  font-size: 16px;
-  display: none;
-}
-
-div#window-status {
-  position: fixed;
-  top: 10px;
-  left: 5px;
-  background: black;
-  color: white;
-  z-index: 1000;
-  display: none;
-}
-
-div#output {
-  position: fixed;
-  top: 10px;
-  left: 5px;
-  background: black;
-  color: white;
-  z-index: 1000;
-  display: none;
-}
-
 /*///////////////////////////
 ///FINDER////////////////*/
 
 div#finder {
   position: absolute;
-  z-index: 1000;
+  z-index: 5;
   top: 0px;
   left: 0px;
   background: black;
@@ -465,7 +448,7 @@ div.panel button:focus {
 
 div#coordinations {
   position: absolute;
-  z-index: 1000;
+  z-index: 5;
   left: 0;
   top: 0;
   background: rgba(0, 0, 0, 0.726);

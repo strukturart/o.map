@@ -4,7 +4,6 @@ let step = 0.001;
 let current_lng;
 let current_lat;
 let current_alt;
-let accuracy = 0;
 let altitude;
 let current_heading;
 
@@ -18,28 +17,22 @@ let new_lat = 0;
 let new_lng = 0;
 let curPos = 0;
 let myMarker = "";
-let i = 0;
 let windowOpen;
 let message_body = "";
-let openweather_api = "";
 let tabIndex = 0;
 let debug = false;
 
 let tilesLayer;
 let tileLayer;
-let myLayer;
 let tilesUrl;
 let savesearch = false;
 
 let search_current_lng;
 let search_current_lat;
 
-let map;
 let open_url = false;
 let marker_latlng = false;
 
-let file_path;
-let storage_name;
 let json_modified = false;
 
 let markers_group = new L.FeatureGroup();
@@ -50,13 +43,16 @@ let caching_time = 86400000;
 let zoom_depth = 4;
 
 let settings_data = settings.load_settings();
-
 let setting = {
   export_path: localStorage.getItem("export-path"),
   owm_key: localStorage.getItem("owm-key"),
   cache_time: localStorage.getItem("cache-time"),
   cache_zoom: localStorage.getItem("cache-zoom"),
+  last_location: JSON.parse(localStorage.getItem("last_location")),
+  openweather_api: localStorage.getItem("owm-key"),
 };
+
+console.log(JSON.stringify(setting));
 
 if (!navigator.geolocation) {
   toaster("Your device does't support geolocation!", 2000);
@@ -65,7 +61,7 @@ if (!navigator.geolocation) {
 document.querySelector("div#message div").innerText = "Welcome";
 
 //leaflet add basic map
-map = L.map("map-container", {
+let map = L.map("map-container", {
   zoomControl: false,
   dragging: false,
   keyboard: true,
@@ -150,8 +146,6 @@ document.addEventListener("DOMContentLoaded", function () {
       );
 
     if (settings_data[0]) {
-      openweather_api = localStorage.getItem("owm-key");
-
       document
         .querySelector("div#layers")
         .insertAdjacentHTML(
@@ -311,6 +305,10 @@ document.addEventListener("DOMContentLoaded", function () {
         mozactivity.share_position();
       }
 
+      //store location as fallout
+      let b = [crd.latitude, crd.longitude];
+      localStorage.setItem("last_location", JSON.stringify(b));
+
       if (option == "init") {
         myMarker = L.marker([current_lat, current_lng]).addTo(markers_group);
         myMarker._icon.classList.add("marker-1");
@@ -329,9 +327,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function error(err) {
-      toaster("Position not found", 2000);
-      current_lat = 0;
-      current_lng = 0;
+      toaster("Position not found, load last known position", 4000);
+
+      current_lat = setting.last_location[0];
+      current_lng = setting.last_location[1];
       current_alt = 0;
 
       map.setView([current_lat, current_lng], 12);
@@ -354,7 +353,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let geoLoc = navigator.geolocation;
 
-    if (!state_geoloc) {
+    if (state_geoloc == false) {
+      toaster("watching postion started", 2000);
+      state_geoloc = true;
+
       function showLocation(position) {
         let crd = position.coords;
 
@@ -367,12 +369,14 @@ document.addEventListener("DOMContentLoaded", function () {
         device_lat = crd.latitude;
         device_lng = crd.longitude;
 
+        //store location as fallout
+        let b = [crd.latitude, crd.longitude];
+        localStorage.setItem("last_location", JSON.stringify(b));
+
         map.flyTo(
           new L.LatLng(position.coords.latitude, position.coords.longitude)
         );
         myMarker.setLatLng([current_lat, current_lng]).update();
-
-        state_geoloc = true;
       }
 
       function errorHandler(err) {
@@ -387,15 +391,15 @@ document.addEventListener("DOMContentLoaded", function () {
         timeout: 60000,
       };
       watchID = geoLoc.watchPosition(showLocation, errorHandler, options);
-      toaster("watching postion started", 2000);
-
       return true;
     }
 
-    if (state_geoloc) {
+    if (state_geoloc == true) {
       geoLoc.clearWatch(watchID);
       state_geoloc = false;
       toaster("watching postion stopped", 2000);
+      console.log(state_geoloc);
+
       return true;
     }
   }
@@ -594,7 +598,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.querySelector("div#finder").style.display = "none";
       document.querySelector("div#coordinations").style.display = "block";
 
-      if (openweather_api != "") {
+      if (setting.openweather_api && setting.openweather_api != undefined) {
         document.querySelector("div#coordinations div#weather").style.display =
           "block";
 
@@ -612,7 +616,7 @@ document.addEventListener("DOMContentLoaded", function () {
         weather.openweather_call(
           c.lat,
           c.lng,
-          openweather_api,
+          setting.openweather_api,
           openweather_callback
         );
       }
@@ -782,7 +786,7 @@ document.addEventListener("DOMContentLoaded", function () {
   //FINDER NAVIGATION//
   /////////////////////
 
-  let finder_panels = ["mapstracks", "settings", "shortcuts"];
+  let finder_panels = ["mapstracks", "settings", "shortcuts", "impressum"];
   let count = 0;
 
   let finder_navigation = function (dir) {

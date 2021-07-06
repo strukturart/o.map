@@ -34,11 +34,6 @@
             <br />
             <ul>
                 <li>Thank you</li>
-                <li>leafletjs</li>
-                <li>openstreetmap</li>
-                <li>opentopomap</li>
-                <li>rainviewer.com</li>
-                <li>mazemap.github</li>
                 <li>bHackers community ❤</li>
             </ul>
         </div>
@@ -165,16 +160,40 @@
             <h2>Openweathermap</h2>
             <label for="owm-key">Openweathermap API-Key</label>
             <input type="tel" class="item" id="owm-key" tabindex="0" />
+
             <h2>Offline maps</h2>
             <label for="cache-time">After how many days should the maps be re-downloaded?</label>
             <input  class="item" type="tel" pattern="^[0-9]*$" id="cache-time" tabindex="1" />
+
             <label for="cache-zoom">How much zoom level should be saved ?</label>
             <input  class="item" type="tel" pattern="^[0-9]*$" min="0" max="18" id="cache-zoom" tabindex="2" />
+
             <button  class="item" id="clear-cache" tabindex="3">clear offline cache</button>
             <h2>Export</h2>
             <label for="export-path">Export path</label>
             <input  class="item" type="text"   id="export-path" tabindex="4" />
+            
             <button tabindex="5" class="item" id="save-settings">save</button>
+        </div>
+        <div class="panel" id="impressum">
+            <h1>o.map</h1>
+            <p>A map app based on freely available map data. 
+                Please note that the map data are under different licenses, 
+                please note them. I thank the people who provide this data 
+                and take care of their maintenance.
+            </p>
+            <ul>
+                <li>leafletjs</li>
+                <li>openstreetmap</li>
+                <li>opentopomap</li>
+                <li>rainviewer.com</li>
+                <li>mazemap.github</li>
+                <li>earthquake.usgs.gov</li>
+                <li>openrailwaymap.org</li>
+                <li>openweathermap.org</li>
+            </ul>
+
+
         </div>
 
         <div class="panel" id="shortcuts">

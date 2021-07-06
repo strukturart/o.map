@@ -29,11 +29,12 @@ Because I don't feel like annoying users with stupid advertising.
 - Open Topo Map
 - Tonner Map
 - Moon Map
-- OpenWeatherMap
 
 ## Layers
 
 - rain/snow layer
+- OpenWeatherMap
+- Railwaylayer
 
 ### Manual
 
