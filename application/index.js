@@ -20,7 +20,6 @@ let myMarker = "";
 let windowOpen;
 let message_body = "";
 let tabIndex = 0;
-let debug = false;
 
 let tilesLayer;
 let tileLayer;
@@ -173,7 +172,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     finder_gpx.on("fileFound", function (file, fileinfo, storageName) {
       document
-        .querySelector("div#tracksmarkers")
+        .querySelector("div#gpx")
         .insertAdjacentHTML(
           "afterend",
           '<div class="item" data-map="gpx">' + fileinfo.name + "</div>"
@@ -213,7 +212,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let t = -1;
     let items = document.querySelectorAll(".item");
     let items_list = [];
-    for (let i = 0; i < items.length - 1; i++) {
+    for (let i = 0; i < items.length; i++) {
       if (items[i].parentNode.style.display == "block") {
         items_list.push(items[i]);
         t++;

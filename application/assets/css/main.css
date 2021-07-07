@@ -25,6 +25,10 @@
   display: none !important;
 }
 
+:focus {
+  outline: 0px;
+}
+
 @font-face {
   font-family: "Lato-Regular";
   src: url("../fonts/Lato-Regular.ttf");
@@ -380,7 +384,7 @@ div#finder div#close {
   min-width: 100vw;
 }
 
-div#finder div:focus {
+div#finder .item:focus {
   background: yellow;
   color: black;
 }
@@ -403,7 +407,8 @@ div#finder div#question div#question-text {
 
 div.panel {
   display: none;
-  margin: 40px 0 0 0;
+  margin: 40px 0px 0px 0px;
+  padding: 5px;
   height: 85vh;
   color: white;
   background: black;
@@ -445,6 +450,18 @@ div.panel button {
 
 div.panel button:focus {
   background: yellow;
+}
+div#impressum {
+  overflow: scroll;
+}
+div#impressum div.item:focus {
+  background: black;
+  color: white;
+}
+
+div#impressum a:focus button {
+  background: yellow !important;
+  outline: red !important;
 }
 
 /*/ //////////////////////////
