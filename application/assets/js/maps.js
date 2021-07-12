@@ -14,6 +14,8 @@ const maps = (() => {
     zoom_depth = 12;
   }
 
+  console.log(zoom_depth);
+
   let caching_events = function () {
     // Listen to cache hits and misses and spam the console
     tilesLayer.on("tilecachehit", function (ev) {
@@ -34,7 +36,7 @@ const maps = (() => {
     let neLng = map.getBounds()._northEast.lng;
 
     var bbox = L.latLngBounds(L.latLng(swLat, swLng), L.latLng(neLat, neLng));
-    tilesLayer.seed(bbox, 0, 12);
+    tilesLayer.seed(bbox, 0, zoom_depth);
 
     top_bar("", "downloading", "");
 
