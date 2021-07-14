@@ -20,7 +20,6 @@ let myMarker = "";
 let windowOpen;
 let message_body = "";
 let tabIndex = 0;
-let debug = false;
 
 let tilesLayer;
 let tileLayer;
@@ -51,8 +50,6 @@ let setting = {
   last_location: JSON.parse(localStorage.getItem("last_location")),
   openweather_api: localStorage.getItem("owm-key"),
 };
-
-console.log(JSON.stringify(setting));
 
 if (!navigator.geolocation) {
   toaster("Your device does't support geolocation!", 2000);
@@ -173,7 +170,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     finder_gpx.on("fileFound", function (file, fileinfo, storageName) {
       document
-        .querySelector("div#tracksmarkers")
+        .querySelector("div#gpx")
         .insertAdjacentHTML(
           "afterend",
           '<div class="item" data-map="gpx">' + fileinfo.name + "</div>"
@@ -213,7 +210,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let t = -1;
     let items = document.querySelectorAll(".item");
     let items_list = [];
-    for (let i = 0; i < items.length - 1; i++) {
+    for (let i = 0; i < items.length; i++) {
       if (items[i].parentNode.style.display == "block") {
         items_list.push(items[i]);
         t++;
@@ -277,6 +274,21 @@ document.addEventListener("DOMContentLoaded", function () {
   ////MARKER SET AND UPDATE/////////
   /////////////////////////
 
+  let myMarker;
+
+  var follow_icon = L.divIcon({
+    iconSize: [40, 40],
+    iconAnchor: [30, 40],
+    className: "follow-marker",
+    html: '<div class="ringring"></div><div class="circle"></div>',
+  });
+
+  var default_icon = L.icon({
+    iconUrl: "assets/css/images/marker-icon.png",
+    iconSize: [25, 40],
+    iconAnchor: [15, 40],
+  });
+
   function getLocation(option) {
     marker_latlng = false;
 
@@ -310,10 +322,14 @@ document.addEventListener("DOMContentLoaded", function () {
       localStorage.setItem("last_location", JSON.stringify(b));
 
       if (option == "init") {
-        myMarker = L.marker([current_lat, current_lng]).addTo(markers_group);
-        myMarker._icon.classList.add("marker-1");
+        myMarker = L.marker([current_lat, current_lng], {
+          rotationAngle: 0,
+        }).addTo(markers_group);
+
+        myMarker.setIcon(default_icon);
 
         map.setView([current_lat, current_lng], 12);
+
         zoom_speed();
         document.querySelector("div#message div").innerText = "";
         return true;
@@ -368,6 +384,13 @@ document.addEventListener("DOMContentLoaded", function () {
         //store device location
         device_lat = crd.latitude;
         device_lng = crd.longitude;
+        myMarker.setIcon(follow_icon);
+        console.log(crd.heading);
+        if (crd.heading != null) {
+          myMarker.setRotationAngle(crd.heading);
+        } else {
+          myMarker.setRotationAngle(0);
+        }
 
         //store location as fallout
         let b = [crd.latitude, crd.longitude];
@@ -398,7 +421,8 @@ document.addEventListener("DOMContentLoaded", function () {
       geoLoc.clearWatch(watchID);
       state_geoloc = false;
       toaster("watching postion stopped", 2000);
-      console.log(state_geoloc);
+      myMarker.setIcon(default_icon);
+      myMarker.setRotationAngle(0);
 
       return true;
     }

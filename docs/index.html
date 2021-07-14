@@ -176,24 +176,35 @@
             <button tabindex="5" class="item" id="save-settings">save</button>
         </div>
         <div class="panel" id="impressum">
-            <h1>o.map</h1>
-            <p>A map app based on freely available map data. 
-                Please note that the map data are under different licenses, 
-                please note them. I thank the people who provide this data 
-                and take care of their maintenance.
-            </p>
-            <ul>
-                <li>leafletjs</li>
-                <li>openstreetmap</li>
-                <li>opentopomap</li>
-                <li>rainviewer.com</li>
-                <li>mazemap.github</li>
-                <li>earthquake.usgs.gov</li>
-                <li>openrailwaymap.org</li>
-                <li>openweathermap.org</li>
-            </ul>
+            
+            <div tabindex="0" class="item">
+                <p>
+                    Various software and map data are used in this app, please note the licenses.
+                </p>
+                <ul>
+                    <li>o.map UNLICENSE</li>
+                    <li>Leaflet - BSD-2-Clause License</li>
+                    <li>Ajax AutoComplete - MIT License</li>
+                    <li>leaflet.tilelayer.pouchdbcached MIT license</li>
+                    <li>leaflet ruler MIT License</li>
+                    <li>openstreetmap</li>
+                    <li>opentopomap</li>
+                    <li>earthquake.usgs.gov</li>
+                    <li>openrailwaymap.org</li>
+                    <li>openweathermap.org</li>
+                </ul>
 
+                <p>I thank the people who provide this data 
+                    and take care of their maintenance.</p>
 
+                <p>It took me many hours to develop the app, please donate an amount if you use the app regularly.  </p>
+                
+            </div>
+
+                <a tabindex="1" target="blank" class="item" href="https://paypal.me/strukturart">
+                    <button class="paypal-button">paypal donation</button>
+                </a>
+            </button>
         </div>
 
         <div class="panel" id="shortcuts">
@@ -265,6 +276,13 @@
                     <div>*</div>
                 </div>
             </div>
+            
+            <div class="item" data-map="share">
+                <div class="flex justify-content-spacebetween">
+                    <div>share your position</div>
+                    <div>0</div>
+                </div>
+            </div>
 
             <div class="item" data-map="photo">
                 <div class="flex justify-content-spacebetween">
@@ -273,12 +291,7 @@
                 </div>
             </div>
 
-            <div class="item" data-map="share">
-                <div class="flex justify-content-spacebetween">
-                    <div class="items" data-map="share">share your position</div>
-                    <div></div>
-                </div>
-            </div>
+          
 
        
         </div>
@@ -290,8 +303,6 @@
     <script defer src="assets/exclude-js/jsQR.js"></script>
     <script defer src="assets/js/scan.js"></script>
     <script defer src="assets/js/settings.js"></script>
-
-
     <script defer src="assets/js/jQuery-3.1.0.js"></script>
     <script defer src="assets/js/moments.min.js"></script>
     <script defer src="assets/js/applait.finder.min.js"></script>
@@ -314,6 +325,7 @@
     <script defer src="assets/js/openweather.js"></script>
     <script defer src="assets/js/module.js"></script>
 
+    <script defer src="assets/js/leaflet.rotatedMarker.js"></script>
 
 
 </body>

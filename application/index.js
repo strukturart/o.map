@@ -277,13 +277,16 @@ document.addEventListener("DOMContentLoaded", function () {
   let myMarker;
 
   var follow_icon = L.divIcon({
-    iconSize: [20, 20],
+    iconSize: [40, 40],
+    iconAnchor: [30, 40],
     className: "follow-marker",
+    html: '<div class="ringring"></div><div class="circle"></div>',
   });
 
-  var default_icon = L.divIcon({
-    iconSize: [20, 20],
-    className: "default-marker",
+  var default_icon = L.icon({
+    iconUrl: "assets/css/images/marker-icon.png",
+    iconSize: [25, 40],
+    iconAnchor: [15, 40],
   });
 
   function getLocation(option) {
@@ -319,12 +322,12 @@ document.addEventListener("DOMContentLoaded", function () {
       localStorage.setItem("last_location", JSON.stringify(b));
 
       if (option == "init") {
-        myMarker = L.marker([current_lat, current_lng]).addTo(markers_group);
+        myMarker = L.marker([current_lat, current_lng], {
+          rotationAngle: 0,
+        }).addTo(markers_group);
 
         myMarker.setIcon(default_icon);
-
-        //myMarker._icon.classList.add("marker-1");
-        //myMarker.bindPopup("hello").openPopup();
+        document.getElementById("cross").style.opacity = 1;
 
         map.setView([current_lat, current_lng], 12);
 
@@ -383,8 +386,15 @@ document.addEventListener("DOMContentLoaded", function () {
         device_lat = crd.latitude;
         device_lng = crd.longitude;
         myMarker.setIcon(follow_icon);
-        //store location as fallout
+        document.getElementById("cross").style.opacity = 0;
 
+        if (crd.heading != null) {
+          //myMarker.setRotationAngle(crd.heading);
+        } else {
+          //myMarker.setRotationAngle(0);
+        }
+
+        //store location as fallout
         let b = [crd.latitude, crd.longitude];
         localStorage.setItem("last_location", JSON.stringify(b));
 
@@ -414,6 +424,8 @@ document.addEventListener("DOMContentLoaded", function () {
       state_geoloc = false;
       toaster("watching postion stopped", 2000);
       myMarker.setIcon(default_icon);
+      //myMarker.setRotationAngle(0);
+      document.getElementById("cross").style.opacity = 1;
 
       return true;
     }
@@ -735,23 +747,54 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function zoom_speed() {
     zoom_level = map.getZoom();
-
-    if (zoom_level < 6) {
+    if (zoom_level < 2) {
+      step = 10;
+    }
+    if (zoom_level > 2) {
+      step = 7.5;
+    }
+    if (zoom_level > 3) {
+      step = 5;
+    }
+    if (zoom_level > 4) {
       step = 1;
-      return step;
+    }
+    if (zoom_level > 5) {
+      step = 0.5;
     }
     if (zoom_level > 6) {
+      step = 0.25;
+    }
+    if (zoom_level > 7) {
       step = 0.1;
     }
-
+    if (zoom_level > 8) {
+      step = 0.075;
+    }
+    if (zoom_level > 9) {
+      step = 0.05;
+    }
+    if (zoom_level > 10) {
+      step = 0.025;
+    }
     if (zoom_level > 11) {
+      step = 0.01;
+    }
+    if (zoom_level > 12) {
+      step = 0.0075;
+    }
+    if (zoom_level > 13) {
+      step = 0.005;
+    }
+    if (zoom_level > 14) {
+      step = 0.0025;
+    }
+    if (zoom_level > 15) {
       step = 0.001;
     }
-
-    if (zoom_level > 14) {
-      step = 0.0001;
+    if (zoom_level > 16) {
+      step = 0.0005;
     }
-
     return step;
   }
 

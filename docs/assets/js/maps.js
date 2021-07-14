@@ -34,7 +34,7 @@ const maps = (() => {
     let neLng = map.getBounds()._northEast.lng;
 
     var bbox = L.latLngBounds(L.latLng(swLat, swLng), L.latLng(neLat, neLng));
-    tilesLayer.seed(bbox, 0, 12);
+    tilesLayer.seed(bbox, 0, zoom_depth);
 
     top_bar("", "downloading", "");
 
@@ -224,8 +224,6 @@ const maps = (() => {
 
     const today = new Date();
     const two_days_before = new Date(Date.now() - 24 * 3600 * 1000);
-
-    console.log(formatDate(two_days_before, "yy-mm-dd"));
 
     fetch(
       "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=" +

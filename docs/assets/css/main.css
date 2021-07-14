@@ -25,6 +25,10 @@
   display: none !important;
 }
 
+:focus {
+  outline: 0px;
+}
+
 @font-face {
   font-family: "Lato-Regular";
   src: url("../fonts/Lato-Regular.ttf");
@@ -43,6 +47,10 @@ body {
   -webkit-appearance: none;
   height: 100%;
   margin: 0;
+}
+
+p {
+  margin: 1rem 0 1rem 0;
 }
 
 h1 {
@@ -102,21 +110,62 @@ h2 {
   outline: 1px solid red;
 }
 
+/*///////////////////////////
+///MARKERS////////////////*/
+
 img.marker-1 {
   filter: hue-rotate(120deg);
 }
-
-/*///////////////////////////
-///MARKERS////////////////*/
 
 .earthquake-marker {
   background: red;
   border-radius: 50%;
 }
 
-.defaulte-marker {
-  background: pink;
+.default-marker {
+  background: red;
   border-radius: 50%;
+  border: 3px solid black;
+}
+
+.follow-marker {
+  position: relative;
+}
+
+.circle {
+  width: 15px;
+  height: 15px;
+  background-color: #ff0000;
+  border-radius: 50%;
+  position: absolute;
+  top: 23px;
+  left: 23px;
+}
+
+.ringring {
+  border: 3px solid #e9ece6;
+  -webkit-border-radius: 30px;
+  height: 25px;
+  width: 25px;
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  -webkit-animation: pulsate 1s ease-out;
+  -webkit-animation-iteration-count: infinite;
+  opacity: 0;
+}
+@-webkit-keyframes pulsate {
+  0% {
+    -webkit-transform: scale(0.1, 0.1);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    -webkit-transform: scale(1.2, 1.2);
+    opacity: 0;
+  }
 }
 
 /*///////////////////////////
@@ -376,7 +425,7 @@ div#finder div#close {
   min-width: 100vw;
 }
 
-div#finder div:focus {
+div#finder .item:focus {
   background: yellow;
   color: black;
 }
@@ -399,7 +448,8 @@ div#finder div#question div#question-text {
 
 div.panel {
   display: none;
-  margin: 40px 0 0 0;
+  margin: 40px 0px 0px 0px;
+  padding: 5px;
   height: 85vh;
   color: white;
   background: black;
@@ -441,6 +491,18 @@ div.panel button {
 
 div.panel button:focus {
   background: yellow;
+}
+div#impressum {
+  overflow: scroll;
+}
+div#impressum div.item:focus {
+  background: black;
+  color: white;
+}
+
+div#impressum a:focus button {
+  background: yellow !important;
+  outline: red !important;
 }
 
 /*/ //////////////////////////
