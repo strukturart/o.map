@@ -51,8 +51,6 @@ let setting = {
   openweather_api: localStorage.getItem("owm-key"),
 };
 
-console.log(JSON.stringify(setting));
-
 if (!navigator.geolocation) {
   toaster("Your device does't support geolocation!", 2000);
 }
@@ -276,6 +274,18 @@ document.addEventListener("DOMContentLoaded", function () {
   ////MARKER SET AND UPDATE/////////
   /////////////////////////
 
+  let myMarker;
+
+  var follow_icon = L.divIcon({
+    iconSize: [20, 20],
+    className: "follow-marker",
+  });
+
+  var default_icon = L.divIcon({
+    iconSize: [20, 20],
+    className: "default-marker",
+  });
+
   function getLocation(option) {
     marker_latlng = false;
 
@@ -310,9 +320,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (option == "init") {
         myMarker = L.marker([current_lat, current_lng]).addTo(markers_group);
-        myMarker._icon.classList.add("marker-1");
+
+        myMarker.setIcon(default_icon);
+
+        //myMarker._icon.classList.add("marker-1");
+        //myMarker.bindPopup("hello").openPopup();
 
         map.setView([current_lat, current_lng], 12);
+
         zoom_speed();
         document.querySelector("div#message div").innerText = "";
         return true;
@@ -367,8 +382,9 @@ document.addEventListener("DOMContentLoaded", function () {
         //store device location
         device_lat = crd.latitude;
         device_lng = crd.longitude;
-
+        myMarker.setIcon(follow_icon);
         //store location as fallout
+
         let b = [crd.latitude, crd.longitude];
         localStorage.setItem("last_location", JSON.stringify(b));
 
@@ -397,7 +413,7 @@ document.addEventListener("DOMContentLoaded", function () {
       geoLoc.clearWatch(watchID);
       state_geoloc = false;
       toaster("watching postion stopped", 2000);
-      console.log(state_geoloc);
+      myMarker.setIcon(default_icon);
 
       return true;
     }

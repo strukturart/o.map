@@ -110,21 +110,29 @@ h2 {
   outline: 1px solid red;
 }
 
+/*///////////////////////////
+///MARKERS////////////////*/
+
 img.marker-1 {
   filter: hue-rotate(120deg);
 }
-
-/*///////////////////////////
-///MARKERS////////////////*/
 
 .earthquake-marker {
   background: red;
   border-radius: 50%;
 }
 
-.defaulte-marker {
-  background: pink;
+.default-marker {
+  background: red;
   border-radius: 50%;
+  border: 3px solid black;
+}
+
+.follow-marker {
+  width: 40px;
+  height: 40px;
+  background: green;
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
 }
 
 /*///////////////////////////

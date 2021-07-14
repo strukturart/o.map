@@ -14,8 +14,6 @@ const maps = (() => {
     zoom_depth = 12;
   }
 
-  console.log(zoom_depth);
-
   let caching_events = function () {
     // Listen to cache hits and misses and spam the console
     tilesLayer.on("tilecachehit", function (ev) {
@@ -226,8 +224,6 @@ const maps = (() => {
 
     const today = new Date();
     const two_days_before = new Date(Date.now() - 24 * 3600 * 1000);
-
-    console.log(formatDate(two_days_before, "yy-mm-dd"));
 
     fetch(
       "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=" +
