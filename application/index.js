@@ -613,6 +613,19 @@ document.addEventListener("DOMContentLoaded", function () {
     bottom_bar("", "", "");
   });
 
+  let compass = function (degree) {
+    let a = "N";
+    if (degree == 0 || degress == 360) a = "North";
+    if (degree > 0 && degress < 90) a = "NorthEast";
+    if (degree == 90) a = "East";
+    if (degree > 90 && degress < 180) a = "SouthEast";
+    if (degree == 180) a = "South";
+    if (degree > 180 && degress < 270) a = "SouthWest";
+    if (degree == 270) a = "West";
+    if (degree > 270 && degress < 360) a = "NorthWest";
+    return a;
+  };
+
   ////////////////////////////////////////
   ////COORDINATIONS PANEL/////////////////
   ///////////////////////////////////////
@@ -683,6 +696,18 @@ document.addEventListener("DOMContentLoaded", function () {
           } else {
             document.querySelector(
               "div#coordinations div#heading"
+            ).style.display = "none";
+          }
+
+          if (current_heading) {
+            document.querySelector(
+              "div#coordinations div#compass"
+            ).style.display = "block";
+            document.querySelector("div#coordinations div#compass").innerText =
+              "compass " + compass();
+          } else {
+            document.querySelector(
+              "div#coordinations div#compass"
             ).style.display = "none";
           }
         }
