@@ -402,7 +402,8 @@ div#finder {
   padding: 5px;
   color: white;
   display: none;
-  overflow: hidden;
+  overflow: hidden !important;
+  max-height: 99vh !important;
 }
 
 div#finder div#custom-map-track {
@@ -453,14 +454,13 @@ div.panel {
   height: 85vh;
   color: white;
   background: black;
-  overflow: hidden;
+  overflow: hidden !important;
 }
 
 div#setting {
   top: 0;
   padding: 10px;
   overflow: hidden;
-
   z-index: 2000;
   width: 100vw;
   display: none;

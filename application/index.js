@@ -11,8 +11,6 @@ let current_heading;
 let device_lat;
 let device_lng;
 
-let zoom_level;
-let current_zoom_level;
 let new_lat = 0;
 let new_lng = 0;
 let curPos = 0;
@@ -39,7 +37,6 @@ let markers_group = new L.FeatureGroup();
 let save_mode; // to check save geojson or update json
 
 let caching_time = 86400000;
-let zoom_depth = 4;
 
 let settings_data = settings.load_settings();
 let setting = {
@@ -615,14 +612,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let compass = function (degree) {
     let a = "N";
-    if (degree == 0 || degress == 360) a = "North";
-    if (degree > 0 && degress < 90) a = "NorthEast";
+    if (degree == 0 || degree == 360) a = "North";
+    if (degree > 0 && degree < 90) a = "NorthEast";
     if (degree == 90) a = "East";
-    if (degree > 90 && degress < 180) a = "SouthEast";
+    if (degree > 90 && degree < 180) a = "SouthEast";
     if (degree == 180) a = "South";
-    if (degree > 180 && degress < 270) a = "SouthWest";
+    if (degree > 180 && degree < 270) a = "SouthWest";
     if (degree == 270) a = "West";
-    if (degree > 270 && degress < 360) a = "NorthWest";
+    if (degree > 270 && degree < 360) a = "NorthWest";
     return a;
   };
 
@@ -662,6 +659,8 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       update_view = setInterval(() => {
+        console.log(compass(current_heading));
+
         if (current_lat != "" && current_lng != "") {
           //when marker is loaded from menu
 
@@ -681,7 +680,7 @@ document.addEventListener("DOMContentLoaded", function () {
               "div#coordinations div#altitude"
             ).style.display = "block";
             document.querySelector("div#coordinations div#altitude").innerText =
-              "alt " + current_alt;
+              "alt " + current_alt.toFixed(2);
           } else {
             document.querySelector(
               "div#coordinations div#altitude"
@@ -692,23 +691,23 @@ document.addEventListener("DOMContentLoaded", function () {
               "div#coordinations div#heading"
             ).style.display = "block";
             document.querySelector("div#coordinations div#heading").innerText =
-              "heading " + current_heading;
+              "heading " + current_heading.toFixed(2);
           } else {
             document.querySelector(
               "div#coordinations div#heading"
             ).style.display = "none";
           }
 
-          if (current_heading) {
-            document.querySelector(
-              "div#coordinations div#compass"
-            ).style.display = "block";
+          document.querySelector(
+            "div#coordinations div#compass"
+          ).style.display = "block";
+
+          if (current_heading != null) {
             document.querySelector("div#coordinations div#compass").innerText =
-              "compass " + compass();
+              "compass " + compass(current_heading);
           } else {
-            document.querySelector(
-              "div#coordinations div#compass"
-            ).style.display = "none";
+            document.querySelector("div#coordinations div#compass").innerText =
+              "compass:  ";
           }
         }
       }, 1000);
@@ -771,7 +770,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function zoom_speed() {
-    zoom_level = map.getZoom();
+    let zoom_level = map.getZoom();
     if (zoom_level < 2) {
       step = 10;
     }
@@ -914,11 +913,12 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       if (move == "+1") {
-        if (tabIndex < items_list.length) {
+        if (tabIndex < items_list.length - 1) {
           tabIndex++;
           items_list[tabIndex].focus();
           document.activeElement.scrollIntoView({
-            block: "end",
+            block: "start",
+            behavior: "smooth",
           });
         }
       }
@@ -928,7 +928,8 @@ document.addEventListener("DOMContentLoaded", function () {
           tabIndex--;
           items_list[tabIndex].focus();
           document.activeElement.scrollIntoView({
-            block: "end",
+            block: "start",
+            behavior: "smooth",
           });
         }
       }
@@ -1207,6 +1208,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "0":
         if (windowOpen == "map") mozactivity.share_position();
+
         break;
 
       case "*":
