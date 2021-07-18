@@ -19,8 +19,9 @@
 </head>
 
 <body class="width-100 height-100">
-    <div id="message" class="flex justify-content-center align-item-center width-100 height-100">
-        <div></div>
+    <div id="intro" class="flex justify-content-center align-item-center width-100 height-100">
+        <div><img src="icons/icon-112-112.png"></div>
+        <div id="intro-footer">O.MAP Version 1.2</div>
     </div>
 
     <div id="goodbye" class="flex justify-content-center align-item-center width-100 height-100">
@@ -101,7 +102,9 @@
             <div id="altitude"></div>
             <div id="heading"></div>
             <div id="compass"></div>
+            <strong>Distances</strong>
             <div id="distance"></div>
+            <div id="target"></div>
             <div id="time"></div>
             <div id="weather">
                 <strong>weather forecast</strong>
@@ -154,25 +157,39 @@
             <h2>GPX</h2>
             <div id="gpx"></div>
         </div>
+
+
+
         <div class="panel" id="settings">
             <h2>Openweathermap</h2>
             <label for="owm-key">Openweathermap API-Key</label>
-            <input type="tel" class="item" id="owm-key" tabindex="0" />
+            <div class="item input-parent" tabindex="0">
+                <input type="tel" class="qr" id="owm-key" />
+            </div>
 
             <h2>Offline maps</h2>
             <label for="cache-time">After how many days should the maps be re-downloaded?</label>
-            <input  class="item" type="tel" pattern="^[0-9]*$" id="cache-time" tabindex="1" />
+            <div class="item input-parent" tabindex="1">
+                <input  type="tel" pattern="^[0-9]*$" id="cache-time" />
+            </div>
 
             <label for="cache-zoom">How much zoom level should be saved ?</label>
-            <input  class="item" type="tel" pattern="^[0-9]*$" min="0" max="18" id="cache-zoom" tabindex="2" />
+            <div class="item input-parent" tabindex="2">
+                <input  class="item" type="tel" pattern="^[0-9]*$" min="0" max="18" id="cache-zoom" />
+            </div>
 
             <button  class="item" id="clear-cache" tabindex="3">clear offline cache</button>
             <h2>Export</h2>
             <label for="export-path">Export path</label>
-            <input  class="item" type="text"   id="export-path" tabindex="4" />
+            <div class="item input-parent" tabindex="4">
+                <input  class="item" type="text"   id="export-path"  />
+            </div>
             
             <button tabindex="5" class="item" id="save-settings">save</button>
         </div>
+
+
+
         <div class="panel" id="impressum">
             
             <div tabindex="0" class="item">
