@@ -1,13 +1,6 @@
 "use strict";
 
 let step = 0.001;
-/*
-let current_lng;
-let current_lat;
-let current_alt;
-let altitude;
-let current_heading;
-*/
 
 //to store device loaction
 let device_lat;
@@ -56,8 +49,6 @@ if (!navigator.geolocation) {
   toaster("Your device does't support geolocation!", 2000);
 }
 
-document.querySelector("div#message div").innerText = "Welcome";
-
 //leaflet add basic map
 let map = L.map("map-container", {
   zoomControl: false,
@@ -67,7 +58,7 @@ let map = L.map("map-container", {
 
 document.addEventListener("DOMContentLoaded", function () {
   setTimeout(function () {
-    document.querySelector("div#message").style.display = "none";
+    document.querySelector("div#intro").style.display = "none";
 
     //get location if not an activity open url
     if (open_url === false) {
@@ -335,7 +326,6 @@ document.addEventListener("DOMContentLoaded", function () {
         map.setView([mainmarker.current_lat, mainmarker.current_lng], 12);
 
         zoom_speed();
-        document.querySelector("div#message div").innerText = "";
         return true;
       }
 
@@ -370,12 +360,15 @@ document.addEventListener("DOMContentLoaded", function () {
   let watchID;
   let state_geoloc = false;
 
+  let wakeLock;
+
   function geolocationWatch() {
     marker_latlng = false;
 
     let geoLoc = navigator.geolocation;
 
     if (state_geoloc == false) {
+      wakeLock = window.navigator.requestWakeLock("gps");
       toaster("watching postion started", 2000);
       state_geoloc = true;
 
@@ -426,6 +419,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (state_geoloc == true) {
       geoLoc.clearWatch(watchID);
+      wakeLock.unlock();
       state_geoloc = false;
       toaster("watching postion stopped", 2000);
       myMarker.setIcon(default_icon);
@@ -907,10 +901,21 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     top_bar("◀", finder_panels[count], "▶");
+
+    if (document.activeElement.classList.contains("input-parent")) {
+      document.activeElement.children[0].style.background = "yellow";
+      bottom_bar("", "edit", "");
+    }
   };
 
   function nav(move) {
     if (windowOpen == "finder") {
+      bottom_bar("", "", "");
+
+      var inputs = document.getElementsByTagName("input");
+      for (var i = 0; i < inputs.length; ++i) {
+        inputs[i].style.background = "white";
+      }
       //get items from current pannel
       let items = document.querySelectorAll(".item");
       let items_list = [];
@@ -940,6 +945,11 @@ document.addEventListener("DOMContentLoaded", function () {
             behavior: "smooth",
           });
         }
+      }
+
+      if (document.activeElement.classList.contains("input-parent")) {
+        document.activeElement.children[0].style.background = "yellow";
+        bottom_bar("", "edit", "");
       }
     }
   }
@@ -971,6 +981,17 @@ document.addEventListener("DOMContentLoaded", function () {
         myMarker = L.marker([current_lat, current_lng]).addTo(map);
         map.setView([current_lat, current_lng], 13);
         zoom_speed();
+      }
+    });
+  }
+
+  let t = document.getElementsByTagName("input");
+
+  for (let i = 0; i < t.length; i++) {
+    t[i].addEventListener("focus", function () {
+      if (document.activeElement.classList.contains("qr")) {
+        console.log("qr");
+        bottom_bar("", "QR", "");
       }
     });
   }
@@ -1040,7 +1061,10 @@ document.addEventListener("DOMContentLoaded", function () {
   function shortpress_action(param) {
     switch (param.key) {
       case "Backspace":
-        if (windowOpen == "finder") {
+        if (
+          windowOpen == "finder" &&
+          document.activeElement.tagName != "INPUT"
+        ) {
           top_bar("", "", "");
           bottom_bar("", "", "");
 
@@ -1106,7 +1130,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (windowOpen == "user-input" && save_mode != "geojson") {
           filename = user_input("return");
-          //save_delete_marker("save_marker");
           break;
         }
 
@@ -1146,6 +1169,13 @@ document.addEventListener("DOMContentLoaded", function () {
           });
 
           break;
+        }
+        if (
+          windowOpen == "finder" &&
+          document.activeElement.classList.contains("input-parent")
+        ) {
+          document.activeElement.children[0].focus();
+          //bottom_bar("", "", "");
         }
 
         if (windowOpen == "finder") {
@@ -1218,7 +1248,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "0":
         if (windowOpen == "map") mozactivity.share_position();
-
         break;
 
       case "*":
@@ -1233,14 +1262,20 @@ document.addEventListener("DOMContentLoaded", function () {
       case "ArrowRight":
         MovemMap("right");
 
-        if (windowOpen == "finder") {
+        if (
+          windowOpen == "finder" &&
+          document.activeElement.tagName != "INPUT"
+        ) {
           finder_navigation("+1");
         }
         break;
 
       case "ArrowLeft":
         MovemMap("left");
-        if (windowOpen == "finder") {
+        if (
+          windowOpen == "finder" &&
+          document.activeElement.tagName != "INPUT"
+        ) {
           finder_navigation("-1");
         }
         break;

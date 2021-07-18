@@ -36,6 +36,7 @@ const geojson = ((_) => {
       type: "application/json",
     });
     let sdcard = navigator.getDeviceStorage("sdcard");
+    alert(file_path_name)
     let requestAdd = sdcard.addNamed(geojson_file, file_path_name);
 
     requestAdd.onsuccess = function () {
