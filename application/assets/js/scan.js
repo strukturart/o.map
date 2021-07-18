@@ -67,15 +67,16 @@ const qr = ((_) => {
   let stop_scan = function () {
     const stream = video.srcObject;
     const tracks = stream.getTracks();
+    video.srcObject = null;
 
     tracks.forEach(function (track) {
       track.stop();
       document.getElementById("qr-screen").style.display = "none";
     });
 
-    video.srcObject = null;
-
     windowOpen = "finder";
+    finder_navigation("+1");
+    //document.querySelector('[tabindex="0"]').focus();
   };
 
   return {

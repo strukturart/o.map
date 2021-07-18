@@ -5,17 +5,6 @@ const module = (() => {
   var ruler_activ = false;
   let ruler_toggle = function () {
     if (ruler_activ) {
-      $(".leaflet-interactive").remove();
-      $("div.leaflet-ruler").addClass("leaflet-ruler-clicked");
-      $(
-        "div.leaflet-tooltip.result-tooltip.leaflet-zoom-animated.leaflet-tooltip-left"
-      ).remove();
-      $("div.leaflet-ruler").remove();
-      $(".result-tooltip").remove();
-      $(".moving-tooltip").remove();
-
-      L.control.ruler().remove();
-
       ruler_activ = false;
       navigator.spatialNavigationEnabled = false;
 
@@ -37,11 +26,9 @@ const module = (() => {
     let l = markers_group.getLayers();
     index = index + 1;
 
-    console.log(l.length);
-
     if (index > l.length - 1) index = 0;
 
-    map.setView(l[index]._latlng, current_zoom_level);
+    map.setView(l[index]._latlng, map.getZoom());
   };
 
   let calc_distance = function (from_lat, from_lng, to_lat, to_lng) {
