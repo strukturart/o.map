@@ -36,9 +36,20 @@ const module = (() => {
   };
 
   let calc_distance = function (from_lat, from_lng, to_lat, to_lng) {
-    distance = map.distance([from_lat, from_lng], [to_lat, to_lng]) / 1000;
+    let d = map.distance([from_lat, from_lng], [to_lat, to_lng]);
+    d = Math.ceil(d);
+    console.log(d);
+    let distance;
 
-    distance = Math.ceil(distance).toFixed(2);
+    if (d < 2000) {
+      console.log("m");
+
+      distance = d.toFixed(0) + " m";
+    } else {
+      console.log("km");
+      d = d / 1000;
+      distance = d.toFixed(0) + " km";
+    }
 
     return distance;
   };

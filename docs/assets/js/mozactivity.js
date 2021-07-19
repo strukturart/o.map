@@ -45,8 +45,21 @@ const mozactivity = (() => {
     };
   };
 
+  const getPath = function () {
+    var a = new MozActivity({
+      name: "pick",
+    });
+    a.onsuccess = function () {
+      alert(a.result);
+    };
+    a.onerror = function () {
+      alert("Failure when trying to pick");
+    };
+  };
+
   return {
     photo,
     share_position,
+    getPath,
   };
 })();

@@ -19,12 +19,6 @@
   box-sizing: border-box;
 }
 
-*::-webkit-scrollbar {
-  width: 0 !important;
-  background-color: transparent !important;
-  display: none !important;
-}
-
 :focus {
   outline: 0px;
 }
@@ -370,10 +364,11 @@ div#bottom-bar div#button-right {
 }
 
 /*///////////////////////////
-///MESSAGE////////////////*/
+///INTRO////////////////*/
 
-div#message {
-  position: absolute;
+div#intro {
+  max-width: 100vw;
+  position: fixed;
   z-index: 5;
   left: 0;
   top: 0;
@@ -383,11 +378,20 @@ div#message {
   padding: 5px;
 }
 
-div#message div {
+div#intro div {
   background: black;
   color: white;
   font-size: 14px;
   padding: 3px;
+}
+
+div#intro div#intro-footer {
+  position: absolute;
+  bottom: 20px;
+  font-size: 0.8rem;
+  text-align: center;
+  width: 100%;
+  left: 0px;
 }
 
 /*///////////////////////////
@@ -402,7 +406,8 @@ div#finder {
   padding: 5px;
   color: white;
   display: none;
-  overflow: hidden;
+  overflow: hidden !important;
+  max-height: 99vh !important;
 }
 
 div#finder div#custom-map-track {
@@ -453,14 +458,13 @@ div.panel {
   height: 85vh;
   color: white;
   background: black;
-  overflow: hidden;
+  overflow: hidden !important;
 }
 
 div#setting {
   top: 0;
   padding: 10px;
   overflow: hidden;
-
   z-index: 2000;
   width: 100vw;
   display: none;

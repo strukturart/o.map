@@ -656,16 +656,16 @@ document.addEventListener("DOMContentLoaded", function () {
           //when marker is loaded from menu
 
           let f = map.getCenter();
-
+          //distance to current position
           document.querySelector("div#coordinations div#distance").innerText =
             "to the current position: " +
-            module.calc_distance(device_lat, device_lng, f.lat, f.lng) +
-            " km";
+            module.calc_distance(device_lat, device_lng, f.lat, f.lng);
 
           document.querySelector("div#coordinations div#lat").innerText =
             "Lat " + mainmarker.current_lat.toFixed(5);
           document.querySelector("div#coordinations div#lng").innerText =
             "Lng " + mainmarker.current_lng.toFixed(5);
+
           if (mainmarker.current_alt) {
             document.querySelector(
               "div#coordinations div#altitude"
@@ -689,7 +689,7 @@ document.addEventListener("DOMContentLoaded", function () {
             ).style.display = "none";
           }
           //distance to target marker
-          if (target_marker != "") {
+          if (target_marker != null) {
             let k = document.querySelector("div#target");
             k.style.display = "block";
             k.innerText =
@@ -699,8 +699,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 device_lng,
                 target_marker.lat,
                 target_marker.lng
-              ) +
-              " km";
+              );
           }
 
           document.querySelector(

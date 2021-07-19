@@ -1,25 +1,13 @@
 "use strict";
 
 let step = 0.001;
-let current_lng;
-let current_lat;
-let current_alt;
-let altitude;
-let current_heading;
 
 //to store device loaction
 let device_lat;
 let device_lng;
 
-let zoom_level;
-let current_zoom_level;
-let new_lat = 0;
-let new_lng = 0;
-let curPos = 0;
-let myMarker = "";
 let windowOpen;
 let message_body = "";
-let tabIndex = 0;
 
 let tilesLayer;
 let tileLayer;
@@ -39,7 +27,15 @@ let markers_group = new L.FeatureGroup();
 let save_mode; // to check save geojson or update json
 
 let caching_time = 86400000;
-let zoom_depth = 4;
+
+let mainmarker = {
+  current_lng: 0,
+  current_lat: 0,
+  current_alt: 0,
+  current_heading: 0,
+};
+
+let target_marker;
 
 let settings_data = settings.load_settings();
 let setting = {
@@ -55,8 +51,6 @@ if (!navigator.geolocation) {
   toaster("Your device does't support geolocation!", 2000);
 }
 
-document.querySelector("div#message div").innerText = "Welcome";
-
 //leaflet add basic map
 let map = L.map("map-container", {
   zoomControl: false,
@@ -66,7 +60,7 @@ let map = L.map("map-container", {
 
 document.addEventListener("DOMContentLoaded", function () {
   setTimeout(function () {
-    document.querySelector("div#message").style.display = "none";
+    document.querySelector("div#intro").style.display = "none";
 
     //get location if not an activity open url
     if (open_url === false) {
@@ -204,6 +198,7 @@ document.addEventListener("DOMContentLoaded", function () {
   //////////////////////////////////
   ///MENU//////////////////////////
   /////////////////////////////////
+  let tabIndex = 0;
 
   let finder_tabindex = function () {
     //set tabindex
@@ -304,10 +299,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function success(pos) {
       let crd = pos.coords;
-      current_lat = crd.latitude;
-      current_lng = crd.longitude;
-      current_alt = crd.altitude;
-      current_heading = crd.heading;
+      mainmarker.current_lat = crd.latitude;
+      mainmarker.current_lng = crd.longitude;
+      mainmarker.current_alt = crd.altitude;
+      mainmarker.current_heading = crd.heading;
 
       //to store device loaction
       device_lat = crd.latitude;
@@ -322,22 +317,25 @@ document.addEventListener("DOMContentLoaded", function () {
       localStorage.setItem("last_location", JSON.stringify(b));
 
       if (option == "init") {
-        myMarker = L.marker([current_lat, current_lng], {
-          rotationAngle: 0,
-        }).addTo(markers_group);
+        myMarker = L.marker([
+          mainmarker.current_lat,
+          mainmarker.current_lng,
+        ]).addTo(markers_group);
 
         myMarker.setIcon(default_icon);
+        document.getElementById("cross").style.opacity = 1;
 
-        map.setView([current_lat, current_lng], 12);
+        map.setView([mainmarker.current_lat, mainmarker.current_lng], 12);
 
         zoom_speed();
-        document.querySelector("div#message div").innerText = "";
         return true;
       }
 
-      if (option == "update_marker" && current_lat != "") {
-        myMarker.setLatLng([current_lat, current_lng]).update();
-        map.flyTo(new L.LatLng(current_lat, current_lng));
+      if (option == "update_marker" && mainmarker.current_lat != "") {
+        myMarker
+          .setLatLng([mainmarker.current_lat, mainmarker.current_lng])
+          .update();
+        map.flyTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
         zoom_speed();
       }
     }
@@ -345,11 +343,11 @@ document.addEventListener("DOMContentLoaded", function () {
     function error(err) {
       toaster("Position not found, load last known position", 4000);
 
-      current_lat = setting.last_location[0];
-      current_lng = setting.last_location[1];
-      current_alt = 0;
+      mainmarker.current_lat = setting.last_location[0];
+      mainmarker.current_lng = setting.last_location[1];
+      mainmarker.current_alt = 0;
 
-      map.setView([current_lat, current_lng], 12);
+      map.setView([mainmarker.current_lat, mainmarker.current_lng], 12);
       zoom_speed();
       document.querySelector("div#message div").innerText = "";
       return false;
@@ -364,42 +362,46 @@ document.addEventListener("DOMContentLoaded", function () {
   let watchID;
   let state_geoloc = false;
 
+  let wakeLock;
+
   function geolocationWatch() {
     marker_latlng = false;
 
     let geoLoc = navigator.geolocation;
 
     if (state_geoloc == false) {
+      wakeLock = window.navigator.requestWakeLock("gps");
       toaster("watching postion started", 2000);
       state_geoloc = true;
 
       function showLocation(position) {
         let crd = position.coords;
 
-        current_lat = crd.latitude;
-        current_lng = crd.longitude;
-        current_alt = crd.altitude;
-        current_heading = crd.heading;
+        mainmarker.current_lat = crd.latitude;
+        mainmarker.current_lng = crd.longitude;
+        mainmarker.current_alt = crd.altitude;
+        mainmarker.current_heading = crd.heading;
 
         //store device location
         device_lat = crd.latitude;
         device_lng = crd.longitude;
         myMarker.setIcon(follow_icon);
-        console.log(crd.heading);
+        document.getElementById("cross").style.opacity = 0;
+
         if (crd.heading != null) {
-          myMarker.setRotationAngle(crd.heading);
+          //myMarker.setRotationAngle(crd.heading);
         } else {
-          myMarker.setRotationAngle(0);
+          //myMarker.setRotationAngle(0);
         }
 
         //store location as fallout
         let b = [crd.latitude, crd.longitude];
         localStorage.setItem("last_location", JSON.stringify(b));
 
-        map.flyTo(
-          new L.LatLng(position.coords.latitude, position.coords.longitude)
-        );
-        myMarker.setLatLng([current_lat, current_lng]).update();
+        map.flyTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
+        myMarker
+          .setLatLng([cmainmarker.current_lat, mainmarker.current_lng])
+          .update();
       }
 
       function errorHandler(err) {
@@ -419,10 +421,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (state_geoloc == true) {
       geoLoc.clearWatch(watchID);
+      wakeLock.unlock();
       state_geoloc = false;
       toaster("watching postion stopped", 2000);
       myMarker.setIcon(default_icon);
-      myMarker.setRotationAngle(0);
+      //myMarker.setRotationAngle(0);
+      document.getElementById("cross").style.opacity = 1;
 
       return true;
     }
@@ -597,18 +601,18 @@ document.addEventListener("DOMContentLoaded", function () {
     top_bar("", "", "");
   }
 
-  //qr scan listener
-  const qr_listener = document.querySelector("input#owm-key");
-  let qrscan = false;
-  qr_listener.addEventListener("focus", (event) => {
-    bottom_bar("", "qr", "");
-    qrscan = true;
-  });
-
-  qr_listener.addEventListener("blur", (event) => {
-    qrscan = false;
-    bottom_bar("", "", "");
-  });
+  let compass = function (degree) {
+    let a = "N";
+    if (degree == 0 || degree == 360) a = "North";
+    if (degree > 0 && degree < 90) a = "NorthEast";
+    if (degree == 90) a = "East";
+    if (degree > 90 && degree < 180) a = "SouthEast";
+    if (degree == 180) a = "South";
+    if (degree > 180 && degree < 270) a = "SouthWest";
+    if (degree == 270) a = "West";
+    if (degree > 270 && degree < 360) a = "NorthWest";
+    return a;
+  };
 
   ////////////////////////////////////////
   ////COORDINATIONS PANEL/////////////////
@@ -646,41 +650,69 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       update_view = setInterval(() => {
-        if (current_lat != "" && current_lng != "") {
+        console.log(JSON.stringify(mainmarker));
+
+        if (mainmarker.current_lat != "" && mainmarker.current_lng != "") {
           //when marker is loaded from menu
 
           let f = map.getCenter();
 
           document.querySelector("div#coordinations div#distance").innerText =
-            "Distance: " +
+            "to the current position: " +
             module.calc_distance(device_lat, device_lng, f.lat, f.lng) +
             " km";
 
           document.querySelector("div#coordinations div#lat").innerText =
-            "Lat " + current_lat.toFixed(5);
+            "Lat " + mainmarker.current_lat.toFixed(5);
           document.querySelector("div#coordinations div#lng").innerText =
-            "Lng " + current_lng.toFixed(5);
-          if (current_alt) {
+            "Lng " + mainmarker.current_lng.toFixed(5);
+          if (mainmarker.current_alt) {
             document.querySelector(
               "div#coordinations div#altitude"
             ).style.display = "block";
             document.querySelector("div#coordinations div#altitude").innerText =
-              "alt " + current_alt;
+              "alt " + mainmarker.current_alt.toFixed(2);
           } else {
             document.querySelector(
               "div#coordinations div#altitude"
             ).style.display = "none";
           }
-          if (current_heading) {
+          if (mainmarker.current_heading) {
             document.querySelector(
               "div#coordinations div#heading"
             ).style.display = "block";
             document.querySelector("div#coordinations div#heading").innerText =
-              "heading " + current_heading;
+              "heading " + mainmarker.current_heading.toFixed(2);
           } else {
             document.querySelector(
               "div#coordinations div#heading"
             ).style.display = "none";
+          }
+          //distance to target marker
+          if (target_marker != "") {
+            let k = document.querySelector("div#target");
+            k.style.display = "block";
+            k.innerText =
+              "to the goal marker: " +
+              module.calc_distance(
+                device_lat,
+                device_lng,
+                target_marker.lat,
+                target_marker.lng
+              ) +
+              " km";
+          }
+
+          document.querySelector(
+            "div#coordinations div#compass"
+          ).style.display = "block";
+
+          if (mainmarker.current_heading != null) {
+            document.querySelector("div#coordinations div#compass").innerText =
+              "compass " + compass(mainmarker.current_heading);
+          } else {
+            document.querySelector("div#coordinations div#compass").innerText =
+              "compass:  ";
           }
         }
       }, 1000);
@@ -743,24 +775,55 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function zoom_speed() {
-    zoom_level = map.getZoom();
-
-    if (zoom_level < 6) {
+    let zoom_level = map.getZoom();
+    if (zoom_level < 2) {
+      step = 10;
+    }
+    if (zoom_level > 2) {
+      step = 7.5;
+    }
+    if (zoom_level > 3) {
+      step = 5;
+    }
+    if (zoom_level > 4) {
       step = 1;
-      return step;
+    }
+    if (zoom_level > 5) {
+      step = 0.5;
     }
     if (zoom_level > 6) {
+      step = 0.25;
+    }
+    if (zoom_level > 7) {
       step = 0.1;
     }
-
+    if (zoom_level > 8) {
+      step = 0.075;
+    }
+    if (zoom_level > 9) {
+      step = 0.05;
+    }
+    if (zoom_level > 10) {
+      step = 0.025;
+    }
     if (zoom_level > 11) {
+      step = 0.01;
+    }
+    if (zoom_level > 12) {
+      step = 0.0075;
+    }
+    if (zoom_level > 13) {
+      step = 0.005;
+    }
+    if (zoom_level > 14) {
+      step = 0.0025;
+    }
+    if (zoom_level > 15) {
       step = 0.001;
     }
-
-    if (zoom_level > 14) {
-      step = 0.0001;
+    if (zoom_level > 16) {
+      step = 0.0005;
     }
-
     return step;
   }
 
@@ -773,35 +836,35 @@ document.addEventListener("DOMContentLoaded", function () {
     if (windowOpen == "map" || windowOpen == "coordinations") {
       let n = map.getCenter();
 
-      current_lat = n.lat;
-      current_lng = n.lng;
+      mainmarker.current_lat = n.lat;
+      mainmarker.current_lng = n.lng;
 
       if (direction == "left") {
         zoom_speed();
 
-        current_lng = n.lng - step;
-        map.panTo(new L.LatLng(current_lat, current_lng));
+        mainmarker.current_lng = n.lng - step;
+        map.panTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
       }
 
       if (direction == "right") {
         zoom_speed();
 
-        current_lng = n.lng + step;
-        map.panTo(new L.LatLng(current_lat, current_lng));
+        mainmarker.current_lng = n.lng + step;
+        map.panTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
       }
 
       if (direction == "up") {
         zoom_speed();
 
-        current_lat = n.lat + step;
-        map.panTo(new L.LatLng(current_lat, current_lng));
+        mainmarker.current_lat = n.lat + step;
+        map.panTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
       }
 
       if (direction == "down") {
         zoom_speed();
 
-        current_lat = n.lat - step;
-        map.panTo(new L.LatLng(current_lat, current_lng));
+        mainmarker.current_lat = n.lat - step;
+        map.panTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
       }
     }
   }
@@ -841,10 +904,21 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     top_bar("◀", finder_panels[count], "▶");
+
+    if (document.activeElement.classList.contains("input-parent")) {
+      document.activeElement.children[0].style.background = "yellow";
+      bottom_bar("", "edit", "");
+    }
   };
 
   function nav(move) {
     if (windowOpen == "finder") {
+      bottom_bar("", "", "");
+
+      var inputs = document.getElementsByTagName("input");
+      for (var i = 0; i < inputs.length; ++i) {
+        inputs[i].style.background = "white";
+      }
       //get items from current pannel
       let items = document.querySelectorAll(".item");
       let items_list = [];
@@ -855,11 +929,12 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       if (move == "+1") {
-        if (tabIndex < items_list.length) {
+        if (tabIndex < items_list.length - 1) {
           tabIndex++;
           items_list[tabIndex].focus();
           document.activeElement.scrollIntoView({
-            block: "end",
+            block: "start",
+            behavior: "smooth",
           });
         }
       }
@@ -869,9 +944,15 @@ document.addEventListener("DOMContentLoaded", function () {
           tabIndex--;
           items_list[tabIndex].focus();
           document.activeElement.scrollIntoView({
-            block: "end",
+            block: "start",
+            behavior: "smooth",
           });
         }
+      }
+
+      if (document.activeElement.classList.contains("input-parent")) {
+        document.activeElement.children[0].style.background = "yellow";
+        bottom_bar("", "edit", "");
       }
     }
   }
@@ -906,6 +987,31 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
+
+  //////////////////////////////
+  ///LISTENER//////////////////
+  /////////////////////////////
+  let t = document.getElementsByTagName("input");
+  for (let i = 0; i < t.length; i++) {
+    t[i].addEventListener("focus", function () {
+      if (document.activeElement.classList.contains("qr")) {
+        bottom_bar("", "QR", "");
+      }
+    });
+  }
+
+  //qr scan listener
+  const qr_listener = document.querySelector("input#owm-key");
+  let qrscan = false;
+  qr_listener.addEventListener("focus", (event) => {
+    bottom_bar("", "qr", "");
+    qrscan = true;
+  });
+
+  qr_listener.addEventListener("blur", (event) => {
+    qrscan = false;
+    bottom_bar("", "", "");
+  });
 
   //////////////////////////////
   ////KEYPAD HANDLER////////////
@@ -965,6 +1071,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  let selected_marker;
+
   ///////////////
   ////SHORTPRESS
   //////////////
@@ -972,7 +1080,10 @@ document.addEventListener("DOMContentLoaded", function () {
   function shortpress_action(param) {
     switch (param.key) {
       case "Backspace":
-        if (windowOpen == "finder") {
+        if (
+          windowOpen == "finder" &&
+          document.activeElement.tagName != "INPUT"
+        ) {
           top_bar("", "", "");
           bottom_bar("", "", "");
 
@@ -1038,7 +1149,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (windowOpen == "user-input" && save_mode != "geojson") {
           filename = user_input("return");
-          //save_delete_marker("save_marker");
           break;
         }
 
@@ -1069,6 +1179,13 @@ document.addEventListener("DOMContentLoaded", function () {
           settings.save_settings();
           break;
         }
+
+        if (windowOpen == "map" && selected_marker != "") {
+          target_marker = selected_marker._latlng;
+          selected_marker._icon.classList.add("marker-1");
+          toaster("marker selected", 4000);
+        }
+
         if (windowOpen == "finder" && qrscan == true) {
           windowOpen = "scan";
 
@@ -1078,6 +1195,14 @@ document.addEventListener("DOMContentLoaded", function () {
           });
 
           break;
+        }
+
+        if (
+          windowOpen == "finder" &&
+          document.activeElement.classList.contains("input-parent")
+        ) {
+          document.activeElement.children[0].focus();
+          //bottom_bar("", "", "");
         }
 
         if (windowOpen == "finder") {
@@ -1143,7 +1268,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "9":
         if (windowOpen == "map")
-          L.marker([current_lat, current_lng]).addTo(markers_group);
+          L.marker([mainmarker.current_lat, mainmarker.current_lng]).addTo(
+            markers_group
+          );
         break;
 
       case "0":
@@ -1151,7 +1278,7 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "*":
-        module.jump_to_layer();
+        selected_marker = module.select_marker();
 
         break;
 
@@ -1162,14 +1289,20 @@ document.addEventListener("DOMContentLoaded", function () {
       case "ArrowRight":
         MovemMap("right");
 
-        if (windowOpen == "finder") {
+        if (
+          windowOpen == "finder" &&
+          document.activeElement.tagName != "INPUT"
+        ) {
           finder_navigation("+1");
         }
         break;
 
       case "ArrowLeft":
         MovemMap("left");
-        if (windowOpen == "finder") {
+        if (
+          windowOpen == "finder" &&
+          document.activeElement.tagName != "INPUT"
+        ) {
           finder_navigation("-1");
         }
         break;
@@ -1191,7 +1324,7 @@ document.addEventListener("DOMContentLoaded", function () {
   ////////////////////////////////
 
   function handleKeyDown(evt) {
-    if (evt.key == "Backspace" && !$("input").is(":focus"))
+    if (evt.key == "Backspace" && document.activeElement.tagName != "INPUT")
       evt.preventDefault();
     if (!evt.repeat) {
       //evt.preventDefault();
@@ -1209,7 +1342,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function handleKeyUp(evt) {
-    //evt.preventDefault();
     if (evt.key == "Backspace") evt.preventDefault();
 
     clearTimeout(timeout);
