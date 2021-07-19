@@ -207,13 +207,15 @@ document.addEventListener("DOMContentLoaded", function () {
     let items_list = [];
     for (let i = 0; i < items.length; i++) {
       if (items[i].parentNode.style.display == "block") {
+        console.log(items.length);
+
         items_list.push(items[i]);
         t++;
         items_list[items_list.length - 1].setAttribute("tabIndex", t);
         items_list[0].focus();
       }
     }
-    document.querySelector("div#finder").style.display = "block";
+    //document.querySelector("div#finder").style.display = "block";
   };
 
   let show_finder = function () {
@@ -436,7 +438,31 @@ document.addEventListener("DOMContentLoaded", function () {
   /////MENU///////////////
   ////////////////////////
 
-  function addMapLayers(param) {
+  let markers_action = function () {
+    if (
+      document.activeElement.className == "item" &&
+      windowOpen == "markers_option"
+    ) {
+      let item_value = document.activeElement.getAttribute("data-action");
+
+      if (item_value == "set_target_marker") {
+        target_marker = selected_marker._latlng;
+        selected_marker._icon.classList.add("marker-1");
+        toaster("marker selected", 4000);
+        document.querySelector("div#markers-option").style.display = "none";
+        windowOpen = "map";
+      }
+
+      if (item_value == "remove_marker") {
+        map.removeLayer(selected_marker);
+        toaster("marker removed", 4000);
+        document.querySelector("div#markers-option").style.display = "none";
+        windowOpen = "map";
+      }
+    }
+  };
+
+  function addMapLayers() {
     if (document.activeElement.className == "item" && windowOpen == "finder") {
       //switch online maps
       let item_value = document.activeElement.getAttribute("data-map");
@@ -911,7 +937,7 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   function nav(move) {
-    if (windowOpen == "finder") {
+    if (windowOpen == "finder" || windowOpen == "markers_option") {
       bottom_bar("", "", "");
 
       var inputs = document.getElementsByTagName("input");
@@ -1080,13 +1106,15 @@ document.addEventListener("DOMContentLoaded", function () {
     switch (param.key) {
       case "Backspace":
         if (
-          windowOpen == "finder" &&
-          document.activeElement.tagName != "INPUT"
+          (windowOpen == "finder" &&
+            document.activeElement.tagName != "INPUT") ||
+          windowOpen == "markers_option"
         ) {
           top_bar("", "", "");
           bottom_bar("", "", "");
 
           document.querySelector("div#finder").style.display = "none";
+          document.querySelector("div#markers-option").style.display = "none";
           windowOpen = "map";
 
           break;
@@ -1120,6 +1148,11 @@ document.addEventListener("DOMContentLoaded", function () {
           user_input("close");
           save_mode = "";
           break;
+        }
+
+        if (selected_marker != null) {
+          bottom_bar("", "", "");
+          selected_marker = "";
         }
 
         break;
@@ -1180,9 +1213,18 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (windowOpen == "map" && selected_marker != "") {
-          target_marker = selected_marker._latlng;
-          selected_marker._icon.classList.add("marker-1");
-          toaster("marker selected", 4000);
+          document.querySelector("div#markers-option").style.display = "block";
+          document.querySelector("div#markers-option").children[0].focus();
+          finder_tabindex();
+          windowOpen = "markers_option";
+          bottom_bar("", "select", "");
+
+          break;
+        }
+
+        if (windowOpen == "markers_option" && selected_marker != "") {
+          markers_action();
+          break;
         }
 
         if (windowOpen == "finder" && qrscan == true) {
@@ -1201,7 +1243,6 @@ document.addEventListener("DOMContentLoaded", function () {
           document.activeElement.classList.contains("input-parent")
         ) {
           document.activeElement.children[0].focus();
-          //bottom_bar("", "", "");
         }
 
         if (windowOpen == "finder") {
@@ -1278,6 +1319,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "*":
         selected_marker = module.select_marker();
+        bottom_bar("cancel", "option", "");
 
         break;
 
@@ -1289,8 +1331,9 @@ document.addEventListener("DOMContentLoaded", function () {
         MovemMap("right");
 
         if (
-          windowOpen == "finder" &&
-          document.activeElement.tagName != "INPUT"
+          (windowOpen == "finder" &&
+            document.activeElement.tagName != "INPUT") ||
+          windowOpen == "coordinations"
         ) {
           finder_navigation("+1");
         }
@@ -1299,20 +1342,23 @@ document.addEventListener("DOMContentLoaded", function () {
       case "ArrowLeft":
         MovemMap("left");
         if (
-          windowOpen == "finder" &&
-          document.activeElement.tagName != "INPUT"
+          (windowOpen == "finder" &&
+            document.activeElement.tagName != "INPUT") ||
+          windowOpen == "coordinations"
         ) {
           finder_navigation("-1");
         }
         break;
 
       case "ArrowUp":
-        MovemMap("up");
+        if (windowOpen == "map" || windowOpen == "coordinations")
+          MovemMap("up");
         nav("-1");
         break;
 
       case "ArrowDown":
-        MovemMap("down");
+        if (windowOpen == "map" || windowOpen == "coordinations")
+          MovemMap("down");
         nav("+1");
         break;
     }

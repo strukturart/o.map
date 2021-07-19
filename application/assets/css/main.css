@@ -509,6 +509,30 @@ div#impressum a:focus button {
   outline: red !important;
 }
 
+div#markers-option {
+  background: black;
+  position: fixed;
+  z-index: 5;
+  display: none;
+}
+
+div#markers-option ul {
+  padding: 5px;
+  display: block;
+}
+
+div#markers-option div {
+  color: white;
+  margin: 0 0 10px 0;
+  padding: 5px;
+  background: gray;
+}
+
+div#markers-option div:focus {
+  background: yellow;
+  color: black;
+}
+
 /*/ //////////////////////////
 ///LOCATION////////////////*/
 
