@@ -47,6 +47,10 @@ let setting = {
   openweather_api: localStorage.getItem("owm-key"),
 };
 
+let status = {
+  marker_selection: false,
+};
+
 if (!navigator.geolocation) {
   toaster("Your device does't support geolocation!", 2000);
 }
@@ -264,6 +268,30 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  //////////////////////////
+  ///M A R K E R S//////////
+  //////////////////////////
+
+  var follow_icon = L.divIcon({
+    iconSize: [40, 40],
+    iconAnchor: [30, 40],
+    className: "follow-marker",
+    html: '<div class="ringring"></div><div class="follow"></div>',
+  });
+
+  var default_icon = L.icon({
+    iconUrl: "assets/css/images/marker-icon.png",
+    iconSize: [25, 40],
+    iconAnchor: [15, 40],
+  });
+
+  var goal_icon = L.divIcon({
+    iconSize: [40, 40],
+    iconAnchor: [30, 40],
+    className: "goal-marker",
+    html: '<div class="ringring"></div><div class="goal"></div>',
+  });
+
   ////////////////////
   ////GEOLOCATION/////
   ///////////////////
@@ -272,19 +300,6 @@ document.addEventListener("DOMContentLoaded", function () {
   /////////////////////////
 
   let myMarker;
-
-  var follow_icon = L.divIcon({
-    iconSize: [40, 40],
-    iconAnchor: [30, 40],
-    className: "follow-marker",
-    html: '<div class="ringring"></div><div class="circle"></div>',
-  });
-
-  var default_icon = L.icon({
-    iconUrl: "assets/css/images/marker-icon.png",
-    iconSize: [25, 40],
-    iconAnchor: [15, 40],
-  });
 
   function getLocation(option) {
     marker_latlng = false;
@@ -351,7 +366,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       map.setView([mainmarker.current_lat, mainmarker.current_lng], 12);
       zoom_speed();
-      document.querySelector("div#message div").innerText = "";
       return false;
     }
 
@@ -372,7 +386,6 @@ document.addEventListener("DOMContentLoaded", function () {
     let geoLoc = navigator.geolocation;
 
     if (state_geoloc == false) {
-      wakeLock = window.navigator.requestWakeLock("gps");
       toaster("watching postion started", 2000);
       state_geoloc = true;
 
@@ -402,7 +415,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         map.flyTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
         myMarker
-          .setLatLng([cmainmarker.current_lat, mainmarker.current_lng])
+          .setLatLng([mainmarker.current_lat, mainmarker.current_lng])
           .update();
       }
 
@@ -423,7 +436,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (state_geoloc == true) {
       geoLoc.clearWatch(watchID);
-      wakeLock.unlock();
       state_geoloc = false;
       toaster("watching postion stopped", 2000);
       myMarker.setIcon(default_icon);
@@ -447,8 +459,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (item_value == "set_target_marker") {
         target_marker = selected_marker._latlng;
-        selected_marker._icon.classList.add("marker-1");
-        toaster("marker selected", 4000);
+        selected_marker.setIcon(goal_icon);
+        toaster(
+          "goal marker set, press key 4 to be informed about the current distance in the info panel.",
+          4000
+        );
         document.querySelector("div#markers-option").style.display = "none";
         windowOpen = "map";
       }
@@ -459,6 +474,9 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelector("div#markers-option").style.display = "none";
         windowOpen = "map";
       }
+
+      bottom_bar("", "", "");
+      top_bar("", "", "");
     }
   };
 
@@ -903,7 +921,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let finder_navigation = function (dir) {
     tabIndex = 0;
-    bottom_bar("", "", "");
 
     let d = document.querySelectorAll("div.panel");
     for (let b = 0; b < d.length; b++) {
@@ -938,7 +955,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function nav(move) {
     if (windowOpen == "finder" || windowOpen == "markers_option") {
-      bottom_bar("", "", "");
+      bottom_bar("", "select", "");
 
       var inputs = document.getElementsByTagName("input");
       for (var i = 0; i < inputs.length; ++i) {
@@ -1110,12 +1127,12 @@ document.addEventListener("DOMContentLoaded", function () {
             document.activeElement.tagName != "INPUT") ||
           windowOpen == "markers_option"
         ) {
-          top_bar("", "", "");
-          bottom_bar("", "", "");
-
           document.querySelector("div#finder").style.display = "none";
           document.querySelector("div#markers-option").style.display = "none";
           windowOpen = "map";
+
+          top_bar("", "", "");
+          bottom_bar("", "", "");
 
           break;
         }
@@ -1152,7 +1169,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (selected_marker != null) {
           bottom_bar("", "", "");
-          selected_marker = "";
+          status.marker_selection = false;
         }
 
         break;
@@ -1212,7 +1229,7 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
-        if (windowOpen == "map" && selected_marker != "") {
+        if (windowOpen == "map" && status.marker_selection) {
           document.querySelector("div#markers-option").style.display = "block";
           document.querySelector("div#markers-option").children[0].focus();
           finder_tabindex();
@@ -1319,7 +1336,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "*":
         selected_marker = module.select_marker();
-        bottom_bar("cancel", "option", "");
 
         break;
 
@@ -1353,12 +1369,14 @@ document.addEventListener("DOMContentLoaded", function () {
       case "ArrowUp":
         if (windowOpen == "map" || windowOpen == "coordinations")
           MovemMap("up");
+
         nav("-1");
         break;
 
       case "ArrowDown":
         if (windowOpen == "map" || windowOpen == "coordinations")
           MovemMap("down");
+
         nav("+1");
         break;
     }

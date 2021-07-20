@@ -29,8 +29,9 @@ const module = (() => {
     if (index > l.length - 1) index = 0;
 
     map.setView(l[index]._latlng, map.getZoom());
-    //console.log(l[index]._leaflet_id);
-    let p = l[index]._leaflet_id;
+
+    status.marker_selection = true;
+    bottom_bar("cancel", "option", "");
 
     return l[index];
   };

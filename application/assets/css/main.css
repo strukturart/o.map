@@ -126,7 +126,9 @@ img.marker-1 {
   position: relative;
 }
 
-.circle {
+/*follow marker*/
+
+.follow {
   width: 15px;
   height: 15px;
   background-color: #ff0000;
@@ -148,6 +150,19 @@ img.marker-1 {
   -webkit-animation-iteration-count: infinite;
   opacity: 0;
 }
+
+/*goal marker*/
+
+.goal {
+  width: 15px;
+  height: 15px;
+  background-color: #281bd8;
+  border-radius: 50%;
+  position: absolute;
+  top: 23px;
+  left: 23px;
+}
+
 @-webkit-keyframes pulsate {
   0% {
     -webkit-transform: scale(0.1, 0.1);
