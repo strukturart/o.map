@@ -211,8 +211,6 @@ document.addEventListener("DOMContentLoaded", function () {
     let items_list = [];
     for (let i = 0; i < items.length; i++) {
       if (items[i].parentNode.style.display == "block") {
-        console.log(items.length);
-
         items_list.push(items[i]);
         t++;
         items_list[items_list.length - 1].setAttribute("tabIndex", t);
@@ -751,27 +749,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  //////////////////////////
-  ////SEARCH BOX////////////
-  /////////////////////////
-
-  function showSearch() {
-    bottom_bar("close", "select", "");
-    document.querySelector("div#search-box").style.display = "block";
-    document.querySelector("div#search-box input").focus();
-    document.querySelector("div#bottom-bar").style.display = "block";
-    windowOpen = "search";
-  }
-
-  function hideSearch() {
-    document.querySelector("div#bottom-bar").style.display = "none";
-    document.querySelector("div#search-box").style.display = "none";
-    document.querySelector("div#search-box input").value = "";
-    document.querySelector("div#search-box input").blur();
-    document.querySelector("div#olc").style.display = "none";
-    windowOpen = "map";
-  }
-
   /////////////////////
   ////ZOOM MAP/////////
   ////////////////////
@@ -970,6 +947,10 @@ document.addEventListener("DOMContentLoaded", function () {
             behavior: "smooth",
           });
         }
+
+        if (tabIndex == 0) {
+          window.scrollTo(0, 50);
+        }
       }
 
       if (document.activeElement.classList.contains("input-parent")) {
@@ -1132,7 +1113,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "SoftLeft":
         if (windowOpen == "search") {
-          hideSearch();
+          search.hideSearch();
           break;
         }
 
@@ -1256,12 +1237,10 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "2":
-        if (windowOpen == "map") showSearch();
+        if (windowOpen == "map") search.showSearch();
         break;
 
       case "3":
-        console.log(windowOpen);
-
         if (windowOpen == "map") {
           show_finder();
         }

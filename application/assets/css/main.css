@@ -470,7 +470,7 @@ div.panel {
   display: none;
   margin: 40px 0px 0px 0px;
   padding: 5px;
-  height: 85vh;
+  max-height: 75vh;
   color: white;
   background: black;
   overflow: hidden !important;
