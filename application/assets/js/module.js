@@ -29,10 +29,15 @@ const module = (() => {
     if (index > l.length - 1) index = 0;
 
     map.setView(l[index]._latlng, map.getZoom());
-
     status.marker_selection = true;
     bottom_bar("cancel", "option", "");
-
+    l[index].setIcon(maps.select_icon);
+    console.log(index - 1);
+    if (index - 1 == -1) {
+      l[l.length - 1].setIcon(maps.default_icon);
+    } else {
+      l[index - 1].setIcon(maps.default_icon);
+    }
     return l[index];
   };
 

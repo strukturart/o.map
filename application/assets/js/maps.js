@@ -2,6 +2,34 @@
 ////MAPS////////////
 ///////////////////
 const maps = (() => {
+  ///MARKER ICON
+  const follow_icon = L.divIcon({
+    iconSize: [40, 40],
+    iconAnchor: [30, 40],
+    className: "follow-marker",
+    html: '<div class="ringring"></div><div class="follow"></div>',
+  });
+
+  const default_icon = L.icon({
+    iconUrl: "assets/css/images/marker-icon.png",
+    iconSize: [25, 40],
+    iconAnchor: [15, 40],
+  });
+
+  const select_icon = L.icon({
+    iconUrl: "assets/css/images/marker-icon.png",
+    iconSize: [25, 40],
+    iconAnchor: [15, 40],
+    className: "marker-1",
+  });
+
+  const goal_icon = L.divIcon({
+    iconSize: [40, 40],
+    iconAnchor: [30, 40],
+    className: "goal-marker",
+    html: '<div class="ringring"></div><div class="goal"></div>',
+  });
+
   //caching settings from settings panel
   if (settings[1] != "") {
     caching_time = Number(settings[1]) * 86400000;
@@ -410,6 +438,10 @@ const maps = (() => {
       });
   }
   return {
+    follow_icon,
+    default_icon,
+    goal_icon,
+    select_icon,
     moon_map,
     earthquake_layer,
     toner_map,

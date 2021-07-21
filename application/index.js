@@ -272,26 +272,6 @@ document.addEventListener("DOMContentLoaded", function () {
   ///M A R K E R S//////////
   //////////////////////////
 
-  var follow_icon = L.divIcon({
-    iconSize: [40, 40],
-    iconAnchor: [30, 40],
-    className: "follow-marker",
-    html: '<div class="ringring"></div><div class="follow"></div>',
-  });
-
-  var default_icon = L.icon({
-    iconUrl: "assets/css/images/marker-icon.png",
-    iconSize: [25, 40],
-    iconAnchor: [15, 40],
-  });
-
-  var goal_icon = L.divIcon({
-    iconSize: [40, 40],
-    iconAnchor: [30, 40],
-    className: "goal-marker",
-    html: '<div class="ringring"></div><div class="goal"></div>',
-  });
-
   ////////////////////
   ////GEOLOCATION/////
   ///////////////////
@@ -339,7 +319,7 @@ document.addEventListener("DOMContentLoaded", function () {
           mainmarker.current_lng,
         ]).addTo(markers_group);
 
-        myMarker.setIcon(default_icon);
+        myMarker.setIcon(maps.default_icon);
         document.getElementById("cross").style.opacity = 1;
 
         map.setView([mainmarker.current_lat, mainmarker.current_lng], 12);
@@ -400,7 +380,7 @@ document.addEventListener("DOMContentLoaded", function () {
         //store device location
         device_lat = crd.latitude;
         device_lng = crd.longitude;
-        myMarker.setIcon(follow_icon);
+        myMarker.setIcon(maps.follow_icon);
         document.getElementById("cross").style.opacity = 0;
 
         if (crd.heading != null) {
@@ -438,7 +418,7 @@ document.addEventListener("DOMContentLoaded", function () {
       geoLoc.clearWatch(watchID);
       state_geoloc = false;
       toaster("watching postion stopped", 2000);
-      myMarker.setIcon(default_icon);
+      myMarker.setIcon(maps.default_icon);
       //myMarker.setRotationAngle(0);
       document.getElementById("cross").style.opacity = 1;
 
@@ -459,7 +439,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (item_value == "set_target_marker") {
         target_marker = selected_marker._latlng;
-        selected_marker.setIcon(goal_icon);
+        selected_marker.setIcon(maps.goal_icon);
         toaster(
           "goal marker set, press key 4 to be informed about the current distance in the info panel.",
           4000
@@ -865,7 +845,7 @@ document.addEventListener("DOMContentLoaded", function () {
       step = 0.001;
     }
     if (zoom_level > 16) {
-      step = 0.0005;
+      step = 0.0004;
     }
     return step;
   }
@@ -1156,6 +1136,12 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
+        if (status.marker_selection) {
+          bottom_bar("", "", "");
+          status.marker_selection = false;
+          break;
+        }
+
         if (windowOpen == "map") {
           ZoomMap("in");
           break;
@@ -1165,11 +1151,6 @@ document.addEventListener("DOMContentLoaded", function () {
           user_input("close");
           save_mode = "";
           break;
-        }
-
-        if (selected_marker != null) {
-          bottom_bar("", "", "");
-          status.marker_selection = false;
         }
 
         break;

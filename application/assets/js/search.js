@@ -11,7 +11,7 @@ $(document).ready(function () {
     showNoSuggestionNotice: true,
     paramName: "q",
     lookupLimit: 10,
-    deferRequestBy: 2000,
+    deferRequestBy: 1000,
     transformResult: function (response) {
       var obj = $.parseJSON(response);
       return {
@@ -30,20 +30,16 @@ $(document).ready(function () {
     },
     onSelect: function (suggestion) {
       let lat_lon = [suggestion.data_lat, suggestion.data_lon];
-      addMarker(lat_lon[0], lat_lon[1]);
+      map.setView([lat_lon[0], lat_lon[1]], 13);
+      hideSearch();
+
+      let n = map.getCenter();
+
+      mainmarker.current_lat = n.lat;
+      mainmarker.current_lng = n.lng;
+      toaster("press 9 to add an marker", 3000);
     },
   });
-
-  //add marker
-  function addMarker(lat, lng) {
-    map.setView([lat, lng], 13);
-    hideSearch();
-    current_lat = Number(lat);
-    current_lng = Number(lng);
- 
-    L.marker([current_lat, current_lng]).addTo(markers_group);
-    toaster("press 5 to save the search result as marker");
-  }
 
   //////////////////////////
   ////SEARCH BOX////////////
