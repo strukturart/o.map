@@ -217,7 +217,6 @@ document.addEventListener("DOMContentLoaded", function () {
         items_list[0].focus();
       }
     }
-    //document.querySelector("div#finder").style.display = "block";
   };
 
   let show_finder = function () {
@@ -911,6 +910,7 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   function nav(move) {
+    console.log(tabIndex);
     if (windowOpen == "finder" || windowOpen == "markers_option") {
       bottom_bar("", "select", "");
 
@@ -919,8 +919,11 @@ document.addEventListener("DOMContentLoaded", function () {
         inputs[i].style.background = "white";
       }
       //get items from current pannel
-      let items = document.querySelectorAll(".item");
+
+      let b = document.activeElement.parentNode;
+      let items = b.querySelectorAll(".item");
       let items_list = [];
+
       for (let i = 0; i < items.length; i++) {
         if (items[i].parentNode.style.display == "block") {
           items_list.push(items[i]);
@@ -1197,7 +1200,7 @@ document.addEventListener("DOMContentLoaded", function () {
           finder_tabindex();
           windowOpen = "markers_option";
           bottom_bar("", "select", "");
-
+          tabIndex = 0;
           break;
         }
 
