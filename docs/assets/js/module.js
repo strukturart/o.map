@@ -29,16 +29,33 @@ const module = (() => {
     if (index > l.length - 1) index = 0;
 
     map.setView(l[index]._latlng, map.getZoom());
-    //console.log(l[index]._leaflet_id);
-    let p = l[index]._leaflet_id;
-
+    status.marker_selection = true;
+    bottom_bar("cancel", "option", "");
+    l[index].setIcon(maps.select_icon);
+    console.log(index - 1);
+    if (index - 1 == -1) {
+      l[l.length - 1].setIcon(maps.default_icon);
+    } else {
+      l[index - 1].setIcon(maps.default_icon);
+    }
     return l[index];
   };
 
   let calc_distance = function (from_lat, from_lng, to_lat, to_lng) {
-    distance = map.distance([from_lat, from_lng], [to_lat, to_lng]) / 1000;
+    let d = map.distance([from_lat, from_lng], [to_lat, to_lng]);
+    d = Math.ceil(d);
+    console.log(d);
+    let distance;
 
-    distance = Math.ceil(distance).toFixed(2);
+    if (d < 2000) {
+      console.log("m");
+
+      distance = d.toFixed(0) + " m";
+    } else {
+      console.log("km");
+      d = d / 1000;
+      distance = d.toFixed(0) + " km";
+    }
 
     return distance;
   };

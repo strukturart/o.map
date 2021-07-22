@@ -1,7 +1,7 @@
 {
   "version": "1.1.0",
   "name": "o.map",
-  "description": "OpenStreetMap",
+  "description": "o.map map app",
   "launch_path": "/index.html",
   "type": "privileged",
   "fullscreen": "true",
@@ -23,7 +23,8 @@
           "application/gpx+xml",
           "text/xml",
           "application/xml",
-          "application/octet-stream"
+          "application/octet-stream",
+          "application/json"
         ]
       },
       "disposition": "inline",
@@ -41,6 +42,15 @@
       "disposition": "inline",
       "returnValue": true,
       "href": "/index.html"
+    },
+
+    "view": {
+      "filters": {
+        "type": "url"
+      },
+      "disposition": "inline",
+      "returnValue": true,
+      "href": "/index.html"
     }
   },
 
@@ -54,9 +64,8 @@
     },
 
     "video-capture": {
-			"description": "Reading Codes using the Camera"
-			},
-
+      "description": "Reading Codes using the Camera"
+    },
 
     "wake-lock": {},
     "power": {},
