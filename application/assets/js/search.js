@@ -51,11 +51,14 @@ const search = (() => {
     document.querySelector("div#search-box").style.display = "block";
     document.querySelector("div#search-box input").focus();
     document.querySelector("div#bottom-bar").style.display = "block";
-    toaster(
-      "you can search for locations, names or OLC. To search for OLC, start your search query with /",
-      4000
-    );
+
     windowOpen = "search";
+    setTimeout(function () {
+      toaster(
+        "you can search for locations, names or OLC. To search for OLC, start your search query with /",
+        4000
+      );
+    }, 3000);
 
     //$("#search").autocomplete().enable();
   };

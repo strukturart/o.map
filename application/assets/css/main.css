@@ -39,6 +39,7 @@ body {
   font-size: 0.95rem;
   line-height: 1.4rem;
   -webkit-appearance: none;
+  scroll-behavior: smooth;
   height: 100%;
   margin: 0;
 }
@@ -59,6 +60,20 @@ h2 {
   margin: 25px 0 5px 0;
   color: gray;
   text-transform: uppercase;
+}
+
+button {
+  width: 100%;
+  border-radius: 2px;
+  padding: 3px;
+}
+
+button:focus {
+  background: yellow;
+}
+
+input:focus {
+  background: yellow;
 }
 
 #goodbye {
@@ -499,18 +514,6 @@ div#settings label {
   display: block;
 }
 
-div#settings input:focus {
-  border: 2px solid yellow;
-  background: silver;
-}
-
-div.panel button {
-  padding: 3px;
-}
-
-div.panel button:focus {
-  background: yellow;
-}
 div#impressum {
   overflow: scroll;
 }

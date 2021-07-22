@@ -8,6 +8,7 @@ let device_lng;
 
 let windowOpen;
 let message_body = "";
+let selected_marker;
 
 let tilesLayer;
 let tileLayer;
@@ -910,9 +911,14 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   function nav(move) {
-    console.log(tabIndex);
     if (windowOpen == "finder" || windowOpen == "markers_option") {
       bottom_bar("", "select", "");
+
+      if (
+        document.activeElement.parentNode.classList.contains("input-parent")
+      ) {
+        document.activeElement.parentNode.focus();
+      }
 
       var inputs = document.getElementsByTagName("input");
       for (var i = 0; i < inputs.length; ++i) {
@@ -920,9 +926,11 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       //get items from current pannel
 
-      let b = document.activeElement.parentNode;
-      let items = b.querySelectorAll(".item");
+      let b;
       let items_list = [];
+
+      b = document.activeElement.parentNode;
+      let items = b.querySelectorAll(".item");
 
       for (let i = 0; i < items.length; i++) {
         if (items[i].parentNode.style.display == "block") {
@@ -952,7 +960,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (tabIndex == 0) {
-          window.scrollTo(0, 50);
+          //to do
+          window.scroll(0, 50);
+          //document.location.href = "#finder";
         }
       }
 
@@ -1076,8 +1086,6 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
     }
   }
-
-  let selected_marker;
 
   ///////////////
   ////SHORTPRESS
@@ -1310,9 +1318,8 @@ document.addEventListener("DOMContentLoaded", function () {
         MovemMap("right");
 
         if (
-          (windowOpen == "finder" &&
-            document.activeElement.tagName != "INPUT") ||
-          windowOpen == "coordinations"
+          windowOpen == "finder" &&
+          document.activeElement.tagName != "INPUT"
         ) {
           finder_navigation("+1");
         }
@@ -1321,9 +1328,8 @@ document.addEventListener("DOMContentLoaded", function () {
       case "ArrowLeft":
         MovemMap("left");
         if (
-          (windowOpen == "finder" &&
-            document.activeElement.tagName != "INPUT") ||
-          windowOpen == "coordinations"
+          windowOpen == "finder" &&
+          document.activeElement.tagName != "INPUT"
         ) {
           finder_navigation("-1");
         }

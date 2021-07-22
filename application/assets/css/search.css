@@ -8,7 +8,7 @@ div#olc {
   padding: 5px;
   background: white;
   color: black;
-  z-index: 3000;
+  z-index: 5;
   width: 100%;
   display: none;
 }
@@ -19,7 +19,7 @@ div#search-box {
   overflow: hidden;
   padding: 5px;
   position: fixed;
-  z-index: 2000;
+  z-index: 5;
   height: 35px;
   display: none;
 }
@@ -29,6 +29,7 @@ div#search-box input {
   display: block;
   height: 20px;
   padding: 3px;
+  background: white !important;
 }
 
 .autocomplete-suggestions {
