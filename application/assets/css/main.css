@@ -66,9 +66,23 @@ button {
   width: 100%;
   border-radius: 2px;
   padding: 3px;
+  margin: 0 0 5px 0;
 }
 
 button:focus {
+  background: yellow;
+}
+
+a.button {
+  width: 100%;
+  display: block;
+  border-radius: 2px;
+  padding: 3px;
+  text-decoration: none;
+  color: white;
+}
+
+a.button:focus {
   background: yellow;
 }
 

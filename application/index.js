@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelector("div#layers").innerHTML = "";
 
     let el = document.querySelector("div#maps");
-
+    el.innerHTML = "";
     el.insertAdjacentHTML(
       "afterend",
       '<div class="item" data-map="toner">Toner <i>Map</i></div>'
@@ -220,8 +220,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 
-  let show_finder = function () {
+  let open_finder = function () {
     finder_tabindex();
+    wikilocation.load();
     document.querySelector("div#finder").style.display = "block";
     finder_navigation("start");
     windowOpen = "finder";
@@ -640,7 +641,7 @@ document.addEventListener("DOMContentLoaded", function () {
   ////COORDINATIONS PANEL/////////////////
   ///////////////////////////////////////
   let corr_toogle = false;
-  function coordinations() {
+  let coordinations = function () {
     windowOpen = "coordinations";
     let update_view;
     if (!corr_toogle) {
@@ -747,7 +748,7 @@ document.addEventListener("DOMContentLoaded", function () {
       clearInterval(update_view);
       corr_toogle = false;
     }
-  }
+  };
 
   /////////////////////
   ////ZOOM MAP/////////
@@ -873,7 +874,13 @@ document.addEventListener("DOMContentLoaded", function () {
   //FINDER NAVIGATION//
   /////////////////////
 
-  let finder_panels = ["mapstracks", "settings", "shortcuts", "impressum"];
+  let finder_panels = [
+    "mapstracks",
+    "settings",
+    "wikilocation",
+    "shortcuts",
+    "impressum",
+  ];
   let count = 0;
 
   let finder_navigation = function (dir) {
@@ -1177,6 +1184,13 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "Enter":
+        if (
+          document.activeElement.tagName == "BUTTON" &&
+          document.activeElement.classList.contains("link")
+        ) {
+          window.open(document.activeElement.getAttribute("data-href"));
+          break;
+        }
         if (windowOpen == "search") {
           L.marker([olc_lat_lng[0], olc_lat_lng[1]]).addTo(map);
           map.setView([olc_lat_lng[0], olc_lat_lng[1]], 13);
@@ -1253,7 +1267,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "3":
         if (windowOpen == "map") {
-          show_finder();
+          open_finder();
         }
 
         break;
@@ -1268,6 +1282,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "5":
         if (windowOpen == "map") {
+          L.marker([mainmarker.current_lat, mainmarker.current_lng]).addTo(
+            markers_group
+          );
           save_mode = "geojson-single";
           user_input("open", now());
           document.getElementById("user-input-description").innerText =

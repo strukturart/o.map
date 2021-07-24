@@ -78,15 +78,13 @@ const search = (() => {
 
   document.getElementById("search").addEventListener("input", function () {
     let input_val = document.querySelector("input#search").value;
-    var n = input_val.startsWith("/");
-    if (n) {
-      input_val = input_val.replace("/", "");
-      document.getElementById("search").autocomplete().disable();
 
-      document.querySelector("div.autocomplete-suggestions").style.display =
-        "none";
-      document.querySelector("div.autocomplete-suggestion").style.display =
-        "none";
+    if (input_val.startsWith("/")) {
+      input_val = input_val.replace("/", "");
+      $("#search").autocomplete().disable();
+
+      //document.querySelector("div.autocomplete-suggestions").style.display ="none";
+      //document.querySelector("div.autocomplete-suggestion").style.display ="none";
       document.querySelector("div#olc").style.display = "block";
       document.querySelector("#olc").innerText = OLC.decode(input_val);
 
@@ -96,14 +94,14 @@ const search = (() => {
         olc_lat_lng = ll.split(",");
         map.setView([olc_lat_lng[0], olc_lat_lng[1]], 13);
       }
+
+      return true;
     }
 
-    if (n == false) {
-      document.querySelector("div.autocomplete-suggestions").style.display =
-        "block";
-      document.querySelector("div#olc").style.display = "none";
-      ac.autocomplete().enable();
-    }
+    document.querySelector("div.autocomplete-suggestions").style.display =
+      "block";
+    document.querySelector("div#olc").style.display = "none";
+    ac.autocomplete().enable();
   });
 
   return {
