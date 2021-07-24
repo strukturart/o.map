@@ -41,6 +41,9 @@ const wikilocation = (() => {
     };
 
     let write_data = function (json) {
+      while (el.firstChild) {
+        el.removeChild(el.firstChild);
+      }
       json.query.geosearch.forEach(function (element) {
         el.insertAdjacentHTML(
           "afterbegin",
