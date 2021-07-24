@@ -30,10 +30,13 @@ let save_mode; // to check save geojson or update json
 let caching_time = 86400000;
 
 let mainmarker = {
-  current_lng: 0,
-  current_lat: 0,
-  current_alt: 0,
-  current_heading: 0,
+  current_lng: "unknown",
+  current_lat: "unknown",
+  current_alt: "unknown",
+  current_heading: "unknown",
+  accuracy: "unknown",
+  map: "unknown",
+  last_location: JSON.parse(localStorage.getItem("last_location")),
 };
 
 let target_marker;
@@ -44,7 +47,6 @@ let setting = {
   owm_key: localStorage.getItem("owm-key"),
   cache_time: localStorage.getItem("cache-time"),
   cache_zoom: localStorage.getItem("cache-zoom"),
-  last_location: JSON.parse(localStorage.getItem("last_location")),
   openweather_api: localStorage.getItem("owm-key"),
 };
 
@@ -299,6 +301,7 @@ document.addEventListener("DOMContentLoaded", function () {
       mainmarker.current_lng = crd.longitude;
       mainmarker.current_alt = crd.altitude;
       mainmarker.current_heading = crd.heading;
+      mainmarker.accuracy = crd.accuracy;
 
       //to store device loaction
       device_lat = crd.latitude;
@@ -339,8 +342,8 @@ document.addEventListener("DOMContentLoaded", function () {
     function error(err) {
       toaster("Position not found, load last known position", 4000);
 
-      mainmarker.current_lat = setting.last_location[0];
-      mainmarker.current_lng = setting.last_location[1];
+      mainmarker.current_lat = mainmarker.last_location[0];
+      mainmarker.current_lng = mainmarker.last_location[1];
       mainmarker.current_alt = 0;
 
       map.setView([mainmarker.current_lat, mainmarker.current_lng], 12);
@@ -375,6 +378,7 @@ document.addEventListener("DOMContentLoaded", function () {
         mainmarker.current_lng = crd.longitude;
         mainmarker.current_alt = crd.altitude;
         mainmarker.current_heading = crd.heading;
+        mainmarker.accuracy = crd.accuracy;
 
         //store device location
         device_lat = crd.latitude;
@@ -655,11 +659,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
         function openweather_callback(some) {
           document.getElementById("temp").innerText =
-            some.list[0].main.temp + " °C";
+            some.hourly[0].temp + " °C";
+
           document.getElementById("icon").src =
             "https://openweathermap.org/img/w/" +
-            some.list[0].weather[0].icon +
+            some.hourly[0].weather[0].icon +
             ".png";
+
+          let sunset_ts = new Date(some.current.sunset * 1000);
+          let sunset = sunset_ts.getHours() + ":" + sunset_ts.getMinutes();
+
+          let sunrise_ts = new Date(some.current.sunrise * 1000);
+          let sunrise = sunrise_ts.getHours() + ":" + sunrise_ts.getMinutes();
+
+          document.getElementById("sunset").innerText = sunset;
+          document.getElementById("sunrise").innerText = sunrise;
         }
 
         let c = map.getCenter();
@@ -681,8 +695,13 @@ document.addEventListener("DOMContentLoaded", function () {
           let f = map.getCenter();
           //distance to current position
           document.querySelector("div#coordinations div#distance").innerText =
-            "to the current position: " +
+            "to device: " +
             module.calc_distance(device_lat, device_lng, f.lat, f.lng);
+
+          //accurancy
+          document.querySelector(
+            "div#coordinations div#accuracy span"
+          ).innerText = mainmarker.accuracy.toFixed(2);
 
           document.querySelector("div#coordinations div#lat").innerText =
             "Lat " + mainmarker.current_lat.toFixed(5);
@@ -874,14 +893,17 @@ document.addEventListener("DOMContentLoaded", function () {
   //FINDER NAVIGATION//
   /////////////////////
 
-  let finder_panels = [
-    "mapstracks",
-    "settings",
-    "wikilocation",
-    "shortcuts",
-    "impressum",
-  ];
+  let finder_panels = [];
   let count = 0;
+
+  let panels = document.querySelectorAll("div#finder div.panel");
+
+  for (let i = 0; i < panels.length; i++) {
+    finder_panels.push({
+      name: panels[i].getAttribute("name"),
+      id: panels[i].getAttribute("id"),
+    });
+  }
 
   let finder_navigation = function (dir) {
     tabIndex = 0;
@@ -892,24 +914,24 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (dir == "start") {
-      document.getElementById(finder_panels[count]).style.display = "block";
+      document.getElementById(finder_panels[count].id).style.display = "block";
       finder_tabindex();
     }
 
     if (dir == "+1") {
       count++;
       if (count > finder_panels.length - 1) count = finder_panels.length - 1;
-      document.getElementById(finder_panels[count]).style.display = "block";
+      document.getElementById(finder_panels[count].id).style.display = "block";
       finder_tabindex();
     }
     if (dir == "-1") {
       count--;
       if (count < 0) count = 0;
-      document.getElementById(finder_panels[count]).style.display = "block";
+      document.getElementById(finder_panels[count].id).style.display = "block";
       finder_tabindex();
     }
 
-    top_bar("◀", finder_panels[count], "▶");
+    top_bar("◀", finder_panels[count].name, "▶");
 
     if (document.activeElement.classList.contains("input-parent")) {
       document.activeElement.children[0].style.background = "yellow";
