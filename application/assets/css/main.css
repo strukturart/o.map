@@ -73,6 +73,25 @@ button:focus {
   background: yellow;
 }
 
+textarea {
+  background: white;
+  width: 100%;
+}
+
+label {
+  color: white;
+  margin: 0 0 10px 0;
+  padding: 5px;
+  display: block;
+}
+
+div.textarea-footer {
+  font-size: 0.6rem;
+  background: none !important;
+  margin: -3px 0;
+  color: black;
+}
+
 a.button {
   width: 100%;
   display: block;

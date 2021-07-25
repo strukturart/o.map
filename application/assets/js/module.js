@@ -32,12 +32,29 @@ const module = (() => {
     status.marker_selection = true;
     bottom_bar("cancel", "option", "");
     l[index].setIcon(maps.select_icon);
-    console.log(index - 1);
+
     if (index - 1 == -1) {
       l[l.length - 1].setIcon(maps.default_icon);
+
+      l[l.length - 1].closePopup();
     } else {
       l[index - 1].setIcon(maps.default_icon);
+      l[index - 1].closePopup();
     }
+
+    //popup
+    document.querySelector("textarea#popup").value = "";
+    let pu = l[index].getPopup();
+
+    if (pu != undefined) {
+      selectedmarker.popup = pu._content;
+      document.querySelector("textarea#popup").value = pu._content;
+      //show popup
+      setTimeout(function () {
+        l[index].openPopup();
+      }, 1000);
+    }
+
     return l[index];
   };
 

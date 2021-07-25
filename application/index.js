@@ -39,6 +39,10 @@ let mainmarker = {
   last_location: JSON.parse(localStorage.getItem("last_location")),
 };
 
+let selectedmarker = {
+  popup: "",
+};
+
 let target_marker;
 
 let settings_data = settings.load_settings();
@@ -458,10 +462,26 @@ document.addEventListener("DOMContentLoaded", function () {
         windowOpen = "map";
       }
 
+      if (item_value == "save_marker") {
+        document.querySelector("div#markers-option").style.display = "none";
+        save_mode = "geojson-single";
+        user_input("open", now());
+        document.getElementById("user-input-description").innerText =
+          "save this marker as geojson file";
+        //windowOpen = "map";
+      }
+
       bottom_bar("", "", "");
       top_bar("", "", "");
     }
   };
+
+  const marker_text = document.querySelector("textarea");
+  marker_text.addEventListener("change", (event) => {
+    let c = document.querySelector("textarea#popup").value;
+
+    selected_marker.bindPopup(c).openPopup();
+  });
 
   function addMapLayers() {
     if (document.activeElement.className == "item" && windowOpen == "finder") {
@@ -542,7 +562,9 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       if (item_value == "coordinations") {
-        coordinations("show");
+        document.querySelector("div#finder").style.display = "none";
+
+        coordinations();
       }
 
       if (item_value == "savelocation") {
@@ -599,16 +621,19 @@ document.addEventListener("DOMContentLoaded", function () {
               // Marker Icon
               pointToLayer: function (feature, latlng) {
                 let t = L.marker(latlng);
+
+                console.log(feature.properties.popup);
+                if (feature.properties.popup != "") {
+                  t.bindPopup(feature.properties.popup);
+                }
+
                 t.addTo(markers_group);
                 map.flyTo(latlng);
                 windowOpen = "map";
-                json_modified = true;
               },
 
               // Popup
-              onEachFeature: function (feature, layer) {
-                console.log(feature);
-              },
+              onEachFeature: function (feature, layer) {},
             }).addTo(map);
             document.querySelector("div#finder").style.display = "none";
 
@@ -644,129 +669,115 @@ document.addEventListener("DOMContentLoaded", function () {
   ////////////////////////////////////////
   ////COORDINATIONS PANEL/////////////////
   ///////////////////////////////////////
-  let corr_toogle = false;
   let coordinations = function () {
     windowOpen = "coordinations";
-    let update_view;
-    if (!corr_toogle) {
-      corr_toogle = true;
-      document.querySelector("div#finder").style.display = "none";
-      document.querySelector("div#coordinations").style.display = "block";
 
-      if (setting.openweather_api && setting.openweather_api != undefined) {
-        document.querySelector("div#coordinations div#weather").style.display =
-          "block";
+    document.querySelector("div#finder").style.display = "none";
+    document.querySelector("div#coordinations").style.display = "block";
 
-        function openweather_callback(some) {
-          document.getElementById("temp").innerText =
-            some.hourly[0].temp + " °C";
+    if (setting.openweather_api && setting.openweather_api != undefined) {
+      document.querySelector("div#coordinations div#weather").style.display =
+        "block";
 
-          document.getElementById("icon").src =
-            "https://openweathermap.org/img/w/" +
-            some.hourly[0].weather[0].icon +
-            ".png";
+      function openweather_callback(some) {
+        document.getElementById("temp").innerText = some.hourly[0].temp + " °C";
 
-          let sunset_ts = new Date(some.current.sunset * 1000);
-          let sunset = sunset_ts.getHours() + ":" + sunset_ts.getMinutes();
+        document.getElementById("icon").src =
+          "https://openweathermap.org/img/w/" +
+          some.hourly[0].weather[0].icon +
+          ".png";
 
-          let sunrise_ts = new Date(some.current.sunrise * 1000);
-          let sunrise = sunrise_ts.getHours() + ":" + sunrise_ts.getMinutes();
+        let sunset_ts = new Date(some.current.sunset * 1000);
+        let sunset = sunset_ts.getHours() + ":" + sunset_ts.getMinutes();
 
-          document.getElementById("sunset").innerText = sunset;
-          document.getElementById("sunrise").innerText = sunrise;
-        }
+        let sunrise_ts = new Date(some.current.sunrise * 1000);
+        let sunrise = sunrise_ts.getHours() + ":" + sunrise_ts.getMinutes();
 
-        let c = map.getCenter();
-
-        weather.openweather_call(
-          c.lat,
-          c.lng,
-          setting.openweather_api,
-          openweather_callback
-        );
+        document.getElementById("sunset").innerText = sunset;
+        document.getElementById("sunrise").innerText = sunrise;
       }
 
-      update_view = setInterval(() => {
-        console.log(JSON.stringify(mainmarker));
+      let c = map.getCenter();
 
-        if (mainmarker.current_lat != "" && mainmarker.current_lng != "") {
-          //when marker is loaded from menu
+      weather.openweather_call(
+        c.lat,
+        c.lng,
+        setting.openweather_api,
+        openweather_callback
+      );
+    }
 
-          let f = map.getCenter();
-          //distance to current position
-          document.querySelector("div#coordinations div#distance").innerText =
-            "to device: " +
-            module.calc_distance(device_lat, device_lng, f.lat, f.lng);
+    let update_view = setInterval(() => {
+      if (mainmarker.current_lat != "" && mainmarker.current_lng != "") {
+        //when marker is loaded from menu
 
-          //accurancy
+        let f = map.getCenter();
+        //distance to current position
+        document.querySelector("div#coordinations div#distance").innerText =
+          "to device: " +
+          module.calc_distance(device_lat, device_lng, f.lat, f.lng);
+
+        //accurancy
+        document.querySelector(
+          "div#coordinations div#accuracy span"
+        ).innerText = mainmarker.accuracy.toFixed(2);
+
+        document.querySelector("div#coordinations div#lat").innerText =
+          "Lat " + mainmarker.current_lat.toFixed(5);
+        document.querySelector("div#coordinations div#lng").innerText =
+          "Lng " + mainmarker.current_lng.toFixed(5);
+
+        if (mainmarker.current_alt) {
           document.querySelector(
-            "div#coordinations div#accuracy span"
-          ).innerText = mainmarker.accuracy.toFixed(2);
-
-          document.querySelector("div#coordinations div#lat").innerText =
-            "Lat " + mainmarker.current_lat.toFixed(5);
-          document.querySelector("div#coordinations div#lng").innerText =
-            "Lng " + mainmarker.current_lng.toFixed(5);
-
-          if (mainmarker.current_alt) {
-            document.querySelector(
-              "div#coordinations div#altitude"
-            ).style.display = "block";
-            document.querySelector("div#coordinations div#altitude").innerText =
-              "alt " + mainmarker.current_alt.toFixed(2);
-          } else {
-            document.querySelector(
-              "div#coordinations div#altitude"
-            ).style.display = "none";
-          }
-          if (mainmarker.current_heading) {
-            document.querySelector(
-              "div#coordinations div#heading"
-            ).style.display = "block";
-            document.querySelector("div#coordinations div#heading").innerText =
-              "heading " + mainmarker.current_heading.toFixed(2);
-          } else {
-            document.querySelector(
-              "div#coordinations div#heading"
-            ).style.display = "none";
-          }
-          //distance to target marker
-          if (target_marker != null) {
-            let k = document.querySelector("div#target");
-            k.style.display = "block";
-            k.innerText =
-              "to the goal marker: " +
-              module.calc_distance(
-                device_lat,
-                device_lng,
-                target_marker.lat,
-                target_marker.lng
-              );
-          }
-
-          document.querySelector(
-            "div#coordinations div#compass"
+            "div#coordinations div#altitude"
           ).style.display = "block";
-
-          if (mainmarker.current_heading != null) {
-            document.querySelector("div#coordinations div#compass").innerText =
-              "compass " + compass(mainmarker.current_heading);
-          } else {
-            document.querySelector("div#coordinations div#compass").innerText =
-              "compass:  ";
-          }
+          document.querySelector("div#coordinations div#altitude").innerText =
+            "alt " + mainmarker.current_alt.toFixed(2);
+        } else {
+          document.querySelector(
+            "div#coordinations div#altitude"
+          ).style.display = "none";
         }
-      }, 1000);
+        if (mainmarker.current_heading) {
+          document.querySelector(
+            "div#coordinations div#heading"
+          ).style.display = "block";
+          document.querySelector("div#coordinations div#heading").innerText =
+            "heading " + mainmarker.current_heading.toFixed(2);
+        } else {
+          document.querySelector(
+            "div#coordinations div#heading"
+          ).style.display = "none";
+        }
+        //distance to target marker
+        if (target_marker != null) {
+          let k = document.querySelector("div#target");
+          k.style.display = "block";
+          k.innerText =
+            "to the goal marker: " +
+            module.calc_distance(
+              device_lat,
+              device_lng,
+              target_marker.lat,
+              target_marker.lng
+            );
+        }
 
-      return true;
-    }
+        document.querySelector("div#coordinations div#compass").style.display =
+          "block";
 
-    if (corr_toogle) {
-      document.querySelector("div#coordinations").style.display = "none";
-      windowOpen = "map";
-      clearInterval(update_view);
-      corr_toogle = false;
-    }
+        if (mainmarker.current_heading != null) {
+          document.querySelector("div#coordinations div#compass").innerText =
+            "compass " + compass(mainmarker.current_heading);
+        } else {
+          document.querySelector("div#coordinations div#compass").innerText =
+            "compass:  ";
+        }
+      }
+      //stop interval
+      if (document.querySelector("div#coordinations").style.display == "none")
+        clearInterval(update_view);
+    }, 1000);
   };
 
   /////////////////////
@@ -934,7 +945,7 @@ document.addEventListener("DOMContentLoaded", function () {
     top_bar("◀", finder_panels[count].name, "▶");
 
     if (document.activeElement.classList.contains("input-parent")) {
-      document.activeElement.children[0].style.background = "yellow";
+      //document.activeElement.children[0].style.background = "yellow";
       bottom_bar("", "edit", "");
     }
   };
@@ -996,7 +1007,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       if (document.activeElement.classList.contains("input-parent")) {
-        document.activeElement.children[0].style.background = "yellow";
+        //document.activeElement.children[0].style.background = "yellow";
         bottom_bar("", "edit", "");
       }
     }
@@ -1036,6 +1047,7 @@ document.addEventListener("DOMContentLoaded", function () {
   //////////////////////////////
   ///LISTENER//////////////////
   /////////////////////////////
+
   let t = document.getElementsByTagName("input");
   for (let i = 0; i < t.length; i++) {
     t[i].addEventListener("focus", function () {
@@ -1124,22 +1136,24 @@ document.addEventListener("DOMContentLoaded", function () {
     switch (param.key) {
       case "Backspace":
         if (
-          (windowOpen == "finder" &&
-            document.activeElement.tagName != "INPUT") ||
-          windowOpen == "markers_option"
+          document.activeElement.tagName == "TEXTAREA" ||
+          document.activeElement.tagName == "INPUT"
+        )
+          break;
+
+        if (
+          windowOpen == "finder" ||
+          windowOpen == "markers_option" ||
+          windowOpen == "coordinations"
         ) {
           document.querySelector("div#finder").style.display = "none";
           document.querySelector("div#markers-option").style.display = "none";
+          document.querySelector("div#coordinations").style.display = "none";
           windowOpen = "map";
 
           top_bar("", "", "");
           bottom_bar("", "", "");
 
-          break;
-        }
-
-        if (windowOpen == "coordinations") {
-          coordinations("hide");
           break;
         }
 
@@ -1213,6 +1227,11 @@ document.addEventListener("DOMContentLoaded", function () {
           window.open(document.activeElement.getAttribute("data-href"));
           break;
         }
+
+        if (document.activeElement.classList.contains("input-parent")) {
+          document.activeElement.children[0].focus();
+        }
+
         if (windowOpen == "search") {
           L.marker([olc_lat_lng[0], olc_lat_lng[1]]).addTo(map);
           map.setView([olc_lat_lng[0], olc_lat_lng[1]], 13);
@@ -1243,6 +1262,15 @@ document.addEventListener("DOMContentLoaded", function () {
           document.querySelector("div#markers-option").children[0].focus();
           finder_tabindex();
           windowOpen = "markers_option";
+
+          document.querySelector("textarea#popup").value = "";
+
+          let pu = selected_marker.getPopup();
+
+          if (pu != undefined) {
+            selectedmarker.popup = pu._content;
+            document.querySelector("textarea#popup").value = pu._content;
+          }
           bottom_bar("", "select", "");
           tabIndex = 0;
           break;
@@ -1262,13 +1290,6 @@ document.addEventListener("DOMContentLoaded", function () {
           });
 
           break;
-        }
-
-        if (
-          windowOpen == "finder" &&
-          document.activeElement.classList.contains("input-parent")
-        ) {
-          document.activeElement.children[0].focus();
         }
 
         if (windowOpen == "finder") {
@@ -1316,7 +1337,7 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "6":
-        if (windowOpen == "map") coordinations("show");
+        if (windowOpen == "map") coordinations();
         break;
 
       case "7":
