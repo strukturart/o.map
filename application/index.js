@@ -32,6 +32,10 @@ let popup_option = {
   maxHeight: 200,
 };
 
+let path_option = {
+  color: "red",
+};
+
 let mainmarker = {
   current_lng: "unknown",
   current_lat: "unknown",
@@ -1127,6 +1131,8 @@ document.addEventListener("DOMContentLoaded", function () {
   function shortpress_action(param) {
     switch (param.key) {
       case "Backspace":
+        module.measure_distance("destroy");
+
         if (
           document.activeElement.tagName == "TEXTAREA" ||
           document.activeElement.tagName == "INPUT"
@@ -1332,7 +1338,7 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "7":
-        if (windowOpen == "map") module.ruler_toggle();
+        if (windowOpen == "map") module.measure_distance("addMarker");
         break;
 
       case "8":

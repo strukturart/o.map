@@ -65,20 +65,8 @@ const module = (() => {
   let calc_distance = function (from_lat, from_lng, to_lat, to_lng) {
     let d = map.distance([from_lat, from_lng], [to_lat, to_lng]);
     d = Math.ceil(d);
-    console.log(d);
-    let distance;
 
-    if (d < 2000) {
-      console.log("m");
-
-      distance = d.toFixed(0) + " m";
-    } else {
-      console.log("km");
-      d = d / 1000;
-      distance = d.toFixed(0) + " km";
-    }
-
-    return distance;
+    return d;
   };
 
   let compass = function (degree) {
@@ -94,10 +82,73 @@ const module = (() => {
     return a;
   };
 
+  let measure_group = new L.FeatureGroup();
+  map.addLayer(measure_group);
+
+  let measure_group_path = new L.FeatureGroup();
+  map.addLayer(measure_group_path);
+
+  let distances = [];
+  var latlngs = [];
+  let polyline;
+
+  const measure_distance = function (action) {
+    if (action == "destroy") {
+      measure_group_path.clearLayers();
+      measure_group.clearLayers();
+
+      if (map.hasLayer(measure_group_path)) {
+        console.log(measure_group_path.length);
+        measure_group_path.eachLayer(function (l) {
+          measure_group_path.removeLayer(l);
+          polyline = "";
+          console.log("yes");
+        });
+      }
+
+      return true;
+    }
+
+    if (action == "addMarker") {
+      L.marker([mainmarker.current_lat, mainmarker.current_lng])
+        .addTo(measure_group)
+        .setIcon(maps.select_icon);
+
+      let l = measure_group.getLayers();
+
+      latlngs.push([mainmarker.current_lat, mainmarker.current_lng]);
+
+      polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
+
+      if (l.length < 2) return false;
+      let dis = calc_distance(
+        l[l.length - 1]._latlng.lat,
+        l[l.length - 1]._latlng.lng,
+        l[l.length - 2]._latlng.lat,
+        l[l.length - 2]._latlng.lng
+      );
+
+      distances.push(dis);
+      let calc = 0;
+
+      for (let i = 0; i < distances.length; i++) {
+        calc += distances[i];
+      }
+      calc = calc / 1000;
+      calc.toFixed(2);
+      parseFloat(calc);
+
+      l[l.length - 1]
+        .bindPopup(calc.toString() + "km", popup_option)
+        .openPopup();
+    }
+  };
+
   return {
     ruler_toggle,
     select_marker,
     calc_distance,
     compass,
+    measure_distance,
   };
 })();
