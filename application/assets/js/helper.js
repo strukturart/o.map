@@ -150,6 +150,44 @@ function screenWakeLock(param) {
   }
 }
 
+let update_file = function (filepath, storage) {
+  let sdcard = navigator.getDeviceStorages("sdcard");
+  let request = sdcard[storage].get(filepath);
+
+  request.onsuccess = function () {
+    //read file
+    let fileget = this.result;
+    //get file extension
+    let file_extension = fileget.name.split(".");
+    file_extension = file_extension[file_extension.length - 1];
+
+    //mode content
+    //to do
+
+    //delete file
+    var request_del = sdcard[storage].delete(filepath);
+
+    request_del.onsuccess = function () {
+      //add file
+      let requestAdd = sdcard[storage].addNamed(
+        fileget,
+        filepath + "." + file_extension
+      );
+      requestAdd.onsuccess = function () {};
+      requestAdd.onerror = function () {};
+    };
+
+    request_del.onerror = function () {
+      // success copy not delete
+      alert("Unable to remove the file: " + this.error);
+    };
+  };
+
+  request.onerror = function () {
+    alert(this.error);
+  };
+};
+
 let add_file = function () {
   var sdcard = navigator.getDeviceStorage("sdcard");
   var file = new Blob(['[{"markers":[]}]'], {

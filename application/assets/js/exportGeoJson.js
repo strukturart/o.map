@@ -8,8 +8,12 @@ const geojson = ((_) => {
     if (type == "single") {
       var single = selected_marker.toGeoJSON();
       // store popup content
-      if (selectedmarker.popup != "" || selectedmarker.popup != undefined) {
-        single.properties.popup = selectedmarker.popup;
+      let a = document.querySelector("textarea#popup").value;
+      if (a != "") {
+        let a = document.querySelector("textarea#popup").value;
+        single.properties.popup = a;
+
+        toaster(a, 4000);
       }
 
       extData = JSON.stringify(single);
@@ -40,6 +44,7 @@ const geojson = ((_) => {
     requestAdd.onsuccess = function () {
       toaster("succesfull saved", 3000);
       windowOpen = "map";
+      build_menu();
     };
 
     requestAdd.onerror = function () {

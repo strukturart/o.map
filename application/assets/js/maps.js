@@ -290,6 +290,20 @@ const maps = (() => {
       });
   };
 
+  let formDat = function (timestamp) {
+    (date = new Date(timestamp * 1000)),
+      (datevalues = {
+        year: date.getFullYear(),
+        month: date.getMonth() + 1,
+        day: date.getDate(),
+        hour: date.getHours(),
+        minute: date.getMinutes(),
+        sec: date.getSeconds(),
+      });
+
+    return datevalues;
+  };
+
   let running = false;
   let k;
   let weather_layer,
@@ -328,7 +342,7 @@ const maps = (() => {
           "https://tilecache.rainviewer.com/v2/radar/" +
           data[data.length - 4] +
           "/256/{z}/{x}/{y}/2/1_1.png";
-        weather_layer0 = L.tileLayer(weather_url);
+        weather_layer0 = L.tileLayer(weather_url0);
 
         weather_url1 =
           "https://tilecache.rainviewer.com/v2/radar/" +
@@ -348,11 +362,6 @@ const maps = (() => {
           "/256/{z}/{x}/{y}/2/1_1.png";
         weather_layer3 = L.tileLayer(weather_url3);
 
-        let tilesUrl = "https://tile.opentopomap.org/{z}/{x}/{y}.png";
-        let tilesLayer = L.tileLayer(tilesUrl, {
-          maxZoom: 18,
-        });
-
         map.addLayer(weather_layer);
         map.addLayer(weather_layer0);
         map.addLayer(weather_layer1);
@@ -369,12 +378,20 @@ const maps = (() => {
             map.removeLayer(weather_layer1);
             map.removeLayer(weather_layer2);
             map.removeLayer(weather_layer3);
+            let t = formDat(data[data.length - 5]);
             top_bar(
               "",
-              moment.unix(data[data.length - 4]).format("DD.MM.YYYY, HH:MM:SS"),
+              t.year +
+                "." +
+                t.month +
+                "." +
+                t.day +
+                ", " +
+                t.hour +
+                ":" +
+                t.minute,
               ""
             );
-            //top_bar("", "a", "");
           }
 
           if (i == 1) {
@@ -383,12 +400,20 @@ const maps = (() => {
             map.removeLayer(weather_layer1);
             map.removeLayer(weather_layer2);
             map.removeLayer(weather_layer3);
+            let t = formDat(data[data.length - 4]);
             top_bar(
               "",
-              moment.unix(data[data.length - 4]).format("DD.MM.YYYY, HH:MM:SS"),
+              t.year +
+                "." +
+                t.month +
+                "." +
+                t.day +
+                ", " +
+                t.hour +
+                ":" +
+                t.minute,
               ""
             );
-            //top_bar("", "a", "");
           }
 
           if (i == 2) {
@@ -397,9 +422,18 @@ const maps = (() => {
             map.addLayer(weather_layer1);
             map.removeLayer(weather_layer2);
             map.removeLayer(weather_layer3);
+            let t = formDat(data[data.length - 3]);
             top_bar(
               "",
-              moment.unix(data[data.length - 3]).format("DD.MM.YYYY, HH:MM:SS"),
+              t.year +
+                "." +
+                t.month +
+                "." +
+                t.day +
+                ", " +
+                t.hour +
+                ":" +
+                t.minute,
               ""
             );
           }
@@ -410,9 +444,18 @@ const maps = (() => {
             map.removeLayer(weather_layer1);
             map.addLayer(weather_layer2);
             map.removeLayer(weather_layer3);
+            let t = formDat(data[data.length - 2]);
             top_bar(
               "",
-              moment.unix(data[data.length - 2]).format("DD.MM.YYYY, HH:MM:SS"),
+              t.year +
+                "." +
+                t.month +
+                "." +
+                t.day +
+                ", " +
+                t.hour +
+                ":" +
+                t.minute,
               ""
             );
           }
@@ -422,14 +465,23 @@ const maps = (() => {
             map.removeLayer(weather_layer1);
             map.removeLayer(weather_layer2);
             map.addLayer(weather_layer3);
+            let t = formDat(data[data.length - 1]);
             top_bar(
               "",
-              moment.unix(data[data.length - 1]).format("DD.MM.YYYY, HH:MM:SS"),
+              t.year +
+                "." +
+                t.month +
+                "." +
+                t.day +
+                ", " +
+                t.hour +
+                ":" +
+                t.minute,
               ""
             );
           }
           if (i == 5) {
-            i = 0;
+            i = -1;
           }
         }, 2000);
       })

@@ -21,6 +21,10 @@ const module = (() => {
     }
   };
 
+  ///////////////////
+  //select marker
+  ////////////////////
+
   let index = 0;
   let select_marker = function () {
     let l = markers_group.getLayers();
@@ -47,11 +51,11 @@ const module = (() => {
     let pu = l[index].getPopup();
 
     if (pu != undefined) {
-      selectedmarker.popup = pu._content;
       document.querySelector("textarea#popup").value = pu._content;
       //show popup
       setTimeout(function () {
-        l[index].openPopup();
+        //l[index].openPopup();
+        l[index].bindPopup(pu._content, popup_option).openPopup();
       }, 1000);
     }
 
@@ -77,9 +81,23 @@ const module = (() => {
     return distance;
   };
 
+  let compass = function (degree) {
+    let a = "N";
+    if (degree == 0 || degree == 360) a = "North";
+    if (degree > 0 && degree < 90) a = "NorthEast";
+    if (degree == 90) a = "East";
+    if (degree > 90 && degree < 180) a = "SouthEast";
+    if (degree == 180) a = "South";
+    if (degree > 180 && degree < 270) a = "SouthWest";
+    if (degree == 270) a = "West";
+    if (degree > 270 && degree < 360) a = "NorthWest";
+    return a;
+  };
+
   return {
     ruler_toggle,
     select_marker,
     calc_distance,
+    compass,
   };
 })();

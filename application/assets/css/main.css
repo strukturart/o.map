@@ -561,7 +561,7 @@ div#impressum a:focus button {
 }
 
 div#markers-option {
-  background: black;
+  background: rgba(0, 0, 0, 0.808);
   position: fixed;
   z-index: 5;
   display: none;

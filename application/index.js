@@ -21,13 +21,16 @@ let search_current_lat;
 let open_url = false;
 let marker_latlng = false;
 
-let json_modified = false;
-
+let save_mode; // to check save geojson or update json
 let markers_group = new L.FeatureGroup();
 
-let save_mode; // to check save geojson or update json
-
 let caching_time = 86400000;
+
+let popup_option = {
+  closeButton: false,
+  maxWidth: 200,
+  maxHeight: 200,
+};
 
 let mainmarker = {
   current_lng: "unknown",
@@ -37,10 +40,6 @@ let mainmarker = {
   accuracy: "unknown",
   map: "unknown",
   last_location: JSON.parse(localStorage.getItem("last_location")),
-};
-
-let selectedmarker = {
-  popup: "",
 };
 
 let target_marker;
@@ -290,7 +289,7 @@ document.addEventListener("DOMContentLoaded", function () {
     marker_latlng = false;
 
     if (option == "init" || option == "update_marker" || option == "share") {
-      toaster("seeking position", 3000);
+      toaster("try to determine your position", 3000);
     }
 
     let options = {
@@ -304,7 +303,7 @@ document.addEventListener("DOMContentLoaded", function () {
       mainmarker.current_lat = crd.latitude;
       mainmarker.current_lng = crd.longitude;
       mainmarker.current_alt = crd.altitude;
-      mainmarker.current_heading = crd.heading;
+      if (crd.heading) mainmarker.current_heading = crd.heading;
       mainmarker.accuracy = crd.accuracy;
 
       //to store device loaction
@@ -381,7 +380,7 @@ document.addEventListener("DOMContentLoaded", function () {
         mainmarker.current_lat = crd.latitude;
         mainmarker.current_lng = crd.longitude;
         mainmarker.current_alt = crd.altitude;
-        mainmarker.current_heading = crd.heading;
+        if (crd.heading) mainmarker.current_heading = crd.heading;
         mainmarker.accuracy = crd.accuracy;
 
         //store device location
@@ -448,7 +447,7 @@ document.addEventListener("DOMContentLoaded", function () {
         target_marker = selected_marker._latlng;
         selected_marker.setIcon(maps.goal_icon);
         toaster(
-          "goal marker set, press key 4 to be informed about the current distance in the info panel.",
+          "target marker set, press key 4 to be informed about the current distance in the info panel.",
           4000
         );
         document.querySelector("div#markers-option").style.display = "none";
@@ -468,7 +467,6 @@ document.addEventListener("DOMContentLoaded", function () {
         user_input("open", now());
         document.getElementById("user-input-description").innerText =
           "save this marker as geojson file";
-        //windowOpen = "map";
       }
 
       bottom_bar("", "", "");
@@ -476,12 +474,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 
-  const marker_text = document.querySelector("textarea");
-  marker_text.addEventListener("change", (event) => {
+  const marker_text = document.querySelector("textarea#popup");
+  marker_text.addEventListener("blur", (event) => {
     let c = document.querySelector("textarea#popup").value;
-
-    selected_marker.bindPopup(c).openPopup();
+    if (c != "") selected_marker.bindPopup(c, popup_option).openPopup();
   });
+
+  //FINDER
 
   function addMapLayers() {
     if (document.activeElement.className == "item" && windowOpen == "finder") {
@@ -624,7 +623,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 console.log(feature.properties.popup);
                 if (feature.properties.popup != "") {
-                  t.bindPopup(feature.properties.popup);
+                  t.bindPopup(feature.properties.popup, popup_option);
                 }
 
                 t.addTo(markers_group);
@@ -652,19 +651,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     top_bar("", "", "");
   }
-
-  let compass = function (degree) {
-    let a = "N";
-    if (degree == 0 || degree == 360) a = "North";
-    if (degree > 0 && degree < 90) a = "NorthEast";
-    if (degree == 90) a = "East";
-    if (degree > 90 && degree < 180) a = "SouthEast";
-    if (degree == 180) a = "South";
-    if (degree > 180 && degree < 270) a = "SouthWest";
-    if (degree == 270) a = "West";
-    if (degree > 270 && degree < 360) a = "NorthWest";
-    return a;
-  };
 
   ////////////////////////////////////////
   ////COORDINATIONS PANEL/////////////////
@@ -768,7 +754,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (mainmarker.current_heading != null) {
           document.querySelector("div#coordinations div#compass").innerText =
-            "compass " + compass(mainmarker.current_heading);
+            "compass " + module.compass(mainmarker.current_heading);
         } else {
           document.querySelector("div#coordinations div#compass").innerText =
             "compass:  ";
@@ -945,7 +931,6 @@ document.addEventListener("DOMContentLoaded", function () {
     top_bar("◀", finder_panels[count].name, "▶");
 
     if (document.activeElement.classList.contains("input-parent")) {
-      //document.activeElement.children[0].style.background = "yellow";
       bottom_bar("", "edit", "");
     }
   };
@@ -1007,7 +992,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       if (document.activeElement.classList.contains("input-parent")) {
-        //document.activeElement.children[0].style.background = "yellow";
         bottom_bar("", "edit", "");
       }
     }
@@ -1268,7 +1252,6 @@ document.addEventListener("DOMContentLoaded", function () {
           let pu = selected_marker.getPopup();
 
           if (pu != undefined) {
-            selectedmarker.popup = pu._content;
             document.querySelector("textarea#popup").value = pu._content;
           }
           bottom_bar("", "select", "");

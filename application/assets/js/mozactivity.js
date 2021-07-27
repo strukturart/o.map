@@ -2,15 +2,14 @@ const mozactivity = (() => {
   let share_position = function () {
     let a =
       "https://www.openstreetmap.org/?mlat=" +
-      current_lat +
+      mainmarker.current_lat +
       "&mlon=" +
-      current_lng +
+      mainmarker.current_lng +
       "#map=13/" +
-      current_lat +
+      mainmarker.current_lat +
       "/" +
-      current_lng +
+      mainmarker.current_lng +
       "&layers=T";
-
     let activity = new MozActivity({
       name: "share",
       data: {
