@@ -490,6 +490,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (item_value == "weather") {
         maps.weather_map();
         document.querySelector("div#finder").style.display = "none";
+        windowOpen = "map";
       }
 
       if (item_value == "toner") {
@@ -497,6 +498,7 @@ document.addEventListener("DOMContentLoaded", function () {
         maps.toner_map();
         document.querySelector("div#finder").style.display = "none";
         windowOpen = "map";
+        maps.attribution();
       }
 
       if (item_value == "osm") {
@@ -504,6 +506,7 @@ document.addEventListener("DOMContentLoaded", function () {
         maps.osm_map();
         document.querySelector("div#finder").style.display = "none";
         windowOpen = "map";
+        maps.attribution();
       }
 
       if (item_value == "moon") {
@@ -512,6 +515,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelector("div#finder").style.display = "none";
         map.setZoom(4);
         windowOpen = "map";
+        maps.attribution();
       }
 
       if (item_value == "otm") {
@@ -519,6 +523,7 @@ document.addEventListener("DOMContentLoaded", function () {
         maps.opentopo_map();
         document.querySelector("div#finder").style.display = "none";
         windowOpen = "map";
+        maps.attribution();
       }
 
       if (item_value == "owm") {
@@ -531,12 +536,14 @@ document.addEventListener("DOMContentLoaded", function () {
         maps.railway_layer();
         document.querySelector("div#finder").style.display = "none";
         windowOpen = "map";
+        maps.attribution();
       }
 
       if (item_value == "earthquake") {
         maps.earthquake_layer();
         document.querySelector("div#finder").style.display = "none";
         windowOpen = "map";
+        maps.attribution();
       }
 
       if (item_value == "share") {
@@ -650,6 +657,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     top_bar("", "", "");
+    bottom_bar("", "", "");
   }
 
   ////////////////////////////////////////

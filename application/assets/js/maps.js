@@ -228,7 +228,6 @@ const maps = (() => {
     });
 
     map.addLayer(railwayLayer);
-    tt = true;
     caching_events();
   }
 
@@ -242,6 +241,15 @@ const maps = (() => {
 
     return format.replace(/mm|dd|yy|yyy/gi, (matched) => map[matched]);
   }
+
+  let attribution = function () {
+    document.querySelector(".leaflet-control-attribution").style.display =
+      "block";
+    setTimeout(function () {
+      document.querySelector(".leaflet-control-attribution").style.display =
+        "none";
+    }, 8000);
+  };
 
   let markers_group_eq = new L.FeatureGroup();
   let earthquake_layer = function () {
@@ -494,6 +502,7 @@ const maps = (() => {
     default_icon,
     goal_icon,
     select_icon,
+    attribution,
     moon_map,
     earthquake_layer,
     toner_map,
