@@ -72,6 +72,14 @@ let map = L.map("map-container", {
   keyboard: true,
 }).fitWorld();
 
+L.control
+  .scale({
+    position: "topright",
+    metric: true,
+    imperial: false,
+  })
+  .addTo(map);
+
 document.addEventListener("DOMContentLoaded", function () {
   setTimeout(function () {
     document.querySelector("div#intro").style.display = "none";
@@ -82,24 +90,12 @@ document.addEventListener("DOMContentLoaded", function () {
       getLocation("init");
 
       toaster("Press 3 to open the menu", 5000);
-
-      setTimeout(function () {
-        document.querySelector(".leaflet-control-attribution").style.display =
-          "none";
-      }, 8000);
     }
     ///set default map
     maps.opentopo_map();
+    maps.attribution();
     windowOpen = "map";
   }, 4000);
-
-  L.control
-    .scale({
-      position: "topright",
-      metric: true,
-      imperial: false,
-    })
-    .addTo(map);
 
   map.addLayer(markers_group);
 
@@ -149,15 +145,6 @@ document.addEventListener("DOMContentLoaded", function () {
         "afterend",
         '<div class="item" data-map="railway">Railway <i>Layer</i></div>'
       );
-
-    if (settings_data[0]) {
-      document
-        .querySelector("div#layers")
-        .insertAdjacentHTML(
-          "afterend",
-          '<div class="item" data-map="owm">Open Weather <i>Layer</i></div>'
-        );
-    }
 
     find_gpx();
     find_geojson();
@@ -530,12 +517,6 @@ document.addEventListener("DOMContentLoaded", function () {
         maps.attribution();
       }
 
-      if (item_value == "owm") {
-        maps.owm_layer();
-        document.querySelector("div#finder").style.display = "none";
-        windowOpen = "map";
-      }
-
       if (item_value == "railway") {
         maps.railway_layer();
         document.querySelector("div#finder").style.display = "none";
@@ -711,9 +692,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
         let f = map.getCenter();
         //distance to current position
+
+        let calc = module.calc_distance(device_lat, device_lng, f.lat, f.lng);
+        calc = calc / 1000;
+        calc.toFixed(2);
+        parseFloat(calc);
+
         document.querySelector("div#coordinations div#distance").innerText =
-          "to device: " +
-          module.calc_distance(device_lat, device_lng, f.lat, f.lng);
+          "to device: " + calc + " km";
 
         //accurancy
         document.querySelector(
@@ -736,7 +722,7 @@ document.addEventListener("DOMContentLoaded", function () {
             "div#coordinations div#altitude"
           ).style.display = "none";
         }
-        if (mainmarker.current_heading) {
+        if (mainmarker.current_heading != "unknown") {
           document.querySelector(
             "div#coordinations div#heading"
           ).style.display = "block";
@@ -748,17 +734,20 @@ document.addEventListener("DOMContentLoaded", function () {
           ).style.display = "none";
         }
         //distance to target marker
-        if (target_marker != null) {
+        if (target_marker != undefined) {
+          let calc = module.calc_distance(
+            device_lat,
+            device_lng,
+            target_marker.lat,
+            target_marker.lng
+          );
+          calc = calc / 1000;
+          calc.toFixed(2);
+          parseFloat(calc);
+
           let k = document.querySelector("div#target");
           k.style.display = "block";
-          k.innerText =
-            "to the goal marker: " +
-            module.calc_distance(
-              device_lat,
-              device_lng,
-              target_marker.lat,
-              target_marker.lng
-            );
+          k.innerText = "to the goal marker: " + calc + " km";
         }
 
         document.querySelector("div#coordinations div#compass").style.display =

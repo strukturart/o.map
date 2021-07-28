@@ -25,25 +25,30 @@ const module = (() => {
   //select marker
   ////////////////////
 
-  let index = 0;
+  let index = -1;
   let select_marker = function () {
+    status.marker_selection = true;
+
     let l = markers_group.getLayers();
-    index = index + 1;
+    index++;
 
     if (index > l.length - 1) index = 0;
+    console.log(l.length + "/" + index);
 
-    map.setView(l[index]._latlng, map.getZoom());
-    status.marker_selection = true;
     bottom_bar("cancel", "option", "");
-    l[index].setIcon(maps.select_icon);
 
-    if (index - 1 == -1) {
-      l[l.length - 1].setIcon(maps.default_icon);
+    for (let t = 0; t < l.length; t++) {
+      let p = l[t].getIcon();
 
-      l[l.length - 1].closePopup();
-    } else {
-      l[index - 1].setIcon(maps.default_icon);
-      l[index - 1].closePopup();
+      if (p.options.className != "follow-marker") {
+        l[t].setIcon(maps.default_icon);
+      }
+
+      l[t].closePopup();
+    }
+    let p = l[index].getIcon();
+    if (p.options.className != "follow-marker") {
+      l[index].setIcon(maps.select_icon);
     }
 
     //popup
@@ -53,11 +58,11 @@ const module = (() => {
     if (pu != undefined) {
       document.querySelector("textarea#popup").value = pu._content;
       //show popup
-      setTimeout(function () {
-        //l[index].openPopup();
-        l[index].bindPopup(pu._content, popup_option).openPopup();
-      }, 1000);
+
+      l[index].bindPopup(pu._content, popup_option).openPopup();
     }
+
+    map.setView(l[index]._latlng, map.getZoom());
 
     return l[index];
   };
@@ -90,22 +95,14 @@ const module = (() => {
 
   let distances = [];
   var latlngs = [];
-  let polyline;
+
+  let polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
 
   const measure_distance = function (action) {
     if (action == "destroy") {
       measure_group_path.clearLayers();
       measure_group.clearLayers();
-
-      if (map.hasLayer(measure_group_path)) {
-        console.log(measure_group_path.length);
-        measure_group_path.eachLayer(function (l) {
-          measure_group_path.removeLayer(l);
-          polyline = "";
-          console.log("yes");
-        });
-      }
-
+      polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
       return true;
     }
 
@@ -116,9 +113,7 @@ const module = (() => {
 
       let l = measure_group.getLayers();
 
-      latlngs.push([mainmarker.current_lat, mainmarker.current_lng]);
-
-      polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
+      polyline.addLatLng([mainmarker.current_lat, mainmarker.current_lng]);
 
       if (l.length < 2) return false;
       let dis = calc_distance(
