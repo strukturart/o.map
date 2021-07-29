@@ -38,6 +38,9 @@ $(document).ready(function () {
 
       mainmarker.current_lat = n.lat;
       mainmarker.current_lng = n.lng;
+
+      $("#search").autocomplete("clear");
+
       toaster("press 9 to add an marker", 3000);
     },
   });
@@ -83,8 +86,6 @@ const search = (() => {
       input_val = input_val.replace("/", "");
       $("#search").autocomplete().disable();
 
-      //document.querySelector("div.autocomplete-suggestions").style.display ="none";
-      //document.querySelector("div.autocomplete-suggestion").style.display ="none";
       document.querySelector("div#olc").style.display = "block";
       document.querySelector("#olc").innerText = OLC.decode(input_val);
 

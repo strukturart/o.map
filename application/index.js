@@ -1,30 +1,18 @@
 "use strict";
 
-let step = 0.001;
-
-//to store device loaction
-let device_lat;
-let device_lng;
-
 let windowOpen;
-let message_body = "";
-let selected_marker;
 
+/*
 let tilesLayer;
 let tileLayer;
 let tilesUrl;
-let savesearch = false;
-
-let search_current_lng;
-let search_current_lat;
+let save_mode; // to check save geojson or update json
+*/
 
 let open_url = false;
 let marker_latlng = false;
 
-let save_mode; // to check save geojson or update json
 let markers_group = new L.FeatureGroup();
-
-let caching_time = 86400000;
 
 let popup_option = {
   closeButton: false,
@@ -34,19 +22,27 @@ let popup_option = {
 
 let path_option = {
   color: "red",
+  step: 0,
 };
-
 let mainmarker = {
+  device_lat: "",
+  device_lng: "",
   current_lng: "unknown",
   current_lat: "unknown",
   current_alt: "unknown",
   current_heading: "unknown",
-  accuracy: "unknown",
+  accuracy: 0,
   map: "unknown",
   last_location: JSON.parse(localStorage.getItem("last_location")),
 };
 
+let general = {
+  step: 0.001,
+  zoomlevel: 12,
+};
+
 let target_marker;
+let selected_marker;
 
 let settings_data = settings.load_settings();
 let setting = {
@@ -70,7 +66,7 @@ let map = L.map("map-container", {
   zoomControl: false,
   dragging: false,
   keyboard: true,
-}).fitWorld();
+});
 
 L.control
   .scale({
@@ -80,20 +76,20 @@ L.control
   })
   .addTo(map);
 
+map.on("load", function () {
+  maps.opentopo_map();
+  maps.attribution();
+  document.querySelector("div#intro").style.display = "none";
+});
+
 document.addEventListener("DOMContentLoaded", function () {
   setTimeout(function () {
-    document.querySelector("div#intro").style.display = "none";
-
     //get location if not an activity open url
     if (open_url === false) {
       build_menu();
       getLocation("init");
-
       toaster("Press 3 to open the menu", 5000);
     }
-    ///set default map
-    maps.opentopo_map();
-    maps.attribution();
     windowOpen = "map";
   }, 4000);
 
@@ -174,7 +170,7 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   //////////////////////////////////
-  //READ GEOJSON////////////////////////
+  //FIND GEOJSON////////////////////////
   /////////////////////////////////
 
   let find_geojson = function () {
@@ -263,6 +259,65 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  /////////////////////////
+  /////Load GeoJSON///////////
+  ///////////////////////
+  function loadGeoJSON(filename) {
+    let finder = new Applait.Finder({
+      type: "sdcard",
+      debugMode: false,
+    });
+    finder.search(document.activeElement.innerText);
+
+    finder.on("fileFound", function (file, fileinfo, storageName) {
+      //file reader
+
+      let geojson_data = "";
+      let reader = new FileReader();
+
+      reader.onerror = function (event) {
+        reader.abort();
+      };
+
+      reader.onloadend = function (event) {
+        //check if json valid
+        try {
+          geojson_data = JSON.parse(event.target.result);
+        } catch (e) {
+          toaster("Json is not valid", 2000);
+          return false;
+        }
+
+        //if valid add layer
+        //to do if geojson is marker add to  marker_array[]
+        //https://blog.codecentric.de/2018/06/leaflet-geojson-daten/
+        L.geoJSON(geojson_data, {
+          // Marker Icon
+          pointToLayer: function (feature, latlng) {
+            let t = L.marker(latlng);
+
+            console.log(feature.properties.popup);
+            if (feature.properties.popup != "") {
+              t.bindPopup(feature.properties.popup, popup_option);
+            }
+
+            t.addTo(markers_group);
+            map.flyTo(latlng);
+            windowOpen = "map";
+          },
+
+          // Popup
+          onEachFeature: function (feature, layer) {},
+        }).addTo(map);
+        document.querySelector("div#finder").style.display = "none";
+
+        windowOpen = "map";
+      };
+
+      reader.readAsText(file);
+    });
+  }
+
   //////////////////////////
   ///M A R K E R S//////////
   //////////////////////////
@@ -298,8 +353,8 @@ document.addEventListener("DOMContentLoaded", function () {
       mainmarker.accuracy = crd.accuracy;
 
       //to store device loaction
-      device_lat = crd.latitude;
-      device_lng = crd.longitude;
+      mainmarker.device_lat = crd.latitude;
+      mainmarker.device_lng = crd.longitude;
 
       if (option == "share") {
         mozactivity.share_position();
@@ -320,7 +375,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         map.setView([mainmarker.current_lat, mainmarker.current_lng], 12);
 
-        zoom_speed();
         return true;
       }
 
@@ -329,7 +383,6 @@ document.addEventListener("DOMContentLoaded", function () {
           .setLatLng([mainmarker.current_lat, mainmarker.current_lng])
           .update();
         map.flyTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
-        zoom_speed();
       }
     }
 
@@ -341,7 +394,6 @@ document.addEventListener("DOMContentLoaded", function () {
       mainmarker.current_alt = 0;
 
       map.setView([mainmarker.current_lat, mainmarker.current_lng], 12);
-      zoom_speed();
       return false;
     }
 
@@ -375,8 +427,8 @@ document.addEventListener("DOMContentLoaded", function () {
         mainmarker.accuracy = crd.accuracy;
 
         //store device location
-        device_lat = crd.latitude;
-        device_lng = crd.longitude;
+        mainmarker.device_lat = crd.latitude;
+        mainmarker.device_lng = crd.longitude;
         myMarker.setIcon(maps.follow_icon);
         document.getElementById("cross").style.opacity = 0;
 
@@ -580,59 +632,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       //add geoJson data
       if (item_value == "geojson") {
-        let finder = new Applait.Finder({
-          type: "sdcard",
-          debugMode: false,
-        });
-        finder.search(document.activeElement.innerText);
-
-        finder.on("fileFound", function (file, fileinfo, storageName) {
-          //file reader
-
-          let geojson_data = "";
-          let reader = new FileReader();
-
-          reader.onerror = function (event) {
-            reader.abort();
-          };
-
-          reader.onloadend = function (event) {
-            //check if json valid
-            try {
-              geojson_data = JSON.parse(event.target.result);
-            } catch (e) {
-              toaster("Json is not valid", 2000);
-              return false;
-            }
-
-            //if valid add layer
-            //to do if geojson is marker add to  marker_array[]
-            //https://blog.codecentric.de/2018/06/leaflet-geojson-daten/
-            L.geoJSON(geojson_data, {
-              // Marker Icon
-              pointToLayer: function (feature, latlng) {
-                let t = L.marker(latlng);
-
-                console.log(feature.properties.popup);
-                if (feature.properties.popup != "") {
-                  t.bindPopup(feature.properties.popup, popup_option);
-                }
-
-                t.addTo(markers_group);
-                map.flyTo(latlng);
-                windowOpen = "map";
-              },
-
-              // Popup
-              onEachFeature: function (feature, layer) {},
-            }).addTo(map);
-            document.querySelector("div#finder").style.display = "none";
-
-            windowOpen = "map";
-          };
-
-          reader.readAsText(file);
-        });
+        loadGeoJSON(document.activeElement.innerText);
       }
 
       //add gpx data
@@ -693,7 +693,12 @@ document.addEventListener("DOMContentLoaded", function () {
         let f = map.getCenter();
         //distance to current position
 
-        let calc = module.calc_distance(device_lat, device_lng, f.lat, f.lng);
+        let calc = module.calc_distance(
+          mainmarker.device_lat,
+          mainmarker.device_lng,
+          f.lat,
+          f.lng
+        );
         calc = calc / 1000;
         calc.toFixed(2);
         parseFloat(calc);
@@ -736,8 +741,8 @@ document.addEventListener("DOMContentLoaded", function () {
         //distance to target marker
         if (target_marker != undefined) {
           let calc = module.calc_distance(
-            device_lat,
-            device_lng,
+            mainmarker.device_lat,
+            mainmarker.device_lng,
             target_marker.lat,
             target_marker.lng
           );
@@ -788,62 +793,61 @@ document.addEventListener("DOMContentLoaded", function () {
         map.setZoom(current_zoom_level - 1);
       }
 
-      zoom_speed();
+      //zoom_speed();
     }
   }
 
-  function zoom_speed() {
+  map.on("zoomend", function (ev) {
     let zoom_level = map.getZoom();
     if (zoom_level < 2) {
-      step = 10;
+      general.step = 10;
     }
     if (zoom_level > 2) {
-      step = 7.5;
+      general.step = 7.5;
     }
     if (zoom_level > 3) {
-      step = 5;
+      general.step = 5;
     }
     if (zoom_level > 4) {
-      step = 1;
+      general.step = 1;
     }
     if (zoom_level > 5) {
-      step = 0.5;
+      general.step = 0.5;
     }
     if (zoom_level > 6) {
-      step = 0.25;
+      general.step = 0.25;
     }
     if (zoom_level > 7) {
-      step = 0.1;
+      general.step = 0.1;
     }
     if (zoom_level > 8) {
-      step = 0.075;
+      general.step = 0.075;
     }
     if (zoom_level > 9) {
-      step = 0.05;
+      general.step = 0.05;
     }
     if (zoom_level > 10) {
-      step = 0.025;
+      general.step = 0.025;
     }
     if (zoom_level > 11) {
-      step = 0.01;
+      general.step = 0.01;
     }
     if (zoom_level > 12) {
-      step = 0.0075;
+      general.step = 0.0075;
     }
     if (zoom_level > 13) {
-      step = 0.005;
+      general.step = 0.005;
     }
     if (zoom_level > 14) {
-      step = 0.0025;
+      general.step = 0.0025;
     }
     if (zoom_level > 15) {
-      step = 0.001;
+      general.step = 0.001;
     }
     if (zoom_level > 16) {
-      step = 0.0004;
+      general.step = 0.0001;
     }
-    return step;
-  }
+  });
 
   /////////////////////
   //MAP NAVIGATION//
@@ -858,30 +862,30 @@ document.addEventListener("DOMContentLoaded", function () {
       mainmarker.current_lng = n.lng;
 
       if (direction == "left") {
-        zoom_speed();
+        //zoom_speed();
 
-        mainmarker.current_lng = n.lng - step;
+        mainmarker.current_lng = n.lng - general.step;
         map.panTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
       }
 
       if (direction == "right") {
-        zoom_speed();
+        //zoom_speed();
 
-        mainmarker.current_lng = n.lng + step;
+        mainmarker.current_lng = n.lng + general.step;
         map.panTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
       }
 
       if (direction == "up") {
-        zoom_speed();
+        //zoom_speed();
 
-        mainmarker.current_lat = n.lat + step;
+        mainmarker.current_lat = n.lat + general.step;
         map.panTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
       }
 
       if (direction == "down") {
-        zoom_speed();
+        //zoom_speed();
 
-        mainmarker.current_lat = n.lat - step;
+        mainmarker.current_lat = n.lat - general.step;
         map.panTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
       }
     }
@@ -1024,7 +1028,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         myMarker = L.marker([current_lat, current_lng]).addTo(map);
         map.setView([current_lat, current_lng], 13);
-        zoom_speed();
+        //zoom_speed();
       }
     });
   }

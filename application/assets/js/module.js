@@ -33,21 +33,26 @@ const module = (() => {
     index++;
 
     if (index > l.length - 1) index = 0;
-    console.log(l.length + "/" + index);
 
     bottom_bar("cancel", "option", "");
 
     for (let t = 0; t < l.length; t++) {
       let p = l[t].getIcon();
 
-      if (p.options.className != "follow-marker") {
+      if (
+        p.options.className != "follow-marker" &&
+        p.options.className != "goal-marker"
+      ) {
         l[t].setIcon(maps.default_icon);
       }
 
       l[t].closePopup();
     }
     let p = l[index].getIcon();
-    if (p.options.className != "follow-marker") {
+    if (
+      p.options.className != "follow-marker" &&
+      p.options.className != "goal-marker"
+    ) {
       l[index].setIcon(maps.select_icon);
     }
 

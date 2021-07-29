@@ -31,6 +31,8 @@ const maps = (() => {
   });
 
   //caching settings from settings panel
+  let caching_time;
+
   if (settings[1] != "") {
     caching_time = Number(settings[1]) * 86400000;
   } else {
