@@ -163,32 +163,6 @@ const maps = (() => {
     caching_events();
   }
 
-  let owmLayer;
-  function owm_layer() {
-    if (map.hasLayer(owmLayer)) {
-      map.removeLayer(owmLayer);
-      return false;
-    }
-
-    tilesUrl =
-      "https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=" +
-      openweather_api;
-    owmLayer = L.tileLayer(tilesUrl, {
-      useCache: true,
-      saveToCache: false,
-      crossOrigin: true,
-      cacheMaxAge: caching_time,
-      useOnlyCache: false,
-      maxZoom: 18,
-      attribution:
-        'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-        '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
-    });
-
-    map.addLayer(owmLayer);
-    caching_events();
-  }
-
   function osm_map() {
     tilesUrl = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
     tilesLayer = L.tileLayer(tilesUrl, {
@@ -509,7 +483,6 @@ const maps = (() => {
     earthquake_layer,
     toner_map,
     opentopo_map,
-    owm_layer,
     osm_map,
     weather_map,
     railway_layer,

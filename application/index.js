@@ -468,7 +468,6 @@ document.addEventListener("DOMContentLoaded", function () {
       state_geoloc = false;
       toaster("watching postion stopped", 2000);
       myMarker.setIcon(maps.default_icon);
-      //myMarker.setRotationAngle(0);
       document.getElementById("cross").style.opacity = 1;
 
       return true;
@@ -499,6 +498,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (item_value == "remove_marker") {
         map.removeLayer(selected_marker);
+        selected_marker.removeFrom(markers_group);
         toaster("marker removed", 4000);
         document.querySelector("div#markers-option").style.display = "none";
         windowOpen = "map";
@@ -792,8 +792,6 @@ document.addEventListener("DOMContentLoaded", function () {
       if (in_out == "out") {
         map.setZoom(current_zoom_level - 1);
       }
-
-      //zoom_speed();
     }
   }
 
@@ -862,29 +860,21 @@ document.addEventListener("DOMContentLoaded", function () {
       mainmarker.current_lng = n.lng;
 
       if (direction == "left") {
-        //zoom_speed();
-
         mainmarker.current_lng = n.lng - general.step;
         map.panTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
       }
 
       if (direction == "right") {
-        //zoom_speed();
-
         mainmarker.current_lng = n.lng + general.step;
         map.panTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
       }
 
       if (direction == "up") {
-        //zoom_speed();
-
         mainmarker.current_lat = n.lat + general.step;
         map.panTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
       }
 
       if (direction == "down") {
-        //zoom_speed();
-
         mainmarker.current_lat = n.lat - general.step;
         map.panTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
       }

@@ -1,6 +1,8 @@
 ![logo](/images/logo.png)
 
-O.Map is an openstreetmap app for KaiOs, it is not available on the official store.
+O.Map is an openstreetmap app for KaiOs, it is a good companion for your next outdoor adventure.
+
+It is not available on the official store,
 Because I don't feel like annoying users with stupid advertising.
 
 ### Features
@@ -11,10 +13,12 @@ Because I don't feel like annoying users with stupid advertising.
 - Export markers (geoJson)
 - Save your position
 - open .gpx files
+- open geoJSON files
 - search locations
 - rainradar
 - open openstreetmap link
 
+![image-1](/images/image-1.png)
 ![image-2](/images/image-2.png)
 ![image-2](/images/image-3.png)
 ![image-4](/images/image-4.png)
@@ -53,7 +57,7 @@ Because I don't feel like annoying users with stupid advertising.
 - **key 8** export markers as geojson file
 - **key #** offline mode - download map tiles
 - **key \*** jump between markers
-- **key Bachspace** close: Menu,measure distance,info panel
+- **key Backspace** close: Menu,measure distance,info panel
 
 ## import/export
 
