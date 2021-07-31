@@ -4,7 +4,8 @@ let windowOpen;
 
 let save_mode; // to check save geojson or update json
 let open_url = false;
-let marker_latlng = false;
+
+let track_group = new L.FeatureGroup();
 
 let markers_group = new L.FeatureGroup();
 let measure_group_path = new L.FeatureGroup();
@@ -21,6 +22,7 @@ let path_option = {
 };
 
 let mainmarker = {
+  auto_view_center: false,
   device_lat: "",
   device_lng: "",
   current_lng: "unknown",
@@ -336,8 +338,6 @@ document.addEventListener("DOMContentLoaded", function () {
   let myMarker;
 
   function getLocation(option) {
-    marker_latlng = false;
-
     if (option == "init" || option == "update_marker" || option == "share") {
       toaster("try to determine your position", 3000);
     }
@@ -374,10 +374,12 @@ document.addEventListener("DOMContentLoaded", function () {
           mainmarker.current_lng,
         ]).addTo(markers_group);
 
+        map.setView([mainmarker.current_lat, mainmarker.current_lng], 12);
+
         myMarker.setIcon(maps.default_icon);
         document.getElementById("cross").style.opacity = 1;
-
-        map.setView([mainmarker.current_lat, mainmarker.current_lng], 12);
+        //follow position
+        geolocationWatch(false);
 
         return true;
       }
@@ -409,70 +411,61 @@ document.addEventListener("DOMContentLoaded", function () {
   //////////
   let watchID;
   let state_geoloc = false;
-
-  let wakeLock;
+  let geoLoc = navigator.geolocation;
 
   function geolocationWatch() {
-    marker_latlng = false;
+    //toaster("watching postion started", 2000);
+    state_geoloc = true;
+    function showLocation(position) {
+      let crd = position.coords;
+      console.log("auto:" + mainmarker.auto_view_center);
 
-    let geoLoc = navigator.geolocation;
+      mainmarker.current_lat = crd.latitude;
+      mainmarker.current_lng = crd.longitude;
+      mainmarker.current_alt = crd.altitude;
+      if (crd.heading) mainmarker.current_heading = crd.heading;
+      mainmarker.accuracy = crd.accuracy;
 
-    if (state_geoloc == false) {
-      toaster("watching postion started", 2000);
-      state_geoloc = true;
+      //store device location
+      mainmarker.device_lat = crd.latitude;
+      mainmarker.device_lng = crd.longitude;
+      myMarker.setIcon(maps.follow_icon);
 
-      function showLocation(position) {
-        let crd = position.coords;
-
-        mainmarker.current_lat = crd.latitude;
-        mainmarker.current_lng = crd.longitude;
-        mainmarker.current_alt = crd.altitude;
-        if (crd.heading) mainmarker.current_heading = crd.heading;
-        mainmarker.accuracy = crd.accuracy;
-
-        //store device location
-        mainmarker.device_lat = crd.latitude;
-        mainmarker.device_lng = crd.longitude;
-        myMarker.setIcon(maps.follow_icon);
-        document.getElementById("cross").style.opacity = 0;
-
-        if (crd.heading != null) {
-          //myMarker.setRotationAngle(crd.heading);
-        } else {
-          //myMarker.setRotationAngle(0);
-        }
-
-        //store location as fallout
-        let b = [crd.latitude, crd.longitude];
-        localStorage.setItem("last_location", JSON.stringify(b));
-
+      //store location as fallout
+      let b = [crd.latitude, crd.longitude];
+      localStorage.setItem("last_location", JSON.stringify(b));
+      //document.getElementById("cross").style.opacity = 0;
+      if (mainmarker.auto_view_center) {
         map.flyTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
         myMarker
           .setLatLng([mainmarker.current_lat, mainmarker.current_lng])
           .update();
       }
+    }
 
-      function errorHandler(err) {
-        if (err.code == 1) {
-          toaster("Error: Access is denied!", 2000);
-        } else if (err.code == 2) {
-          toaster("Error: Position is unavailable!", 2000);
-        }
+    function errorHandler(err) {
+      if (err.code == 1) {
+        toaster("Error: Access is denied!", 2000);
+      } else if (err.code == 2) {
+        console.log("Error: Position is unavailable!", 2000);
       }
+    }
 
-      let options = {
-        timeout: 60000,
-      };
-      watchID = geoLoc.watchPosition(showLocation, errorHandler, options);
-      return true;
+    let options = {
+      timeout: 60000,
+    };
+    watchID = geoLoc.watchPosition(showLocation, errorHandler, options);
+    return true;
+
+    if (state_geoloc == false) {
     }
 
     if (state_geoloc == true) {
-      geoLoc.clearWatch(watchID);
-      state_geoloc = false;
-      toaster("watching postion stopped", 2000);
-      myMarker.setIcon(maps.default_icon);
-      document.getElementById("cross").style.opacity = 1;
+      //geoLoc.clearWatch(watchID);
+      //state_geoloc = false;
+      //toaster("watching postion stopped", 2000);
+      //myMarker.setIcon(maps.default_icon);
+      //document.getElementById("cross").style.opacity = 1;
 
       return true;
     }
@@ -856,7 +849,6 @@ document.addEventListener("DOMContentLoaded", function () {
   /////////////////////
 
   function MovemMap(direction) {
-    //if (!marker_latlng) {
     if (windowOpen == "map" || windowOpen == "coordinations") {
       let n = map.getCenter();
 
@@ -1108,6 +1100,14 @@ document.addEventListener("DOMContentLoaded", function () {
           window.goodbye();
         }
         break;
+
+      case "4":
+        if (windowOpen == "map") {
+          geolocationWatch(false);
+          screenWakeLock("lock");
+        }
+
+        break;
     }
   }
 
@@ -1156,13 +1156,7 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
-        if (status.marker_selection) {
-          bottom_bar("", "", "");
-          status.marker_selection = false;
-          break;
-        }
-
-        if (status.path_selection) {
+        if (status.path_selection && windowOpen != "user-input") {
           bottom_bar("", "", "");
           status.path_selection = false;
           module.measure_distance("destroy");
@@ -1325,7 +1319,8 @@ document.addEventListener("DOMContentLoaded", function () {
       case "4":
         if (windowOpen == "map") {
           geolocationWatch();
-          screenWakeLock("lock");
+          mainmarker.auto_view_center = true;
+          //screenWakeLock("lock");
         }
 
         break;

@@ -112,6 +112,10 @@ const module = (() => {
       return true;
     }
 
+    if (action == "track") {
+    }
+
+    
     if (action == "addMarker") {
       status.path_selection = true;
       L.marker([mainmarker.current_lat, mainmarker.current_lng])
