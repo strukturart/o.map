@@ -22,6 +22,7 @@ let path_option = {
 };
 
 let mainmarker = {
+  tracking:false,
   auto_view_center: false,
   device_lat: "",
   device_lng: "",
@@ -434,12 +435,14 @@ document.addEventListener("DOMContentLoaded", function () {
       //store location as fallout
       let b = [crd.latitude, crd.longitude];
       localStorage.setItem("last_location", JSON.stringify(b));
-      //document.getElementById("cross").style.opacity = 0;
       if (mainmarker.auto_view_center) {
         map.flyTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
         myMarker
           .setLatLng([mainmarker.current_lat, mainmarker.current_lng])
           .update();
+      }
+      if (mainmarker.tracking) {
+
       }
     }
 
@@ -1302,7 +1305,20 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "1":
-        if (windowOpen == "map") getLocation("update_marker");
+        //if (windowOpen == "map") getLocation("update_marker");
+
+        if (windowOpen == "map") {
+          if (mainmarker.tracking) {
+            mainmarker.tracking = false;
+            toaster("tracking off",2000)
+
+            return true;
+          } else {
+            mainmarker.tracking = true;
+            module.measure_distance("tracking")
+            toaster("tracking on",2000)
+          }
+        }
         break;
 
       case "2":
@@ -1318,11 +1334,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "4":
         if (windowOpen == "map") {
-          geolocationWatch();
-          mainmarker.auto_view_center = true;
-          //screenWakeLock("lock");
+          if (mainmarker.auto_view_center) {
+            mainmarker.auto_view_center = false;
+            toaster("watching position off",2000)
+            document.getElementById("cross").style.opacity = 1;
+            return true;
+          } else {
+            mainmarker.auto_view_center = true;
+            toaster("watching position on",2000)
+            document.getElementById("cross").style.opacity = 0;
+          }
         }
-
         break;
 
       case "5":

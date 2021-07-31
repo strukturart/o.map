@@ -94,13 +94,18 @@ const module = (() => {
 
   let measure_group = new L.FeatureGroup();
   map.addLayer(measure_group);
+  map.addLayer(track_group);
 
   map.addLayer(measure_group_path);
 
   let distances = [];
-  var latlngs = [];
+  let latlngs = [];
+  let tracking_latlngs = [];
+let tracking_interval
 
   let polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
+  let polyline_track = L.polyline(tracking_latlngs, path_option).addTo(track_group);
+
 
   const measure_distance = function (action) {
     if (action == "destroy") {
@@ -108,11 +113,19 @@ const module = (() => {
 
       measure_group_path.clearLayers();
       measure_group.clearLayers();
-      polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
+      //polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
       return true;
     }
 
-    if (action == "track") {
+    if (action == "tracking") {
+      tracking_interval = setInterval(function(){
+        console.log("tracking")
+
+        polyline_track.addLatLng([mainmarker.device_lat, mainmarker.device_lng])
+        if(mainmarker.tracking == false)clearInterval(tracking_interval);
+      },10000)
+      
+
     }
 
     
