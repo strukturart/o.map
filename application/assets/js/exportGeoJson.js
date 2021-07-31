@@ -19,6 +19,14 @@ const geojson = ((_) => {
       extData = JSON.stringify(single);
     }
 
+    if (type == "path") {
+      var single = measure_group_path.toGeoJSON();
+
+      toaster("yeah", 4000);
+
+      extData = JSON.stringify(single);
+    }
+
     if (type == "collection") {
       let collection = markers_group.toGeoJSON();
       let bounds = map.getBounds();

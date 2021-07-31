@@ -2,17 +2,12 @@
 
 let windowOpen;
 
-/*
-let tilesLayer;
-let tileLayer;
-let tilesUrl;
 let save_mode; // to check save geojson or update json
-*/
-
 let open_url = false;
 let marker_latlng = false;
 
 let markers_group = new L.FeatureGroup();
+let measure_group_path = new L.FeatureGroup();
 
 let popup_option = {
   closeButton: false,
@@ -24,6 +19,7 @@ let path_option = {
   color: "red",
   step: 0,
 };
+
 let mainmarker = {
   device_lat: "",
   device_lng: "",
@@ -55,6 +51,7 @@ let setting = {
 
 let status = {
   marker_selection: false,
+  path_selection: false,
 };
 
 if (!navigator.geolocation) {
@@ -79,7 +76,6 @@ L.control
 map.on("load", function () {
   maps.opentopo_map();
   maps.attribution();
-  document.querySelector("div#intro").style.display = "none";
 });
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -88,6 +84,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (open_url === false) {
       build_menu();
       getLocation("init");
+      document.querySelector("div#intro").style.display = "none";
+
       toaster("Press 3 to open the menu", 5000);
     }
     windowOpen = "map";
@@ -292,11 +290,18 @@ document.addEventListener("DOMContentLoaded", function () {
         //to do if geojson is marker add to  marker_array[]
         //https://blog.codecentric.de/2018/06/leaflet-geojson-daten/
         L.geoJSON(geojson_data, {
+          onEachFeature: function (feature, layer) {
+            if (feature.geometry != "") {
+              console.log(feature.geometry.coordinates[0]);
+              let p = feature.geometry.coordinates[0];
+              p.reverse();
+              map.flyTo(p);
+            }
+          },
           // Marker Icon
           pointToLayer: function (feature, latlng) {
             let t = L.marker(latlng);
 
-            console.log(feature.properties.popup);
             if (feature.properties.popup != "") {
               t.bindPopup(feature.properties.popup, popup_option);
             }
@@ -307,7 +312,6 @@ document.addEventListener("DOMContentLoaded", function () {
           },
 
           // Popup
-          onEachFeature: function (feature, layer) {},
         }).addTo(map);
         document.querySelector("div#finder").style.display = "none";
 
@@ -1158,6 +1162,13 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
+        if (status.path_selection) {
+          bottom_bar("", "", "");
+          status.path_selection = false;
+          module.measure_distance("destroy");
+          break;
+        }
+
         if (windowOpen == "map") {
           ZoomMap("in");
           break;
@@ -1172,13 +1183,15 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "SoftRight":
-        if (windowOpen == "map") {
-          ZoomMap("out");
+        if (status.path_selection && windowOpen == "map") {
+          save_mode = "geojson-path";
+          user_input("open", now());
+          document.getElementById("user-input-description").innerText =
+            "save this path as geojson file";
           break;
         }
 
         if (windowOpen == "user-input" && save_mode == "geojson-single") {
-          console.log(setting.export_path + user_input("return") + ".geojson");
           geojson.save_geojson(
             setting.export_path + user_input("return") + ".geojson",
             "single"
@@ -1187,9 +1200,23 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
+        if (windowOpen == "user-input" && save_mode == "geojson-path") {
+          geojson.save_geojson(
+            setting.export_path + user_input("return") + ".geojson",
+            "path"
+          );
+          save_mode = "";
+          break;
+        }
+
         if (windowOpen == "user-input" && save_mode == "geojson-collection") {
           geojson.save_geojson(user_input("return") + ".geojson", "collection");
           save_mode = "";
+          break;
+        }
+
+        if (windowOpen == "map") {
+          ZoomMap("out");
           break;
         }
 
@@ -1321,7 +1348,10 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "7":
-        if (windowOpen == "map") module.measure_distance("addMarker");
+        if (windowOpen == "map") {
+          module.measure_distance("addMarker");
+          bottom_bar("close", "", "save");
+        }
         break;
 
       case "8":

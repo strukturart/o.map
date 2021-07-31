@@ -215,10 +215,7 @@ let now = function () {
     (current_datetime.getMonth() + 1) +
     "-" +
     current_datetime.getDate() +
-    current_datetime.getHours() +
-    "-" +
-    current_datetime.getMinutes() +
-    "-" +
-    current_datetime.getSeconds();
+    "_" +
+    current_datetime.getHours();
   return now;
 };
