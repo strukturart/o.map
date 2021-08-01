@@ -20,11 +20,13 @@ const geojson = ((_) => {
     }
 
     if (type == "path") {
-      var single = measure_group_path.toGeoJSON();
-
-      toaster("yeah", 4000);
-
+      let single = tracking_group.toGeoJSON();
       extData = JSON.stringify(single);
+    }
+
+    if (type == "tracking") {
+      let e = measure_group_tracking.toGeoJSON();
+      extData = JSON.stringify(e);
     }
 
     if (type == "collection") {
@@ -53,6 +55,14 @@ const geojson = ((_) => {
       toaster("succesfull saved", 3000);
       windowOpen = "map";
       build_menu();
+
+      if (type == "tracking") {
+        measure_distance("destroy_tracking");
+      }
+
+      if (type == "path") {
+        measure_distance("destroy");
+      }
     };
 
     requestAdd.onerror = function () {

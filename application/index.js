@@ -5,10 +5,10 @@ let windowOpen;
 let save_mode; // to check save geojson or update json
 let open_url = false;
 
-let track_group = new L.FeatureGroup();
-
 let markers_group = new L.FeatureGroup();
 let measure_group_path = new L.FeatureGroup();
+let measure_group = new L.FeatureGroup();
+let tracking_group = new L.FeatureGroup();
 
 let popup_option = {
   closeButton: false,
@@ -22,10 +22,11 @@ let path_option = {
 };
 
 let mainmarker = {
-  tracking:false,
+  tracking: false,
   auto_view_center: false,
   device_lat: "",
   device_lng: "",
+  device_alt: "",
   current_lng: "unknown",
   current_lat: "unknown",
   current_alt: "unknown",
@@ -94,8 +95,13 @@ document.addEventListener("DOMContentLoaded", function () {
     windowOpen = "map";
   }, 4000);
 
+  //add group layers
   map.addLayer(markers_group);
+  map.addLayer(measure_group);
+  map.addLayer(measure_group_path);
+  map.addLayer(tracking_group);
 
+  //build menu
   let build_menu = function () {
     document.querySelector("div#tracksmarkers").innerHTML = "";
     document.querySelector("div#maps").innerHTML = "";
@@ -419,7 +425,6 @@ document.addEventListener("DOMContentLoaded", function () {
     state_geoloc = true;
     function showLocation(position) {
       let crd = position.coords;
-      console.log("auto:" + mainmarker.auto_view_center);
 
       mainmarker.current_lat = crd.latitude;
       mainmarker.current_lng = crd.longitude;
@@ -430,19 +435,25 @@ document.addEventListener("DOMContentLoaded", function () {
       //store device location
       mainmarker.device_lat = crd.latitude;
       mainmarker.device_lng = crd.longitude;
-      myMarker.setIcon(maps.follow_icon);
+      mainmarker.device_alt = crd.altitude;
+      if (mainmarker.tracking == false) {
+        myMarker.setIcon(maps.default_icon);
+      }
+
+      if (mainmarker.tracking == true) {
+        myMarker.setIcon(maps.follow_icon);
+      }
 
       //store location as fallout
       let b = [crd.latitude, crd.longitude];
       localStorage.setItem("last_location", JSON.stringify(b));
+
+      myMarker
+        .setLatLng([mainmarker.current_lat, mainmarker.current_lng])
+        .update();
+
       if (mainmarker.auto_view_center) {
         map.flyTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
-        myMarker
-          .setLatLng([mainmarker.current_lat, mainmarker.current_lng])
-          .update();
-      }
-      if (mainmarker.tracking) {
-
       }
     }
 
@@ -1212,6 +1223,12 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
+        if (windowOpen == "user-input" && save_mode == "geojson-tracking") {
+          geojson.save_geojson(user_input("return") + ".geojson", "tracking");
+          save_mode = "";
+          break;
+        }
+
         if (windowOpen == "map") {
           ZoomMap("out");
           break;
@@ -1305,18 +1322,21 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "1":
-        //if (windowOpen == "map") getLocation("update_marker");
-
         if (windowOpen == "map") {
           if (mainmarker.tracking) {
             mainmarker.tracking = false;
-            toaster("tracking off",2000)
+            toaster("tracking off", 2000);
+
+            save_mode = "geojson-path";
+            user_input("open", now());
+            document.getElementById("user-input-description").innerText =
+              "Export path as geojson file";
 
             return true;
           } else {
             mainmarker.tracking = true;
-            module.measure_distance("tracking")
-            toaster("tracking on",2000)
+            toaster("tracking on, stop tracking with key 1", 4000);
+            module.measure_distance("tracking");
           }
         }
         break;
@@ -1336,12 +1356,12 @@ document.addEventListener("DOMContentLoaded", function () {
         if (windowOpen == "map") {
           if (mainmarker.auto_view_center) {
             mainmarker.auto_view_center = false;
-            toaster("watching position off",2000)
+            toaster("watching position off", 2000);
             document.getElementById("cross").style.opacity = 1;
             return true;
           } else {
             mainmarker.auto_view_center = true;
-            toaster("watching position on",2000)
+            toaster("watching position on", 2000);
             document.getElementById("cross").style.opacity = 0;
           }
         }

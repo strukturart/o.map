@@ -92,43 +92,55 @@ const module = (() => {
     return a;
   };
 
-  let measure_group = new L.FeatureGroup();
-  map.addLayer(measure_group);
-  map.addLayer(track_group);
-
-  map.addLayer(measure_group_path);
+  /////////////////////
+  ////PATH
+  ///////////////////
 
   let distances = [];
   let latlngs = [];
   let tracking_latlngs = [];
-let tracking_interval
+  let tracking_interval;
+  let tracking_cache = [];
 
   let polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
-  let polyline_track = L.polyline(tracking_latlngs, path_option).addTo(track_group);
-
+  let polyline_tracking = L.polyline(tracking_latlngs, path_option).addTo(
+    tracking_group
+  );
 
   const measure_distance = function (action) {
     if (action == "destroy") {
       status.path_selection = false;
-
       measure_group_path.clearLayers();
       measure_group.clearLayers();
       //polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
       return true;
     }
 
-    if (action == "tracking") {
-      tracking_interval = setInterval(function(){
-        console.log("tracking")
-
-        polyline_track.addLatLng([mainmarker.device_lat, mainmarker.device_lng])
-        if(mainmarker.tracking == false)clearInterval(tracking_interval);
-      },10000)
-      
-
+    if (action == "destroy_tracking") {
+      mainmarker.tracking = false;
+      tracking_group.clearLayers();
+      return true;
     }
 
-    
+    if (action == "tracking") {
+      tracking_interval = setInterval(function () {
+        polyline_tracking.addLatLng([
+          mainmarker.device_lat,
+          mainmarker.device_lng,
+        ]);
+
+        tracking_cache.push({
+          lat: mainmarker.device_lat,
+          lng: mainmarker.device_lng,
+          alt: mainmarker.device_alt,
+        });
+
+        //console.log(JSON.stringify(tracking_cache));
+        console.log("tr: " + mainmarker.tracking);
+        if (mainmarker.tracking == false) clearInterval(tracking_interval);
+      }, 10000);
+    }
+
     if (action == "addMarker") {
       status.path_selection = true;
       L.marker([mainmarker.current_lat, mainmarker.current_lng])
