@@ -3,17 +3,16 @@ const geojson = ((_) => {
   //save geoJson file
   /////////////////
   const save_geojson = function (file_path_name, type) {
-    let extData;
+    console.log(type);
+    let extData = "";
 
     if (type == "single") {
-      var single = selected_marker.toGeoJSON();
+      let single = selected_marker.toGeoJSON();
       // store popup content
       let a = document.querySelector("textarea#popup").value;
       if (a != "") {
         let a = document.querySelector("textarea#popup").value;
         single.properties.popup = a;
-
-        toaster(a, 4000);
       }
 
       extData = JSON.stringify(single);
@@ -25,8 +24,9 @@ const geojson = ((_) => {
     }
 
     if (type == "tracking") {
-      let e = measure_group_tracking.toGeoJSON();
+      let e = tracking_group.toGeoJSON();
       extData = JSON.stringify(e);
+      console.log(extData)
     }
 
     if (type == "collection") {
@@ -48,27 +48,34 @@ const geojson = ((_) => {
     let geojson_file = new Blob([extData], {
       type: "application/json",
     });
+
     let sdcard = navigator.getDeviceStorage("sdcard");
+
     let requestAdd = sdcard.addNamed(geojson_file, file_path_name);
 
     requestAdd.onsuccess = function () {
-      toaster("succesfull saved", 3000);
       windowOpen = "map";
-      build_menu();
+      toaster("succesfull saved", 5000);
+      bottom_bar("","","")
+
+    
 
       if (type == "tracking") {
-        measure_distance("destroy_tracking");
+        module.measure_distance("destroy_tracking");
       }
 
       if (type == "path") {
-        measure_distance("destroy");
+        module.measure_distance("destroy");
       }
+
+      setTimeout(function(){build_menu()},1000)
+
     };
 
     requestAdd.onerror = function () {
       toaster(
         "Unable to write the file, the file name may already be used",
-        3000
+        10000
       );
       windowOpen = "map";
     };

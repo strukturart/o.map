@@ -1,26 +1,4 @@
 const module = (() => {
-  ////////////////////
-  ////RULER///////////
-  ///////////////////
-  var ruler_activ = false;
-  let ruler_toggle = function () {
-    if (ruler_activ) {
-      ruler_activ = false;
-      navigator.spatialNavigationEnabled = false;
-
-      return false;
-    }
-    if (!ruler_activ) {
-      L.control.ruler().addTo(map);
-      $("div.leaflet-ruler").addClass("leaflet-ruler-clicked");
-
-      navigator.spatialNavigationEnabled = true;
-      ruler_activ = true;
-
-      return false;
-    }
-  };
-
   ///////////////////
   //select marker
   ////////////////////
@@ -93,7 +71,7 @@ const module = (() => {
   };
 
   /////////////////////
-  ////PATH
+  ////PATH & TRACKING
   ///////////////////
 
   let distances = [];
@@ -102,27 +80,36 @@ const module = (() => {
   let tracking_interval;
   let tracking_cache = [];
 
+  let tracking_distance;
+
   let polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
   let polyline_tracking = L.polyline(tracking_latlngs, path_option).addTo(
     tracking_group
   );
 
   const measure_distance = function (action) {
+    console.log(action);
     if (action == "destroy") {
       status.path_selection = false;
       measure_group_path.clearLayers();
       measure_group.clearLayers();
-      //polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
+      polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
       return true;
     }
 
     if (action == "destroy_tracking") {
-      mainmarker.tracking = false;
       tracking_group.clearLayers();
+      polyline_tracking = L.polyline(tracking_latlngs, path_option).addTo(
+        tracking_group
+      );
+      mainmarker.tracking = false;
       return true;
     }
 
     if (action == "tracking") {
+      screenWakeLock("lock");
+      let calc = 0;
+
       tracking_interval = setInterval(function () {
         polyline_tracking.addLatLng([
           mainmarker.device_lat,
@@ -135,9 +122,25 @@ const module = (() => {
           alt: mainmarker.device_alt,
         });
 
-        //console.log(JSON.stringify(tracking_cache));
-        console.log("tr: " + mainmarker.tracking);
-        if (mainmarker.tracking == false) clearInterval(tracking_interval);
+        if (tracking_cache.length > 2) {
+          tracking_distance = calc_distance(
+            Number(tracking_cache[tracking_cache.length - 1].lat),
+            Number(tracking_cache[tracking_cache.length - 1].lng),
+            Number(tracking_cache[tracking_cache.length - 2].lat),
+            Number(tracking_cache[tracking_cache.length - 2].lng)
+          );
+
+          tracking_distance = tracking_distance / 1000;
+
+          calc += Number(tracking_distance);
+
+          document.querySelector("div#tracking-distance").innerText =
+            calc.toFixed(2) + " km";
+        }
+        if (mainmarker.tracking == false) {
+          clearInterval(tracking_interval);
+          screenWakeLock("unlock");
+        }
       }, 10000);
     }
 
@@ -176,7 +179,6 @@ const module = (() => {
   };
 
   return {
-    ruler_toggle,
     select_marker,
     calc_distance,
     compass,

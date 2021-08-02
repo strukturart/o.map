@@ -139,11 +139,13 @@ function top_bar(left, center, right) {
 
 function screenWakeLock(param) {
   let lock;
+  if (window.navigator.requestWakeLock == "is not a function") return false;
   if (param == "lock") {
     lock = window.navigator.requestWakeLock("screen");
+    return false;
   }
 
-  if (param1 == "unlock") {
+  if (param == "unlock") {
     if (lock.topic == "screen") {
       lock.unlock();
     }

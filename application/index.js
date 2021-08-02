@@ -2,7 +2,7 @@
 
 let windowOpen;
 
-let save_mode; // to check save geojson or update json
+let save_mode; 
 let open_url = false;
 
 let markers_group = new L.FeatureGroup();
@@ -23,14 +23,17 @@ let path_option = {
 
 let mainmarker = {
   tracking: false,
+  tracking_distance: 0,
+  tracking_alt_up: 0,
+  tracking_alt_down: 0,
   auto_view_center: false,
   device_lat: "",
   device_lng: "",
   device_alt: "",
-  current_lng: "unknown",
-  current_lat: "unknown",
-  current_alt: "unknown",
-  current_heading: "unknown",
+  current_lng: 0,
+  current_lat: 0,
+  current_alt: 0,
+  current_heading: 0,
   accuracy: 0,
   map: "unknown",
   last_location: JSON.parse(localStorage.getItem("last_location")),
@@ -46,7 +49,7 @@ let selected_marker;
 
 let settings_data = settings.load_settings();
 let setting = {
-  export_path: localStorage.getItem("export-path"),
+  export_path:localStorage.getItem("export-path")!=null ? localStorage.getItem("export-path") : ""  ,
   owm_key: localStorage.getItem("owm-key"),
   cache_time: localStorage.getItem("cache-time"),
   cache_zoom: localStorage.getItem("cache-zoom"),
@@ -301,7 +304,6 @@ document.addEventListener("DOMContentLoaded", function () {
         L.geoJSON(geojson_data, {
           onEachFeature: function (feature, layer) {
             if (feature.geometry != "") {
-              console.log(feature.geometry.coordinates[0]);
               let p = feature.geometry.coordinates[0];
               p.reverse();
               map.flyTo(p);
@@ -357,15 +359,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function success(pos) {
       let crd = pos.coords;
-      mainmarker.current_lat = crd.latitude;
-      mainmarker.current_lng = crd.longitude;
-      mainmarker.current_alt = crd.altitude;
+
       if (crd.heading) mainmarker.current_heading = crd.heading;
       mainmarker.accuracy = crd.accuracy;
 
       //to store device loaction
       mainmarker.device_lat = crd.latitude;
       mainmarker.device_lng = crd.longitude;
+      mainmarker.device_alt = crd.altitude;
 
       if (option == "share") {
         mozactivity.share_position();
@@ -377,11 +378,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (option == "init") {
         myMarker = L.marker([
-          mainmarker.current_lat,
-          mainmarker.current_lng,
+          mainmarker.device_lat,
+          mainmarker.device_lng,
         ]).addTo(markers_group);
 
-        map.setView([mainmarker.current_lat, mainmarker.current_lng], 12);
+        map.setView([mainmarker.device_lat, mainmarker.device_lng], 12);
 
         myMarker.setIcon(maps.default_icon);
         document.getElementById("cross").style.opacity = 1;
@@ -426,9 +427,6 @@ document.addEventListener("DOMContentLoaded", function () {
     function showLocation(position) {
       let crd = position.coords;
 
-      mainmarker.current_lat = crd.latitude;
-      mainmarker.current_lng = crd.longitude;
-      mainmarker.current_alt = crd.altitude;
       if (crd.heading) mainmarker.current_heading = crd.heading;
       mainmarker.accuracy = crd.accuracy;
 
@@ -449,11 +447,11 @@ document.addEventListener("DOMContentLoaded", function () {
       localStorage.setItem("last_location", JSON.stringify(b));
 
       myMarker
-        .setLatLng([mainmarker.current_lat, mainmarker.current_lng])
+        .setLatLng([mainmarker.device_lat, mainmarker.device_lng])
         .update();
 
       if (mainmarker.auto_view_center) {
-        map.flyTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
+        map.flyTo(new L.LatLng(mainmarker.device_lat, mainmarker.device_lng));
       }
     }
 
@@ -470,19 +468,6 @@ document.addEventListener("DOMContentLoaded", function () {
     };
     watchID = geoLoc.watchPosition(showLocation, errorHandler, options);
     return true;
-
-    if (state_geoloc == false) {
-    }
-
-    if (state_geoloc == true) {
-      //geoLoc.clearWatch(watchID);
-      //state_geoloc = false;
-      //toaster("watching postion stopped", 2000);
-      //myMarker.setIcon(maps.default_icon);
-      //document.getElementById("cross").style.opacity = 1;
-
-      return true;
-    }
   }
 
   /////////////////////////
@@ -1187,10 +1172,12 @@ document.addEventListener("DOMContentLoaded", function () {
           save_mode = "";
           break;
         }
-
         break;
 
       case "SoftRight":
+
+        console.log(windowOpen+" / "+save_mode);
+
         if (status.path_selection && windowOpen == "map") {
           save_mode = "geojson-path";
           user_input("open", now());
@@ -1223,7 +1210,9 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
+
         if (windowOpen == "user-input" && save_mode == "geojson-tracking") {
+          console.log("start saving")
           geojson.save_geojson(user_input("return") + ".geojson", "tracking");
           save_mode = "";
           break;
@@ -1324,18 +1313,18 @@ document.addEventListener("DOMContentLoaded", function () {
       case "1":
         if (windowOpen == "map") {
           if (mainmarker.tracking) {
-            mainmarker.tracking = false;
-            toaster("tracking off", 2000);
+            toaster("tracking stopped", 5000);
 
-            save_mode = "geojson-path";
+            save_mode = "geojson-tracking";
             user_input("open", now());
             document.getElementById("user-input-description").innerText =
               "Export path as geojson file";
+            mainmarker.tracking = false;
 
             return true;
           } else {
             mainmarker.tracking = true;
-            toaster("tracking on, stop tracking with key 1", 4000);
+            toaster("tracking started,\n stop tracking with key 1", 4000);
             module.measure_distance("tracking");
           }
         }
