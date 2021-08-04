@@ -3,7 +3,6 @@ const geojson = ((_) => {
   //save geoJson file
   /////////////////
   const save_geojson = function (file_path_name, type) {
-    console.log(type);
     let extData = "";
 
     if (type == "single") {
@@ -26,7 +25,6 @@ const geojson = ((_) => {
     if (type == "tracking") {
       let e = tracking_group.toGeoJSON();
       extData = JSON.stringify(e);
-      console.log(extData)
     }
 
     if (type == "collection") {
@@ -56,20 +54,20 @@ const geojson = ((_) => {
     requestAdd.onsuccess = function () {
       windowOpen = "map";
       toaster("succesfull saved", 5000);
-      bottom_bar("","","")
-
-    
+      bottom_bar("", "", "");
 
       if (type == "tracking") {
         module.measure_distance("destroy_tracking");
+        mainmarker.tracking = false;
       }
 
       if (type == "path") {
         module.measure_distance("destroy");
       }
 
-      setTimeout(function(){build_menu()},1000)
-
+      setTimeout(function () {
+        build_menu();
+      }, 1000);
     };
 
     requestAdd.onerror = function () {

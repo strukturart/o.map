@@ -88,7 +88,6 @@ const module = (() => {
   );
 
   const measure_distance = function (action) {
-    console.log(action);
     if (action == "destroy") {
       status.path_selection = false;
       measure_group_path.clearLayers();
@@ -103,11 +102,35 @@ const module = (() => {
         tracking_group
       );
       mainmarker.tracking = false;
+      localStorage.removeItem("tracking_cache");
       return true;
     }
 
     if (action == "tracking") {
-      screenWakeLock("lock");
+      if (localStorage.getItem("tracking_cache") != null) {
+        if (
+          window.confirm(
+            "looks like a tracking was aborted without saving it, would you like to continue?"
+          )
+        ) {
+          let d = localStorage.getItem("tracking_cache");
+
+          d = JSON.parse(d);
+
+          tracking_cache = d;
+          console.log(JSON.stringify(d));
+          //restore path
+          for (let i = 0; i < tracking_cache.length; i++) {
+            console.log(tracking_cache[i].lat);
+            polyline_tracking.addLatLng([
+              tracking_cache[i].lat,
+              tracking_cache[i].lng,
+            ]);
+          }
+        }
+      } else {
+      }
+      //screenWakeLock("lock");
       let calc = 0;
 
       tracking_interval = setInterval(function () {
@@ -136,6 +159,11 @@ const module = (() => {
 
           document.querySelector("div#tracking-distance").innerText =
             calc.toFixed(2) + " km";
+
+          //check if old tracking
+          let k = JSON.stringify(tracking_cache);
+
+          localStorage.setItem("tracking_cache", k);
         }
         if (mainmarker.tracking == false) {
           clearInterval(tracking_interval);
