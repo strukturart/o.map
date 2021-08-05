@@ -49,10 +49,6 @@
     <div id="user-input" class="width-100 flex justify-content-spacearound">
         <div id="user-input-description"></div>
         <input type="text" />
-        <div id="button-bar-save" class="flex justify-content-spacebetween width-100">
-            <div>cancel</div>
-            <div>save</div>
-        </div>
     </div>
 
     <div id="bottom-bar">
@@ -113,6 +109,11 @@
             <div id="heading"></div>
             <div id="compass"></div>
             <div id="accuracy">accuracy: +-<span></span> m </div> 
+
+            <strong><u>Tracking</u></strong>
+            <div id="tracking-distance"></div>
+
+
             <strong><u>Distances</u></strong>
             <div id="distance"></div>
             <div id="target"></div>
@@ -244,9 +245,9 @@
         </div>
 
         <div class="panel" id="shortcuts" name="Shortcuts">
-            <div class="item update-position" tabindex="0" data-map="update-position">
+            <div class="item update-position" tabindex="0" data-map="tracking">
                 <div class="flex justify-content-spacebetween">
-                    <div>update geolocation</div>
+                    <div>start/stop tracking</div>
                     <div>1</div>
                 </div>
             </div>
@@ -259,7 +260,7 @@
 
             <div class="item disable-screenlock" data-map="autoupdate-geolocation">
                 <div class="flex justify-content-spacebetween">
-                    <div>watch position on/off</div>
+                    <div>center view</div>
                     <div>4</div>
                 </div>
             </div>
@@ -285,9 +286,9 @@
                 </div>
             </div>
 
-            <div class="item" data-map="ruler">
+            <div class="item" data-map="draw-path">
                 <div class="flex justify-content-spacebetween">
-                    <div>measure distance</div>
+                    <div>draw path</div>
                     <div>7</div>
                 </div>
             </div>

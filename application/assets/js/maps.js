@@ -10,6 +10,13 @@ const maps = (() => {
     html: '<div class="ringring"></div><div class="follow"></div>',
   });
 
+  const tracking_icon = L.divIcon({
+    iconSize: [40, 40],
+    iconAnchor: [30, 40],
+    className: "tracking-marker",
+    html: '<div class="ringring"></div><div class="tracking"></div>',
+  });
+
   const default_icon = L.icon({
     iconUrl: "assets/css/images/marker-icon.png",
     iconSize: [25, 40],
@@ -478,6 +485,7 @@ const maps = (() => {
     default_icon,
     goal_icon,
     select_icon,
+    tracking_icon,
     attribution,
     moon_map,
     earthquake_layer,

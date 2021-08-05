@@ -56,9 +56,11 @@ let toaster = function (text, time) {
   }
 };
 
-function user_input(param, file_name) {
+function user_input(param, file_name,label) {
   if (param == "open") {
-    document.querySelector("div#user-input").style.bottom = "0px";
+    document.getElementById("user-input-description").innerText =label;
+    
+    document.querySelector("div#user-input").style.bottom = "25px";
     document.querySelector("div#user-input input").focus();
     document.querySelector("div#user-input input").value = file_name;
     windowOpen = "user-input";
@@ -67,12 +69,16 @@ function user_input(param, file_name) {
     document.querySelector("div#user-input").style.bottom = "-1000px";
     document.querySelector("div#user-input input").blur();
     windowOpen = "map";
+    bottom_bar("","","")
+
   }
 
   if (param == "return") {
     let input_value = document.querySelector("div#user-input input").value;
     document.querySelector("div#user-input").style.bottom = "-1000px";
     document.querySelector("div#user-input input").blur();
+    bottom_bar("","","")
+
     return input_value;
   }
 }
@@ -139,11 +145,13 @@ function top_bar(left, center, right) {
 
 function screenWakeLock(param) {
   let lock;
+  if (window.navigator.requestWakeLock == "is not a function") return false;
   if (param == "lock") {
     lock = window.navigator.requestWakeLock("screen");
+    return false;
   }
 
-  if (param1 == "unlock") {
+  if (param == "unlock") {
     if (lock.topic == "screen") {
       lock.unlock();
     }

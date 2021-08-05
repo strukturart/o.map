@@ -1,26 +1,4 @@
 const module = (() => {
-  ////////////////////
-  ////RULER///////////
-  ///////////////////
-  var ruler_activ = false;
-  let ruler_toggle = function () {
-    if (ruler_activ) {
-      ruler_activ = false;
-      navigator.spatialNavigationEnabled = false;
-
-      return false;
-    }
-    if (!ruler_activ) {
-      L.control.ruler().addTo(map);
-      $("div.leaflet-ruler").addClass("leaflet-ruler-clicked");
-
-      navigator.spatialNavigationEnabled = true;
-      ruler_activ = true;
-
-      return false;
-    }
-  };
-
   ///////////////////
   //select marker
   ////////////////////
@@ -92,24 +70,109 @@ const module = (() => {
     return a;
   };
 
-  let measure_group = new L.FeatureGroup();
-  map.addLayer(measure_group);
-
-  map.addLayer(measure_group_path);
+  /////////////////////
+  ////PATH & TRACKING
+  ///////////////////
 
   let distances = [];
-  var latlngs = [];
+  let latlngs = [];
+  let tracking_latlngs = [];
+  let tracking_interval;
+  let tracking_cache = [];
+
+  let tracking_distance;
 
   let polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
+  let polyline_tracking = L.polyline(tracking_latlngs, path_option).addTo(
+    tracking_group
+  );
 
   const measure_distance = function (action) {
     if (action == "destroy") {
       status.path_selection = false;
-
       measure_group_path.clearLayers();
       measure_group.clearLayers();
       polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
       return true;
+    }
+
+    if (action == "destroy_tracking") {
+      tracking_group.clearLayers();
+      polyline_tracking = L.polyline(tracking_latlngs, path_option).addTo(
+        tracking_group
+      );
+      mainmarker.tracking = false;
+      localStorage.removeItem("tracking_cache");
+      return true;
+    }
+
+    if (action == "tracking") {
+      if (localStorage.getItem("tracking_cache") != null) {
+        if (
+          window.confirm(
+            "looks like a tracking was aborted without saving it, would you like to continue?"
+          )
+        ) {
+          let d = localStorage.getItem("tracking_cache");
+
+          d = JSON.parse(d);
+
+          tracking_cache = d;
+          console.log(JSON.stringify(d));
+          //restore path
+          for (let i = 0; i < tracking_cache.length; i++) {
+            console.log(tracking_cache[i].lat);
+            polyline_tracking.addLatLng([
+              tracking_cache[i].lat,
+              tracking_cache[i].lng,
+            ]);
+          }
+        } else {
+          localStorage.removeItem("tracking_cache");
+          tracking_cache = [];
+        }
+      } else {
+      }
+      screenWakeLock("lock");
+      let calc = 0;
+
+      tracking_interval = setInterval(function () {
+        polyline_tracking.addLatLng([
+          mainmarker.device_lat,
+          mainmarker.device_lng,
+        ]);
+
+        tracking_cache.push({
+          lat: mainmarker.device_lat,
+          lng: mainmarker.device_lng,
+          alt: mainmarker.device_alt,
+        });
+
+        if (tracking_cache.length > 2) {
+          tracking_distance = calc_distance(
+            Number(tracking_cache[tracking_cache.length - 1].lat),
+            Number(tracking_cache[tracking_cache.length - 1].lng),
+            Number(tracking_cache[tracking_cache.length - 2].lat),
+            Number(tracking_cache[tracking_cache.length - 2].lng)
+          );
+
+          tracking_distance = tracking_distance / 1000;
+
+          calc += Number(tracking_distance);
+
+          document.querySelector("div#tracking-distance").innerText =
+            calc.toFixed(2) + " km";
+
+          //check if old tracking
+          let k = JSON.stringify(tracking_cache);
+
+          localStorage.setItem("tracking_cache", k);
+        }
+        if (mainmarker.tracking == false) {
+          clearInterval(tracking_interval);
+          screenWakeLock("unlock");
+        }
+      }, 10000);
     }
 
     if (action == "addMarker") {
@@ -147,7 +210,6 @@ const module = (() => {
   };
 
   return {
-    ruler_toggle,
     select_marker,
     calc_distance,
     compass,

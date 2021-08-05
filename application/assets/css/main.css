@@ -165,13 +165,9 @@ img.marker-1 {
 }
 
 .default-marker {
-  background: red;
+  background: rgb(78, 110, 17);
   border-radius: 50%;
   border: 3px solid black;
-}
-
-.follow-marker {
-  position: relative;
 }
 
 /*follow marker*/
@@ -179,7 +175,7 @@ img.marker-1 {
 .follow {
   width: 15px;
   height: 15px;
-  background-color: #ff0000;
+  background-color: #ec410d;
   border-radius: 50%;
   position: absolute;
   top: 23px;
@@ -194,7 +190,7 @@ img.marker-1 {
   position: absolute;
   left: 18px;
   top: 18px;
-  -webkit-animation: pulsate 1s ease-out;
+  -webkit-animation: pulsate 4s ease-out;
   -webkit-animation-iteration-count: infinite;
   opacity: 0;
 }
@@ -211,6 +207,17 @@ img.marker-1 {
   left: 23px;
 }
 
+/*tracking marker*/
+
+.tracking {
+  width: 15px;
+  height: 15px;
+  background-color: #e2140c;
+  border-radius: 50%;
+  position: absolute;
+  top: 23px;
+  left: 23px;
+}
 @-webkit-keyframes pulsate {
   0% {
     -webkit-transform: scale(0.1, 0.1);
@@ -249,27 +256,17 @@ div#user-input {
   bottom: -80px;
   background: gray;
   color: white;
-  z-index: 2000;
+  z-index: 5;
   padding: 5px;
 }
 
 div#user-input input {
   margin: 5px 0 5px 0;
+  padding: 3px;
   height: 20px;
   width: 90%;
   font-size: 1.1rem;
-}
-
-div#user-input div#button-bar-save {
-  background: black;
-  height: 25px;
-}
-
-div#user-input div#button-bar-save div {
-  background: black;
-  color: white;
-  height: 20px;
-  padding: 2px;
+  background: white !important;
 }
 
 /*///////////////////////////
