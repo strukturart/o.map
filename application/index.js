@@ -107,8 +107,6 @@ document.addEventListener("DOMContentLoaded", function () {
   map.addLayer(measure_group_path);
   map.addLayer(tracking_group);
 
- 
-
   //build menu
   let build_menu = function () {
     document.querySelector("div#tracksmarkers").innerHTML = "";
@@ -385,7 +383,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (option == "init") {
         geolocationWatch();
-        
+
         myMarker = L.marker([
           mainmarker.device_lat,
           mainmarker.device_lng,
@@ -511,8 +509,8 @@ document.addEventListener("DOMContentLoaded", function () {
       if (item_value == "save_marker") {
         document.querySelector("div#markers-option").style.display = "none";
         save_mode = "geojson-single";
-        user_input("open", "","save this marker as geojson file");
-        bottom_bar("cancel","","save")  
+        user_input("open", "", "save this marker as geojson file");
+        bottom_bar("cancel", "", "save");
       }
 
       bottom_bar("", "", "");
@@ -604,12 +602,12 @@ document.addEventListener("DOMContentLoaded", function () {
       if (item_value == "search") {
         windowOpen = "map";
         document.querySelector("div#finder").style.display = "none";
-        showSearch();
+        bottom_bar("", "", "");
+        search.showSearch();
       }
 
       if (item_value == "coordinations") {
         document.querySelector("div#finder").style.display = "none";
-
         coordinations();
       }
 
@@ -623,6 +621,17 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelector("div#finder").style.display = "none";
         save_mode = "geojson-collection";
         user_input("open");
+      }
+
+      if (item_value == "tracking") {
+        toaster(
+          "please close the menu and press key 1 to start tracking.",
+          3000
+        );
+      }
+
+      if (item_value == "draw-path") {
+        toaster("please close the menu and press key 7 to draw a path.", 3000);
       }
 
       if (item_value == "add-marker-icon") {
@@ -1184,8 +1193,8 @@ document.addEventListener("DOMContentLoaded", function () {
       case "SoftRight":
         if (status.path_selection && windowOpen == "map") {
           save_mode = "geojson-path";
-          user_input("open", "","save this marker as geojson file");
-        
+          user_input("open", "", "save this marker as geojson file");
+
           break;
         }
 
@@ -1324,9 +1333,9 @@ document.addEventListener("DOMContentLoaded", function () {
           if (mainmarker.tracking) {
             toaster("tracking paused", 5000);
             save_mode = "geojson-tracking";
-            user_input("open", "","Export path as geojson file");
-            bottom_bar("cancel","don't save","save")  
-              
+            user_input("open", "", "Export path as geojson file");
+            bottom_bar("cancel", "don't save", "save");
+
             return true;
           } else {
             mainmarker.tracking = true;
@@ -1368,8 +1377,8 @@ document.addEventListener("DOMContentLoaded", function () {
             markers_group
           );
           save_mode = "geojson-single";
-          user_input("open", "","save this marker as geojson file");
-            bottom_bar("cancel","","save")
+          user_input("open", "", "save this marker as geojson file");
+          bottom_bar("cancel", "", "save");
           break;
         }
         break;

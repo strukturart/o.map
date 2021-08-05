@@ -127,10 +127,13 @@ const module = (() => {
               tracking_cache[i].lng,
             ]);
           }
+        } else {
+          localStorage.removeItem("tracking_cache");
+          tracking_cache = [];
         }
       } else {
       }
-      //screenWakeLock("lock");
+      screenWakeLock("lock");
       let calc = 0;
 
       tracking_interval = setInterval(function () {
