@@ -46,10 +46,10 @@ Because I don't feel like annoying users with stupid advertising.
 - **Cursor** Moving the map
 - **key 0** share position
 - **key 0 longpress** show weather map
-- **key 1** update marker
+- **key 1** start/stop tracking
 - **key 2** search
 - **key 3** open menu
-- **key 4** watch position on/off
+- **key 4** auto center map
 - **key 5** save position or search result as marker on sd-card <br>
   to delete the marker open with 3 the menu select the marker and press long enter (+- 5sec)
 - **key 6** info panel
@@ -98,6 +98,10 @@ The app is not auto-updating. To update it, you have to follow the same steps yo
 - leaflet.tilelayer.pouchdbcached MIT license
 - leaflet ruler MIT License
 - wikipedia
+
+### other map apps for KaiOs
+
+https://wiki.openstreetmap.org/wiki/KaiOS
 
 ## Donation
 
