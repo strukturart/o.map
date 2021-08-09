@@ -1,4 +1,19 @@
 const module = (() => {
+  let link_to_marker = function (url) {
+    let url_split = url.split("/");
+    current_lat = url_split[url_split.length - 2];
+    current_lng = url_split[url_split.length - 1];
+
+    //remove !numbers
+    current_lat = current_lat.replace(/[A-Za-z?=&]+/gi, "");
+    current_lng = current_lng.replace(/[A-Za-z?=&]+/gi, "");
+    current_lat = Number(current_lat);
+    current_lng = Number(current_lng);
+
+    //myMarker = L.marker([current_lat, current_lng]).addTo(map);
+    map.setView([current_lat, current_lng]);
+  };
+
   ///////////////////
   //select marker
   ////////////////////
@@ -214,5 +229,6 @@ const module = (() => {
     calc_distance,
     compass,
     measure_distance,
+    link_to_marker,
   };
 })();

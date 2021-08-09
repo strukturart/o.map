@@ -14,13 +14,13 @@ div#olc {
 }
 
 div#search-box {
-  background: green;
+  background: silver;
   width: 100%;
   overflow: hidden;
   padding: 5px;
   position: fixed;
   z-index: 5;
-  height: 35px;
+  height: auto;
   display: none;
 }
 
@@ -36,7 +36,7 @@ div#search-box input {
   border: 0px solid #999;
   background: white;
   overflow: auto;
-  margin: 10px 0 0 0;
+  margin: 0px 0 0 0;
 }
 
 div.autocomplete-suggestion {

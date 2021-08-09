@@ -89,6 +89,7 @@ map.on("load", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
+  /*
   getKaiAd({
     publisher: "4408b6fa-4e1d-438f-af4d-f3be2fa97208",
     app: "o.map",
@@ -123,6 +124,8 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     },
   });
+
+  */
 
   setTimeout(function () {
     //get location if not an activity open url
@@ -547,9 +550,6 @@ document.addEventListener("DOMContentLoaded", function () {
         user_input("open", "", "save this marker as geojson file");
         bottom_bar("cancel", "", "save");
       }
-
-      bottom_bar("", "", "");
-      top_bar("", "", "");
     }
   };
 
@@ -658,6 +658,17 @@ document.addEventListener("DOMContentLoaded", function () {
         save_mode = "geojson-collection";
         user_input("open");
         bottom_bar("cancel", "", "save");
+      }
+
+      if (item_value == "read-qr-marker") {
+        document.querySelector("div#finder").style.display = "none";
+        windowOpen = "scan";
+
+        qr.start_scan(function (callback) {
+          let slug = callback;
+          toaster(slug, 3000);
+          module.link_to_marker(slug);
+        });
       }
 
       if (item_value == "tracking") {
@@ -976,6 +987,10 @@ document.addEventListener("DOMContentLoaded", function () {
     if (document.activeElement.classList.contains("input-parent")) {
       bottom_bar("", "edit", "");
     }
+
+    if (document.activeElement.id == "ad-container") {
+      bottom_bar("", "", "");
+    }
   };
 
   function nav(move) {
@@ -1030,7 +1045,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (tabIndex == 0) {
           //to do
           window.scroll(0, 50);
-          //document.location.href = "#finder";
         }
       }
 
@@ -1066,7 +1080,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         myMarker = L.marker([current_lat, current_lng]).addTo(map);
         map.setView([current_lat, current_lng], 13);
-        //zoom_speed();
       }
     });
   }
@@ -1171,6 +1184,10 @@ document.addEventListener("DOMContentLoaded", function () {
     switch (param.key) {
       case "Backspace":
         module.measure_distance("destroy");
+
+        if (windowOpen == "scan") {
+          qr.stop_scan();
+        }
 
         if (
           document.activeElement.tagName == "TEXTAREA" ||

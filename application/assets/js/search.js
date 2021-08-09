@@ -57,10 +57,7 @@ const search = (() => {
 
     windowOpen = "search";
     setTimeout(function () {
-      toaster(
-        "you can search for locations, names or OLC. To search for OLC, start your search query with /",
-        4000
-      );
+      
     }, 3000);
 
     //$("#search").autocomplete().enable();

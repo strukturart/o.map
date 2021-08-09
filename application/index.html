@@ -43,6 +43,12 @@
 
     <div id="search-box">
         <input type="text" id="search" placeholder="search" />
+        <div id="search-info">
+            <br>
+            you can search for locations, names or OLC. <br>
+            To search for OLC, start your search query with /<br>
+            To move the view to a new lat, lng  start your search query with +<br>
+        </div>
     </div>
     <div id="olc"></div>
 
@@ -278,6 +284,14 @@
                 </div>
             </div>
 
+
+            <div class="item" data-map="read-qr-marker">
+                <div class="flex justify-content-spacebetween">
+                    <div>read qr-code-marker</div>
+                    <div></div>
+                </div>
+            </div>
+
             <div class="item" data-map="coordinations">
                 <div class="flex justify-content-spacebetween">
                     <div>coordinations</div>
@@ -327,15 +341,16 @@
                 </div>
             </div>
         </div>
-
+<!---KaiOs Ads
         <div class="panel" id="kaisos-ads" name="KaiOs Ads">
-            <div id="ad-container"></div>
+            <div id="ad-container" class="item"></div>
         </div>
+    -->
 
        
     </div>
 
-    <script defer src="assets/js/kaiads.v5.min.js"></script>
+    <!--script defer src="assets/js/kaiads.v5.min.js"></script>-->
     <script defer src="assets/js/wikilocation.js"></script>
     <script defer src="assets/exclude-js/jsQR.js"></script>
     <script defer src="assets/js/scan.js"></script>

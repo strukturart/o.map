@@ -76,7 +76,6 @@ const qr = ((_) => {
 
     windowOpen = "finder";
     finder_navigation("+1");
-    //document.querySelector('[tabindex="0"]').focus();
   };
 
   return {
