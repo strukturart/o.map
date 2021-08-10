@@ -78,44 +78,6 @@ map.on("load", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-  /*
-  getKaiAd({
-    publisher: "4408b6fa-4e1d-438f-af4d-f3be2fa97208",
-    app: "o.map",
-    slot: "o.map",
-    test: 0,
-
-    h: 240,
-    w: 220,
-
-    // Max supported size is 240x264
-    // container is required for responsive ads
-    container: document.getElementById("ad-container"),
-    onerror: (err) => console.error("Custom catch:", err),
-    onready: (ad) => {
-      // Ad is ready to be displayed
-      // calling 'display' will display the ad
-      ad.call("display", {
-        // In KaiOS the app developer is responsible
-        // for user navigation, and can provide
-        // navigational className and/or a tabindex
-        tabindex: 0,
-
-        // if the application is using
-        // a classname to navigate
-        // this classname will be applied
-        // to the container
-        navClass: "items",
-
-        // display style will be applied
-        // to the container block or inline-block
-        display: "block",
-      });
-    },
-  });
-
-  */
-
   setTimeout(function () {
     //get location if not an activity open url
     if (open_url === false) {
@@ -248,6 +210,7 @@ document.addEventListener("DOMContentLoaded", function () {
         t++;
         items_list[items_list.length - 1].setAttribute("tabIndex", t);
         items_list[0].focus();
+        console.log(document.activeElement.id);
       }
     }
   };
@@ -975,10 +938,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (document.activeElement.classList.contains("input-parent")) {
       bottom_bar("", "edit", "");
+      return;
     }
 
     if (document.activeElement.id == "ad-container") {
-      bottom_bar("", "", "");
+      document.getElementById("kaisos-ads").focus();
+
+      bottom_bar("", "open ads", "");
+    } else {
+      bottom_bar("", "select", "");
     }
   };
 
@@ -1286,6 +1254,7 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "Enter":
+        console.log(document.activeElement);
         if (
           document.activeElement.tagName == "BUTTON" &&
           document.activeElement.classList.contains("link")
@@ -1320,6 +1289,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (document.activeElement == document.getElementById("clear-cache")) {
           maps.delete_cache();
+          break;
+        }
+
+        if (document.activeElement == document.getElementById("ad-container")) {
+          let t = document
+            .querySelector("div#kaisos-ads div iframe")
+            .getAttribute("src");
+
+          window.open(t);
+
           break;
         }
 

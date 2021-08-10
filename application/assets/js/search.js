@@ -88,7 +88,10 @@ const search = (() => {
 
       if (ll.includes("NaN") == false) {
         olc_lat_lng = ll.split(",");
-        map.setView([olc_lat_lng[0], olc_lat_lng[1]], 13);
+        map.setView([olc_lat_lng[0], olc_lat_lng[1]]);
+
+        mainmarker.current_lat = olc_lat_lng[0];
+        mainmarker.current_lng = olc_lat_lng[1];
       }
 
       toaster("press 9 to add an marker", 3000);
@@ -100,6 +103,9 @@ const search = (() => {
       let d = input_val.replace("+", "");
       d = d.split(",");
 
+      mainmarker.current_lat = d[0];
+      mainmarker.current_lng = d[1];
+      $("#search").autocomplete("clear");
       $("#search").autocomplete().disable();
 
       map.setView([d[0], d[1]]);
