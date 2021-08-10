@@ -1,7 +1,7 @@
 {
   "version": "1.1.0",
   "name": "o.map",
-  "description": "o.map map app",
+  "description": "o.map is an openstreetmap app for KaiOs, it is a good companion for your next outdoor adventure",
   "launch_path": "/index.html",
   "type": "privileged",
   "fullscreen": "true",
@@ -15,6 +15,19 @@
     "name": "strukturart",
     "url": "https://github.com/strukturart/osm-map"
   },
+
+  "dependencies": {
+    "ads-sdk": "1.5.0"
+  },
+
+  "locales": {
+    "en-US": {
+      "name": "o.map",
+      "subtitle": "openstreetmap app",
+      "description": "o.map is an openstreetmap app for KaiOs, it is a good companion for your next outdoor adventure."
+    }
+  },
+  "default_locale": "en-US",
 
   "activities": {
     "open": {
@@ -31,6 +44,19 @@
       "returnValue": true,
       "href": "/index.html"
     },
+
+    "view": {
+      "filters": {
+        "type": "url",
+        "url": {
+          "required": true,
+          "regexp": "/^https?:.{1,16384}$/"
+        }
+      },
+      "disposition": "inline",
+      "returnValue": true,
+      "href": "/index.html"
+    },
     "view": {
       "filters": {
         "type": "url",
@@ -42,19 +68,13 @@
       "disposition": "inline",
       "returnValue": true,
       "href": "/index.html"
-    },
-
-    "view": {
-      "filters": {
-        "type": "url"
-      },
-      "disposition": "inline",
-      "returnValue": true,
-      "href": "/index.html"
     }
   },
 
   "permissions": {
+    "mobiledata": {},
+    "wifidata": {},
+    "calllog": {},
     "geolocation": {
       "description": "Required to show user's location on map"
     },

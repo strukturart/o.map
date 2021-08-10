@@ -10,6 +10,13 @@ const maps = (() => {
     html: '<div class="ringring"></div><div class="follow"></div>',
   });
 
+  const tracking_icon = L.divIcon({
+    iconSize: [40, 40],
+    iconAnchor: [30, 40],
+    className: "tracking-marker",
+    html: '<div class="ringring"></div><div class="tracking"></div>',
+  });
+
   const default_icon = L.icon({
     iconUrl: "assets/css/images/marker-icon.png",
     iconSize: [25, 40],
@@ -31,6 +38,8 @@ const maps = (() => {
   });
 
   //caching settings from settings panel
+  let caching_time;
+
   if (settings[1] != "") {
     caching_time = Number(settings[1]) * 86400000;
   } else {
@@ -161,32 +170,6 @@ const maps = (() => {
     caching_events();
   }
 
-  let owmLayer;
-  function owm_layer() {
-    if (map.hasLayer(owmLayer)) {
-      map.removeLayer(owmLayer);
-      return false;
-    }
-
-    tilesUrl =
-      "https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=" +
-      openweather_api;
-    owmLayer = L.tileLayer(tilesUrl, {
-      useCache: true,
-      saveToCache: false,
-      crossOrigin: true,
-      cacheMaxAge: caching_time,
-      useOnlyCache: false,
-      maxZoom: 18,
-      attribution:
-        'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-        '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
-    });
-
-    map.addLayer(owmLayer);
-    caching_events();
-  }
-
   function osm_map() {
     tilesUrl = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
     tilesLayer = L.tileLayer(tilesUrl, {
@@ -228,7 +211,6 @@ const maps = (() => {
     });
 
     map.addLayer(railwayLayer);
-    tt = true;
     caching_events();
   }
 
@@ -242,6 +224,15 @@ const maps = (() => {
 
     return format.replace(/mm|dd|yy|yyy/gi, (matched) => map[matched]);
   }
+
+  let attribution = function () {
+    document.querySelector(".leaflet-control-attribution").style.display =
+      "block";
+    setTimeout(function () {
+      document.querySelector(".leaflet-control-attribution").style.display =
+        "none";
+    }, 8000);
+  };
 
   let markers_group_eq = new L.FeatureGroup();
   let earthquake_layer = function () {
@@ -290,6 +281,20 @@ const maps = (() => {
       });
   };
 
+  let formDat = function (timestamp) {
+    (date = new Date(timestamp * 1000)),
+      (datevalues = {
+        year: date.getFullYear(),
+        month: date.getMonth() + 1,
+        day: date.getDate(),
+        hour: date.getHours(),
+        minute: date.getMinutes(),
+        sec: date.getSeconds(),
+      });
+
+    return datevalues;
+  };
+
   let running = false;
   let k;
   let weather_layer,
@@ -328,7 +333,7 @@ const maps = (() => {
           "https://tilecache.rainviewer.com/v2/radar/" +
           data[data.length - 4] +
           "/256/{z}/{x}/{y}/2/1_1.png";
-        weather_layer0 = L.tileLayer(weather_url);
+        weather_layer0 = L.tileLayer(weather_url0);
 
         weather_url1 =
           "https://tilecache.rainviewer.com/v2/radar/" +
@@ -348,11 +353,6 @@ const maps = (() => {
           "/256/{z}/{x}/{y}/2/1_1.png";
         weather_layer3 = L.tileLayer(weather_url3);
 
-        let tilesUrl = "https://tile.opentopomap.org/{z}/{x}/{y}.png";
-        let tilesLayer = L.tileLayer(tilesUrl, {
-          maxZoom: 18,
-        });
-
         map.addLayer(weather_layer);
         map.addLayer(weather_layer0);
         map.addLayer(weather_layer1);
@@ -369,12 +369,20 @@ const maps = (() => {
             map.removeLayer(weather_layer1);
             map.removeLayer(weather_layer2);
             map.removeLayer(weather_layer3);
+            let t = formDat(data[data.length - 5]);
             top_bar(
               "",
-              moment.unix(data[data.length - 4]).format("DD.MM.YYYY, HH:MM:SS"),
+              t.year +
+                "." +
+                t.month +
+                "." +
+                t.day +
+                ", " +
+                t.hour +
+                ":" +
+                t.minute,
               ""
             );
-            //top_bar("", "a", "");
           }
 
           if (i == 1) {
@@ -383,12 +391,20 @@ const maps = (() => {
             map.removeLayer(weather_layer1);
             map.removeLayer(weather_layer2);
             map.removeLayer(weather_layer3);
+            let t = formDat(data[data.length - 4]);
             top_bar(
               "",
-              moment.unix(data[data.length - 4]).format("DD.MM.YYYY, HH:MM:SS"),
+              t.year +
+                "." +
+                t.month +
+                "." +
+                t.day +
+                ", " +
+                t.hour +
+                ":" +
+                t.minute,
               ""
             );
-            //top_bar("", "a", "");
           }
 
           if (i == 2) {
@@ -397,9 +413,18 @@ const maps = (() => {
             map.addLayer(weather_layer1);
             map.removeLayer(weather_layer2);
             map.removeLayer(weather_layer3);
+            let t = formDat(data[data.length - 3]);
             top_bar(
               "",
-              moment.unix(data[data.length - 3]).format("DD.MM.YYYY, HH:MM:SS"),
+              t.year +
+                "." +
+                t.month +
+                "." +
+                t.day +
+                ", " +
+                t.hour +
+                ":" +
+                t.minute,
               ""
             );
           }
@@ -410,9 +435,18 @@ const maps = (() => {
             map.removeLayer(weather_layer1);
             map.addLayer(weather_layer2);
             map.removeLayer(weather_layer3);
+            let t = formDat(data[data.length - 2]);
             top_bar(
               "",
-              moment.unix(data[data.length - 2]).format("DD.MM.YYYY, HH:MM:SS"),
+              t.year +
+                "." +
+                t.month +
+                "." +
+                t.day +
+                ", " +
+                t.hour +
+                ":" +
+                t.minute,
               ""
             );
           }
@@ -422,14 +456,23 @@ const maps = (() => {
             map.removeLayer(weather_layer1);
             map.removeLayer(weather_layer2);
             map.addLayer(weather_layer3);
+            let t = formDat(data[data.length - 1]);
             top_bar(
               "",
-              moment.unix(data[data.length - 1]).format("DD.MM.YYYY, HH:MM:SS"),
+              t.year +
+                "." +
+                t.month +
+                "." +
+                t.day +
+                ", " +
+                t.hour +
+                ":" +
+                t.minute,
               ""
             );
           }
           if (i == 5) {
-            i = 0;
+            i = -1;
           }
         }, 2000);
       })
@@ -442,11 +485,12 @@ const maps = (() => {
     default_icon,
     goal_icon,
     select_icon,
+    tracking_icon,
+    attribution,
     moon_map,
     earthquake_layer,
     toner_map,
     opentopo_map,
-    owm_layer,
     osm_map,
     weather_map,
     railway_layer,

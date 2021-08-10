@@ -38,6 +38,9 @@ $(document).ready(function () {
 
       mainmarker.current_lat = n.lat;
       mainmarker.current_lng = n.lng;
+
+      $("#search").autocomplete("clear");
+
       toaster("press 9 to add an marker", 3000);
     },
   });
@@ -51,13 +54,9 @@ const search = (() => {
     document.querySelector("div#search-box").style.display = "block";
     document.querySelector("div#search-box input").focus();
     document.querySelector("div#bottom-bar").style.display = "block";
-    toaster(
-      "you can search for locations, names or OLC. To search for OLC, start your search query with /",
-      4000
-    );
-    windowOpen = "search";
 
-    //$("#search").autocomplete().enable();
+    windowOpen = "search";
+    setTimeout(function () {}, 3000);
   };
 
   let hideSearch = function () {
@@ -75,15 +74,13 @@ const search = (() => {
 
   document.getElementById("search").addEventListener("input", function () {
     let input_val = document.querySelector("input#search").value;
-    var n = input_val.startsWith("/");
-    if (n) {
-      input_val = input_val.replace("/", "");
-      document.getElementById("search").autocomplete().disable();
 
-      document.querySelector("div.autocomplete-suggestions").style.display =
-        "none";
-      document.querySelector("div.autocomplete-suggestion").style.display =
-        "none";
+    if (input_val.startsWith("/")) {
+      document.getElementById("search-info").style.display = "none";
+
+      input_val = input_val.replace("/", "");
+      $("#search").autocomplete().disable();
+
       document.querySelector("div#olc").style.display = "block";
       document.querySelector("#olc").innerText = OLC.decode(input_val);
 
@@ -91,16 +88,35 @@ const search = (() => {
 
       if (ll.includes("NaN") == false) {
         olc_lat_lng = ll.split(",");
-        map.setView([olc_lat_lng[0], olc_lat_lng[1]], 13);
+        map.setView([olc_lat_lng[0], olc_lat_lng[1]]);
+
+        mainmarker.current_lat = olc_lat_lng[0];
+        mainmarker.current_lng = olc_lat_lng[1];
       }
+
+      toaster("press 9 to add an marker", 3000);
+
+      return true;
     }
 
-    if (n == false) {
-      document.querySelector("div.autocomplete-suggestions").style.display =
-        "block";
-      document.querySelector("div#olc").style.display = "none";
-      ac.autocomplete().enable();
+    if (input_val.startsWith("+")) {
+      let d = input_val.replace("+", "");
+      d = d.split(",");
+
+      mainmarker.current_lat = d[0];
+      mainmarker.current_lng = d[1];
+      $("#search").autocomplete("clear");
+      $("#search").autocomplete().disable();
+
+      map.setView([d[0], d[1]]);
+      document.getElementById("search-info").style.display = "none";
+      return true;
     }
+
+    document.querySelector("div.autocomplete-suggestions").style.display =
+      "block";
+    document.querySelector("div#olc").style.display = "none";
+    ac.autocomplete().enable();
   });
 
   return {

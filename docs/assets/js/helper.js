@@ -56,9 +56,11 @@ let toaster = function (text, time) {
   }
 };
 
-function user_input(param, file_name) {
+function user_input(param, file_name,label) {
   if (param == "open") {
-    document.querySelector("div#user-input").style.bottom = "0px";
+    document.getElementById("user-input-description").innerText =label;
+    
+    document.querySelector("div#user-input").style.bottom = "25px";
     document.querySelector("div#user-input input").focus();
     document.querySelector("div#user-input input").value = file_name;
     windowOpen = "user-input";
@@ -67,12 +69,16 @@ function user_input(param, file_name) {
     document.querySelector("div#user-input").style.bottom = "-1000px";
     document.querySelector("div#user-input input").blur();
     windowOpen = "map";
+    bottom_bar("","","")
+
   }
 
   if (param == "return") {
     let input_value = document.querySelector("div#user-input input").value;
     document.querySelector("div#user-input").style.bottom = "-1000px";
     document.querySelector("div#user-input input").blur();
+    bottom_bar("","","")
+
     return input_value;
   }
 }
@@ -139,16 +145,56 @@ function top_bar(left, center, right) {
 
 function screenWakeLock(param) {
   let lock;
+  if (window.navigator.requestWakeLock == "is not a function") return false;
   if (param == "lock") {
     lock = window.navigator.requestWakeLock("screen");
+    return false;
   }
 
-  if (param1 == "unlock") {
+  if (param == "unlock") {
     if (lock.topic == "screen") {
       lock.unlock();
     }
   }
 }
+
+let update_file = function (filepath, storage) {
+  let sdcard = navigator.getDeviceStorages("sdcard");
+  let request = sdcard[storage].get(filepath);
+
+  request.onsuccess = function () {
+    //read file
+    let fileget = this.result;
+    //get file extension
+    let file_extension = fileget.name.split(".");
+    file_extension = file_extension[file_extension.length - 1];
+
+    //mode content
+    //to do
+
+    //delete file
+    var request_del = sdcard[storage].delete(filepath);
+
+    request_del.onsuccess = function () {
+      //add file
+      let requestAdd = sdcard[storage].addNamed(
+        fileget,
+        filepath + "." + file_extension
+      );
+      requestAdd.onsuccess = function () {};
+      requestAdd.onerror = function () {};
+    };
+
+    request_del.onerror = function () {
+      // success copy not delete
+      alert("Unable to remove the file: " + this.error);
+    };
+  };
+
+  request.onerror = function () {
+    alert(this.error);
+  };
+};
 
 let add_file = function () {
   var sdcard = navigator.getDeviceStorage("sdcard");
@@ -177,10 +223,7 @@ let now = function () {
     (current_datetime.getMonth() + 1) +
     "-" +
     current_datetime.getDate() +
-    current_datetime.getHours() +
-    "-" +
-    current_datetime.getMinutes() +
-    "-" +
-    current_datetime.getSeconds();
+    "_" +
+    current_datetime.getHours();
   return now;
 };
