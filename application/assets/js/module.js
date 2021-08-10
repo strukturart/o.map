@@ -89,6 +89,17 @@ const module = (() => {
   ////PATH & TRACKING
   ///////////////////
 
+  let popup_option = {
+    closeButton: false,
+    maxWidth: 200,
+    maxHeight: 200,
+  };
+
+  let path_option = {
+    color: "red",
+    step: 0,
+  };
+
   let distances = [];
   let latlngs = [];
   let tracking_latlngs = [];

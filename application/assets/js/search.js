@@ -56,11 +56,7 @@ const search = (() => {
     document.querySelector("div#bottom-bar").style.display = "block";
 
     windowOpen = "search";
-    setTimeout(function () {
-      
-    }, 3000);
-
-    //$("#search").autocomplete().enable();
+    setTimeout(function () {}, 3000);
   };
 
   let hideSearch = function () {
@@ -80,6 +76,8 @@ const search = (() => {
     let input_val = document.querySelector("input#search").value;
 
     if (input_val.startsWith("/")) {
+      document.getElementById("search-info").style.display = "none";
+
       input_val = input_val.replace("/", "");
       $("#search").autocomplete().disable();
 
@@ -93,6 +91,19 @@ const search = (() => {
         map.setView([olc_lat_lng[0], olc_lat_lng[1]], 13);
       }
 
+      toaster("press 9 to add an marker", 3000);
+
+      return true;
+    }
+
+    if (input_val.startsWith("+")) {
+      let d = input_val.replace("+", "");
+      d = d.split(",");
+
+      $("#search").autocomplete().disable();
+
+      map.setView([d[0], d[1]]);
+      document.getElementById("search-info").style.display = "none";
       return true;
     }
 

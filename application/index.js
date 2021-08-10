@@ -10,17 +10,6 @@ let measure_group_path = new L.FeatureGroup();
 let measure_group = new L.FeatureGroup();
 let tracking_group = new L.FeatureGroup();
 
-let popup_option = {
-  closeButton: false,
-  maxWidth: 200,
-  maxHeight: 200,
-};
-
-let path_option = {
-  color: "red",
-  step: 0,
-};
-
 let mainmarker = {
   tracking: false,
   tracking_distance: 0,
@@ -1317,10 +1306,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (windowOpen == "search") {
-          L.marker([olc_lat_lng[0], olc_lat_lng[1]]).addTo(map);
-          map.setView([olc_lat_lng[0], olc_lat_lng[1]], 13);
+          //L.marker([olc_lat_lng[0], olc_lat_lng[1]]).addTo(map);
+          map.setView([olc_lat_lng[0], olc_lat_lng[1]]);
 
-          hideSearch();
+          search.hideSearch();
 
           current_lat = Number(olc_lat_lng[0]);
           current_lng = Number(olc_lat_lng[1]);
