@@ -165,7 +165,11 @@
 -->
 
 
-    <div id="finder" class="flex justify-content-center align-item-center width-100 height-100">
+    <div id="finder" class="flex width-100 height-100">
+
+
+
+       
   
         <div class="panel" id="mapstracks" name="Imagery">
             <h2>MAPS</h2>
@@ -181,76 +185,50 @@
             <div id="gpx"></div>
         </div>
 
+  
 
 
         <div class="panel" id="settings" name="Settings">
             <h2>Openweathermap</h2>
-            <label for="owm-key">Openweathermap API-Key</label>
             <div class="item input-parent" tabindex="0">
+                <label for="owm-key">Openweathermap API-Key</label>
                 <input type="tel" class="qr" id="owm-key" />
             </div>
 
             <h2>Offline maps</h2>
-            <label for="cache-time">After how many days should the maps be re-downloaded?</label>
             <div class="item input-parent" tabindex="1">
+                <label for="cache-time">After how many days should the maps be re-downloaded?</label>
                 <input  type="tel" pattern="^[0-9]*$" id="cache-time" />
             </div>
 
-            <label for="cache-zoom">How much zoom level should be saved ?</label>
+            <h2>Cache</h2>
             <div class="item input-parent" tabindex="2">
+                <label for="cache-zoom">How much zoom level should be saved ?</label>
                 <input type="tel" pattern="^[0-9]*$" min="0" max="18" id="cache-zoom" />
             </div>
 
             <button  class="item" id="clear-cache" tabindex="3">clear offline cache</button>
+
             <h2>Export</h2>
-            <label for="export-path">Export path</label>
             <div class="item input-parent" tabindex="4">
+                <label for="export-path">Export path</label>
                 <input  type="text"   id="export-path"  />
             </div>
             
             <button tabindex="5" class="item" id="save-settings">save</button>
         </div>
 
+        
 
-        <div class="panel" id="impressum" name="Impressum">
-            
-            <div tabindex="0" class="item">
-                <p>
-                    Various software and map data are used in this app, please note the licenses.
-                </p>
-                <ul>
-                    <li>o.map UNLICENSE</li>
-                    <li>Leaflet - BSD-2-Clause License</li>
-                    <li>Ajax AutoComplete - MIT License</li>
-                    <li>leaflet.tilelayer.pouchdbcached MIT license</li>
-                    <li>leaflet ruler MIT License</li>
-                    <li>openstreetmap</li>
-                    <li>opentopomap</li>
-                    <li>earthquake.usgs.gov</li>
-                    <li>openrailwaymap.org</li>
-                    <li>openweathermap.org</li>
-                    <li>Wikipedia</li>
-                </ul>
 
-                <p>I thank the people who provide this data 
-                    and take care of their maintenance.</p>
 
-                <p>It took me many hours to develop the app, please donate an amount if you use the app regularly.  </p>
-                
-            </div>
 
-                <a tabindex="1" target="blank" class="item" href="https://paypal.me/strukturart">
-                    <button class="paypal-button">paypal donation</button>
-                </a>
-            </button>
-        </div>
+        <div class="panel" id="wikilocation" name="Wikilocation"></div>
 
-        <div class="panel" id="wikilocation" name="Wikilocation">
 
-        </div>
 
         <div class="panel" id="shortcuts" name="Shortcuts">
-            <div class="item update-position" tabindex="0" data-map="tracking">
+            <div class="item update-position" autofocus  tabindex="0" data-map="tracking">
                 <div class="flex justify-content-spacebetween">
                     <div>start/stop tracking</div>
                     <div>1</div>
@@ -341,10 +319,38 @@
                 </div>
             </div>
         </div>
-<!---KaiOs Ads-->
-        <div class="panel" id="kaisos-ads" name="KaiOs Ads">
+
+
+        <div class="panel item" id="impressum" name="Impressum">
+            <div>
+                Various software and map data are used in this app, please note the licenses.
+            </div>
+            <ul>
+                <li>o.map UNLICENSE</li>
+                <li>Leaflet - BSD-2-Clause License</li>
+                <li>Ajax AutoComplete - MIT License</li>
+                <li>leaflet.tilelayer.pouchdbcached MIT license</li>
+                <li>leaflet ruler MIT License</li>
+                <li>openstreetmap</li>
+                <li>opentopomap</li>
+                <li>earthquake.usgs.gov</li>
+                <li>openrailwaymap.org</li>
+                <li>openweathermap.org</li>
+                <li>Wikipedia</li>
+            </ul>
+                
+
+            <div>I thank the people who provide this data 
+                and take care of their maintenance.
+            </div>
+        </div>
+
+
+
+        <div class="panel" id="kaisos-ads" name="KaiOsAds">
             <div id="ad-container" class="item"></div>
         </div>
+
     
 
        

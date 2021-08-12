@@ -210,7 +210,7 @@ document.addEventListener("DOMContentLoaded", function () {
         t++;
         items_list[items_list.length - 1].setAttribute("tabIndex", t);
         items_list[0].focus();
-        console.log(document.activeElement.id);
+        
       }
     }
   };
@@ -936,24 +936,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     top_bar("◀", finder_panels[count].name, "▶");
 
+    console.log(count + "/" + finder_panels[count].name);
+    bottom_bar("", "select", "");
+
     if (document.activeElement.classList.contains("input-parent")) {
       bottom_bar("", "edit", "");
       return;
     }
 
-    if (document.activeElement.id == "ad-container") {
-      document.getElementById("kaisos-ads").focus();
-
-      bottom_bar("", "open ads", "");
-    } else {
-      bottom_bar("", "select", "");
-    }
+    if (finder_panels[count].id == "impressum") bottom_bar("", "", "");
+    if (finder_panels[count].id == "kaisos-ads") bottom_bar("", "", "");
   };
 
   function nav(move) {
     if (windowOpen == "finder" || windowOpen == "markers_option") {
-      bottom_bar("", "select", "");
-
       if (
         document.activeElement.parentNode.classList.contains("input-parent")
       ) {

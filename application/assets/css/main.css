@@ -8,6 +8,7 @@
   --color-five: rgb(38, 38, 38);
   --color-six: rgb(78, 206, 144);
   --color-seven: gainsboro;
+  --color-eight: red;
 }
 
 *,
@@ -70,7 +71,8 @@ button {
 }
 
 button:focus {
-  background: yellow;
+  background: var(--color-five);
+  font-weight: bold;
 }
 
 textarea {
@@ -102,12 +104,10 @@ a.button {
 }
 
 a.button:focus {
-  background: yellow;
+  background: var(--color-three);
 }
 
-input:focus {
-  background: yellow;
-}
+
 
 #goodbye {
   position: fixed;
@@ -160,7 +160,7 @@ img.marker-1 {
 }
 
 .earthquake-marker {
-  background: red;
+  background: var(--color-eight)
   border-radius: 50%;
 }
 
@@ -249,6 +249,17 @@ div#toast {
 
 /*/ ////////////////
 USER INPUT////////////////*/
+
+
+input:focus {
+  background: var(--color-three);
+}
+
+.input-parent:focus {
+  background: var(--color-three);
+}
+
+
 
 div#user-input {
   position: fixed;
@@ -491,7 +502,11 @@ div#finder div#close {
 }
 
 div#finder .item:focus {
-  background: yellow;
+  background: var(--color-three);
+  color: black;
+}
+
+div#finder .item:focus label{
   color: black;
 }
 
@@ -506,14 +521,10 @@ div#finder div#question {
   opacity: 0;
 }
 
-div#finder div#question div#question-text {
-  padding: 50px 30px 0 30px;
-  text-align: center;
-}
 
 div.panel {
   display: none;
-  margin: 40px 0px 0px 0px;
+  margin: 30px 0px 0px 0px;
   padding: 5px;
   max-height: 75vh;
   color: white;
@@ -532,7 +543,7 @@ div#setting {
 
 div#settings input {
   margin: 0 0 15px 0;
-  width: 90%;
+  width: 100%;
   display: block;
   font-size: 1rem;
   padding: 3px;
@@ -544,18 +555,13 @@ div#settings label {
   display: block;
 }
 
-div#impressum {
-  overflow: scroll;
-}
-div#impressum div.item:focus {
-  background: black;
-  color: white;
+div#impressum{
+  overflow: scroll!important;;
+  max-height:240px!important;
 }
 
-div#impressum a:focus button {
-  background: yellow !important;
-  outline: red !important;
-}
+
+
 
 div#markers-option {
   background: rgba(0, 0, 0, 0.808);
