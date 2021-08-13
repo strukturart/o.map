@@ -143,16 +143,16 @@ function top_bar(left, center, right) {
   }
 }
 
-function screenWakeLock(param) {
+function screenWakeLock(param,lock_type) {
   let lock;
   if (window.navigator.requestWakeLock == "is not a function") return false;
   if (param == "lock") {
-    lock = window.navigator.requestWakeLock("screen");
+    lock = window.navigator.requestWakeLock(lock_type);
     return false;
   }
 
   if (param == "unlock") {
-    if (lock.topic == "screen") {
+    if (lock.topic == lock_type) {
       lock.unlock();
     }
   }

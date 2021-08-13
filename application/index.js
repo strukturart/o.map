@@ -210,7 +210,6 @@ document.addEventListener("DOMContentLoaded", function () {
         t++;
         items_list[items_list.length - 1].setAttribute("tabIndex", t);
         items_list[0].focus();
-        
       }
     }
   };
@@ -1122,7 +1121,7 @@ document.addEventListener("DOMContentLoaded", function () {
       case "4":
         if (windowOpen == "map") {
           geolocationWatch(false);
-          screenWakeLock("lock");
+          screenWakeLock("lock", "gps");
         }
 
         break;

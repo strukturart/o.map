@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "name": "o.map",
   "description": "o.map is an openstreetmap app for KaiOs, it is a good companion for your next outdoor adventure",
   "launch_path": "/index.html",
