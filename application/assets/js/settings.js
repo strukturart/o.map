@@ -17,6 +17,16 @@ const settings = ((_) => {
     toaster("saved successfully", 2000);
   };
 
+  let save_chk = function () {
+    let p = document.getElementById("screenlock-ckb");
+    p.checked = !p.checked;
+    if (p.checked) {
+      localStorage.setItem("tracking_screenlock", "true");
+    } else {
+      localStorage.setItem("tracking_screenlock", "false");
+    }
+  };
+
   let load_settings = function () {
     document.getElementById("owm-key").value = localStorage.getItem("owm-key");
     document.getElementById("cache-time").value = localStorage.getItem(
@@ -29,17 +39,13 @@ const settings = ((_) => {
       "export-path"
     );
 
-    let settings_arr = [
-      localStorage.getItem("export-path"),
-      localStorage.getItem("owm-key"),
-      localStorage.getItem("cache-time"),
-      localStorage.getItem("cache-zoom"),
-    ];
-    return settings_arr;
+    if (setting.tracking_screenlock)
+      document.getElementById("screenlock-ckb").checked = true;
   };
 
   return {
     load_settings,
     save_settings,
+    save_chk,
   };
 })();

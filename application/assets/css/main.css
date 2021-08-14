@@ -88,6 +88,14 @@ label {
   display: block;
 }
 
+input[type="checkbox"]{
+
+  width: 20px;
+  height: 20px;
+  background: #fcfff4;
+  border-radius: 50px;
+}
+
 div.textarea-footer {
   font-size: 0.6rem;
   background: none !important;
@@ -589,6 +597,12 @@ div#settings label {
   margin: 5px 0 5px 0;
   width: 80%;
   display: block;
+}
+
+
+div#settings #screenlock-ckb {
+  margin: 5px 0 0px 0;
+  
 }
 
 div#impressum{

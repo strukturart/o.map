@@ -25,7 +25,10 @@ let mainmarker = {
   current_heading: 0,
   accuracy: 0,
   map: "unknown",
-  last_location: JSON.parse(localStorage.getItem("last_location")),
+  last_location:
+    localStorage.getItem("last_location") != null
+      ? JSON.parse(localStorage.getItem("last_location"))
+      : [0, 0],
 };
 
 let general = {
@@ -36,7 +39,6 @@ let general = {
 let target_marker;
 let selected_marker;
 
-let settings_data = settings.load_settings();
 let setting = {
   export_path:
     localStorage.getItem("export-path") != null
@@ -46,7 +48,10 @@ let setting = {
   cache_time: localStorage.getItem("cache-time"),
   cache_zoom: localStorage.getItem("cache-zoom"),
   openweather_api: localStorage.getItem("owm-key"),
+  tracking_screenlock: JSON.parse(localStorage.getItem("tracking_screenlock")),
 };
+
+settings.load_settings();
 
 let status = {
   marker_selection: false,
@@ -1266,6 +1271,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (document.activeElement.classList.contains("input-parent")) {
           document.activeElement.children[0].focus();
+          settings.save_chk();
         }
 
         if (windowOpen == "user-input" && save_mode == "geojson-tracking") {
@@ -1276,14 +1282,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (windowOpen == "search") {
-          //L.marker([olc_lat_lng[0], olc_lat_lng[1]]).addTo(map);
           map.setView([olc_lat_lng[0], olc_lat_lng[1]]);
-
           search.hideSearch();
-
           current_lat = Number(olc_lat_lng[0]);
           current_lng = Number(olc_lat_lng[1]);
-
           toaster("press 5 to save the marker", 2000);
           break;
         }

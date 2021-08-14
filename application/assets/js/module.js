@@ -158,7 +158,8 @@ const module = (() => {
         }
       } else {
       }
-      screenWakeLock("lock", "screen");
+      if (setting.tracking_screenlock) screenWakeLock("lock", "screen");
+
       screenWakeLock("lock", "gps");
       let calc = 0;
 
@@ -196,7 +197,7 @@ const module = (() => {
         }
         if (mainmarker.tracking == false) {
           clearInterval(tracking_interval);
-          screenWakeLock("unlock", "screen");
+          if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
           screenWakeLock("unlock", "gps");
         }
       }, 10000);

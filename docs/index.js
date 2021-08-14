@@ -25,7 +25,10 @@ let mainmarker = {
   current_heading: 0,
   accuracy: 0,
   map: "unknown",
-  last_location: JSON.parse(localStorage.getItem("last_location")),
+  last_location:
+    localStorage.getItem("last_location") != null
+      ? JSON.parse(localStorage.getItem("last_location"))
+      : [0, 0],
 };
 
 let general = {
@@ -1069,6 +1072,11 @@ document.addEventListener("DOMContentLoaded", function () {
     bottom_bar("", "", "");
   });
 
+  document.querySelector(".checkboxes").addEventListener("change", (ev) => {
+    if (ev.target.type === "checkbox") {
+      console.log("changed", ev.target.id);
+    }
+  });
   //////////////////////////////
   ////KEYPAD HANDLER////////////
   //////////////////////////////
@@ -1266,6 +1274,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (document.activeElement.classList.contains("input-parent")) {
           document.activeElement.children[0].focus();
+          let p = document.getElementById("screenlock-ckb");
+          p.checked = !p.checked;
         }
 
         if (windowOpen == "user-input" && save_mode == "geojson-tracking") {
