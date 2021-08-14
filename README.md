@@ -5,6 +5,9 @@ O.Map is an openstreetmap app for KaiOs, it is a good companion for your next ou
 It is not available on the official store,
 Because I don't feel like annoying users with stupid advertising.
 
+https://img.shields.io/github/forks/{strukturart}/{o.map}.svg
+https://img.shields.io/github/issues/{username}/{repo-name}.svg
+
 ### Features
 
 - Map online/offline
