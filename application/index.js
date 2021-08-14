@@ -54,7 +54,7 @@ let status = {
 };
 
 if (!navigator.geolocation) {
-  toaster("Your device does't support geolocation!", 2000);
+  alert("Your device does't support geolocation!", 2000);
 }
 
 //leaflet add basic map
@@ -78,17 +78,19 @@ map.on("load", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
+  helper.getVersion();
+
   setTimeout(function () {
     //get location if not an activity open url
     if (open_url === false) {
+      document.querySelector("div#intro").style.display = "none";
       build_menu();
       getLocation("init");
-      document.querySelector("div#intro").style.display = "none";
 
       toaster("Press 3 to open the menu", 5000);
     }
     windowOpen = "map";
-  }, 4000);
+  }, 5000);
 
   //add group layers
   map.addLayer(markers_group);
@@ -339,7 +341,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let myMarker;
 
   function getLocation(option) {
-    if (option == "init" || option == "update_marker" || option == "share") {
+    if (option == "init" || option == "update_marker") {
       toaster("try to determine your position", 3000);
     }
 
@@ -361,10 +363,6 @@ document.addEventListener("DOMContentLoaded", function () {
       mainmarker.device_lat = crd.latitude;
       mainmarker.device_lng = crd.longitude;
       mainmarker.device_alt = crd.altitude;
-
-      if (option == "share") {
-        mozactivity.share_position();
-      }
 
       //store location as fallout
       let b = [crd.latitude, crd.longitude];
@@ -464,6 +462,19 @@ document.addEventListener("DOMContentLoaded", function () {
     watchID = geoLoc.watchPosition(showLocation, errorHandler, options);
     return true;
   }
+
+  let auto_update_view = function () {
+    if (mainmarker.auto_view_center) {
+      mainmarker.auto_view_center = false;
+      toaster("autoupdate view off", 2000);
+      document.getElementById("cross").style.opacity = 1;
+      return true;
+    } else {
+      mainmarker.auto_view_center = true;
+      toaster("autoupdate view on", 2000);
+      document.getElementById("cross").style.opacity = 0;
+    }
+  };
 
   /////////////////////////
   /////MENU///////////////
@@ -575,14 +586,10 @@ document.addEventListener("DOMContentLoaded", function () {
         return true;
       }
 
-      if (item_value == "autoupdate-geolocation") {
-        windowOpen = "map";
+      if (item_value == "autoupdate-view") {
         document.querySelector("div#finder").style.display = "none";
-        geolocationWatch();
-      }
-
-      if (item_value == "update-position") {
-        getLocation("update_marker");
+        windowOpen = "map";
+        auto_update_view();
       }
 
       if (item_value == "search") {
@@ -1249,7 +1256,6 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "Enter":
-        console.log(document.activeElement);
         if (
           document.activeElement.tagName == "BUTTON" &&
           document.activeElement.classList.contains("link")
@@ -1376,16 +1382,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "4":
         if (windowOpen == "map") {
-          if (mainmarker.auto_view_center) {
-            mainmarker.auto_view_center = false;
-            toaster("watching position off", 2000);
-            document.getElementById("cross").style.opacity = 1;
-            return true;
-          } else {
-            mainmarker.auto_view_center = true;
-            toaster("watching position on", 2000);
-            document.getElementById("cross").style.opacity = 0;
-          }
+          auto_update_view();
         }
         break;
 

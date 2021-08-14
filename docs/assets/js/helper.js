@@ -1,4 +1,26 @@
-"use strict";
+const helper = (() => {
+  let getVersion = function () {
+    fetch("../../manifest.webapp")
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+        console.log(data);
+        document.getElementById("intro-footer").innerText =
+          "O.MAP Version " + data.version;
+      })
+      .catch(function (err) {
+        console.log(err);
+      });
+  };
+
+  return {
+    getVersion,
+  };
+})();
+
+
+
 
 function notify(param_title, param_text, param_silent) {
   var options = {
@@ -56,10 +78,10 @@ let toaster = function (text, time) {
   }
 };
 
-function user_input(param, file_name,label) {
+function user_input(param, file_name, label) {
   if (param == "open") {
-    document.getElementById("user-input-description").innerText =label;
-    
+    document.getElementById("user-input-description").innerText = label;
+
     document.querySelector("div#user-input").style.bottom = "25px";
     document.querySelector("div#user-input input").focus();
     document.querySelector("div#user-input input").value = file_name;
@@ -69,15 +91,14 @@ function user_input(param, file_name,label) {
     document.querySelector("div#user-input").style.bottom = "-1000px";
     document.querySelector("div#user-input input").blur();
     windowOpen = "map";
-    bottom_bar("","","")
-
+    bottom_bar("", "", "");
   }
 
   if (param == "return") {
     let input_value = document.querySelector("div#user-input input").value;
     document.querySelector("div#user-input").style.bottom = "-1000px";
     document.querySelector("div#user-input input").blur();
-    bottom_bar("","","")
+    bottom_bar("", "", "");
 
     return input_value;
   }
@@ -143,16 +164,16 @@ function top_bar(left, center, right) {
   }
 }
 
-function screenWakeLock(param) {
+function screenWakeLock(param, lock_type) {
   let lock;
   if (window.navigator.requestWakeLock == "is not a function") return false;
   if (param == "lock") {
-    lock = window.navigator.requestWakeLock("screen");
+    lock = window.navigator.requestWakeLock(lock_type);
     return false;
   }
 
   if (param == "unlock") {
-    if (lock.topic == "screen") {
+    if (lock.topic == lock_type) {
       lock.unlock();
     }
   }

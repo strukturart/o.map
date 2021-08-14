@@ -9,6 +9,7 @@
   --color-six: rgb(78, 206, 144);
   --color-seven: gainsboro;
   --color-eight: red;
+  --color-ten: rgb(73, 86, 55);
 }
 
 *,
@@ -437,6 +438,15 @@ div#bottom-bar div#button-right {
 /*///////////////////////////
 ///INTRO////////////////*/
 
+@keyframes roll {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 div#intro {
   max-width: 100vw;
   position: fixed;
@@ -454,6 +464,32 @@ div#intro div {
   color: white;
   font-size: 14px;
   padding: 3px;
+  position:fixed;
+ 
+}
+
+div#intro div#icon img{
+  animation: roll 3s infinite;
+  animation-delay: 1.5s;
+  display:block;
+  width: 100%;
+
+
+}
+
+
+div#intro div#icon {
+  background: var(--color-ten);
+  border-radius: 10px;
+  width:80px;
+  display:block;
+  z-index:8;
+  top:100px;
+  position: absolute;
+  left:50%;
+  margin:0 0 0 -40px;
+  
+
 }
 
 div#intro div#intro-footer {

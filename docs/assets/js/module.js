@@ -144,7 +144,6 @@ const module = (() => {
           d = JSON.parse(d);
 
           tracking_cache = d;
-          console.log(JSON.stringify(d));
           //restore path
           for (let i = 0; i < tracking_cache.length; i++) {
             console.log(tracking_cache[i].lat);
@@ -159,7 +158,8 @@ const module = (() => {
         }
       } else {
       }
-      screenWakeLock("lock");
+      screenWakeLock("lock", "screen");
+      screenWakeLock("lock", "gps");
       let calc = 0;
 
       tracking_interval = setInterval(function () {
@@ -196,7 +196,8 @@ const module = (() => {
         }
         if (mainmarker.tracking == false) {
           clearInterval(tracking_interval);
-          screenWakeLock("unlock");
+          screenWakeLock("unlock", "screen");
+          screenWakeLock("unlock", "gps");
         }
       }, 10000);
     }
