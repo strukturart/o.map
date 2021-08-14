@@ -2,11 +2,8 @@
 
 O.Map is an openstreetmap app for KaiOs, it is a good companion for your next outdoor adventure.
 
-It is not available on the official store,
-Because I don't feel like annoying users with stupid advertising.
-
-https://img.shields.io/github/forks/{strukturart}/{o.map}.svg
-https://img.shields.io/github/issues/{username}/{repo-name}.svg
+![badge-release](https://img.shields.io/github/v/release/strukturart/o.map?include_prereleases&style=plastic)
+[![badge-bhackers](https://img.shields.io/badge/bHackers-bHackerStore-orange)](https://store.bananahackers.net/#omap)
 
 ### Features
 
