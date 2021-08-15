@@ -313,7 +313,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let t = L.marker(latlng);
 
             if (feature.properties.popup != "") {
-              t.bindPopup(feature.properties.popup, popup_option);
+              t.bindPopup(feature.properties.popup, module.popup_option);
             }
 
             t.addTo(markers_group);
@@ -523,7 +523,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const marker_text = document.querySelector("textarea#popup");
   marker_text.addEventListener("blur", (event) => {
     let c = document.querySelector("textarea#popup").value;
-    if (c != "") selected_marker.bindPopup(c, popup_option).openPopup();
+    if (c != "") selected_marker.bindPopup(c, module.popup_option).openPopup();
   });
 
   //FINDER
@@ -1168,6 +1168,7 @@ document.addEventListener("DOMContentLoaded", function () {
           document.querySelector("div#markers-option").style.display = "none";
           document.querySelector("div#coordinations").style.display = "none";
           windowOpen = "map";
+          status.marker_selection = false;
 
           top_bar("", "", "");
           bottom_bar("", "", "");
@@ -1196,9 +1197,9 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
-        if (windowOpen == "map") {
-          ZoomMap("in");
-          break;
+        if (status.marker_selection == true) {
+          bottom_bar("", "", "");
+          status.marker_selection = false;
         }
 
         if (windowOpen == "user-input") {
@@ -1206,6 +1207,12 @@ document.addEventListener("DOMContentLoaded", function () {
           save_mode = "";
           break;
         }
+
+        if (windowOpen == "map") {
+          ZoomMap("in");
+          break;
+        }
+
         break;
 
       case "SoftRight":
@@ -1414,9 +1421,8 @@ document.addEventListener("DOMContentLoaded", function () {
       case "8":
         if (windowOpen == "map") {
           save_mode = "geojson-collection";
-          user_input("open", now());
-          document.getElementById("user-input-description").innerText =
-            "Export all markers as geojson file";
+          user_input("open", "", "save all markers as geojson file");
+          bottom_bar("cancel", "", "save");
         }
 
         break;

@@ -243,5 +243,6 @@ const module = (() => {
     compass,
     measure_distance,
     link_to_marker,
+    popup_option,
   };
 })();
