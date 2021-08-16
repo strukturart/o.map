@@ -248,12 +248,18 @@ div#toast {
   position: fixed;
   height: auto;
   overflow: none;
-  top: -100px;
   background: black;
   color: white;
-  z-index: 7;
+  z-index: 10;
   min-width: 100%;
   padding: 5px;
+  top:0px;
+  //display:none;
+
+  transition: all 0.5s ease-in-out;
+  transform-origin: left top;
+  transform: translate(0px, -100px);
+
 }
 
 /*/ ////////////////

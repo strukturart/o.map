@@ -91,8 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.querySelector("div#intro").style.display = "none";
       build_menu();
       getLocation("init");
-
-      toaster("Press 3 to open the menu", 5000);
+      helper.toaster("Press 3 to open the menu", 5000);
     }
     windowOpen = "map";
   }, 5000);
@@ -245,7 +244,7 @@ document.addEventListener("DOMContentLoaded", function () {
       let reader = new FileReader();
 
       reader.onerror = function (event) {
-        toaster("can't read file", 3000);
+        helper.toaster("can't read file", 3000);
         reader.abort();
       };
 
@@ -293,7 +292,7 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
           geojson_data = JSON.parse(event.target.result);
         } catch (e) {
-          toaster("Json is not valid", 2000);
+          helper.toaster("Json is not valid", 2000);
           return false;
         }
 
@@ -347,7 +346,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function getLocation(option) {
     if (option == "init" || option == "update_marker") {
-      toaster("try to determine your position", 3000);
+      helper.toaster("try to determine your position", 3000);
     }
 
     let options = {
@@ -391,7 +390,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function error(err) {
-      toaster("Position not found, load last known position", 4000);
+      helper.toaster("Position not found, load last known position", 4000);
       console.log("Position not found, load last known position");
       mainmarker.current_lat = mainmarker.last_location[0];
       mainmarker.current_lng = mainmarker.last_location[1];
@@ -455,7 +454,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function errorHandler(err) {
       if (err.code == 1) {
-        toaster("Error: Access is denied!", 2000);
+        helper.toaster("Error: Access is denied!", 2000);
       } else if (err.code == 2) {
         console.log("Error: Position is unavailable!", 2000);
       }
@@ -471,12 +470,12 @@ document.addEventListener("DOMContentLoaded", function () {
   let auto_update_view = function () {
     if (mainmarker.auto_view_center) {
       mainmarker.auto_view_center = false;
-      toaster("autoupdate view off", 2000);
+      helper.toaster("autoupdate view off", 2000);
       document.getElementById("cross").style.opacity = 1;
       return true;
     } else {
       mainmarker.auto_view_center = true;
-      toaster("autoupdate view on", 2000);
+      helper.toaster("autoupdate view on", 2000);
       document.getElementById("cross").style.opacity = 0;
     }
   };
@@ -495,7 +494,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (item_value == "set_target_marker") {
         target_marker = selected_marker._latlng;
         selected_marker.setIcon(maps.goal_icon);
-        toaster(
+        helper.toaster(
           "target marker set, press key 4 to be informed about the current distance in the info panel.",
           4000
         );
@@ -506,7 +505,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (item_value == "remove_marker") {
         map.removeLayer(selected_marker);
         selected_marker.removeFrom(markers_group);
-        toaster("marker removed", 4000);
+        helper.toaster("marker removed", 4000);
         document.querySelector("div#markers-option").style.display = "none";
         windowOpen = "map";
       }
@@ -629,24 +628,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
         qr.start_scan(function (callback) {
           let slug = callback;
-          toaster(slug, 3000);
+          helper.toaster(slug, 3000);
           module.link_to_marker(slug);
         });
       }
 
       if (item_value == "tracking") {
-        toaster(
+        helper.toaster(
           "please close the menu and press key 1 to start tracking.",
           3000
         );
       }
 
       if (item_value == "draw-path") {
-        toaster("please close the menu and press key 7 to draw a path.", 3000);
+        helper.toaster(
+          "please close the menu and press key 7 to draw a path.",
+          3000
+        );
       }
 
       if (item_value == "add-marker-icon") {
-        toaster("please close the menu and press key 9 to set a marker.", 3000);
+        helper.toaster(
+          "please close the menu and press key 9 to set a marker.",
+          3000
+        );
       }
 
       if (item_value == "photo") {
@@ -1293,7 +1298,7 @@ document.addEventListener("DOMContentLoaded", function () {
           search.hideSearch();
           current_lat = Number(olc_lat_lng[0]);
           current_lng = Number(olc_lat_lng[1]);
-          toaster("press 5 to save the marker", 2000);
+          helper.toaster("press 5 to save the marker", 2000);
           break;
         }
 
@@ -1364,7 +1369,7 @@ document.addEventListener("DOMContentLoaded", function () {
       case "1":
         if (windowOpen == "map") {
           if (mainmarker.tracking) {
-            toaster("tracking paused", 5000);
+            helper.toaster("tracking paused", 5000);
             save_mode = "geojson-tracking";
             user_input("open", "", "Export path as geojson file");
             bottom_bar("cancel", "don't save", "save");
@@ -1372,7 +1377,10 @@ document.addEventListener("DOMContentLoaded", function () {
             return true;
           } else {
             mainmarker.tracking = true;
-            toaster("tracking started,\n stop tracking with key 1", 4000);
+            helper.toaster(
+              "tracking started,\n stop tracking with key 1",
+              4000
+            );
             module.measure_distance("tracking");
           }
         }
@@ -1459,6 +1467,8 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "ArrowLeft":
+        helper.toaster("Press 3 to open the menu", 3000);
+
         MovemMap("left");
         if (
           windowOpen == "finder" &&

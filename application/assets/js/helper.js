@@ -14,13 +14,41 @@ const helper = (() => {
       });
   };
 
+  let queue = [];
+  let timeout;
+  let toaster = function (text, time) {
+    queue.push({ text: text, time: time });
+    console.log(queue.length);
+    if (queue.length === 1) {
+      toast_q(text, time);
+    }
+  };
+
+  let toast_q = function (text, time) {
+    var x = document.querySelector("div#toast");
+    x.innerHTML = queue[0].text;
+
+    console.log(queue[0].text);
+
+    x.style.transform = "translate(0px, 0px)";
+
+    timeout = setTimeout(function () {
+      timeout = null;
+      x.style.transform = "translate(0px, -100px)";
+      queue = queue.slice(1);
+      if (queue.length > 0) {
+        setTimeout(() => {
+          toast_q(text, time);
+        }, 1000);
+      }
+    }, time);
+  };
+
   return {
     getVersion,
+    toaster,
   };
 })();
-
-
-
 
 function notify(param_title, param_text, param_silent) {
   var options = {
@@ -48,35 +76,6 @@ function notify(param_title, param_text, param_silent) {
     });
   }
 }
-
-let toaster = function (text, time) {
-  document.querySelector("div#toast").innerText = text;
-  var elem = document.querySelector("div#toast");
-  var pos = -100;
-  var id = setInterval(down, 5);
-  var id2;
-
-  function down() {
-    if (pos == 0) {
-      clearInterval(id);
-      setTimeout(() => {
-        id2 = setInterval(up, 5);
-      }, time);
-    } else {
-      pos++;
-      elem.style.top = pos + "px";
-    }
-  }
-
-  function up() {
-    if (pos == -1000) {
-      clearInterval(id2);
-    } else {
-      pos--;
-      elem.style.top = pos + "px";
-    }
-  }
-};
 
 function user_input(param, file_name, label) {
   if (param == "open") {
