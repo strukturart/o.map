@@ -5,7 +5,6 @@ const helper = (() => {
         return response.json();
       })
       .then(function (data) {
-        console.log(data);
         document.getElementById("intro-footer").innerText =
           "O.MAP Version " + data.version;
       })
@@ -18,7 +17,6 @@ const helper = (() => {
   let timeout;
   let toaster = function (text, time) {
     queue.push({ text: text, time: time });
-    console.log(queue.length);
     if (queue.length === 1) {
       toast_q(text, time);
     }
@@ -27,8 +25,6 @@ const helper = (() => {
   let toast_q = function (text, time) {
     var x = document.querySelector("div#toast");
     x.innerHTML = queue[0].text;
-
-    console.log(queue[0].text);
 
     x.style.transform = "translate(0px, 0px)";
 

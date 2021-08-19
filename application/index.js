@@ -11,6 +11,12 @@ let measure_group = new L.FeatureGroup();
 let tracking_group = new L.FeatureGroup();
 
 let mainmarker = {
+  selected_marker: "",
+  startup_markers:
+    localStorage.getItem("startup_markers") != null
+      ? JSON.parse(localStorage.getItem("startup_markers"))
+      : [],
+  startup_marker_toggle: false,
   tracking: false,
   tracking_distance: 0,
   tracking_alt_up: 0,
@@ -37,7 +43,6 @@ let general = {
 };
 
 let target_marker;
-let selected_marker;
 
 let setting = {
   export_path:
@@ -90,6 +95,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (open_url === false) {
       document.querySelector("div#intro").style.display = "none";
       build_menu();
+      module.startup_marker("", "add");
       getLocation("init");
       helper.toaster("Press 3 to open the menu", 5000);
     }
@@ -492,8 +498,8 @@ document.addEventListener("DOMContentLoaded", function () {
       let item_value = document.activeElement.getAttribute("data-action");
 
       if (item_value == "set_target_marker") {
-        target_marker = selected_marker._latlng;
-        selected_marker.setIcon(maps.goal_icon);
+        target_marker = mainmarker.selected_marker._latlng;
+        mainmarker.selected_marker.setIcon(maps.goal_icon);
         helper.toaster(
           "target marker set, press key 4 to be informed about the current distance in the info panel.",
           4000
@@ -502,9 +508,13 @@ document.addEventListener("DOMContentLoaded", function () {
         windowOpen = "map";
       }
 
+      if (item_value == "set_startup_marker") {
+        module.startup_marker(mainmarker.selected_marker, "set");
+      }
+
       if (item_value == "remove_marker") {
-        map.removeLayer(selected_marker);
-        selected_marker.removeFrom(markers_group);
+        map.removeLayer(mainmarker.selected_marker);
+        mainmarker.selected_marker.removeFrom(markers_group);
         helper.toaster("marker removed", 4000);
         document.querySelector("div#markers-option").style.display = "none";
         windowOpen = "map";
@@ -522,7 +532,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const marker_text = document.querySelector("textarea#popup");
   marker_text.addEventListener("blur", (event) => {
     let c = document.querySelector("textarea#popup").value;
-    if (c != "") selected_marker.bindPopup(c, module.popup_option).openPopup();
+    if (c != "")
+      mainmarker.selected_marker.bindPopup(c, module.popup_option).openPopup();
   });
 
   //FINDER
@@ -1332,7 +1343,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
           document.querySelector("textarea#popup").value = "";
 
-          let pu = selected_marker.getPopup();
+          let pu = mainmarker.selected_marker.getPopup();
 
           if (pu != undefined) {
             document.querySelector("textarea#popup").value = pu._content;
@@ -1342,7 +1353,10 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
-        if (windowOpen == "markers_option" && selected_marker != "") {
+        if (
+          windowOpen == "markers_option" &&
+          mainmarker.selected_marker != ""
+        ) {
           markers_action();
           break;
         }
@@ -1447,7 +1461,7 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "*":
-        selected_marker = module.select_marker();
+        mainmarker.selected_marker = module.select_marker();
 
         break;
 
@@ -1467,8 +1481,6 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "ArrowLeft":
-        helper.toaster("Press 3 to open the menu", 3000);
-
         MovemMap("left");
         if (
           windowOpen == "finder" &&
