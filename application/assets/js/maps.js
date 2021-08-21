@@ -269,7 +269,7 @@ const maps = (() => {
               t.addTo(markers_group_eq);
               map.addLayer(markers_group_eq);
 
-              windowOpen = "map";
+              status.windowOpen = "map";
             }
           },
 

@@ -22,6 +22,10 @@ const helper = (() => {
     }
   };
 
+  let add_script = function (script) {
+    document.body.appendChild(document.createElement("script")).src = script;
+  };
+
   let toast_q = function (text, time) {
     var x = document.querySelector("div#toast");
     x.innerHTML = queue[0].text;
@@ -43,6 +47,7 @@ const helper = (() => {
   return {
     getVersion,
     toaster,
+    add_script,
   };
 })();
 
@@ -80,12 +85,12 @@ function user_input(param, file_name, label) {
     document.querySelector("div#user-input").style.bottom = "25px";
     document.querySelector("div#user-input input").focus();
     document.querySelector("div#user-input input").value = file_name;
-    windowOpen = "user-input";
+    status.windowOpen = "user-input";
   }
   if (param == "close") {
     document.querySelector("div#user-input").style.bottom = "-1000px";
     document.querySelector("div#user-input input").blur();
-    windowOpen = "map";
+    status.windowOpen = "map";
     bottom_bar("", "", "");
   }
 

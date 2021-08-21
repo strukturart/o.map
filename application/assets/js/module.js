@@ -209,7 +209,6 @@ const module = (() => {
           tracking_cache = d;
           //restore path
           for (let i = 0; i < tracking_cache.length; i++) {
-            console.log(tracking_cache[i].lat);
             polyline_tracking.addLatLng([
               tracking_cache[i].lat,
               tracking_cache[i].lng,
