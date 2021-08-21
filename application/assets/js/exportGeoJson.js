@@ -6,7 +6,7 @@ const geojson = ((_) => {
     let extData = "";
 
     if (type == "single") {
-      let single = selected_marker.toGeoJSON();
+      let single = mainmarker.selected_marker.toGeoJSON();
       // store popup content
       let a = document.querySelector("textarea#popup").value;
       if (a != "") {
@@ -53,7 +53,7 @@ const geojson = ((_) => {
 
     requestAdd.onsuccess = function () {
       windowOpen = "map";
-      toaster("succesfull saved", 5000);
+      helper.toaster("succesfull saved", 5000);
       bottom_bar("", "", "");
 
       if (type == "tracking") {
@@ -71,7 +71,7 @@ const geojson = ((_) => {
     };
 
     requestAdd.onerror = function () {
-      toaster(
+      helper.toaster(
         "Unable to write the file, the file name may already be used",
         10000
       );
