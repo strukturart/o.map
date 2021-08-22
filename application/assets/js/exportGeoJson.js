@@ -67,7 +67,7 @@ const geojson = ((_) => {
 
       setTimeout(function () {
         build_menu();
-      }, 1000);
+      }, 2000);
     };
 
     requestAdd.onerror = function () {

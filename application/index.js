@@ -139,13 +139,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   setTimeout(function () {
     //get location if not an activity open url
-    if (open_url === false) {
-      document.querySelector("div#intro").style.display = "none";
-      build_menu();
-      module.startup_marker("", "add");
-      getLocation("init");
-      helper.toaster("Press 3 to open the menu", 5000);
-    }
+    document.querySelector("div#intro").style.display = "none";
+    build_menu();
+    module.startup_marker("", "add");
+    getLocation("init");
+    helper.toaster("Press 3 to open the menu", 5000);
     status.windowOpen = "map";
   }, 5000);
 
@@ -227,6 +225,10 @@ document.addEventListener("DOMContentLoaded", function () {
           "afterend",
           '<div class="item" data-map="gpx">' + fileinfo.name + "</div>"
         );
+
+      if (fileinfo.name.substring(0, 1) == "_") {
+        module.loadGPX(fileinfo.name);
+      }
     });
   };
 
@@ -250,6 +252,13 @@ document.addEventListener("DOMContentLoaded", function () {
           "afterend",
           '<div class="item" data-map="geojson">' + fileinfo.name + "</div>"
         );
+
+      //load startup item
+
+      if (fileinfo.name.substring(0, 1) == "_") {
+        console.log("yeah");
+        module.loadGeoJSON(fileinfo.name);
+      }
     });
   };
 
@@ -280,109 +289,6 @@ document.addEventListener("DOMContentLoaded", function () {
     finder_navigation("start");
     status.windowOpen = "finder";
   };
-
-  /////////////////////////
-  /////Load GPX///////////
-  ///////////////////////
-  function loadGPX(filename) {
-    let finder = new Applait.Finder({
-      type: "sdcard",
-      debugMode: false,
-    });
-    finder.search(filename);
-
-    finder.on("fileFound", function (file, fileinfo, storageName) {
-      //file reader
-
-      let reader = new FileReader();
-
-      reader.onerror = function (event) {
-        helper.toaster("can't read file", 3000);
-        reader.abort();
-      };
-
-      reader.onloadend = function (event) {
-        var gpx = event.target.result; // URL to your GPX file or the GPX itself
-
-        new L.GPX(gpx, {
-          async: true,
-        })
-          .on("loaded", function (e) {
-            map.fitBounds(e.target.getBounds());
-          })
-          .addTo(map);
-
-        document.querySelector("div#finder").style.display = "none";
-        status.windowOpen = "map";
-      };
-
-      reader.readAsText(file);
-    });
-  }
-
-  /////////////////////////
-  /////Load GeoJSON///////////
-  ///////////////////////
-  function loadGeoJSON(filename) {
-    let finder = new Applait.Finder({
-      type: "sdcard",
-      debugMode: false,
-    });
-    finder.search(document.activeElement.innerText);
-
-    finder.on("fileFound", function (file, fileinfo, storageName) {
-      //file reader
-
-      let geojson_data = "";
-      let reader = new FileReader();
-
-      reader.onerror = function (event) {
-        reader.abort();
-      };
-
-      reader.onloadend = function (event) {
-        //check if json valid
-        try {
-          geojson_data = JSON.parse(event.target.result);
-        } catch (e) {
-          helper.toaster("Json is not valid", 2000);
-          return false;
-        }
-
-        //if valid add layer
-        //to do if geojson is marker add to  marker_array[]
-        //https://blog.codecentric.de/2018/06/leaflet-geojson-daten/
-        L.geoJSON(geojson_data, {
-          onEachFeature: function (feature, layer) {
-            if (feature.geometry != "") {
-              let p = feature.geometry.coordinates[0];
-              p.reverse();
-              map.flyTo(p);
-            }
-          },
-          // Marker Icon
-          pointToLayer: function (feature, latlng) {
-            let t = L.marker(latlng);
-
-            if (feature.properties.popup != "") {
-              t.bindPopup(feature.properties.popup, module.popup_option);
-            }
-
-            t.addTo(markers_group);
-            map.flyTo(latlng);
-            status.windowOpen = "map";
-          },
-
-          // Popup
-        }).addTo(map);
-        document.querySelector("div#finder").style.display = "none";
-
-        windowOpen = "map";
-      };
-
-      reader.readAsText(file);
-    });
-  }
 
   //////////////////////////
   ///M A R K E R S//////////
@@ -716,12 +622,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
       //add geoJson data
       if (item_value == "geojson") {
-        loadGeoJSON(document.activeElement.innerText);
+        module.loadGeoJSON(document.activeElement.innerText);
       }
 
       //add gpx data
       if (item_value == "gpx") {
-        loadGPX(document.activeElement.innerText);
+        module.loadGPX(document.activeElement.innerText);
       }
     }
 

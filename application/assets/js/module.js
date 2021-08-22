@@ -14,6 +14,108 @@ const module = (() => {
     map.setView([current_lat, current_lng]);
   };
 
+  /////////////////////////
+  /////Load GPX///////////
+  ///////////////////////
+  function loadGPX(filename) {
+    let finder = new Applait.Finder({
+      type: "sdcard",
+      debugMode: false,
+    });
+    finder.search(filename);
+
+    finder.on("fileFound", function (file, fileinfo, storageName) {
+      //file reader
+
+      let reader = new FileReader();
+
+      reader.onerror = function (event) {
+        helper.toaster("can't read file", 3000);
+        reader.abort();
+      };
+
+      reader.onloadend = function (event) {
+        var gpx = event.target.result; // URL to your GPX file or the GPX itself
+
+        new L.GPX(gpx, {
+          async: true,
+        })
+          .on("loaded", function (e) {
+            map.fitBounds(e.target.getBounds());
+          })
+          .addTo(map);
+
+        document.querySelector("div#finder").style.display = "none";
+        status.windowOpen = "map";
+      };
+
+      reader.readAsText(file);
+    });
+  }
+
+  /////////////////////////
+  /////Load GeoJSON///////////
+  ///////////////////////
+  let loadGeoJSON = function (filename) {
+    let finder = new Applait.Finder({
+      type: "sdcard",
+      debugMode: false,
+    });
+    finder.search(filename);
+
+    finder.on("fileFound", function (file, fileinfo, storageName) {
+      //file reader
+
+      let geojson_data = "";
+      let reader = new FileReader();
+
+      reader.onerror = function (event) {
+        reader.abort();
+      };
+
+      reader.onloadend = function (event) {
+        //check if json valid
+        try {
+          geojson_data = JSON.parse(event.target.result);
+        } catch (e) {
+          helper.toaster("Json is not valid", 2000);
+          return false;
+        }
+
+        //if valid add layer
+        //to do if geojson is marker add to  marker_array[]
+        //https://blog.codecentric.de/2018/06/leaflet-geojson-daten/
+        L.geoJSON(geojson_data, {
+          onEachFeature: function (feature, layer) {
+            if (feature.geometry != "") {
+              let p = feature.geometry.coordinates[0];
+              p.reverse();
+              map.flyTo(p);
+            }
+          },
+          // Marker Icon
+          pointToLayer: function (feature, latlng) {
+            let t = L.marker(latlng);
+
+            if (feature.properties.popup != "") {
+              t.bindPopup(feature.properties.popup, module.popup_option);
+            }
+
+            t.addTo(markers_group);
+            map.flyTo(latlng);
+          },
+
+          // Popup
+        }).addTo(map);
+        document.querySelector("div#finder").style.display = "none";
+
+        status.windowOpen = "map";
+      };
+
+      reader.readAsText(file);
+    });
+  };
+
   ///////////////////
   //select marker
   ////////////////////
@@ -307,5 +409,7 @@ const module = (() => {
     link_to_marker,
     popup_option,
     startup_marker,
+    loadGeoJSON,
+    loadGPX,
   };
 })();
