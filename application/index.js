@@ -48,7 +48,6 @@ let setting = {
     localStorage.getItem("export-path") != null
       ? localStorage.getItem("export-path")
       : "",
-  owm_key: localStorage.getItem("owm-key"),
   cache_time: localStorage.getItem("cache-time"),
   cache_zoom: localStorage.getItem("cache-zoom"),
   openweather_api: localStorage.getItem("owm-key"),
@@ -618,6 +617,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (item_value == "photo") {
         mozactivity.photo();
+      }
+
+      if (item_value == "open_settings_app") {
+        mozactivity.openSettings();
       }
 
       //add geoJson data

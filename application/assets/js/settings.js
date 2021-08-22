@@ -14,7 +14,7 @@ const settings = ((_) => {
       document.getElementById("export-path").value
     );
 
-    toaster("saved successfully", 2000);
+    helper.toaster("saved successfully", 2000);
   };
 
   let save_chk = function () {
@@ -28,17 +28,10 @@ const settings = ((_) => {
   };
 
   let load_settings = function () {
-    document.getElementById("owm-key").value = localStorage.getItem("owm-key");
-    document.getElementById("cache-time").value = localStorage.getItem(
-      "cache-time"
-    );
-    document.getElementById("cache-zoom").value = localStorage.getItem(
-      "cache-zoom"
-    );
-    document.getElementById("export-path").value = localStorage.getItem(
-      "export-path"
-    );
-
+    document.getElementById("owm-key").value = setting.openweather_api;
+    document.getElementById("cache-time").value = setting.cache_time
+    document.getElementById("cache-zoom").value = setting.cache_zoom
+    document.getElementById("export-path").value = setting.export_path
     if (setting.tracking_screenlock)
       document.getElementById("screenlock-ckb").checked = true;
   };
