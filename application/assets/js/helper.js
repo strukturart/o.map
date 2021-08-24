@@ -1,16 +1,11 @@
 const helper = (() => {
-  let getVersion = function () {
-    fetch("../../manifest.webapp")
-      .then(function (response) {
-        return response.json();
-      })
-      .then(function (data) {
-        document.getElementById("intro-footer").innerText =
-          "O.MAP Version " + data.version;
-      })
-      .catch(function (err) {
-        console.log(err);
-      });
+  let getManifest = function (callback) {
+    if (!navigator.mozApps) return false;
+    let self = navigator.mozApps.getSelf();
+    self.onsuccess = function () {
+      callback(self.result);
+    };
+    self.onerror = function () {};
   };
 
   let queue = [];
@@ -44,10 +39,63 @@ const helper = (() => {
     }, time);
   };
 
+  //goodbye
+
+  let goodbye = function () {
+    document.getElementById("goodbye").style.display = "block";
+
+    if (localStorage.clickcount) {
+      localStorage.clickcount = Number(localStorage.clickcount) + 1;
+    } else {
+      localStorage.clickcount = 1;
+    }
+
+    if (localStorage.clickcount == 3) {
+      message();
+    } else {
+      document.getElementById("ciao").style.display = "block";
+      setTimeout(function () {
+        window.close();
+      }, 4000);
+    }
+
+    function message() {
+      document.getElementById("donation").style.display = "block";
+      setTimeout(function () {
+        localStorage.clickcount = 1;
+
+        window.close();
+      }, 6000);
+    }
+  };
+
+  //delete file
+  function deleteFile(storage, path, notification) {
+    let sdcard = navigator.getDeviceStorages("sdcard");
+
+    let requestDel = sdcard[storage].delete(path);
+
+    requestDel.onsuccess = function () {
+      if (notification == "notification") {
+        helper.toaster(
+          'File "' +
+            name +
+            '" successfully deleted frome the sdcard storage area'
+        );
+      }
+    };
+
+    requestDel.onerror = function () {
+      helper.toaster("Unable to delete the file: " + this.error);
+    };
+  }
+
   return {
-    getVersion,
+    getManifest,
     toaster,
     add_script,
+    deleteFile,
+    goodbye,
   };
 })();
 
@@ -118,23 +166,6 @@ function localStorageWriteRead(item, value) {
 }
 
 //delete file
-function deleteFile(storage, path, notification) {
-  let sdcard = navigator.getDeviceStorages("sdcard");
-
-  let requestDel = sdcard[storage].delete(path);
-
-  requestDel.onsuccess = function () {
-    if (notification == "notification") {
-      toaster(
-        'File "' + name + '" successfully deleted frome the sdcard storage area'
-      );
-    }
-  };
-
-  requestDel.onerror = function () {
-    toaster("Unable to delete the file: " + this.error);
-  };
-}
 
 //bottom bar
 function bottom_bar(left, center, right) {

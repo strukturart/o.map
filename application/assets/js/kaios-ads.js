@@ -10,7 +10,7 @@ getKaiAd({
   // Max supported size is 240x264
   // container is required for responsive ads
   container: document.getElementById("ad-container"),
-  onerror: (err) => console.error("Custom catch:", err),
+  onerror: (err) => console.log("Custom catch:", err),
   onready: (ad) => {
     // Ad is ready to be displayed
     // calling 'display' will display the ad

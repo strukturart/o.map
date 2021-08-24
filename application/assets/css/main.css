@@ -429,17 +429,7 @@ div#bottom-bar div#button-left {
   width: 30%;
 }
 
-a#download-button {
-  width: 100%;
-  height: 20px;
-  background: black;
-  color: white;
-  position: fixed;
-  z-index: 5;
-  top: 0;
-  left: 0;
-  display: none;
-}
+
 
 div#bottom-bar div#button-right {
   background: black;
@@ -495,7 +485,7 @@ div#intro div#icon img{
 div#intro div#icon {
   background: var(--color-ten);
   border-radius: 10px;
-  width:80px;
+  width:70px;
   display:block;
   z-index:8;
   top:100px;
@@ -611,7 +601,12 @@ div#settings #screenlock-ckb {
   
 }
 
-div#impressum{
+div#imprint{
+  overflow: scroll!important;;
+  max-height:240px!important;
+}
+
+div#tips{
   overflow: scroll!important;;
   max-height:240px!important;
 }

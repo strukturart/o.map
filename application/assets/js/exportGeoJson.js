@@ -5,6 +5,13 @@ const geojson = ((_) => {
   const save_geojson = function (file_path_name, type) {
     let extData = "";
 
+    //todo
+    if (type == "single-speed") {
+      let single = mainmarker.selected_marker.toGeoJSON();
+
+      extData = JSON.stringify(single);
+    }
+
     if (type == "single") {
       let single = mainmarker.selected_marker.toGeoJSON();
       // store popup content

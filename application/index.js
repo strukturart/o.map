@@ -1,8 +1,7 @@
 "use strict";
 
 //let windowOpen;
-let save_mode;
-let open_url = false;
+let save_mode = "";
 let markers_group = new L.FeatureGroup();
 let measure_group_path = new L.FeatureGroup();
 let measure_group = new L.FeatureGroup();
@@ -11,7 +10,6 @@ let myMarker;
 
 let mainmarker = {
   target_marker: "",
-  ads: false,
   selected_marker: "",
   startup_markers:
     localStorage.getItem("startup_markers") != null
@@ -87,7 +85,6 @@ if (navigator.mozSetMessageHandler) {
     }
     //link
     if (option.name == "view") {
-      open_url = true;
       const url_split = option.data.url.split("/");
       current_lat = url_split[url_split.length - 2];
       current_lng = url_split[url_split.length - 1];
@@ -128,13 +125,19 @@ map.on("load", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-  //load KaiOs ads
-  if (mainmarker.ads) {
-    helper.add_script("assets/js/kaiads.v5.min.js");
-    helper.add_script("assets/js/kaios-ads.js");
+  //load KaiOs ads or not
+
+  function manifest(a) {
+    document.getElementById("intro-footer").innerText =
+      "O.MAP Version " + a.manifest.version;
+
+    if (a.installOrigin == "app://kaios-plus.kaiostech.com") {
+      helper.add_script("assets/js/kaiads.v5.min.js");
+      helper.add_script("assets/js/kaios-ads.js");
+    }
   }
 
-  helper.getVersion();
+  helper.getManifest(manifest);
 
   setTimeout(function () {
     //get location if not an activity open url
@@ -485,7 +488,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   //FINDER
 
-  function addMapLayers() {
+  function addMapLayers(action) {
     if (
       document.activeElement.className == "item" &&
       status.windowOpen == "finder"
@@ -626,6 +629,10 @@ document.addEventListener("DOMContentLoaded", function () {
       //add geoJson data
       if (item_value == "geojson") {
         module.loadGeoJSON(document.activeElement.innerText);
+      }
+
+      if (item_value == "geojson" && action == "delete") {
+        //helper.deleteFile();
       }
 
       //add gpx data
@@ -924,8 +931,9 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    if (finder_panels[count].id == "impressum") bottom_bar("", "", "");
+    if (finder_panels[count].id == "imprint") bottom_bar("", "", "");
     if (finder_panels[count].id == "kaisos-ads") bottom_bar("", "", "");
+    if (finder_panels[count].id == "tips") bottom_bar("", "", "");
   };
 
   function nav(move) {
@@ -998,7 +1006,7 @@ document.addEventListener("DOMContentLoaded", function () {
   for (let i = 0; i < t.length; i++) {
     t[i].addEventListener("focus", function () {
       if (document.activeElement.classList.contains("qr")) {
-        bottom_bar("", "QR", "");
+        bottom_bar("qr-scan", "", "");
       }
     });
   }
@@ -1007,7 +1015,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const qr_listener = document.querySelector("input#owm-key");
   let qrscan = false;
   qr_listener.addEventListener("focus", (event) => {
-    bottom_bar("", "qr", "");
+    bottom_bar("qr-scan", "", "");
     qrscan = true;
   });
 
@@ -1041,9 +1049,6 @@ document.addEventListener("DOMContentLoaded", function () {
       case "ArrowRight":
         MovemMap("right");
         break;
-
-      case "Enter":
-        break;
     }
   }
 
@@ -1067,10 +1072,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "Backspace":
         if (status.windowOpen == "map") {
-          status.windowOpen = "";
+          //status.windowOpen = "";
           status.crash = false;
           localStorage.setItem("crash", "false");
-          window.goodbye();
+          //window.goodbye();
         }
         break;
 
@@ -1089,10 +1094,9 @@ document.addEventListener("DOMContentLoaded", function () {
   //////////////
 
   function shortpress_action(param) {
+    console.log(param.key);
     switch (param.key) {
       case "Backspace":
-        module.measure_distance("destroy");
-
         if (status.windowOpen == "scan") {
           qr.stop_scan();
         }
@@ -1103,11 +1107,7 @@ document.addEventListener("DOMContentLoaded", function () {
         )
           break;
 
-        if (
-          status.windowOpen == "finder" ||
-          status.windowOpen == "markers_option" ||
-          status.windowOpen == "coordinations"
-        ) {
+        if (status.windowOpen != "map") {
           document.querySelector("div#finder").style.display = "none";
           document.querySelector("div#markers-option").style.display = "none";
           document.querySelector("div#coordinations").style.display = "none";
@@ -1126,6 +1126,10 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
+        break;
+
+      case "EndCall":
+        helper.goodbye();
         break;
 
       case "SoftLeft":
@@ -1157,6 +1161,17 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
+        if (status.windowOpen == "finder" && qrscan == true) {
+          status.windowOpen = "scan";
+
+          qr.start_scan(function (callback) {
+            let slug = callback;
+            document.getElementById("owm-key").value = slug;
+          });
+
+          break;
+        }
+
         break;
 
       case "SoftRight":
@@ -1174,8 +1189,22 @@ document.addEventListener("DOMContentLoaded", function () {
         ) {
           geojson.save_geojson(
             setting.export_path + user_input("return") + ".geojson",
+            "single-speed"
+          );
+
+          save_mode = "";
+          break;
+        }
+
+        if (
+          status.windowOpen == "user-input" &&
+          save_mode == "geojson-single"
+        ) {
+          geojson.save_geojson(
+            setting.export_path + user_input("return") + ".geojson",
             "single"
           );
+
           save_mode = "";
           break;
         }
@@ -1257,20 +1286,16 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
-        if (document.activeElement == document.getElementById("ad-container")) {
-          let t = document
-            .querySelector("div#kaisos-ads div iframe")
-            .getAttribute("src");
-
-          window.open(t);
-
-          break;
-        }
-
         if (
           document.activeElement == document.getElementById("save-settings")
         ) {
           settings.save_settings();
+          break;
+        }
+
+        if (document.activeElement == document.getElementById("owm-key")) {
+          bottom_bar("qr.scan", "", "");
+
           break;
         }
 
@@ -1300,23 +1325,16 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
-        if (status.windowOpen == "finder" && qrscan == true) {
-          status.windowOpen = "scan";
-
-          qr.start_scan(function (callback) {
-            let slug = callback;
-            document.getElementById("owm-key").value = slug;
-          });
+        if (status.windowOpen == "finder") {
+          addMapLayers();
 
           break;
         }
 
         if (status.windowOpen == "finder") {
-          addMapLayers("add-marker");
-
+          addMapLayers("delete");
           break;
         }
-
         break;
 
       case "1":
@@ -1346,6 +1364,7 @@ document.addEventListener("DOMContentLoaded", function () {
       case "3":
         if (status.windowOpen == "map") {
           open_finder();
+          status.windowOpen = "finder";
         }
 
         break;
@@ -1361,7 +1380,7 @@ document.addEventListener("DOMContentLoaded", function () {
           L.marker([mainmarker.current_lat, mainmarker.current_lng]).addTo(
             markers_group
           );
-          save_mode = "geojson-single";
+          save_mode = "single-speed";
           user_input("open", "", "save this marker as geojson file");
           bottom_bar("cancel", "", "save");
           break;
@@ -1439,7 +1458,6 @@ document.addEventListener("DOMContentLoaded", function () {
       case "ArrowDown":
         if (status.windowOpen == "map" || status.windowOpen == "coordinations")
           MovemMap("down");
-
         nav("+1");
         break;
     }
@@ -1448,7 +1466,7 @@ document.addEventListener("DOMContentLoaded", function () {
   /////////////////////////////////
   ////shortpress / longpress logic
   ////////////////////////////////
-
+  /*
   function handleKeyDown(evt) {
     if (evt.key == "Backspace" && document.activeElement.tagName != "INPUT")
       evt.preventDefault();
@@ -1469,6 +1487,52 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function handleKeyUp(evt) {
     if (evt.key == "Backspace") evt.preventDefault();
+	
+    clearTimeout(timeout);
+    if (!longpress) {
+      shortpress_action(evt);
+    }
+  }
+*/
+
+  function handleKeyDown(evt) {
+    if (evt.key === "Backspace" && status.windowOpen !== "map") {
+      evt.preventDefault();
+    }
+
+    if (evt.key === "EndCall") {
+      evt.preventDefault();
+    }
+    // For some reasons empty inputs don't focus so it allows the app to be minimized also in empty inputs
+    if (!evt.repeat) {
+      longpress = false;
+      timeout = setTimeout(() => {
+        longpress = true;
+        longpress_action(evt);
+      }, longpress_timespan);
+    }
+
+    if (evt.repeat) {
+      if (evt.key == "Backspace") evt.preventDefault(); // Disable close app by holding backspace
+
+      longpress = false;
+      repeat_action(evt);
+    }
+  }
+
+  function handleKeyUp(evt) {
+    evt.preventDefault();
+
+    if (evt.key == "Backspace") evt.preventDefault(); // Disable close app by holding backspace
+
+    if (
+      evt.key == "Backspace" &&
+      status.windowOpen != "map" &&
+      status.windowOpen == "finder" &&
+      document.activeElement.tagName == "INPUT"
+    ) {
+      evt.preventDefault();
+    }
 
     clearTimeout(timeout);
     if (!longpress) {
