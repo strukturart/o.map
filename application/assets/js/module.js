@@ -128,9 +128,6 @@ const module = (() => {
     index++;
 
     if (index >= l.length) index = 0;
-
-    console.log(l.length + "/" + index);
-
     bottom_bar("cancel", "option", "");
 
     //reset icons and close popus

@@ -7,8 +7,9 @@ const geojson = ((_) => {
 
     //todo
     if (type == "single-speed") {
-      let single = mainmarker.selected_marker.toGeoJSON();
-
+      let l = markers_group.getLayers();
+      let single = l[markers_group.length - 1].toGeoJSON();
+      console.log(single);
       extData = JSON.stringify(single);
     }
 

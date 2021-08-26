@@ -1094,7 +1094,6 @@ document.addEventListener("DOMContentLoaded", function () {
   //////////////
 
   function shortpress_action(param) {
-    console.log(param.key);
     switch (param.key) {
       case "Backspace":
         if (status.windowOpen == "scan") {
