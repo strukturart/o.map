@@ -969,21 +969,17 @@ document.addEventListener("DOMContentLoaded", function () {
         if (tabIndex < items_list.length - 1) {
           tabIndex++;
           items_list[tabIndex].focus();
-          document.activeElement.scrollIntoView({
-            block: "start",
-            behavior: "smooth",
-          });
+          
         }
       }
+
+
 
       if (move == "-1") {
         if (tabIndex > 0) {
           tabIndex--;
           items_list[tabIndex].focus();
-          document.activeElement.scrollIntoView({
-            block: "start",
-            behavior: "smooth",
-          });
+          
         }
 
         if (tabIndex == 0) {
@@ -995,6 +991,17 @@ document.addEventListener("DOMContentLoaded", function () {
       if (document.activeElement.classList.contains("input-parent")) {
         bottom_bar("", "edit", "");
       }
+      // add Jip's center scroll coz it's cool
+      const rect = document.activeElement.getBoundingClientRect();
+      const elY =
+          rect.top - document.body.getBoundingClientRect().top + rect.height / 2;
+      
+          document.activeElement.parentNode.scrollBy({
+          left: 0,
+          top: elY - window.innerHeight / 2,
+          behavior: "smooth",
+      });
+
     }
   }
 
