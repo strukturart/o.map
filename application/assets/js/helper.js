@@ -54,7 +54,7 @@ const helper = (() => {
       localStorage.clickcount = 1;
     }
 
-    if (localStorage.clickcount == 3) {
+    if (localStorage.clickcount == 300000) {
       message();
     } else {
       document.getElementById("ciao").style.display = "block";

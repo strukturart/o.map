@@ -131,10 +131,8 @@ document.addEventListener("DOMContentLoaded", function () {
   function manifest(a) {
     document.getElementById("intro-footer").innerText =
       "O.MAP Version " + a.manifest.version;
-
+    helper.toaster(a.installOrigin, 3000);
     if (a.installOrigin == "app://kaios-plus.kaiostech.com") {
-      helper.add_script("assets/js/kaiads.v5.min.js");
-      helper.add_script("assets/js/kaios-ads.js");
       general.ads = true;
     } else {
       let t = document.getElementById("kaisos-ads");
@@ -309,7 +307,7 @@ document.addEventListener("DOMContentLoaded", function () {
   /////////////////////////
 
   function getLocation(option) {
-    if (option == "init" || option == "update_marker") {
+    if (option == "init") {
       helper.toaster("try to determine your position", 3000);
     }
 
@@ -324,13 +322,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
       let crd = pos.coords;
 
-      if (crd.heading) mainmarker.current_heading = crd.heading;
-      mainmarker.accuracy = crd.accuracy;
-
       //to store device loaction
       mainmarker.device_lat = crd.latitude;
       mainmarker.device_lng = crd.longitude;
       mainmarker.device_alt = crd.altitude;
+      mainmarker.accuracy = crd.accuracy;
 
       //store location as fallout
       let b = [crd.latitude, crd.longitude];
@@ -784,12 +780,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function ZoomMap(in_out) {
     let current_zoom_level = map.getZoom();
 
-    if (
-      status.windowOpen == "map" ||
-      (status.windowOpen == "coordinations" &&
-        window.getComputedStyle(document.querySelector("div#search-box"))
-          .display == "none")
-    ) {
+    if (status.windowOpen == "map" || status.windowOpen == "coordinations") {
       if (in_out == "in") {
         map.setZoom(current_zoom_level + 1);
       }
@@ -904,9 +895,8 @@ document.addEventListener("DOMContentLoaded", function () {
   let finder_navigation = function (dir) {
     tabIndex = 0;
 
-    let d = document.querySelectorAll("div.panel");
-    for (let b = 0; b < d.length; b++) {
-      d[b].style.display = "none";
+    for (let b = 0; b < panels.length - 1; b++) {
+      panels[b].style.display = "none";
     }
 
     if (dir == "start") {
@@ -954,10 +944,6 @@ document.addEventListener("DOMContentLoaded", function () {
         document.activeElement.parentNode.focus();
       }
 
-      var inputs = document.getElementsByTagName("input");
-      for (var i = 0; i < inputs.length; ++i) {
-        inputs[i].style.background = "white";
-      }
       //get items from current pannel
 
       let b;
@@ -1016,6 +1002,10 @@ document.addEventListener("DOMContentLoaded", function () {
       if (document.activeElement.classList.contains("qr")) {
         bottom_bar("qr-scan", "", "");
       }
+    });
+
+    t[i].addEventListener("blur", function () {
+      this.style.background = "white";
     });
   }
 
@@ -1192,11 +1182,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (
           status.windowOpen == "user-input" &&
-          save_mode == "geojson-single"
+          save_mode == "geojson-single-direct"
         ) {
           geojson.save_geojson(
             setting.export_path + user_input("return") + ".geojson",
-            "single-speed"
+            "single-direct"
           );
 
           save_mode = "";
@@ -1387,7 +1377,7 @@ document.addEventListener("DOMContentLoaded", function () {
           L.marker([mainmarker.current_lat, mainmarker.current_lng]).addTo(
             markers_group
           );
-          save_mode = "single-speed";
+          save_mode = "geojson-single-direct";
           user_input("open", "", "save this marker as geojson file");
           bottom_bar("cancel", "", "save");
           break;
