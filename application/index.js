@@ -39,6 +39,7 @@ let mainmarker = {
 let general = {
   step: 0.001,
   zoomlevel: 12,
+  ads: false,
 };
 
 let setting = {
@@ -134,6 +135,10 @@ document.addEventListener("DOMContentLoaded", function () {
     if (a.installOrigin == "app://kaios-plus.kaiostech.com") {
       helper.add_script("assets/js/kaiads.v5.min.js");
       helper.add_script("assets/js/kaios-ads.js");
+      general.ads = true;
+    } else {
+      let t = document.getElementById("kaisos-ads");
+      t.remove();
     }
   }
 
@@ -936,11 +941,13 @@ document.addEventListener("DOMContentLoaded", function () {
     if (finder_panels[count].id == "tips") bottom_bar("", "", "");
   };
 
+  //to do
   function nav(move) {
     if (
       status.windowOpen == "finder" ||
       status.windowOpen == "markers_option"
     ) {
+      //nested input field
       if (
         document.activeElement.parentNode.classList.contains("input-parent")
       ) {
@@ -969,21 +976,16 @@ document.addEventListener("DOMContentLoaded", function () {
         if (tabIndex < items_list.length - 1) {
           tabIndex++;
           items_list[tabIndex].focus();
-          
         }
       }
-
-
 
       if (move == "-1") {
         if (tabIndex > 0) {
           tabIndex--;
           items_list[tabIndex].focus();
-          
         }
 
         if (tabIndex == 0) {
-          //to do
           window.scroll(0, 50);
         }
       }
@@ -991,17 +993,16 @@ document.addEventListener("DOMContentLoaded", function () {
       if (document.activeElement.classList.contains("input-parent")) {
         bottom_bar("", "edit", "");
       }
-      // add Jip's center scroll coz it's cool
+      // smooth center scrolling
       const rect = document.activeElement.getBoundingClientRect();
       const elY =
-          rect.top - document.body.getBoundingClientRect().top + rect.height / 2;
-      
-          document.activeElement.parentNode.scrollBy({
-          left: 0,
-          top: elY - window.innerHeight / 2,
-          behavior: "smooth",
-      });
+        rect.top - document.body.getBoundingClientRect().top + rect.height / 2;
 
+      document.activeElement.parentNode.scrollBy({
+        left: 0,
+        top: elY - window.innerHeight / 2,
+        behavior: "smooth",
+      });
     }
   }
 

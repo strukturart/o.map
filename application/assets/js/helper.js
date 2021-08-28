@@ -1,6 +1,10 @@
 const helper = (() => {
   let getManifest = function (callback) {
-    if (!navigator.mozApps) return false;
+    if (!navigator.mozApps) {
+      let t = document.getElementById("kaisos-ads");
+      t.remove();
+      return false;
+    }
     let self = navigator.mozApps.getSelf();
     self.onsuccess = function () {
       callback(self.result);
