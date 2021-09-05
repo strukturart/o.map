@@ -131,7 +131,6 @@ document.addEventListener("DOMContentLoaded", function () {
   function manifest(a) {
     document.getElementById("intro-footer").innerText =
       "O.MAP Version " + a.manifest.version;
-    helper.toaster(a.installOrigin, 3000);
     if (a.installOrigin == "app://kaios-plus.kaiostech.com") {
       general.ads = true;
     } else {
@@ -895,7 +894,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let finder_navigation = function (dir) {
     tabIndex = 0;
 
-    for (let b = 0; b < panels.length - 1; b++) {
+    for (let b = 0; b < panels.length; b++) {
       panels[b].style.display = "none";
     }
 
@@ -1290,6 +1289,22 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
+        if (
+          document.activeElement == document.getElementById("export-settings")
+        ) {
+          settings.export_settings();
+          break;
+        }
+
+        if (
+          document.activeElement ==
+          document.getElementById("load_settings_from_file")
+        ) {
+          settings.load_settings_from_file();
+
+          break;
+        }
+
         if (document.activeElement == document.getElementById("owm-key")) {
           bottom_bar("qr.scan", "", "");
 
@@ -1463,34 +1478,6 @@ document.addEventListener("DOMContentLoaded", function () {
   /////////////////////////////////
   ////shortpress / longpress logic
   ////////////////////////////////
-  /*
-  function handleKeyDown(evt) {
-    if (evt.key == "Backspace" && document.activeElement.tagName != "INPUT")
-      evt.preventDefault();
-    if (!evt.repeat) {
-      //evt.preventDefault();
-      longpress = false;
-      timeout = setTimeout(() => {
-        longpress = true;
-        longpress_action(evt);
-      }, longpress_timespan);
-    }
-
-    if (evt.repeat) {
-      longpress = false;
-      repeat_action(evt);
-    }
-  }
-
-  function handleKeyUp(evt) {
-    if (evt.key == "Backspace") evt.preventDefault();
-	
-    clearTimeout(timeout);
-    if (!longpress) {
-      shortpress_action(evt);
-    }
-  }
-*/
 
   function handleKeyDown(evt) {
     if (evt.key === "Backspace" && status.windowOpen !== "map") {
