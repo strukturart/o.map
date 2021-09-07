@@ -10,8 +10,8 @@ const settings = ((_) => {
       document.getElementById("cache-zoom").value
     );
     localStorage.setItem(
-      "cache-zoom",
-      document.getElementById("cache-path").value
+      "export-path",
+      document.getElementById("export-path").value
     );
 
     helper.toaster("saved successfully", 2000);

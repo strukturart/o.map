@@ -5,8 +5,15 @@ const geojson = ((_) => {
   const save_geojson = function (file_path_name, type) {
     let extData = "";
 
+    //todo
+    if (type == "single-direct") {
+      let l = markers_group.getLayers();
+      let single = l[l.length - 1].toGeoJSON();
+      extData = JSON.stringify(single);
+    }
+
     if (type == "single") {
-      let single = selected_marker.toGeoJSON();
+      let single = mainmarker.selected_marker.toGeoJSON();
       // store popup content
       let a = document.querySelector("textarea#popup").value;
       if (a != "") {
@@ -52,8 +59,8 @@ const geojson = ((_) => {
     let requestAdd = sdcard.addNamed(geojson_file, file_path_name);
 
     requestAdd.onsuccess = function () {
-      windowOpen = "map";
-      toaster("succesfull saved", 5000);
+      status.windowOpen = "map";
+      helper.toaster("succesfull saved", 5000);
       bottom_bar("", "", "");
 
       if (type == "tracking") {
@@ -67,15 +74,15 @@ const geojson = ((_) => {
 
       setTimeout(function () {
         build_menu();
-      }, 1000);
+      }, 2000);
     };
 
     requestAdd.onerror = function () {
-      toaster(
+      helper.toaster(
         "Unable to write the file, the file name may already be used",
         10000
       );
-      windowOpen = "map";
+      status.windowOpen = "map";
     };
   };
 

@@ -31,8 +31,8 @@
             Goodbye<br />
             <br />
             <ul>
-                <li>Thank you</li>
-                <li>bHackers community ❤</li>
+                <li>Thanks for using O.Map</li>
+                <li></li>
             </ul>
         </div>
     </div>
@@ -92,6 +92,8 @@
         <div class="item" data-action="save_marker" tabindex="0">save marker</div>
         <div class="item" data-action="set_target_marker" tabindex="1">set marker as target</div>
         <div class="item" data-action="remove_marker" tabindex="2">remove marker</div>
+        <div class="item" data-action="set_startup_marker" tabindex="3">set as startup marker</div>
+
         
         <label for="popup">Popup</label>
         <div class="item input-parent" tabindex="2">
@@ -166,11 +168,6 @@
 
 
     <div id="finder" class="flex width-100 height-100">
-
-
-
-       
-  
         <div class="panel" id="mapstracks" name="Imagery">
             <h2>MAPS</h2>
             <div id="maps"></div>
@@ -203,9 +200,9 @@
 
 
             <h2>Tracking</h2>
-            <div class="item input-parent" tabindex="2">
-                <input class="checkboxes" type="checkbox" id="screenlock-ckb"  value="screenlock">
-                <label for="sscreenlock-ckb">should the screen remain switched on during tracking ?</label>
+            <div class="item input-parent flex align-item-center justify-content-center" tabindex="2">
+                <label for="screenlock-ckb" class="grid-col-19">screen lock during tracking ?</label>
+                <input class="checkboxes grid-col-2" type="checkbox" id="screenlock-ckb"  value="screenlock">
             </div>
 
             <h2>Cache</h2>
@@ -223,6 +220,11 @@
             </div>
             
             <button tabindex="6" class="item" id="save-settings">save</button>
+            <button tabindex="7" class="item" id="export-settings">export settings</button>
+            <button tabindex="8" class="item" id="load_settings_from_file">load settings</button>
+
+
+            
         </div>
 
         
@@ -231,9 +233,6 @@
 
 
         <div class="panel" id="wikilocation" name="Wikilocation"></div>
-
-
-
         <div class="panel" id="shortcuts" name="Shortcuts">
             <div class="item start-stop-tracking" autofocus  tabindex="0" data-map="tracking">
                 <div class="flex justify-content-spacebetween">
@@ -325,32 +324,70 @@
                     <div></div>
                 </div>
             </div>
+
+
+            <div class="item" data-map="open_settings_app">
+                <div class="flex justify-content-spacebetween">
+                    <div>open settings app</div>
+                    <div></div>
+                </div>
+            </div>
         </div>
 
 
-        <div class="panel item" id="impressum" name="Impressum">
+        <div class="panel item" id="tips" name="Tips">
+            <h2>autoload markers or paths</h2>
+            <p>In order to automatically load markers or paths when starting the app, the file name must begin with _, e.g. _track-alps.json</p>
+
+            <h2>position determination</h2>
+            <p>
+                Unfortunately there is still a KaiOs bug that prevents the exact position from being found, so it is advisable to switch the data connection to 2G / 3G
+            </p>
+            <h2>system performance</h2>
+            <p>Sometimes the app crashes during tracking, to prevent this please press the power button for a long time and perform a basic memory cleanup.</p>
+        </div>
+
+
+        <div class="panel item" id="imprint" name="Imprint">
             <div>
                 Various software and map data are used in this app, please note the licenses.
+                <br>
             </div>
             <ul>
-                <li>o.map UNLICENSE</li>
-                <li>Leaflet - BSD-2-Clause License</li>
-                <li>Ajax AutoComplete - MIT License</li>
-                <li>leaflet.tilelayer.pouchdbcached MIT license</li>
-                <li>leaflet ruler MIT License</li>
+                <h2>Software</h2>
+                <li>o.map <span>UNLICENSE</span></li>
+                <li>Leaflet <span>BSD-2-Clause License</span></li>
+                <li>Ajax AutoComplete <span>MIT License</span></li>
+                <li>leaflet.tilelayer.pouchdbcached <span>MIT license</span></li>
+                <li>leaflet ruler <span>MIT License</span></li>
+            </ul>       
+            <ul>
+                <h2>Maps and Layers</h2>
                 <li>openstreetmap</li>
                 <li>opentopomap</li>
                 <li>earthquake.usgs.gov</li>
                 <li>openrailwaymap.org</li>
                 <li>openweathermap.org</li>
+            </ul>
+            <ul>
+                <h2>Data</h2>
                 <li>Wikipedia</li>
+                <li>nominatim.openstreetmap.org</li>
             </ul>
                 
 
-            <div>I thank the people who provide this data 
-                and take care of their maintenance.
+            <div>
+                <h2>Thank You!</h2>
+                <p>
+                    I thank the people who provide this data 
+                    and take care of their maintenance.
+                </p>
+           
             </div>
         </div>
+
+
+
 
 
 
@@ -358,16 +395,15 @@
             <div id="ad-container" class="item"></div>
         </div>
 
-    
-
-       
     </div>
+
+
 
     <script defer src="assets/js/kaiads.v5.min.js"></script>
     <script defer src="assets/js/kaios-ads.js"></script>
 
     <script defer src="assets/js/wikilocation.js"></script>
-    <script defer src="assets/exclude-js/jsQR.js"></script>
+    <script defer src="assets/js/jsQR.js"></script>
     <script defer src="assets/js/scan.js"></script>
     <script defer src="assets/js/settings.js"></script>
     <script defer src="assets/js/jQuery-3.1.0.js"></script>
@@ -380,7 +416,6 @@
     <script defer src="assets/js/tile.stamen.1.3.0.min.js"></script>
     <script defer src="assets/js/gpx.js"></script>
     <script defer src="assets/js/search.js"></script>
-
     <script defer src="index.js"></script>
     <script defer src="assets/js/maps.js"></script>
     <script defer src="assets/js/helper.js"></script>

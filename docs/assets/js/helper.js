@@ -1,26 +1,107 @@
 const helper = (() => {
-  let getVersion = function () {
-    fetch("../../manifest.webapp")
-      .then(function (response) {
-        return response.json();
-      })
-      .then(function (data) {
-        console.log(data);
-        document.getElementById("intro-footer").innerText =
-          "O.MAP Version " + data.version;
-      })
-      .catch(function (err) {
-        console.log(err);
-      });
+  let getManifest = function (callback) {
+    if (!navigator.mozApps) {
+      let t = document.getElementById("kaisos-ads");
+      t.remove();
+      return false;
+    }
+    let self = navigator.mozApps.getSelf();
+    self.onsuccess = function () {
+      callback(self.result);
+    };
+    self.onerror = function () {};
   };
+
+  let queue = [];
+  let timeout;
+  let toaster = function (text, time) {
+    queue.push({ text: text, time: time });
+    if (queue.length === 1) {
+      toast_q(text, time);
+    }
+  };
+
+  let add_script = function (script) {
+    document.body.appendChild(document.createElement("script")).src = script;
+  };
+
+  let toast_q = function (text, time) {
+    var x = document.querySelector("div#toast");
+    x.innerHTML = queue[0].text;
+
+    x.style.transform = "translate(0px, 0px)";
+
+    timeout = setTimeout(function () {
+      timeout = null;
+      x.style.transform = "translate(0px, -100px)";
+      queue = queue.slice(1);
+      if (queue.length > 0) {
+        setTimeout(() => {
+          toast_q(text, time);
+        }, 1000);
+      }
+    }, time);
+  };
+
+  //goodbye
+
+  let goodbye = function () {
+    document.getElementById("goodbye").style.display = "block";
+
+    if (localStorage.clickcount) {
+      localStorage.clickcount = Number(localStorage.clickcount) + 1;
+    } else {
+      localStorage.clickcount = 1;
+    }
+
+    if (localStorage.clickcount == 300000) {
+      message();
+    } else {
+      document.getElementById("ciao").style.display = "block";
+      setTimeout(function () {
+        window.close();
+      }, 4000);
+    }
+
+    function message() {
+      document.getElementById("donation").style.display = "block";
+      setTimeout(function () {
+        localStorage.clickcount = 1;
+
+        window.close();
+      }, 6000);
+    }
+  };
+
+  //delete file
+  function deleteFile(storage, path, notification) {
+    let sdcard = navigator.getDeviceStorages("sdcard");
+
+    let requestDel = sdcard[storage].delete(path);
+
+    requestDel.onsuccess = function () {
+      if (notification == "notification") {
+        helper.toaster(
+          'File "' +
+            name +
+            '" successfully deleted frome the sdcard storage area'
+        );
+      }
+    };
+
+    requestDel.onerror = function () {
+      helper.toaster("Unable to delete the file: " + this.error);
+    };
+  }
 
   return {
-    getVersion,
+    getManifest,
+    toaster,
+    add_script,
+    deleteFile,
+    goodbye,
   };
 })();
-
-
-
 
 function notify(param_title, param_text, param_silent) {
   var options = {
@@ -49,35 +130,6 @@ function notify(param_title, param_text, param_silent) {
   }
 }
 
-let toaster = function (text, time) {
-  document.querySelector("div#toast").innerText = text;
-  var elem = document.querySelector("div#toast");
-  var pos = -100;
-  var id = setInterval(down, 5);
-  var id2;
-
-  function down() {
-    if (pos == 0) {
-      clearInterval(id);
-      setTimeout(() => {
-        id2 = setInterval(up, 5);
-      }, time);
-    } else {
-      pos++;
-      elem.style.top = pos + "px";
-    }
-  }
-
-  function up() {
-    if (pos == -1000) {
-      clearInterval(id2);
-    } else {
-      pos--;
-      elem.style.top = pos + "px";
-    }
-  }
-};
-
 function user_input(param, file_name, label) {
   if (param == "open") {
     document.getElementById("user-input-description").innerText = label;
@@ -85,12 +137,12 @@ function user_input(param, file_name, label) {
     document.querySelector("div#user-input").style.bottom = "25px";
     document.querySelector("div#user-input input").focus();
     document.querySelector("div#user-input input").value = file_name;
-    windowOpen = "user-input";
+    status.windowOpen = "user-input";
   }
   if (param == "close") {
     document.querySelector("div#user-input").style.bottom = "-1000px";
     document.querySelector("div#user-input input").blur();
-    windowOpen = "map";
+    status.windowOpen = "map";
     bottom_bar("", "", "");
   }
 
@@ -118,23 +170,6 @@ function localStorageWriteRead(item, value) {
 }
 
 //delete file
-function deleteFile(storage, path, notification) {
-  let sdcard = navigator.getDeviceStorages("sdcard");
-
-  let requestDel = sdcard[storage].delete(path);
-
-  requestDel.onsuccess = function () {
-    if (notification == "notification") {
-      toaster(
-        'File "' + name + '" successfully deleted frome the sdcard storage area'
-      );
-    }
-  };
-
-  requestDel.onerror = function () {
-    toaster("Unable to delete the file: " + this.error);
-  };
-}
 
 //bottom bar
 function bottom_bar(left, center, right) {

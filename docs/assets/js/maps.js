@@ -40,12 +40,12 @@ const maps = (() => {
   //caching settings from settings panel
   let caching_time;
 
-  if (settings[1] != "") {
-    caching_time = Number(settings[1]) * 86400000;
+  if (localStorage.getItem("cache-time") != null) {
+    caching_time = Number(localStorage.getItem("cache-time")) * 86400000;
   } else {
     caching_time = 86400000;
   }
-  if (settings[3] != "") {
+  if (localStorage.getItem("cache-zoom") != null) {
     zoom_depth = localStorage.getItem("cache-zoom");
   } else {
     zoom_depth = 12;
@@ -147,6 +147,23 @@ const maps = (() => {
       attribution:
         'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
         '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+    });
+
+    map.addLayer(tilesLayer);
+    caching_events();
+  }
+
+  function offline_map() {
+    tilesUrl = "?????/{z}/{x}/{y}.png";
+    tilesLayer = L.tileLayer(tilesUrl, {
+      useCache: true,
+      saveToCache: false,
+      crossOrigin: true,
+      cacheMaxAge: caching_time,
+      useOnlyCache: false,
+      maxZoom: 18,
+      attribution:
+        'yeah offline',
     });
 
     map.addLayer(tilesLayer);
@@ -269,7 +286,7 @@ const maps = (() => {
               t.addTo(markers_group_eq);
               map.addLayer(markers_group_eq);
 
-              windowOpen = "map";
+              status.windowOpen = "map";
             }
           },
 

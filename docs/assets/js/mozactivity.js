@@ -44,21 +44,27 @@ const mozactivity = (() => {
     };
   };
 
-  const getPath = function () {
-    var a = new MozActivity({
-      name: "pick",
+  const openSettings = function () {
+    let activity = new MozActivity({
+      name: "configure",
+      data: {
+        target: "device",
+        section: "connectivity-settings",
+      },
     });
-    a.onsuccess = function () {
-      alert(a.result);
+
+    activity.onsuccess = function () {
+      console.log("successfully");
     };
-    a.onerror = function () {
-      alert("Failure when trying to pick");
+
+    activity.onerror = function () {
+      console.log("The activity encounter en error: " + this.error);
     };
   };
 
   return {
     photo,
     share_position,
-    getPath,
+    openSettings,
   };
 })();

@@ -88,6 +88,14 @@ label {
   display: block;
 }
 
+input[type="checkbox"]{
+
+  width: 20px;
+  height: 20px;
+  background: #fcfff4;
+  border-radius: 50px;
+}
+
 div.textarea-footer {
   font-size: 0.6rem;
   background: none !important;
@@ -240,12 +248,18 @@ div#toast {
   position: fixed;
   height: auto;
   overflow: none;
-  top: -100px;
   background: black;
   color: white;
-  z-index: 7;
+  z-index: 10;
   min-width: 100%;
   padding: 5px;
+  top:0px;
+  //display:none;
+
+  transition: all 0.5s ease-in-out;
+  transform-origin: left top;
+  transform: translate(0px, -100px);
+
 }
 
 /*/ ////////////////
@@ -415,17 +429,7 @@ div#bottom-bar div#button-left {
   width: 30%;
 }
 
-a#download-button {
-  width: 100%;
-  height: 20px;
-  background: black;
-  color: white;
-  position: fixed;
-  z-index: 5;
-  top: 0;
-  left: 0;
-  display: none;
-}
+
 
 div#bottom-bar div#button-right {
   background: black;
@@ -481,7 +485,7 @@ div#intro div#icon img{
 div#intro div#icon {
   background: var(--color-ten);
   border-radius: 10px;
-  width:80px;
+  width:70px;
   display:block;
   z-index:8;
   top:100px;
@@ -591,7 +595,18 @@ div#settings label {
   display: block;
 }
 
-div#impressum{
+
+div#settings #screenlock-ckb {
+  margin: 5px 0 0px 0;
+  
+}
+
+div#imprint{
+  overflow: scroll!important;;
+  max-height:240px!important;
+}
+
+div#tips{
   overflow: scroll!important;;
   max-height:240px!important;
 }

@@ -74,7 +74,7 @@ const qr = ((_) => {
       document.getElementById("qr-screen").style.display = "none";
     });
 
-    windowOpen = "finder";
+    status.windowOpen = "finder";
     finder_navigation("+1");
   };
 

@@ -14,6 +14,108 @@ const module = (() => {
     map.setView([current_lat, current_lng]);
   };
 
+  /////////////////////////
+  /////Load GPX///////////
+  ///////////////////////
+  function loadGPX(filename) {
+    let finder = new Applait.Finder({
+      type: "sdcard",
+      debugMode: false,
+    });
+    finder.search(filename);
+
+    finder.on("fileFound", function (file, fileinfo, storageName) {
+      //file reader
+
+      let reader = new FileReader();
+
+      reader.onerror = function (event) {
+        helper.toaster("can't read file", 3000);
+        reader.abort();
+      };
+
+      reader.onloadend = function (event) {
+        var gpx = event.target.result; // URL to your GPX file or the GPX itself
+
+        new L.GPX(gpx, {
+          async: true,
+        })
+          .on("loaded", function (e) {
+            map.fitBounds(e.target.getBounds());
+          })
+          .addTo(map);
+
+        document.querySelector("div#finder").style.display = "none";
+        status.windowOpen = "map";
+      };
+
+      reader.readAsText(file);
+    });
+  }
+
+  /////////////////////////
+  /////Load GeoJSON///////////
+  ///////////////////////
+  let loadGeoJSON = function (filename) {
+    let finder = new Applait.Finder({
+      type: "sdcard",
+      debugMode: false,
+    });
+    finder.search(filename);
+
+    finder.on("fileFound", function (file, fileinfo, storageName) {
+      //file reader
+
+      let geojson_data = "";
+      let reader = new FileReader();
+
+      reader.onerror = function (event) {
+        reader.abort();
+      };
+
+      reader.onloadend = function (event) {
+        //check if json valid
+        try {
+          geojson_data = JSON.parse(event.target.result);
+        } catch (e) {
+          helper.toaster("Json is not valid", 2000);
+          return false;
+        }
+
+        //if valid add layer
+        //to do if geojson is marker add to  marker_array[]
+        //https://blog.codecentric.de/2018/06/leaflet-geojson-daten/
+        L.geoJSON(geojson_data, {
+          onEachFeature: function (feature, layer) {
+            if (feature.geometry != "") {
+              let p = feature.geometry.coordinates[0];
+              p.reverse();
+              map.flyTo(p);
+            }
+          },
+          // Marker Icon
+          pointToLayer: function (feature, latlng) {
+            let t = L.marker(latlng);
+
+            if (feature.properties.popup != "") {
+              t.bindPopup(feature.properties.popup, module.popup_option);
+            }
+
+            t.addTo(markers_group);
+            map.flyTo(latlng);
+          },
+
+          // Popup
+        }).addTo(map);
+        document.querySelector("div#finder").style.display = "none";
+
+        status.windowOpen = "map";
+      };
+
+      reader.readAsText(file);
+    });
+  };
+
   ///////////////////
   //select marker
   ////////////////////
@@ -25,10 +127,10 @@ const module = (() => {
     let l = markers_group.getLayers();
     index++;
 
-    if (index > l.length - 1) index = 0;
-
+    if (index >= l.length) index = 0;
     bottom_bar("cancel", "option", "");
 
+    //reset icons and close popus
     for (let t = 0; t < l.length; t++) {
       let p = l[t].getIcon();
 
@@ -41,6 +143,7 @@ const module = (() => {
 
       l[t].closePopup();
     }
+
     let p = l[index].getIcon();
     if (
       p.options.className != "follow-marker" &&
@@ -54,17 +157,37 @@ const module = (() => {
     let pu = l[index].getPopup();
 
     if (pu != undefined) {
+      //get popup content
       document.querySelector("textarea#popup").value = pu._content;
       //show popup
-
       l[index].bindPopup(pu._content, popup_option).openPopup();
     }
 
-    map.setView(l[index]._latlng, map.getZoom());
+    //check if marker set as startup marker
 
+    for (let i = 0; i < mainmarker.startup_markers.length; i++) {
+      if (
+        l[index]._latlng.lng == mainmarker.startup_markers[i].latlng.lng &&
+        l[index]._latlng.lat == mainmarker.startup_markers[i].latlng.lat
+      ) {
+        mainmarker.startup_marker_toggle = true;
+        document.querySelector(
+          "div#markers-option div[data-action='set_startup_marker']"
+        ).innerText = "unset startup marker";
+        i = mainmarker.startup_markers.length;
+      } else {
+        document.querySelector(
+          "div#markers-option div[data-action='set_startup_marker']"
+        ).innerText = "set startup marker";
+        mainmarker.startup_marker_toggle = false;
+      }
+    }
+
+    map.setView(l[index]._latlng, map.getZoom());
     return l[index];
   };
 
+  //calc distance between markers
   let calc_distance = function (from_lat, from_lng, to_lat, to_lng) {
     let d = map.distance([from_lat, from_lng], [to_lat, to_lng]);
     d = Math.ceil(d);
@@ -72,6 +195,7 @@ const module = (() => {
     return d;
   };
 
+  //convert degree to direction
   let compass = function (degree) {
     let a = "N";
     if (degree == 0 || degree == 360) a = "North";
@@ -83,6 +207,44 @@ const module = (() => {
     if (degree == 270) a = "West";
     if (degree > 270 && degree < 360) a = "NorthWest";
     return a;
+  };
+
+  /////////////////////
+  ////STARTUP MARKERS
+  ///////////////////
+
+  let startup_marker = function (markerid, action) {
+    if (action == "set") {
+      if (!mainmarker.startup_marker_toggle) {
+        mainmarker.startup_markers.push({ latlng: markerid._latlng });
+        localStorage.setItem(
+          "startup_markers",
+          JSON.stringify(mainmarker.startup_markers)
+        );
+        helper.toaster("set as startup marker", 2000);
+      } else {
+        for (let i = 0; i < mainmarker.startup_markers.length; i++) {
+          if (
+            markerid._latlng.lng == mainmarker.startup_markers[i].latlng.lng &&
+            markerid._latlng.lat == mainmarker.startup_markers[i].latlng.lat
+          ) {
+            mainmarker.startup_markers.splice(i, 1);
+            localStorage.setItem(
+              "startup_markers",
+              JSON.stringify(mainmarker.startup_markers)
+            );
+            helper.toaster("unset startup marker", 2000);
+          }
+        }
+      }
+    }
+
+    if (action == "add") {
+      if (mainmarker.startup_markers.length == 0) return false;
+      mainmarker.startup_markers.forEach(function (index) {
+        L.marker([index.latlng.lat, index.latlng.lng]).addTo(markers_group);
+      });
+    }
   };
 
   /////////////////////
@@ -146,7 +308,6 @@ const module = (() => {
           tracking_cache = d;
           //restore path
           for (let i = 0; i < tracking_cache.length; i++) {
-            console.log(tracking_cache[i].lat);
             polyline_tracking.addLatLng([
               tracking_cache[i].lat,
               tracking_cache[i].lng,
@@ -158,7 +319,8 @@ const module = (() => {
         }
       } else {
       }
-      screenWakeLock("lock", "screen");
+      if (setting.tracking_screenlock) screenWakeLock("lock", "screen");
+
       screenWakeLock("lock", "gps");
       let calc = 0;
 
@@ -196,7 +358,7 @@ const module = (() => {
         }
         if (mainmarker.tracking == false) {
           clearInterval(tracking_interval);
-          screenWakeLock("unlock", "screen");
+          if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
           screenWakeLock("unlock", "gps");
         }
       }, 10000);
@@ -242,5 +404,9 @@ const module = (() => {
     compass,
     measure_distance,
     link_to_marker,
+    popup_option,
+    startup_marker,
+    loadGeoJSON,
+    loadGPX,
   };
 })();

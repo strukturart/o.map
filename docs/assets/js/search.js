@@ -27,7 +27,7 @@ $(document).ready(function () {
     },
     onSearchStart: function () {},
     onSearchError: function (query, jqXHR, textStatus, errorThrown) {
-      toaster(JSON.stringify(jqXHR), 2000);
+      helper.toaster(JSON.stringify(jqXHR), 2000);
     },
     onSelect: function (suggestion) {
       let lat_lon = [suggestion.data_lat, suggestion.data_lon];
@@ -41,7 +41,7 @@ $(document).ready(function () {
 
       $("#search").autocomplete("clear");
 
-      toaster("press 9 to add an marker", 3000);
+      helper.toaster("press 9 to add an marker", 3000);
     },
   });
 });
@@ -55,7 +55,7 @@ const search = (() => {
     document.querySelector("div#search-box input").focus();
     document.querySelector("div#bottom-bar").style.display = "block";
 
-    windowOpen = "search";
+    status.windowOpen = "search";
     setTimeout(function () {}, 3000);
   };
 
@@ -65,7 +65,7 @@ const search = (() => {
     document.querySelector("div#search-box input").value = "";
     document.querySelector("div#search-box input").blur();
     document.querySelector("div#olc").style.display = "none";
-    windowOpen = "map";
+    status.windowOpen = "map";
   };
 
   //////////////////////////
@@ -94,7 +94,7 @@ const search = (() => {
         mainmarker.current_lng = olc_lat_lng[1];
       }
 
-      toaster("press 9 to add an marker", 3000);
+      helper.toaster("press 9 to add an marker", 3000);
 
       return true;
     }

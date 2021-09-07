@@ -1,5 +1,6 @@
 {
-  "version": "1.2.0",
+  "version": "1.4.1",
+  "version_name": "riding godzilla",
   "name": "o.map",
   "description": "o.map is an openstreetmap app for KaiOs, it is a good companion for your next outdoor adventure",
   "launch_path": "/index.html",
@@ -33,11 +34,12 @@
     "open": {
       "filters": {
         "type": [
+          "application/json",
+          "application/geo+json",
           "application/gpx+xml",
           "text/xml",
           "application/xml",
-          "application/octet-stream",
-          "application/json"
+          "application/octet-stream"
         ]
       },
       "disposition": "inline",
@@ -46,17 +48,17 @@
     },
 
     "view": {
+      "href": "/index.html",
+      "disposition": "window",
       "filters": {
         "type": "url",
         "url": {
-          "required": true,
-          "regexp": "/^https?:.{1,16384}$/"
+          "required": true
         }
       },
-      "disposition": "inline",
-      "returnValue": true,
-      "href": "/index.html"
+      "returnValue": false
     },
+
     "view": {
       "filters": {
         "type": "url",
