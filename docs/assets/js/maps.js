@@ -65,6 +65,7 @@ const maps = (() => {
   };
 
   let caching_tiles = function () {
+    if (status.caching_tiles_started) return false;
     let swLat = map.getBounds()._southWest.lat;
     let swLng = map.getBounds()._southWest.lng;
     let neLat = map.getBounds()._northEast.lat;
@@ -77,6 +78,7 @@ const maps = (() => {
 
     // Display seed progress on console
     tilesLayer.on("seedprogress", function (seedData) {
+      status.caching_tiles_started = true;
       var percent =
         100 -
         Math.floor((seedData.remainingLength / seedData.queueLength) * 100);
@@ -88,6 +90,7 @@ const maps = (() => {
     tilesLayer.on("seedend", function (seedData) {
       document.querySelector("div#top-bar div.button-center").innerText =
         "Downloads finished";
+      caching_tiles_started = false;
       setTimeout(() => {
         top_bar("", "", "");
       }, 2000);
@@ -162,8 +165,7 @@ const maps = (() => {
       cacheMaxAge: caching_time,
       useOnlyCache: false,
       maxZoom: 18,
-      attribution:
-        'yeah offline',
+      attribution: "yeah offline",
     });
 
     map.addLayer(tilesLayer);

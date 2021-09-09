@@ -56,6 +56,7 @@ let setting = {
 settings.load_settings();
 
 let status = {
+  caching_tiles_started: false,
   marker_selection: false,
   path_selection: false,
   windowOpen: "map",
