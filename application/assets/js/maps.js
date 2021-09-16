@@ -257,6 +257,7 @@ const maps = (() => {
 
   let markers_group_eq = new L.FeatureGroup();
   let earthquake_layer = function () {
+    top_bar("", "", "");
     if (map.hasLayer(markers_group_eq)) {
       map.removeLayer(markers_group_eq);
       return false;
@@ -270,7 +271,6 @@ const maps = (() => {
         formatDate(two_days_before, "yy-mm-dd") +
         "&endtime=" +
         formatDate(today, "yy-mm-dd")
-      //"&latitude=47&longitude=7&maxradiuskm=1800"
     )
       .then(function (response) {
         return response.json();
@@ -280,13 +280,14 @@ const maps = (() => {
           // Marker Icon
           pointToLayer: function (feature, latlng) {
             if (feature.properties.type == "earthquake") {
+              console.log(latlng);
               let t = L.marker(latlng, {
                 icon: L.divIcon({
-                  html: '<i class="eq-marker" style="color: red"></i>',
+                  html: '<i class="eq-marker"></i>',
                   iconSize: [10, 10],
                   className: "earthquake-marker",
                 }),
-              }).openTooltip();
+              });
               t.addTo(markers_group_eq);
               map.addLayer(markers_group_eq);
 
@@ -299,6 +300,14 @@ const maps = (() => {
             console.log(feature);
           },
         }).addTo(map);
+
+        top_bar(
+          "",
+          formatDate(two_days_before, "yy-mm-dd") +
+            " - " +
+            formatDate(today, "yy-mm-dd"),
+          ""
+        );
       });
   };
 
@@ -309,7 +318,7 @@ const maps = (() => {
         month: date.getMonth() + 1,
         day: date.getDate(),
         hour: date.getHours(),
-        minute: date.getMinutes(),
+        minute: String(date.getMinutes()).padStart(2, "0"),
         sec: date.getSeconds(),
       });
 

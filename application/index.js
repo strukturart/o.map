@@ -660,13 +660,23 @@ document.addEventListener("DOMContentLoaded", function () {
         "block";
 
       function openweather_callback(some) {
+        console.log(some.hourly[0].weather[0].description);
         document.getElementById("temp").innerText = some.hourly[0].temp + " °C";
-
+        document.getElementById("weather-description").innerText =
+          some.hourly[0].weather[0].description;
+        /*
+        document.getElementById("weather-time").innerText = new Date(
+          some.hourly[0].dt * 1000
+        )
+          .toISOString()
+          .slice(0, 19)
+          .replace("T", " ");
+       
         document.getElementById("icon").src =
           "https://openweathermap.org/img/w/" +
           some.hourly[0].weather[0].icon +
           ".png";
-
+*/
         let sunset_ts = new Date(some.current.sunset * 1000);
         let sunset = sunset_ts.getHours() + ":" + sunset_ts.getMinutes();
 

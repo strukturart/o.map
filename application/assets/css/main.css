@@ -88,8 +88,7 @@ label {
   display: block;
 }
 
-input[type="checkbox"]{
-
+input[type="checkbox"] {
   width: 20px;
   height: 20px;
   background: #fcfff4;
@@ -115,8 +114,6 @@ a.button {
 a.button:focus {
   background: var(--color-three);
 }
-
-
 
 #goodbye {
   position: fixed;
@@ -169,7 +166,7 @@ img.marker-1 {
 }
 
 .earthquake-marker {
-  background: var(--color-eight)
+  background: rgb(5, 48, 240);
   border-radius: 50%;
 }
 
@@ -253,18 +250,16 @@ div#toast {
   z-index: 10;
   min-width: 100%;
   padding: 5px;
-  top:0px;
+  top: 0px;
   //display:none;
 
   transition: all 0.5s ease-in-out;
   transform-origin: left top;
   transform: translate(0px, -100px);
-
 }
 
 /*/ ////////////////
 USER INPUT////////////////*/
-
 
 input:focus {
   background: var(--color-three);
@@ -273,8 +268,6 @@ input:focus {
 .input-parent:focus {
   background: var(--color-three);
 }
-
-
 
 div#user-input {
   position: fixed;
@@ -429,8 +422,6 @@ div#bottom-bar div#button-left {
   width: 30%;
 }
 
-
-
 div#bottom-bar div#button-right {
   background: black;
   color: white;
@@ -468,32 +459,26 @@ div#intro div {
   color: white;
   font-size: 14px;
   padding: 3px;
-  position:fixed;
- 
+  position: fixed;
 }
 
-div#intro div#icon img{
+div#intro div#icon img {
   animation: roll 3s infinite;
   animation-delay: 1.5s;
-  display:block;
+  display: block;
   width: 100%;
-
-
 }
-
 
 div#intro div#icon {
   background: var(--color-ten);
   border-radius: 10px;
-  width:70px;
-  display:block;
-  z-index:8;
-  top:100px;
+  width: 70px;
+  display: block;
+  z-index: 8;
+  top: 100px;
   position: absolute;
-  left:50%;
-  margin:0 0 0 -40px;
-  
-
+  left: 50%;
+  margin: 0 0 0 -40px;
 }
 
 div#intro div#intro-footer {
@@ -546,7 +531,7 @@ div#finder .item:focus {
   color: black;
 }
 
-div#finder .item:focus label{
+div#finder .item:focus label {
   color: black;
 }
 
@@ -560,7 +545,6 @@ div#finder div#question {
   z-index: 3000;
   opacity: 0;
 }
-
 
 div.panel {
   display: none;
@@ -595,24 +579,19 @@ div#settings label {
   display: block;
 }
 
-
 div#settings #screenlock-ckb {
   margin: 5px 0 0px 0;
-  
 }
 
-div#imprint{
-  overflow: scroll!important;;
-  max-height:240px!important;
+div#imprint {
+  overflow: scroll !important;
+  max-height: 240px !important;
 }
 
-div#tips{
-  overflow: scroll!important;;
-  max-height:240px!important;
+div#tips {
+  overflow: scroll !important;
+  max-height: 240px !important;
 }
-
-
-
 
 div#markers-option {
   background: rgba(0, 0, 0, 0.808);

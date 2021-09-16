@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="assets/css/main.css" />
     <link rel="stylesheet" href="assets/css/grid.css" />
     <link rel="stylesheet" href="assets/css/leaflet.css" />
-    <link rel="stylesheet" href="assets/css/leaflet-search.css" />
     <link rel="stylesheet" href="assets/css/search.css" />
     <link rel="stylesheet" href="assets/css/qr-reader.css" />
 </head>
@@ -127,9 +126,11 @@
             <div id="target"></div>
             <div id="time"></div>
             <div id="weather">
-                <strong>weather forecast</strong>
+                <strong>weather forecast hourly</strong>
                 <div class="flex">
+
                     <div id="temp"></div>
+                    <div id="weather-description">  </div>
                     <div><img id="icon" src="" /></div>
                 </div>
                 <br>
@@ -421,7 +422,6 @@
     <script defer src="assets/js/helper.js"></script>
     <script defer src="assets/js/exportGeoJson.js"></script>
     <script defer src="assets/js/mozactivity.js"></script>
-    <script defer src="assets/js/goodbye.js"></script>
     <script defer src="assets/js/openweather.js"></script>
     <script defer src="assets/js/module.js"></script>
 
