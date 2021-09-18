@@ -138,6 +138,8 @@ const maps = (() => {
 
     map.addLayer(tilesLayer);
     caching_events();
+
+    localStorage.setItem("last_map", "moon_map");
   }
 
   function toner_map() {
@@ -156,6 +158,7 @@ const maps = (() => {
 
     map.addLayer(tilesLayer);
     caching_events();
+    localStorage.setItem("last_map", "toner_map");
   }
 
   function offline_map() {
@@ -189,6 +192,7 @@ const maps = (() => {
 
     map.addLayer(tilesLayer);
     caching_events();
+    localStorage.setItem("last_map", "opentopo_map");
   }
 
   function osm_map() {
@@ -208,6 +212,7 @@ const maps = (() => {
 
     map.addLayer(tilesLayer);
     caching_events();
+    localStorage.setItem("last_map", "osm_map");
   }
 
   let railwayLayer;

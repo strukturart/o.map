@@ -40,6 +40,10 @@ let general = {
   step: 0.001,
   zoomlevel: 12,
   ads: false,
+  last_map:
+    localStorage.getItem("last_map") != null
+      ? localStorage.getItem("last_map")
+      : "opentopo_map",
 };
 
 let setting = {
@@ -122,7 +126,8 @@ L.control
   .addTo(map);
 
 map.on("load", function () {
-  maps.opentopo_map();
+  maps[general.last_map]();
+
   maps.attribution();
 });
 
