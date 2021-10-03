@@ -131,7 +131,6 @@
 
                     <div id="temp"></div>
                     <div id="weather-description">  </div>
-                    <div><img id="icon" src="" /></div>
                 </div>
                 <br>
                 <div id="sun">sun: 
@@ -339,7 +338,8 @@
         <div class="panel item" id="tips" name="Tips">
             <h2>autoload markers or paths</h2>
             <p>In order to automatically load markers or paths when starting the app, the file name must begin with _, e.g. _track-alps.json</p>
-
+            <h2>weather data</h2>
+            <p>you have the possibility to call up a weather forecast for positions. for this you have to deposit an api key in the settings, you can get this for free at openweathermap.org.</p>
             <h2>position determination</h2>
             <p>
                 Unfortunately there is still a KaiOs bug that prevents the exact position from being found, so it is advisable to switch the data connection to 2G / 3G
@@ -411,7 +411,12 @@
     <script defer src="assets/js/applait.finder.min.js"></script>
     <script defer src="assets/js/olc.js"></script>
     <script defer src="assets/js/leaflet.js"></script>
-    <script defer src="assets/js/pouchDB.js"></script>
+    <!--<script defer src="aassets/js/pouchDB.js"></script>-->
+    <script defer src="assets/js/pouchdb-7.2.1.min.js"></script>
+    <script defer src="assets/js/pouchdb.replication-stream.min.js"></script>
+
+
+    
     <script defer src="assets/js/L.TileLayer.PouchDBCached.js"></script>
     <script defer src="assets/js/jquery.autocomplete.min.js"></script>
     <script defer src="assets/js/tile.stamen.1.3.0.min.js"></script>

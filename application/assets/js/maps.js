@@ -120,6 +120,48 @@ const maps = (() => {
       });
   };
 
+  //https://stackoverflow.com/questions/37229561/how-to-import-export-database-from-pouchdb
+  function export_mapdata() {
+    tilesLayer._db
+      .info()
+      .then(function (result) {
+        console.log(result);
+      })
+      .catch(function (err) {
+        console.log(err);
+      });
+
+    tilesLayer._db
+      .allDocs({
+        include_docs: true,
+        attachments: true,
+      })
+      .then(function (result) {
+        console.log(result);
+      })
+      .catch(function (err) {
+        console.log(err);
+      });
+  }
+
+  function import_mapdata({
+    target: {
+      files: [file],
+    },
+  }) {
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = ({ target: { result } }) => {
+        db.bulkDocs(
+          JSON.parse(result),
+          { new_edits: false }, // not change revision
+          (...args) => console.log("DONE", args)
+        );
+      };
+      reader.readAsText(file);
+    }
+  }
+
   function moon_map() {
     tilesUrl =
       "https://cartocdn-gusc.global.ssl.fastly.net/opmbuilder/api/v1/map/named/opm-moon-basemap-v0-1/all/{z}/{x}/{y}.png";
@@ -142,39 +184,22 @@ const maps = (() => {
     localStorage.setItem("last_map", "moon_map");
   }
 
-  function toner_map() {
-    tilesUrl = "https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png";
+  function terrain_map() {
+    tilesUrl = "https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png";
     tilesLayer = L.tileLayer(tilesUrl, {
       useCache: true,
       saveToCache: false,
       crossOrigin: true,
       cacheMaxAge: caching_time,
       useOnlyCache: false,
-      maxZoom: 18,
+      maxZoom: 16,
       attribution:
-        'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-        '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+        "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL",
     });
 
     map.addLayer(tilesLayer);
     caching_events();
-    localStorage.setItem("last_map", "toner_map");
-  }
-
-  function offline_map() {
-    tilesUrl = "?????/{z}/{x}/{y}.png";
-    tilesLayer = L.tileLayer(tilesUrl, {
-      useCache: true,
-      saveToCache: false,
-      crossOrigin: true,
-      cacheMaxAge: caching_time,
-      useOnlyCache: false,
-      maxZoom: 18,
-      attribution: "yeah offline",
-    });
-
-    map.addLayer(tilesLayer);
-    caching_events();
+    localStorage.setItem("last_map", "terrain_map");
   }
 
   function opentopo_map() {
@@ -524,12 +549,13 @@ const maps = (() => {
     attribution,
     moon_map,
     earthquake_layer,
-    toner_map,
+    terrain_map,
     opentopo_map,
     osm_map,
     weather_map,
     railway_layer,
     caching_tiles,
     delete_cache,
+    export_mapdata,
   };
 })();

@@ -126,9 +126,11 @@ L.control
   .addTo(map);
 
 map.on("load", function () {
+  maps.osm_map();
+  maps.attribution();
+
   maps[general.last_map]();
 
-  maps.attribution();
 });
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -173,7 +175,7 @@ document.addEventListener("DOMContentLoaded", function () {
     el.innerHTML = "";
     el.insertAdjacentHTML(
       "afterend",
-      '<div class="item" data-map="toner">Toner <i>Map</i></div>'
+      '<div class="item" data-map="terrain">Terrain <i>Map</i></div>'
     );
     el.insertAdjacentHTML(
       "afterend",
@@ -266,7 +268,6 @@ document.addEventListener("DOMContentLoaded", function () {
       //load startup item
 
       if (fileinfo.name.substring(0, 1) == "_") {
-        console.log("yeah");
         module.loadGeoJSON(fileinfo.name);
       }
     });
@@ -508,9 +509,9 @@ document.addEventListener("DOMContentLoaded", function () {
         status.windowOpen = "map";
       }
 
-      if (item_value == "toner") {
+      if (item_value == "terrain") {
         map.removeLayer(tilesLayer);
-        maps.toner_map();
+        maps.terrain_map();
         document.querySelector("div#finder").style.display = "none";
         status.windowOpen = "map";
         maps.attribution();
@@ -1443,7 +1444,10 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "0":
-        if (status.windowOpen == "map") mozactivity.share_position();
+        if (status.windowOpen == "map") {
+          //maps.export_mapdata();
+          mozactivity.share_position();
+        }
         break;
 
       case "*":
