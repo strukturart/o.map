@@ -83,7 +83,7 @@ const maps = (() => {
         100 -
         Math.floor((seedData.remainingLength / seedData.queueLength) * 100);
       console.log("Seeding " + percent + "% done");
-
+      if (percent > 90) status.caching_tiles_started = false;
       document.querySelector("div#top-bar div.button-center").innerText =
         percent + "%";
     });
@@ -97,6 +97,8 @@ const maps = (() => {
     });
 
     tilesLayer.on("error", function (seedData) {
+      caching_tiles_started = false;
+
       document.querySelector("div#top-bar div.button-center").innerText =
         seedData;
     });
@@ -118,6 +120,48 @@ const maps = (() => {
       });
   };
 
+  //https://stackoverflow.com/questions/37229561/how-to-import-export-database-from-pouchdb
+  function export_mapdata() {
+    tilesLayer._db
+      .info()
+      .then(function (result) {
+        console.log(result);
+      })
+      .catch(function (err) {
+        console.log(err);
+      });
+
+    tilesLayer._db
+      .allDocs({
+        include_docs: true,
+        attachments: true,
+      })
+      .then(function (result) {
+        console.log(result);
+      })
+      .catch(function (err) {
+        console.log(err);
+      });
+  }
+
+  function import_mapdata({
+    target: {
+      files: [file],
+    },
+  }) {
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = ({ target: { result } }) => {
+        db.bulkDocs(
+          JSON.parse(result),
+          { new_edits: false }, // not change revision
+          (...args) => console.log("DONE", args)
+        );
+      };
+      reader.readAsText(file);
+    }
+  }
+
   function moon_map() {
     tilesUrl =
       "https://cartocdn-gusc.global.ssl.fastly.net/opmbuilder/api/v1/map/named/opm-moon-basemap-v0-1/all/{z}/{x}/{y}.png";
@@ -136,40 +180,26 @@ const maps = (() => {
 
     map.addLayer(tilesLayer);
     caching_events();
+
+    localStorage.setItem("last_map", "moon_map");
   }
 
-  function toner_map() {
-    tilesUrl = "https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png";
+  function terrain_map() {
+    tilesUrl = "https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png";
     tilesLayer = L.tileLayer(tilesUrl, {
       useCache: true,
       saveToCache: false,
       crossOrigin: true,
       cacheMaxAge: caching_time,
       useOnlyCache: false,
-      maxZoom: 18,
+      maxZoom: 16,
       attribution:
-        'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-        '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+        "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL",
     });
 
     map.addLayer(tilesLayer);
     caching_events();
-  }
-
-  function offline_map() {
-    tilesUrl = "?????/{z}/{x}/{y}.png";
-    tilesLayer = L.tileLayer(tilesUrl, {
-      useCache: true,
-      saveToCache: false,
-      crossOrigin: true,
-      cacheMaxAge: caching_time,
-      useOnlyCache: false,
-      maxZoom: 18,
-      attribution: "yeah offline",
-    });
-
-    map.addLayer(tilesLayer);
-    caching_events();
+    localStorage.setItem("last_map", "terrain_map");
   }
 
   function opentopo_map() {
@@ -187,6 +217,7 @@ const maps = (() => {
 
     map.addLayer(tilesLayer);
     caching_events();
+    localStorage.setItem("last_map", "opentopo_map");
   }
 
   function osm_map() {
@@ -206,6 +237,7 @@ const maps = (() => {
 
     map.addLayer(tilesLayer);
     caching_events();
+    localStorage.setItem("last_map", "osm_map");
   }
 
   let railwayLayer;
@@ -255,6 +287,7 @@ const maps = (() => {
 
   let markers_group_eq = new L.FeatureGroup();
   let earthquake_layer = function () {
+    top_bar("", "", "");
     if (map.hasLayer(markers_group_eq)) {
       map.removeLayer(markers_group_eq);
       return false;
@@ -268,7 +301,6 @@ const maps = (() => {
         formatDate(two_days_before, "yy-mm-dd") +
         "&endtime=" +
         formatDate(today, "yy-mm-dd")
-      //"&latitude=47&longitude=7&maxradiuskm=1800"
     )
       .then(function (response) {
         return response.json();
@@ -278,13 +310,14 @@ const maps = (() => {
           // Marker Icon
           pointToLayer: function (feature, latlng) {
             if (feature.properties.type == "earthquake") {
+              console.log(latlng);
               let t = L.marker(latlng, {
                 icon: L.divIcon({
-                  html: '<i class="eq-marker" style="color: red"></i>',
+                  html: '<i class="eq-marker"></i>',
                   iconSize: [10, 10],
                   className: "earthquake-marker",
                 }),
-              }).openTooltip();
+              });
               t.addTo(markers_group_eq);
               map.addLayer(markers_group_eq);
 
@@ -297,6 +330,14 @@ const maps = (() => {
             console.log(feature);
           },
         }).addTo(map);
+
+        top_bar(
+          "",
+          formatDate(two_days_before, "yy-mm-dd") +
+            " - " +
+            formatDate(today, "yy-mm-dd"),
+          ""
+        );
       });
   };
 
@@ -307,7 +348,7 @@ const maps = (() => {
         month: date.getMonth() + 1,
         day: date.getDate(),
         hour: date.getHours(),
-        minute: date.getMinutes(),
+        minute: String(date.getMinutes()).padStart(2, "0"),
         sec: date.getSeconds(),
       });
 
@@ -508,12 +549,13 @@ const maps = (() => {
     attribution,
     moon_map,
     earthquake_layer,
-    toner_map,
+    terrain_map,
     opentopo_map,
     osm_map,
     weather_map,
     railway_layer,
     caching_tiles,
     delete_cache,
+    export_mapdata,
   };
 })();

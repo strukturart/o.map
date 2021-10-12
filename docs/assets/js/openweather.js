@@ -1,7 +1,5 @@
 const weather = (() => {
   let openweather_call = function (lat, lng, apikey, callback) {
-    console.log(lat + "/" + lng + "/" + apikey);
-
     let xhr = new XMLHttpRequest({
       mozSystem: true,
     });
@@ -20,15 +18,14 @@ const weather = (() => {
 
     xhr.onload = function () {
       if (xhr.status == 200) {
-        console.log(xhr.responseText);
         callback(JSON.parse(xhr.responseText));
       }
       if (xhr.status == 403) {
-        alert("access forbidden");
+        console.log("access forbidden");
       }
       // analyze HTTP status of the response
       if (xhr.status != 200) {
-        alert(xhr.status);
+        console.log(xhr.status);
       }
     };
 

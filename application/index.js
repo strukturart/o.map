@@ -130,7 +130,6 @@ map.on("load", function () {
   maps.attribution();
 
   maps[general.last_map]();
-
 });
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -1146,6 +1145,7 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "SoftLeft":
+      case "Control":
         if (status.windowOpen == "search") {
           search.hideSearch();
           break;
@@ -1188,6 +1188,7 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "SoftRight":
+      case "Alt":
         if (status.path_selection && status.windowOpen == "map") {
           save_mode = "geojson-path";
           user_input("open", "", "save this marker as geojson file");

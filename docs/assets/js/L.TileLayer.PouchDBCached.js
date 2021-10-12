@@ -26,7 +26,7 @@ L.TileLayer.addInitHook(function() {
 		return;
 	}
 
-	this._db = new PouchDB("offline-tiles");
+	this._db = new PouchDB("offline_tiles");
 });
 
 // 🍂namespace TileLayer

@@ -40,6 +40,10 @@ let general = {
   step: 0.001,
   zoomlevel: 12,
   ads: false,
+  last_map:
+    localStorage.getItem("last_map") != null
+      ? localStorage.getItem("last_map")
+      : "opentopo_map",
 };
 
 let setting = {
@@ -122,8 +126,10 @@ L.control
   .addTo(map);
 
 map.on("load", function () {
-  maps.opentopo_map();
+  maps.osm_map();
   maps.attribution();
+
+  maps[general.last_map]();
 });
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -168,7 +174,7 @@ document.addEventListener("DOMContentLoaded", function () {
     el.innerHTML = "";
     el.insertAdjacentHTML(
       "afterend",
-      '<div class="item" data-map="toner">Toner <i>Map</i></div>'
+      '<div class="item" data-map="terrain">Terrain <i>Map</i></div>'
     );
     el.insertAdjacentHTML(
       "afterend",
@@ -261,7 +267,6 @@ document.addEventListener("DOMContentLoaded", function () {
       //load startup item
 
       if (fileinfo.name.substring(0, 1) == "_") {
-        console.log("yeah");
         module.loadGeoJSON(fileinfo.name);
       }
     });
@@ -503,9 +508,9 @@ document.addEventListener("DOMContentLoaded", function () {
         status.windowOpen = "map";
       }
 
-      if (item_value == "toner") {
+      if (item_value == "terrain") {
         map.removeLayer(tilesLayer);
-        maps.toner_map();
+        maps.terrain_map();
         document.querySelector("div#finder").style.display = "none";
         status.windowOpen = "map";
         maps.attribution();
@@ -660,13 +665,23 @@ document.addEventListener("DOMContentLoaded", function () {
         "block";
 
       function openweather_callback(some) {
+        console.log(some.hourly[0].weather[0].description);
         document.getElementById("temp").innerText = some.hourly[0].temp + " °C";
-
+        document.getElementById("weather-description").innerText =
+          some.hourly[0].weather[0].description;
+        /*
+        document.getElementById("weather-time").innerText = new Date(
+          some.hourly[0].dt * 1000
+        )
+          .toISOString()
+          .slice(0, 19)
+          .replace("T", " ");
+       
         document.getElementById("icon").src =
           "https://openweathermap.org/img/w/" +
           some.hourly[0].weather[0].icon +
           ".png";
-
+*/
         let sunset_ts = new Date(some.current.sunset * 1000);
         let sunset = sunset_ts.getHours() + ":" + sunset_ts.getMinutes();
 
@@ -1130,6 +1145,7 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "SoftLeft":
+      case "Control":
         if (status.windowOpen == "search") {
           search.hideSearch();
           break;
@@ -1172,6 +1188,7 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "SoftRight":
+      case "Alt":
         if (status.path_selection && status.windowOpen == "map") {
           save_mode = "geojson-path";
           user_input("open", "", "save this marker as geojson file");
@@ -1428,7 +1445,10 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "0":
-        if (status.windowOpen == "map") mozactivity.share_position();
+        if (status.windowOpen == "map") {
+          //maps.export_mapdata();
+          mozactivity.share_position();
+        }
         break;
 
       case "*":
