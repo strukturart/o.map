@@ -1388,7 +1388,10 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "2":
-        if (status.windowOpen == "map") search.showSearch();
+        if (status.windowOpen == "map") {
+          search.showSearch();
+        }
+
         break;
 
       case "3":

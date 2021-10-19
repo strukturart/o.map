@@ -264,6 +264,11 @@ const maps = (() => {
     map.addLayer(railwayLayer);
     caching_events();
   }
+  /*
+  map.on("error", function (e) {
+    alert(e);
+  });
+  */
 
   function formatDate(date, format) {
     const map = {
@@ -537,7 +542,8 @@ const maps = (() => {
         }, 2000);
       })
       .catch(function (err) {
-        toaster("Can't load weather data", 3000);
+        module.allow_unsecure("https://api.rainviewer.com/public/maps.json");
+        toaster("Can't load weather data" + err, 3000);
       });
   }
   return {

@@ -27,7 +27,8 @@ $(document).ready(function () {
     },
     onSearchStart: function () {},
     onSearchError: function (query, jqXHR, textStatus, errorThrown) {
-      helper.toaster(JSON.stringify(jqXHR), 2000);
+      //helper.toaster(JSON.stringify(jqXHR), 2000);
+      module.allow_unsecure();
     },
     onSelect: function (suggestion) {
       let lat_lon = [suggestion.data_lat, suggestion.data_lon];

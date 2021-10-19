@@ -96,9 +96,13 @@ const module = (() => {
           // Marker Icon
           pointToLayer: function (feature, latlng) {
             let t = L.marker(latlng);
-
-            if (feature.properties.popup != "") {
+            //to do
+            if (feature.properties.hasOwnProperty("popup")) {
               t.bindPopup(feature.properties.popup, module.popup_option);
+            }
+
+            if (feature.properties.hasOwnProperty("description")) {
+              t.bindPopup(feature.properties.description, module.popup_option);
             }
 
             t.addTo(markers_group);
@@ -156,11 +160,15 @@ const module = (() => {
     document.querySelector("textarea#popup").value = "";
     let pu = l[index].getPopup();
 
-    if (pu != undefined) {
+    if (pu != undefined && pu._content != undefined) {
       //get popup content
       document.querySelector("textarea#popup").value = pu._content;
       //show popup
       l[index].bindPopup(pu._content, popup_option).openPopup();
+      //close popup
+      setTimeout(function () {
+        l[index].closePopup();
+      }, 3000);
     }
 
     //check if marker set as startup marker
@@ -244,6 +252,23 @@ const module = (() => {
       mainmarker.startup_markers.forEach(function (index) {
         L.marker([index.latlng.lat, index.latlng.lng]).addTo(markers_group);
       });
+    }
+  };
+
+  /////////////////////
+  ///Let's Encrypt
+  ///////////////////
+
+  let allow_unsecure = function (url) {
+    if (
+      confirm(
+        "It looks like the data cannot be loaded, do you want to try an unsafe version? If you press yes you will be redirected to the website that offers the data, there you have to accept the unsafe version."
+      )
+    ) {
+      // Save it!
+      window.open(url);
+    } else {
+      // Do nothing!
     }
   };
 
@@ -408,5 +433,6 @@ const module = (() => {
     startup_marker,
     loadGeoJSON,
     loadGPX,
+    allow_unsecure,
   };
 })();
