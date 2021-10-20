@@ -120,48 +120,6 @@ const maps = (() => {
       });
   };
 
-  //https://stackoverflow.com/questions/37229561/how-to-import-export-database-from-pouchdb
-  function export_mapdata() {
-    tilesLayer._db
-      .info()
-      .then(function (result) {
-        console.log(result);
-      })
-      .catch(function (err) {
-        console.log(err);
-      });
-
-    tilesLayer._db
-      .allDocs({
-        include_docs: true,
-        attachments: true,
-      })
-      .then(function (result) {
-        console.log(result);
-      })
-      .catch(function (err) {
-        console.log(err);
-      });
-  }
-
-  function import_mapdata({
-    target: {
-      files: [file],
-    },
-  }) {
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = ({ target: { result } }) => {
-        db.bulkDocs(
-          JSON.parse(result),
-          { new_edits: false }, // not change revision
-          (...args) => console.log("DONE", args)
-        );
-      };
-      reader.readAsText(file);
-    }
-  }
-
   function moon_map() {
     tilesUrl =
       "https://cartocdn-gusc.global.ssl.fastly.net/opmbuilder/api/v1/map/named/opm-moon-basemap-v0-1/all/{z}/{x}/{y}.png";
@@ -218,6 +176,40 @@ const maps = (() => {
     map.addLayer(tilesLayer);
     caching_events();
     localStorage.setItem("last_map", "opentopo_map");
+
+    if (helper.isOnline == true) {
+      console.log("check");
+      tilesLayer.on("tileerror", function (error, tile) {
+        helper.allow_unsecure("https://tile.opentopomap.org/1/1/1.png");
+      });
+    }
+  }
+
+  function satellite_map() {
+
+   
+
+     if (map.hasLayer(tilesLayer)) {
+       map.removeLayer(tilesLayer);
+     }
+    
+    tilesUrl =
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+    tilesLayer = L.tileLayer(tilesUrl, {
+      useCache: true,
+      saveToCache: false,
+      crossOrigin: true,
+      cacheMaxAge: caching_time,
+      useOnlyCache: false,
+      maxZoom: 16,
+
+      attribution:
+        "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+    });
+
+    map.addLayer(tilesLayer);
+    caching_events();
+    localStorage.setItem("last_map", "satellite_map");
   }
 
   function osm_map() {
@@ -238,18 +230,24 @@ const maps = (() => {
     map.addLayer(tilesLayer);
     caching_events();
     localStorage.setItem("last_map", "osm_map");
+    
+
+    
   }
 
-  let railwayLayer;
-  function railway_layer() {
-    if (map.hasLayer(railwayLayer)) {
-      map.removeLayer(railwayLayer);
+ 
+
+  let overlayer="";
+  
+  function hiking_layer() {
+    if (map.hasLayer(overlayer)) {
+      map.removeLayer(overlayer);
       return false;
     }
 
-    tilesUrl = "https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png";
+    tilesUrl = "http://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png";
 
-    railwayLayer = L.tileLayer(tilesUrl, {
+    overlayer = L.tileLayer(tilesUrl, {
       useCache: true,
       saveToCache: false,
       crossOrigin: true,
@@ -261,14 +259,27 @@ const maps = (() => {
         'Daten <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap-Mitwirkende</a>, Grafik: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>',
     });
 
-    map.addLayer(railwayLayer);
+    map.addLayer(overlayer);
+
+    if (helper.isOnline == true) {
+      console.log("check");
+      overlayer.on("tileerror", function (error, tile) {
+        helper.allow_unsecure(
+          "https://tile.waymarkedtrails.org/hiking/1/1/1.png"
+        );
+      });
+    }
+
     caching_events();
   }
-  /*
-  map.on("error", function (e) {
-    alert(e);
-  });
-  */
+
+  map.on("layeradd", function (event) {
+      if (map.hasLayer(overlayer)) {
+         overlayer.bringToFront();
+        return false;
+      }
+   });
+   
 
   function formatDate(date, format) {
     const map = {
@@ -542,8 +553,10 @@ const maps = (() => {
         }, 2000);
       })
       .catch(function (err) {
-        module.allow_unsecure("https://api.rainviewer.com/public/maps.json");
-        toaster("Can't load weather data" + err, 3000);
+        if (helper.isOnline == true) {
+          helper.allow_unsecure("https://api.rainviewer.com/public/maps.json");
+          toaster("Can't load weather data" + err, 3000);
+        }
       });
   }
   return {
@@ -559,9 +572,9 @@ const maps = (() => {
     opentopo_map,
     osm_map,
     weather_map,
-    railway_layer,
+    satellite_map,
+    hiking_layer,
     caching_tiles,
     delete_cache,
-    export_mapdata,
   };
 })();

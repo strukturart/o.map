@@ -1,4 +1,54 @@
 const helper = (() => {
+  let isOnline = function () {
+    var xhttp = new XMLHttpRequest({
+      mozSystem: true,
+    });
+
+    xhttp.open("GET", "https://google.com?" + new Date().getTime(), true);
+    xhttp.timeout = 2500;
+    xhttp.responseType = "document";
+    xhttp.send();
+
+    xhttp.onload = function () {
+      if (
+        xhttp.readyState === xhttp.DONE &&
+        xhttp.status >= 200 &&
+        xhttp.status < 304
+      ) {
+        return true;
+      }
+
+      if (xhttp.readyState === xhttp.DONE && xhttp.status != 200) {
+        return false;
+      }
+    };
+
+    xhhtp.onerror = function () {
+      console.log("you are offline");
+      return false;
+    };
+  };
+
+  /////////////////////
+  ///Let's Encrypt
+  ///////////////////
+
+  let allow_unsecure = function (url) {
+    status.windowOpen = "system";
+    search.hideSearch;
+
+    if (
+      confirm(
+        "It looks like the data cannot be loaded, do you want to try an unsafe version? If you press yes you will be redirected to the website that offers the data, there you have to accept the unsafe version."
+      )
+    ) {
+      // Save it!
+      window.open(url);
+    } else {
+      // Do nothing!
+    }
+  };
+
   let getManifest = function (callback) {
     if (!navigator.mozApps) {
       let t = document.getElementById("kaisos-ads");
@@ -100,6 +150,8 @@ const helper = (() => {
     add_script,
     deleteFile,
     goodbye,
+    isOnline,
+    allow_unsecure,
   };
 })();
 

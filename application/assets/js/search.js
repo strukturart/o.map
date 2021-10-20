@@ -27,8 +27,13 @@ $(document).ready(function () {
     },
     onSearchStart: function () {},
     onSearchError: function (query, jqXHR, textStatus, errorThrown) {
-      //helper.toaster(JSON.stringify(jqXHR), 2000);
-      module.allow_unsecure();
+      helper.toaster(
+        "it looks like your device is not connected to the internet"
+      );
+
+      helper.allow_unsecure(
+        "https://nominatim.openstreetmap.org/search?format=json&addressdetails=0&q=berlin"
+      );
     },
     onSelect: function (suggestion) {
       let lat_lon = [suggestion.data_lat, suggestion.data_lon];

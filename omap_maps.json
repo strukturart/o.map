@@ -1,0 +1,14 @@
+[
+    {
+       "name":"opentopomap",
+       "type":"map",
+       "url":"https://",
+       "attribution":"test"
+    },
+    {
+        "name":"cycle routes",
+        "type":"overlayer",
+        "url":"https://",
+        "attribution":"test"
+     }
+ ]

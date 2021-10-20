@@ -69,6 +69,10 @@ you have the possibility to import gpx and geojson. Markers can also be exported
 The search can be opened with key 2, you can search for locations or start the search with / and then enter an open location code
 [open location code](https://en.wikipedia.org/wiki/Open_Location_Code)
 
+## Desktop Version
+
+https://strukturart.github.io/o.map/
+
 ## How to install
 
 The app is not available through the https://www.kaiostech.com/store/ They are only accepting apps that are monetized using <a href="https://developer.kaiostech.com/submit-to-kaistore">KaiAds SDK</a>, and that's something I'm not interested in integrating.

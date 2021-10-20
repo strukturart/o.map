@@ -126,7 +126,6 @@ L.control
   .addTo(map);
 
 map.on("load", function () {
-  maps.osm_map();
   maps.attribution();
 
   maps[general.last_map]();
@@ -189,6 +188,11 @@ document.addEventListener("DOMContentLoaded", function () {
     el.insertAdjacentHTML(
       "afterend",
       '<div class="item" data-map="moon">Moon <i>Map</i></div>'
+    );
+
+    el.insertAdjacentHTML(
+      "afterend",
+      '<div class="item" data-map="satellite">Satellite <i>Map</i></div>'
     );
 
     document
@@ -508,6 +512,12 @@ document.addEventListener("DOMContentLoaded", function () {
         status.windowOpen = "map";
       }
 
+      if (item_value == "satellite") {
+        maps.satellite_map();
+        document.querySelector("div#finder").style.display = "none";
+        status.windowOpen = "map";
+      }
+
       if (item_value == "terrain") {
         map.removeLayer(tilesLayer);
         maps.terrain_map();
@@ -669,19 +679,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("temp").innerText = some.hourly[0].temp + " °C";
         document.getElementById("weather-description").innerText =
           some.hourly[0].weather[0].description;
-        /*
-        document.getElementById("weather-time").innerText = new Date(
-          some.hourly[0].dt * 1000
-        )
-          .toISOString()
-          .slice(0, 19)
-          .replace("T", " ");
-       
-        document.getElementById("icon").src =
-          "https://openweathermap.org/img/w/" +
-          some.hourly[0].weather[0].icon +
-          ".png";
-*/
+
         let sunset_ts = new Date(some.current.sunset * 1000);
         let sunset = sunset_ts.getHours() + ":" + sunset_ts.getMinutes();
 
@@ -1170,7 +1168,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (status.windowOpen == "map") {
-          ZoomMap("in");
+          ZoomMap("out");
           break;
         }
 
@@ -1251,7 +1249,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (status.windowOpen == "map") {
-          ZoomMap("out");
+          ZoomMap("in");
           break;
         }
 
@@ -1388,7 +1386,10 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "2":
-        if (status.windowOpen == "map") search.showSearch();
+        if (status.windowOpen == "map") {
+          search.showSearch();
+        }
+
         break;
 
       case "3":
@@ -1508,7 +1509,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (evt.key === "EndCall") {
       evt.preventDefault();
     }
-    // For some reasons empty inputs don't focus so it allows the app to be minimized also in empty inputs
+
     if (!evt.repeat) {
       longpress = false;
       timeout = setTimeout(() => {
@@ -1518,7 +1519,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (evt.repeat) {
-      if (evt.key == "Backspace") evt.preventDefault(); // Disable close app by holding backspace
+      if (evt.key == "Backspace") evt.preventDefault();
 
       longpress = false;
       repeat_action(evt);
@@ -1528,7 +1529,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function handleKeyUp(evt) {
     evt.preventDefault();
 
-    if (evt.key == "Backspace") evt.preventDefault(); // Disable close app by holding backspace
+    if (evt.key == "Backspace") evt.preventDefault();
 
     if (
       evt.key == "Backspace" &&

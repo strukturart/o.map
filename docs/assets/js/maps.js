@@ -218,6 +218,33 @@ const maps = (() => {
     map.addLayer(tilesLayer);
     caching_events();
     localStorage.setItem("last_map", "opentopo_map");
+
+    if (helper.isOnline == true) {
+      console.log("check");
+      tilesLayer.on("tileerror", function (error, tile) {
+        helper.allow_unsecure("https://tile.opentopomap.org/1/1/1.png");
+      });
+    }
+  }
+
+  function satellite_map() {
+    tilesUrl =
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+    tilesLayer = L.tileLayer(tilesUrl, {
+      useCache: true,
+      saveToCache: false,
+      crossOrigin: true,
+      cacheMaxAge: caching_time,
+      useOnlyCache: false,
+      maxZoom: 16,
+
+      attribution:
+        "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+    });
+
+    map.addLayer(tilesLayer);
+    caching_events();
+    localStorage.setItem("last_map", "satellite_map");
   }
 
   function osm_map() {
@@ -537,7 +564,10 @@ const maps = (() => {
         }, 2000);
       })
       .catch(function (err) {
-        toaster("Can't load weather data", 3000);
+        if (helper.isOnline == true) {
+          helper.allow_unsecure("https://api.rainviewer.com/public/maps.json");
+          toaster("Can't load weather data" + err, 3000);
+        }
       });
   }
   return {
@@ -553,6 +583,7 @@ const maps = (() => {
     opentopo_map,
     osm_map,
     weather_map,
+    satellite_map,
     railway_layer,
     caching_tiles,
     delete_cache,

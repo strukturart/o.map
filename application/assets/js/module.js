@@ -256,23 +256,6 @@ const module = (() => {
   };
 
   /////////////////////
-  ///Let's Encrypt
-  ///////////////////
-
-  let allow_unsecure = function (url) {
-    if (
-      confirm(
-        "It looks like the data cannot be loaded, do you want to try an unsafe version? If you press yes you will be redirected to the website that offers the data, there you have to accept the unsafe version."
-      )
-    ) {
-      // Save it!
-      window.open(url);
-    } else {
-      // Do nothing!
-    }
-  };
-
-  /////////////////////
   ////PATH & TRACKING
   ///////////////////
 
@@ -433,6 +416,5 @@ const module = (() => {
     startup_marker,
     loadGeoJSON,
     loadGPX,
-    allow_unsecure,
   };
 })();
