@@ -22,7 +22,6 @@ const wikilocation = (() => {
         //check if json valid
         try {
           let p = JSON.parse(data);
-          console.log(p);
           write_data(p);
         } catch (e) {
           return false;
@@ -47,7 +46,7 @@ const wikilocation = (() => {
       json.query.geosearch.forEach(function (element) {
         el.insertAdjacentHTML(
           "afterbegin",
-          "<button class='link item button' data-href='https://en.wikipedia.org/?curid=" +
+          "<button class='link item button' data-href='https://wikipedia.org/?curid=" +
             element.pageid +
             "'>" +
             element.title +

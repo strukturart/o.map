@@ -1,14 +1,16 @@
 [
     {
-       "name":"opentopomap",
+       "name":"openTopoMap",
        "type":"map",
-       "url":"https://",
-       "attribution":"test"
+       "url":"https://tile.opentopomap.org/{z}/{x}/{y}.png",
+       "attribution":"Openstreetmap / OpenTopoMap (CC-BY-SA)",
+       "maxzoom":18
     },
     {
-        "name":"cycle routes",
+        "name":"hiking",
         "type":"overlayer",
-        "url":"https://",
-        "attribution":"test"
+        "url":"http://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png",
+        "attribution":"hiking.waymarkedtrails.org",
+        "maxzoom":18
      }
  ]

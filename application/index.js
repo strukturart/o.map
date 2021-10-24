@@ -1,5 +1,5 @@
 "use strict";
-
+//todo https://github.com/mourner/suncalc
 //let windowOpen;
 let save_mode = "";
 let markers_group = new L.FeatureGroup();
@@ -44,7 +44,7 @@ let general = {
   last_map:
     localStorage.getItem("last_map") != null
       ? localStorage.getItem("last_map")
-      : "opentopo_map",
+      : "https://tile.opentopomap.org/{z}/{x}/{y}.png",
 };
 
 let setting = {
@@ -129,7 +129,7 @@ L.control
 map.on("load", function () {
   maps.attribution();
 
-  maps[general.last_map]();
+  maps.addMap(general.last_map, "", 18, "map");
 });
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -174,26 +174,16 @@ document.addEventListener("DOMContentLoaded", function () {
     el.innerHTML = "";
     el.insertAdjacentHTML(
       "afterend",
-      '<div class="item" data-map="terrain">Terrain <i>Map</i></div>'
+      '<div class="item" data-type="map" data-url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" data-maxzoom="18" data-attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community">Satellite Map</div>'
     );
     el.insertAdjacentHTML(
       "afterend",
-      '<div class="item" data-map="osm">OSM <i>Map</i></div>'
-    );
-
-    el.insertAdjacentHTML(
-      "afterend",
-      '<div class="item" data-map="otm">OpenTopo <i>Map</i></div>'
+      '<div class="item" data-type="map" data-url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" data-maxzoom="18" data-attribution="Map data &copy; OpenStreetMap contributors, CC-BY-SA">Openstreetmap</div>'
     );
 
     el.insertAdjacentHTML(
       "afterend",
-      '<div class="item" data-map="moon">Moon <i>Map</i></div>'
-    );
-
-    el.insertAdjacentHTML(
-      "afterend",
-      '<div class="item" data-map="satellite">Satellite <i>Map</i></div>'
+      '<div class="item" data-type="map" data-url="https://tile.opentopomap.org/{z}/{x}/{y}.png" data-maxzoom="18" data-attribution="Map data &copy; © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)">OpenTopoMap</div>'
     );
 
     document
@@ -210,15 +200,9 @@ document.addEventListener("DOMContentLoaded", function () {
         '<div class="item" data-map="earthquake">Earthquake <i>Layer</i></div>'
       );
 
-    document
-      .querySelector("div#layers")
-      .insertAdjacentHTML(
-        "afterend",
-        '<div class="item" data-map="hiking">Hiking <i>Layer</i></div>'
-      );
-
     find_gpx();
     find_geojson();
+    load_maps();
   };
 
   //////////////////////////////////
@@ -274,6 +258,80 @@ document.addEventListener("DOMContentLoaded", function () {
       if (fileinfo.name.substring(0, 1) == "_") {
         module.loadGeoJSON(fileinfo.name);
       }
+    });
+  };
+
+  //////////////////////////////////
+  //LOAD MAPS////////////////////////
+  /////////////////////////////////
+
+  let load_maps = function () {
+    let finder = new Applait.Finder({
+      type: "sdcard",
+      debugMode: false,
+    });
+    finder.search("omap_maps.json");
+
+    finder.on("searchComplete", function (needle, filematchcount) {});
+    finder.on("fileFound", function (file, fileinfo, storageName) {
+      let data = "";
+      let reader = new FileReader();
+
+      reader.onerror = function (event) {
+        reader.abort();
+      };
+
+      reader.onloadend = function (event) {
+        //check if json valid
+        try {
+          data = JSON.parse(event.target.result);
+        } catch (e) {
+          helper.toaster("Json is not valid", 2000);
+          return false;
+        }
+
+        data.forEach(function (key) {
+          if (key.type == "map") {
+            document
+              .querySelector("div#maps")
+              .insertAdjacentHTML(
+                "afterend",
+                '<div class="item" data-type="' +
+                  key.type +
+                  '"  data-maxzoom="' +
+                  key.maxzoom +
+                  '"  data-url="' +
+                  key.url +
+                  '" data-attribution="' +
+                  key.attribution +
+                  '">' +
+                  key.name +
+                  "</div>"
+              );
+          }
+
+          if (key.type == "overlayer") {
+            document
+              .querySelector("div#layers")
+              .insertAdjacentHTML(
+                "afterend",
+                '<div class="item" data-type="' +
+                  key.type +
+                  '"  data-maxzoom="' +
+                  key.maxzoom +
+                  '"  data-url="' +
+                  key.url +
+                  '" data-attribution="' +
+                  key.attribution +
+                  '">' +
+                  key.name +
+                  "</div>"
+              );
+          }
+        });
+      };
+
+      reader.readAsText(file);
     });
   };
 
@@ -504,157 +562,170 @@ document.addEventListener("DOMContentLoaded", function () {
       document.activeElement.className == "item" &&
       status.windowOpen == "finder"
     ) {
-      //switch online maps
-      let item_value = document.activeElement.getAttribute("data-map");
-
-      if (item_value == "weather") {
-        maps.weather_map();
-        document.querySelector("div#finder").style.display = "none";
-        status.windowOpen = "map";
-      }
-
-      if (item_value == "satellite") {
-        maps.satellite_map();
-        document.querySelector("div#finder").style.display = "none";
-        status.windowOpen = "map";
-      }
-
-      if (item_value == "terrain") {
-        map.removeLayer(tilesLayer);
-        maps.terrain_map();
-        document.querySelector("div#finder").style.display = "none";
-        status.windowOpen = "map";
-        maps.attribution();
-      }
-
-      if (item_value == "osm") {
-        map.removeLayer(tilesLayer);
-        maps.osm_map();
-        document.querySelector("div#finder").style.display = "none";
-        status.windowOpen = "map";
-        maps.attribution();
-      }
-
-      if (item_value == "moon") {
-        map.removeLayer(tilesLayer);
-        maps.moon_map();
-        document.querySelector("div#finder").style.display = "none";
-        map.setZoom(4);
-        status.windowOpen = "map";
-        maps.attribution();
-      }
-
-      if (item_value == "otm") {
-        map.removeLayer(tilesLayer);
-        maps.opentopo_map();
-        document.querySelector("div#finder").style.display = "none";
-        status.windowOpen = "map";
-        maps.attribution();
-      }
-
-      if (item_value == "hiking") {
-        maps.hiking_layer();
-        document.querySelector("div#finder").style.display = "none";
-        status.windowOpen = "map";
-        maps.attribution();
-      }
-
-      if (item_value == "earthquake") {
-        maps.earthquake_layer();
-        document.querySelector("div#finder").style.display = "none";
-        status.windowOpen = "map";
-        maps.attribution();
-      }
-
-      if (item_value == "share") {
-        mozactivity.share_position();
-        return true;
-      }
-
-      if (item_value == "autoupdate-view") {
-        document.querySelector("div#finder").style.display = "none";
-        status.windowOpen = "map";
-        auto_update_view();
-      }
-
-      if (item_value == "search") {
-        status.windowOpen = "map";
-        document.querySelector("div#finder").style.display = "none";
-        bottom_bar("", "", "");
-        search.showSearch();
-      }
-
-      if (item_value == "coordinations") {
-        document.querySelector("div#finder").style.display = "none";
-        coordinations();
-      }
-
-      if (item_value == "savelocation") {
-        document.querySelector("div#finder").style.display = "none";
-        save_mode = "geojson-single";
-        user_input("open");
-        bottom_bar("cancel", "", "save");
-      }
-
-      if (item_value == "export") {
-        document.querySelector("div#finder").style.display = "none";
-        save_mode = "geojson-collection";
-        user_input("open");
-        bottom_bar("cancel", "", "save");
-      }
-
-      if (item_value == "read-qr-marker") {
-        document.querySelector("div#finder").style.display = "none";
-        status.windowOpen = "scan";
-
-        qr.start_scan(function (callback) {
-          let slug = callback;
-          helper.toaster(slug, 3000);
-          module.link_to_marker(slug);
-        });
-      }
-
-      if (item_value == "tracking") {
-        helper.toaster(
-          "please close the menu and press key 1 to start tracking.",
-          3000
+      //custom maps and layers from json file
+      if (document.activeElement.hasAttribute("data-url")) {
+        let item_url = document.activeElement.getAttribute("data-url");
+        let item_type = document.activeElement.getAttribute("data-type");
+        let item_attribution = document.activeElement.getAttribute(
+          "data-attribution"
         );
+        let item_maxzoom = document.activeElement.getAttribute("data-maxzoom");
+
+        maps.addMap(item_url, item_attribution, item_maxzoom, item_type);
+
+        console.log(item_url, item_attribution, item_maxzoom, item_type);
+
+        document.querySelector("div#finder").style.display = "none";
+        status.windowOpen = "map";
       }
 
-      if (item_value == "draw-path") {
-        helper.toaster(
-          "please close the menu and press key 7 to draw a path.",
-          3000
-        );
-      }
+      //default
 
-      if (item_value == "add-marker-icon") {
-        helper.toaster(
-          "please close the menu and press key 9 to set a marker.",
-          3000
-        );
-      }
+      if (document.activeElement.hasAttribute("data-map")) {
+        let item_value = document.activeElement.getAttribute("data-map");
 
-      if (item_value == "photo") {
-        mozactivity.photo();
-      }
+        if (item_value == "weather") {
+          maps.weather_map();
+          document.querySelector("div#finder").style.display = "none";
+          status.windowOpen = "map";
+        }
 
-      if (item_value == "open_settings_app") {
-        mozactivity.openSettings();
-      }
+        if (item_value == "satellite") {
+          maps.satellite_map();
+          document.querySelector("div#finder").style.display = "none";
+          status.windowOpen = "map";
+        }
 
-      //add geoJson data
-      if (item_value == "geojson") {
-        module.loadGeoJSON(document.activeElement.innerText);
-      }
+        if (item_value == "terrain") {
+          map.removeLayer(tilesLayer);
+          maps.terrain_map();
+          document.querySelector("div#finder").style.display = "none";
+          status.windowOpen = "map";
+          maps.attribution();
+        }
 
-      if (item_value == "geojson" && action == "delete") {
-        //helper.deleteFile();
-      }
+        if (item_value == "osm") {
+          map.removeLayer(tilesLayer);
+          maps.osm_map();
+          document.querySelector("div#finder").style.display = "none";
+          status.windowOpen = "map";
+          maps.attribution();
+        }
 
-      //add gpx data
-      if (item_value == "gpx") {
-        module.loadGPX(document.activeElement.innerText);
+        if (item_value == "moon") {
+          map.removeLayer(tilesLayer);
+          maps.moon_map();
+          document.querySelector("div#finder").style.display = "none";
+          map.setZoom(4);
+          status.windowOpen = "map";
+          maps.attribution();
+        }
+
+        if (item_value == "otm") {
+          map.removeLayer(tilesLayer);
+          maps.opentopo_map();
+          document.querySelector("div#finder").style.display = "none";
+          status.windowOpen = "map";
+          maps.attribution();
+        }
+
+        if (item_value == "earthquake") {
+          maps.earthquake_layer();
+          document.querySelector("div#finder").style.display = "none";
+          status.windowOpen = "map";
+          maps.attribution();
+        }
+
+        if (item_value == "share") {
+          mozactivity.share_position();
+          return true;
+        }
+
+        if (item_value == "autoupdate-view") {
+          document.querySelector("div#finder").style.display = "none";
+          status.windowOpen = "map";
+          auto_update_view();
+        }
+
+        if (item_value == "search") {
+          status.windowOpen = "map";
+          document.querySelector("div#finder").style.display = "none";
+          bottom_bar("", "", "");
+          search.showSearch();
+        }
+
+        if (item_value == "coordinations") {
+          document.querySelector("div#finder").style.display = "none";
+          coordinations();
+        }
+
+        if (item_value == "savelocation") {
+          document.querySelector("div#finder").style.display = "none";
+          save_mode = "geojson-single";
+          user_input("open");
+          bottom_bar("cancel", "", "save");
+        }
+
+        if (item_value == "export") {
+          document.querySelector("div#finder").style.display = "none";
+          save_mode = "geojson-collection";
+          user_input("open");
+          bottom_bar("cancel", "", "save");
+        }
+
+        if (item_value == "read-qr-marker") {
+          document.querySelector("div#finder").style.display = "none";
+          status.windowOpen = "scan";
+
+          qr.start_scan(function (callback) {
+            let slug = callback;
+            helper.toaster(slug, 3000);
+            module.link_to_marker(slug);
+          });
+        }
+
+        if (item_value == "tracking") {
+          helper.toaster(
+            "please close the menu and press key 1 to start tracking.",
+            3000
+          );
+        }
+
+        if (item_value == "draw-path") {
+          helper.toaster(
+            "please close the menu and press key 7 to draw a path.",
+            3000
+          );
+        }
+
+        if (item_value == "add-marker-icon") {
+          helper.toaster(
+            "please close the menu and press key 9 to set a marker.",
+            3000
+          );
+        }
+
+        if (item_value == "photo") {
+          mozactivity.photo();
+        }
+
+        if (item_value == "open_settings_app") {
+          mozactivity.openSettings();
+        }
+
+        //add geoJson data
+        if (item_value == "geojson") {
+          module.loadGeoJSON(document.activeElement.innerText);
+        }
+
+        if (item_value == "geojson" && action == "delete") {
+          //helper.deleteFile();
+        }
+
+        //add gpx data
+        if (item_value == "gpx") {
+          module.loadGPX(document.activeElement.innerText);
+        }
       }
     }
 
@@ -1168,7 +1239,7 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
-        if (status.windowOpen == "map") {
+        if (status.windowOpen == "map" || status.windowOpen == "coordinations") {
           ZoomMap("out");
           break;
         }
@@ -1249,7 +1320,7 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
-        if (status.windowOpen == "map") {
+        if (status.windowOpen == "map" || status.windowOpen == "coordinations") {
           ZoomMap("in");
           break;
         }

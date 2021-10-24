@@ -139,7 +139,7 @@ const maps = (() => {
     map.addLayer(tilesLayer);
     caching_events();
 
-    localStorage.setItem("last_map", "moon_map");
+    localStorage.setItem("last_map", tilesUrl);
   }
 
   function terrain_map() {
@@ -157,7 +157,10 @@ const maps = (() => {
 
     map.addLayer(tilesLayer);
     caching_events();
-    localStorage.setItem("last_map", "terrain_map");
+    localStorage.setItem(
+      "last_map",
+      "https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png"
+    );
   }
 
   function opentopo_map() {
@@ -170,12 +173,12 @@ const maps = (() => {
       useOnlyCache: false,
       maxZoom: 17,
       attribution:
-        "Map data &copy;<div> © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)</div>",
+        "Map data &copy; © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)",
     });
 
     map.addLayer(tilesLayer);
     caching_events();
-    localStorage.setItem("last_map", "opentopo_map");
+    localStorage.setItem("last_map", tilesUrl);
 
     if (helper.isOnline == true) {
       console.log("check");
@@ -185,101 +188,67 @@ const maps = (() => {
     }
   }
 
-  function satellite_map() {
+  let overlayer = "";
 
-   
+  let addMap = function (url, attribution, max_zoom, type) {
+    //map
+    if (type == "map") {
+      if (map.hasLayer(tilesLayer)) {
+        map.removeLayer(tilesLayer);
+      }
 
-     if (map.hasLayer(tilesLayer)) {
-       map.removeLayer(tilesLayer);
-     }
-    
-    tilesUrl =
-      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
-    tilesLayer = L.tileLayer(tilesUrl, {
-      useCache: true,
-      saveToCache: false,
-      crossOrigin: true,
-      cacheMaxAge: caching_time,
-      useOnlyCache: false,
-      maxZoom: 16,
-
-      attribution:
-        "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
-    });
-
-    map.addLayer(tilesLayer);
-    caching_events();
-    localStorage.setItem("last_map", "satellite_map");
-  }
-
-  function osm_map() {
-    tilesUrl = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-    tilesLayer = L.tileLayer(tilesUrl, {
-      useCache: true,
-      saveToCache: false,
-      crossOrigin: true,
-      cacheMaxAge: caching_time,
-      useOnlyCache: false,
-      maxZoom: 18,
-
-      attribution:
-        'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-        '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
-    });
-
-    map.addLayer(tilesLayer);
-    caching_events();
-    localStorage.setItem("last_map", "osm_map");
-    
-
-    
-  }
-
- 
-
-  let overlayer="";
-  
-  function hiking_layer() {
-    if (map.hasLayer(overlayer)) {
-      map.removeLayer(overlayer);
-      return false;
-    }
-
-    tilesUrl = "http://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png";
-
-    overlayer = L.tileLayer(tilesUrl, {
-      useCache: true,
-      saveToCache: false,
-      crossOrigin: true,
-      cacheMaxAge: caching_time,
-      useOnlyCache: false,
-      maxZoom: 18,
-
-      attribution:
-        'Daten <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap-Mitwirkende</a>, Grafik: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>',
-    });
-
-    map.addLayer(overlayer);
-
-    if (helper.isOnline == true) {
-      console.log("check");
-      overlayer.on("tileerror", function (error, tile) {
-        helper.allow_unsecure(
-          "https://tile.waymarkedtrails.org/hiking/1/1/1.png"
-        );
+      tilesLayer = L.tileLayer(url, {
+        useCache: true,
+        saveToCache: false,
+        crossOrigin: true,
+        cacheMaxAge: caching_time,
+        useOnlyCache: false,
+        maxZoom: max_zoom,
+        attribution: attribution,
       });
+
+      map.addLayer(tilesLayer);
+      caching_events();
+      localStorage.setItem("last_map", url);
+
+      if (helper.isOnline == true) {
+        tilesLayer.on("tileerror", function (error, tile) {
+          url = url.replace("{z}", "1");
+          url = url.replace("{y}", "1");
+          url = url.replace("{x}", "1");
+
+          helper.allow_unsecure(url);
+        });
+      }
     }
-
-    caching_events();
-  }
-
-  map.on("layeradd", function (event) {
+    //overlayer
+    if (type == "overlayer") {
       if (map.hasLayer(overlayer)) {
-         overlayer.bringToFront();
+        map.removeLayer(overlayer);
         return false;
       }
-   });
-   
+
+      overlayer = L.tileLayer(url, {
+        useCache: true,
+        saveToCache: false,
+        crossOrigin: true,
+        cacheMaxAge: caching_time,
+        useOnlyCache: false,
+        maxZoom: max_zoom,
+        attribution: attribution,
+      });
+
+      map.addLayer(overlayer);
+      caching_events();
+    }
+  };
+
+  map.on("layeradd", function (event) {
+    if (map.hasLayer(overlayer)) {
+      overlayer.bringToFront();
+      return false;
+    }
+  });
 
   function formatDate(date, format) {
     const map = {
@@ -570,11 +539,9 @@ const maps = (() => {
     earthquake_layer,
     terrain_map,
     opentopo_map,
-    osm_map,
     weather_map,
-    satellite_map,
-    hiking_layer,
     caching_tiles,
     delete_cache,
+    addMap,
   };
 })();
