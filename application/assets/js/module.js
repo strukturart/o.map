@@ -1,12 +1,12 @@
 const module = (() => {
   let link_to_marker = function (url) {
-    let url_split = url.split("/");
+    let url_split = url.split('/');
     current_lat = url_split[url_split.length - 2];
     current_lng = url_split[url_split.length - 1];
 
     //remove !numbers
-    current_lat = current_lat.replace(/[A-Za-z?=&]+/gi, "");
-    current_lng = current_lng.replace(/[A-Za-z?=&]+/gi, "");
+    current_lat = current_lat.replace(/[A-Za-z?=&]+/gi, '');
+    current_lng = current_lng.replace(/[A-Za-z?=&]+/gi, '');
     current_lat = Number(current_lat);
     current_lng = Number(current_lng);
 
@@ -19,12 +19,12 @@ const module = (() => {
   ///////////////////////
   function loadGPX(filename) {
     let finder = new Applait.Finder({
-      type: "sdcard",
+      type: 'sdcard',
       debugMode: false,
     });
     finder.search(filename);
 
-    finder.on("fileFound", function (file, fileinfo, storageName) {
+    finder.on('fileFound', function (file, fileinfo, storageName) {
       //file reader
 
       let reader = new FileReader();
@@ -40,13 +40,13 @@ const module = (() => {
         new L.GPX(gpx, {
           async: true,
         })
-          .on("loaded", function (e) {
+          .on('loaded', function (e) {
             map.fitBounds(e.target.getBounds());
           })
           .addTo(map);
 
-        document.querySelector("div#finder").style.display = "none";
-        status.windowOpen = "map";
+        document.querySelector('div#finder').style.display = 'none';
+        status.windowOpen = 'map';
       };
 
       reader.readAsText(file);
@@ -58,15 +58,15 @@ const module = (() => {
   ///////////////////////
   let loadGeoJSON = function (filename) {
     let finder = new Applait.Finder({
-      type: "sdcard",
+      type: 'sdcard',
       debugMode: false,
     });
     finder.search(filename);
 
-    finder.on("fileFound", function (file, fileinfo, storageName) {
+    finder.on('fileFound', function (file, fileinfo, storageName) {
       //file reader
 
-      let geojson_data = "";
+      let geojson_data = '';
       let reader = new FileReader();
 
       reader.onerror = function (event) {
@@ -78,7 +78,7 @@ const module = (() => {
         try {
           geojson_data = JSON.parse(event.target.result);
         } catch (e) {
-          helper.toaster("Json is not valid", 2000);
+          helper.toaster('Json is not valid', 2000);
           return false;
         }
 
@@ -87,7 +87,7 @@ const module = (() => {
         //https://blog.codecentric.de/2018/06/leaflet-geojson-daten/
         L.geoJSON(geojson_data, {
           onEachFeature: function (feature, layer) {
-            if (feature.geometry != "") {
+            if (feature.geometry != '') {
               let p = feature.geometry.coordinates[0];
               p.reverse();
               map.flyTo(p);
@@ -97,11 +97,11 @@ const module = (() => {
           pointToLayer: function (feature, latlng) {
             let t = L.marker(latlng);
             //to do
-            if (feature.properties.hasOwnProperty("popup")) {
+            if (feature.properties.hasOwnProperty('popup')) {
               t.bindPopup(feature.properties.popup, module.popup_option);
             }
 
-            if (feature.properties.hasOwnProperty("description")) {
+            if (feature.properties.hasOwnProperty('description')) {
               t.bindPopup(feature.properties.description, module.popup_option);
             }
 
@@ -111,9 +111,9 @@ const module = (() => {
 
           // Popup
         }).addTo(map);
-        document.querySelector("div#finder").style.display = "none";
+        document.querySelector('div#finder').style.display = 'none';
 
-        status.windowOpen = "map";
+        status.windowOpen = 'map';
       };
 
       reader.readAsText(file);
@@ -132,15 +132,15 @@ const module = (() => {
     index++;
 
     if (index >= l.length) index = 0;
-    bottom_bar("cancel", "option", "");
+    bottom_bar('cancel', 'option', '');
 
     //reset icons and close popus
     for (let t = 0; t < l.length; t++) {
       let p = l[t].getIcon();
 
       if (
-        p.options.className != "follow-marker" &&
-        p.options.className != "goal-marker"
+        p.options.className != 'follow-marker' &&
+        p.options.className != 'goal-marker'
       ) {
         l[t].setIcon(maps.default_icon);
       }
@@ -150,19 +150,19 @@ const module = (() => {
 
     let p = l[index].getIcon();
     if (
-      p.options.className != "follow-marker" &&
-      p.options.className != "goal-marker"
+      p.options.className != 'follow-marker' &&
+      p.options.className != 'goal-marker'
     ) {
       l[index].setIcon(maps.select_icon);
     }
 
     //popup
-    document.querySelector("textarea#popup").value = "";
+    document.querySelector('textarea#popup').value = '';
     let pu = l[index].getPopup();
 
     if (pu != undefined && pu._content != undefined) {
       //get popup content
-      document.querySelector("textarea#popup").value = pu._content;
+      document.querySelector('textarea#popup').value = pu._content;
       //show popup
       l[index].bindPopup(pu._content, popup_option).openPopup();
       //close popup
@@ -181,12 +181,12 @@ const module = (() => {
         mainmarker.startup_marker_toggle = true;
         document.querySelector(
           "div#markers-option div[data-action='set_startup_marker']"
-        ).innerText = "unset startup marker";
+        ).innerText = 'unset startup marker';
         i = mainmarker.startup_markers.length;
       } else {
         document.querySelector(
           "div#markers-option div[data-action='set_startup_marker']"
-        ).innerText = "set startup marker";
+        ).innerText = 'set startup marker';
         mainmarker.startup_marker_toggle = false;
       }
     }
@@ -205,15 +205,15 @@ const module = (() => {
 
   //convert degree to direction
   let compass = function (degree) {
-    let a = "N";
-    if (degree == 0 || degree == 360) a = "North";
-    if (degree > 0 && degree < 90) a = "NorthEast";
-    if (degree == 90) a = "East";
-    if (degree > 90 && degree < 180) a = "SouthEast";
-    if (degree == 180) a = "South";
-    if (degree > 180 && degree < 270) a = "SouthWest";
-    if (degree == 270) a = "West";
-    if (degree > 270 && degree < 360) a = "NorthWest";
+    let a = 'N';
+    if (degree == 0 || degree == 360) a = 'North';
+    if (degree > 0 && degree < 90) a = 'NorthEast';
+    if (degree == 90) a = 'East';
+    if (degree > 90 && degree < 180) a = 'SouthEast';
+    if (degree == 180) a = 'South';
+    if (degree > 180 && degree < 270) a = 'SouthWest';
+    if (degree == 270) a = 'West';
+    if (degree > 270 && degree < 360) a = 'NorthWest';
     return a;
   };
 
@@ -222,14 +222,14 @@ const module = (() => {
   ///////////////////
 
   let startup_marker = function (markerid, action) {
-    if (action == "set") {
+    if (action == 'set') {
       if (!mainmarker.startup_marker_toggle) {
         mainmarker.startup_markers.push({ latlng: markerid._latlng });
         localStorage.setItem(
-          "startup_markers",
+          'startup_markers',
           JSON.stringify(mainmarker.startup_markers)
         );
-        helper.toaster("set as startup marker", 2000);
+        helper.toaster('set as startup marker', 2000);
       } else {
         for (let i = 0; i < mainmarker.startup_markers.length; i++) {
           if (
@@ -238,16 +238,16 @@ const module = (() => {
           ) {
             mainmarker.startup_markers.splice(i, 1);
             localStorage.setItem(
-              "startup_markers",
+              'startup_markers',
               JSON.stringify(mainmarker.startup_markers)
             );
-            helper.toaster("unset startup marker", 2000);
+            helper.toaster('unset startup marker', 2000);
           }
         }
       }
     }
 
-    if (action == "add") {
+    if (action == 'add') {
       if (mainmarker.startup_markers.length == 0) return false;
       mainmarker.startup_markers.forEach(function (index) {
         L.marker([index.latlng.lat, index.latlng.lng]).addTo(markers_group);
@@ -266,7 +266,7 @@ const module = (() => {
   };
 
   let path_option = {
-    color: "red",
+    color: 'red',
     step: 0,
   };
 
@@ -284,7 +284,7 @@ const module = (() => {
   );
 
   const measure_distance = function (action) {
-    if (action == "destroy") {
+    if (action == 'destroy') {
       status.path_selection = false;
       measure_group_path.clearLayers();
       measure_group.clearLayers();
@@ -292,24 +292,28 @@ const module = (() => {
       return true;
     }
 
-    if (action == "destroy_tracking") {
+    if (action == 'destroy_tracking') {
+      document.querySelector('div#coordinations div#tracking').style.display =
+        'none';
       tracking_group.clearLayers();
       polyline_tracking = L.polyline(tracking_latlngs, path_option).addTo(
         tracking_group
       );
       mainmarker.tracking = false;
-      localStorage.removeItem("tracking_cache");
+      localStorage.removeItem('tracking_cache');
       return true;
     }
 
-    if (action == "tracking") {
-      if (localStorage.getItem("tracking_cache") != null) {
+    if (action == 'tracking') {
+      document.querySelector('div#coordinations div#tracking').style.display =
+        'block';
+      if (localStorage.getItem('tracking_cache') != null) {
         if (
           window.confirm(
-            "looks like a tracking was aborted without saving it, would you like to continue?"
+            'looks like a tracking was aborted without saving it, would you like to continue?'
           )
         ) {
-          let d = localStorage.getItem("tracking_cache");
+          let d = localStorage.getItem('tracking_cache');
 
           d = JSON.parse(d);
 
@@ -322,14 +326,14 @@ const module = (() => {
             ]);
           }
         } else {
-          localStorage.removeItem("tracking_cache");
+          localStorage.removeItem('tracking_cache');
           tracking_cache = [];
         }
       } else {
       }
-      if (setting.tracking_screenlock) screenWakeLock("lock", "screen");
+      if (setting.tracking_screenlock) screenWakeLock('lock', 'screen');
 
-      screenWakeLock("lock", "gps");
+      screenWakeLock('lock', 'gps');
       let calc = 0;
 
       tracking_interval = setInterval(function () {
@@ -356,23 +360,26 @@ const module = (() => {
 
           calc += Number(tracking_distance);
 
-          document.querySelector("div#tracking-distance").innerText =
-            calc.toFixed(2) + " km";
+          document.querySelector('div#tracking-distance').innerText =
+            calc.toFixed(2) + ' km';
 
           //check if old tracking
           let k = JSON.stringify(tracking_cache);
 
-          localStorage.setItem("tracking_cache", k);
+          localStorage.setItem('tracking_cache', k);
         }
         if (mainmarker.tracking == false) {
           clearInterval(tracking_interval);
-          if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
-          screenWakeLock("unlock", "gps");
+          if (setting.tracking_screenlock) screenWakeLock('unlock', 'screen');
+          screenWakeLock('unlock', 'gps');
+          document.querySelector(
+            'div#coordinations div#tracking'
+          ).style.display = 'none';
         }
       }, 10000);
     }
 
-    if (action == "addMarker") {
+    if (action == 'addMarker') {
       status.path_selection = true;
       L.marker([mainmarker.current_lat, mainmarker.current_lng])
         .addTo(measure_group)
@@ -401,7 +408,7 @@ const module = (() => {
       parseFloat(calc);
 
       l[l.length - 1]
-        .bindPopup(calc.toString() + "km", popup_option)
+        .bindPopup(calc.toString() + 'km', popup_option)
         .openPopup();
     }
   };

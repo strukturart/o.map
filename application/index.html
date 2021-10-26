@@ -116,30 +116,31 @@
             <div id="heading"></div>
             <div id="compass"></div>
             <div id="accuracy">accuracy: +-<span></span> m </div> 
-
-            <strong><u>Tracking</u></strong>
-            <div id="tracking-distance"></div>
-
+            <div id="tracking">
+                <strong><u>Tracking</u></strong>
+                <div id="tracking-distance"></div>
+            </div>
+                    
 
             <strong><u>Distances</u></strong>
             <div id="distance"></div>
             <div id="target"></div>
             <div id="time"></div>
             <div id="weather">
-                <strong>weather forecast hourly</strong>
+                <strong><u>weather forecast hourly</u></strong>
                 <div class="flex">
-
                     <div id="temp"></div>
                     <div id="weather-description">  </div>
                 </div>
-                <br>
+            </div>
+                
                 <div id="sun">sun: 
                     <span>⬆</span>
                     <span id="sunrise"></span>
                     <span>⬇</span>
                     <span id="sunset"></span>
                 </div>
-            </div>
+            
         </div>
     </div>
 
@@ -404,6 +405,7 @@
 
 
   
+    <script defer src="assets/js/suncalc.js"></script>
 
     <script defer src="assets/js/wikilocation.js"></script>
     <script defer src="assets/js/jsQR.js"></script>
@@ -432,8 +434,10 @@
     <script defer src="assets/js/openweather.js"></script>
     <script defer src="assets/js/module.js"></script>
 
+
     <script defer src="assets/js/kaiads.v5.min.js"></script>
     <script defer src="assets/js/kaios-ads.js"></script>
+
 
 </body>
 

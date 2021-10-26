@@ -26,13 +26,13 @@
 }
 
 @font-face {
-  font-family: "Lato-Regular";
-  src: url("../fonts/Lato-Regular.ttf");
+  font-family: 'Lato-Regular';
+  src: url('../fonts/Lato-Regular.ttf');
 }
 
 html,
 body {
-  font-family: "Lato-Regular";
+  font-family: 'Lato-Regular';
   font-weight: 100;
   width: 100%;
   position: relative;
@@ -88,7 +88,7 @@ label {
   display: block;
 }
 
-input[type="checkbox"] {
+input[type='checkbox'] {
   width: 20px;
   height: 20px;
   background: #fcfff4;
@@ -622,6 +622,8 @@ div#markers-option div:focus {
 
 div#coordinations {
   position: absolute;
+  height: 100vh;
+  overflow: hidden;
   z-index: 5;
   left: 0;
   top: 0;
@@ -653,8 +655,10 @@ div#coordinations div#weather div {
   margin: 0px 0 0 -2px;
 }
 
-div#coordinations div#weather div img {
-  height: 35px;
-  position: absolute;
-  margin: -5px 0 0 0;
+div#coordinations div#tracking {
+  display: none;
+}
+
+div#coordinations div#sun {
+  margin: 10px 0 0 0;
 }
