@@ -54,12 +54,22 @@ let setting = {
   cache_time: localStorage.getItem('cache-time'),
   cache_zoom: localStorage.getItem('cache-zoom'),
   openweather_api: localStorage.getItem('owm-key'),
-  tracking_screenlock: JSON.parse(localStorage.getItem('tracking_screenlock')),
+  crosshair:
+    localStorage.getItem('crosshair') != null
+      ? JSON.parse(localStorage.getItem('crosshair'))
+      : true,
+  scale:
+    localStorage.getItem('scale') != null
+      ? JSON.parse(localStorage.getItem('scale'))
+      : true,
+  tracking_screenlock:
+    localStorage.getItem('tracking_screenlock') != null
+      ? JSON.parse(localStorage.getItem('tracking_screenlock'))
+      : true,
 };
 
-settings.load_settings();
-
 let status = {
+  visible: 'visible',
   caching_tiles_started: false,
   marker_selection: false,
   path_selection: false,
@@ -78,6 +88,9 @@ if (!navigator.geolocation) {
   helper.toaster("Your device does't support geolocation!", 2000);
 }
 
+settings.load_settings();
+
+console.log(setting);
 //////////////////////////////
 ////MOZ ACTIVITY////////////
 //////////////////////////////
@@ -123,15 +136,31 @@ L.control
     metric: true,
     imperial: false,
   })
-  .addTo(map);
+  .remove(map);
 
 map.on('load', function () {
   maps.attribution();
-
   maps.addMap(general.last_map, '', 18, 'map');
 });
 
 document.addEventListener('DOMContentLoaded', function () {
+  //show / hidde crosshair
+  setting.crosshair == true
+    ? (document.getElementById('cross').style.visibility = 'visible')
+    : (document.getElementById('cross').style.visibility = 'hidden');
+
+  if (setting.scale == true) {
+    L.control
+      .scale({
+        position: 'topright',
+        metric: true,
+        imperial: false,
+      })
+      .addTo(map);
+  } else {
+    L.control.scale().remove();
+  }
+
   //load KaiOs ads or not
 
   function manifest(a) {
@@ -153,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function () {
     build_menu();
     module.startup_marker('', 'add');
     getLocation('init');
-    helper.toaster('Press 3 to open the menu', 5000);
+    helper.toaster('Press Enter to open the menu', 5000);
     status.windowOpen = 'map';
   }, 5000);
 
@@ -524,10 +553,13 @@ document.addEventListener('DOMContentLoaded', function () {
         );
         document.querySelector('div#markers-option').style.display = 'none';
         status.windowOpen = 'map';
+        bottom_bar('', '', '');
       }
 
       if (item_value == 'set_startup_marker') {
         module.startup_marker(mainmarker.selected_marker, 'set');
+        status.windowOpen = 'map';
+        bottom_bar('', '', '');
       }
 
       if (item_value == 'remove_marker') {
@@ -536,6 +568,7 @@ document.addEventListener('DOMContentLoaded', function () {
         helper.toaster('marker removed', 4000);
         document.querySelector('div#markers-option').style.display = 'none';
         status.windowOpen = 'map';
+        bottom_bar('', '', '');
       }
 
       if (item_value == 'save_marker') {
@@ -571,8 +604,6 @@ document.addEventListener('DOMContentLoaded', function () {
         let item_maxzoom = document.activeElement.getAttribute('data-maxzoom');
 
         maps.addMap(item_url, item_attribution, item_maxzoom, item_type);
-
-        console.log(item_url, item_attribution, item_maxzoom, item_type);
 
         document.querySelector('div#finder').style.display = 'none';
         status.windowOpen = 'map';
@@ -631,14 +662,18 @@ document.addEventListener('DOMContentLoaded', function () {
           document.querySelector('div#finder').style.display = 'none';
           save_mode = 'geojson-single';
           user_input('open');
-          bottom_bar('cancel', '', 'save');
+          setTimeout(function () {
+            bottom_bar('cancel', '', 'save');
+          }, 1000);
         }
 
         if (item_value == 'export') {
           document.querySelector('div#finder').style.display = 'none';
           save_mode = 'geojson-collection';
           user_input('open');
-          bottom_bar('cancel', '', 'save');
+          setTimeout(function () {
+            bottom_bar('cancel', '', 'save');
+          }, 1000);
         }
 
         if (item_value == 'read-qr-marker') {
@@ -649,6 +684,7 @@ document.addEventListener('DOMContentLoaded', function () {
             let slug = callback;
             helper.toaster(slug, 3000);
             module.link_to_marker(slug);
+            status.windowOpen = 'map';
           });
         }
 
@@ -1162,6 +1198,11 @@ document.addEventListener('DOMContentLoaded', function () {
           document.querySelector('div#coordinations').style.display = 'none';
           status.windowOpen = 'map';
           status.marker_selection = false;
+          document.activeElement.blur();
+
+          setting.crosshair == 'true'
+            ? (document.getElementById('cross').style.visibility = 'visible')
+            : (document.getElementById('cross').style.visibility = 'hidden');
 
           top_bar('', '', '');
           bottom_bar('', '', '');
@@ -1195,9 +1236,11 @@ document.addEventListener('DOMContentLoaded', function () {
           break;
         }
 
-        if (status.marker_selection == true) {
+        if (status.windowOpen == 'marker') {
           bottom_bar('', '', '');
           status.marker_selection = false;
+          status.windowOpen = 'map';
+          document.getElementById('markers-option').style.display = 'none';
         }
 
         if (status.windowOpen == 'user-input') {
@@ -1306,6 +1349,11 @@ document.addEventListener('DOMContentLoaded', function () {
         break;
 
       case 'Enter':
+        if (status.windowOpen == 'map') {
+          open_finder();
+          status.windowOpen = 'finder';
+          break;
+        }
         if (
           document.activeElement.tagName == 'BUTTON' &&
           document.activeElement.classList.contains('link')
@@ -1316,7 +1364,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (document.activeElement.classList.contains('input-parent')) {
           document.activeElement.children[0].focus();
-          settings.save_chk();
+          settings.save_chk(
+            document.activeElement.id,
+            document.activeElement.value
+          );
         }
 
         if (
@@ -1332,8 +1383,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (status.windowOpen == 'search') {
           map.setView([olc_lat_lng[0], olc_lat_lng[1]]);
           search.hideSearch();
-          current_lat = Number(olc_lat_lng[0]);
-          current_lng = Number(olc_lat_lng[1]);
+          mainmarker.current_lat = Number(olc_lat_lng[0]);
+          mainmarker.current_lng = Number(olc_lat_lng[1]);
           helper.toaster('press 5 to save the marker', 2000);
           break;
         }
@@ -1372,7 +1423,7 @@ document.addEventListener('DOMContentLoaded', function () {
           break;
         }
 
-        if (status.windowOpen == 'map' && status.marker_selection) {
+        if (status.windowOpen == 'marker') {
           document.querySelector('div#markers-option').style.display = 'block';
           document.querySelector('div#markers-option').children[0].focus();
           finder_tabindex();
@@ -1395,6 +1446,7 @@ document.addEventListener('DOMContentLoaded', function () {
           mainmarker.selected_marker != ''
         ) {
           markers_action();
+
           break;
         }
 
@@ -1439,8 +1491,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
       case '3':
         if (status.windowOpen == 'map') {
-          open_finder();
-          status.windowOpen = 'finder';
         }
 
         break;
@@ -1547,6 +1597,7 @@ document.addEventListener('DOMContentLoaded', function () {
   ////////////////////////////////
 
   function handleKeyDown(evt) {
+    if (status.visible === 'hidden') return false;
     if (evt.key === 'Backspace' && status.windowOpen !== 'map') {
       evt.preventDefault();
     }
@@ -1572,6 +1623,8 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function handleKeyUp(evt) {
+    if (status.visible === 'hidden') return false;
+
     evt.preventDefault();
 
     if (evt.key == 'Backspace') evt.preventDefault();
@@ -1593,4 +1646,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
   document.addEventListener('keydown', handleKeyDown);
   document.addEventListener('keyup', handleKeyUp);
+
+  document.addEventListener('visibilitychange', function () {
+    console.log(document.visibilityState);
+    setTimeout(function () {
+      status.visible = document.visibilityState;
+    }, 1000);
+  });
 });

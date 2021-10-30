@@ -251,7 +251,6 @@ div#toast {
   min-width: 100%;
   padding: 5px;
   top: 0px;
-  //display:none;
 
   transition: all 0.5s ease-in-out;
   transform-origin: left top;
@@ -309,8 +308,28 @@ div#cross {
   opacity: 100;
 }
 
-/*crosshair*/
+div#menu {
+  position: absolute;
+  bottom: 5px;
+  width: 22px;
+  height: 22px;
 
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  z-index: 3;
+}
+
+div#menu div {
+  width: 8px;
+  height: 8px;
+  background: rgb(58, 57, 57);
+}
+
+/*crosshair*/
+div#cross {
+}
 div#cross div#cross-inner {
   position: relative;
 }

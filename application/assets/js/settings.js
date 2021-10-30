@@ -1,56 +1,68 @@
 const settings = ((_) => {
   let save_settings = function () {
-    localStorage.setItem("owm-key", document.getElementById("owm-key").value);
+    localStorage.setItem('owm-key', document.getElementById('owm-key').value);
     localStorage.setItem(
-      "cache-time",
-      document.getElementById("cache-time").value
+      'cache-time',
+      document.getElementById('cache-time').value
     );
     localStorage.setItem(
-      "cache-zoom",
-      document.getElementById("cache-zoom").value
+      'cache-zoom',
+      document.getElementById('cache-zoom').value
     );
     localStorage.setItem(
-      "export-path",
-      document.getElementById("export-path").value
+      'export-path',
+      document.getElementById('export-path').value
     );
 
-    helper.toaster("saved successfully", 2000);
+    helper.toaster('saved successfully', 2000);
   };
 
-  let save_chk = function () {
-    let p = document.getElementById("screenlock-ckb");
+  let save_chk = function (id, localstorage_name) {
+    let p = document.getElementById(id, localstorage_name);
     p.checked = !p.checked;
     if (p.checked) {
-      localStorage.setItem("tracking_screenlock", "true");
+      localStorage.setItem(localstorage_name, 'true');
+      setting[localstorage_name] = 'true';
     } else {
-      localStorage.setItem("tracking_screenlock", "false");
+      localStorage.setItem(localstorage_name, 'false');
+      setting[localstorage_name] = 'false';
     }
   };
 
   let load_settings = function () {
-    document.getElementById("owm-key").value = setting.openweather_api;
-    document.getElementById("cache-time").value = setting.cache_time;
-    document.getElementById("cache-zoom").value = setting.cache_zoom;
-    document.getElementById("export-path").value = setting.export_path;
-    if (setting.tracking_screenlock)
-      document.getElementById("screenlock-ckb").checked = true;
+    document.getElementById('owm-key').value = setting.openweather_api;
+    document.getElementById('cache-time').value = setting.cache_time;
+    document.getElementById('cache-zoom').value = setting.cache_zoom;
+    document.getElementById('export-path').value = setting.export_path;
+
+    
+    setting.tracking_screenlock
+      ? (document.getElementById('screenlock-ckb').checked = true)
+      : (document.getElementById('screenlock-ckb').checked = false);
+    setting.crosshair
+      ? (document.getElementById('crosshair-ckb').checked = true)
+      : (document.getElementById('crosshair-ckb').checked = false);
+
+    setting.scale
+      ? (document.getElementById('scale-ckb').checked = true)
+      : (document.getElementById('scale-ckb').checked = false);
   };
 
   let load_settings_from_file = function () {
-    helper.toaster("search setting file", 2000);
+    helper.toaster('search setting file', 2000);
     //search gpx
     let load_file = new Applait.Finder({
-      type: "sdcard",
+      type: 'sdcard',
       debugMode: true,
     });
 
-    load_file.search("omap_settings.json");
-    load_file.on("searchComplete", function (needle, filematchcount) {});
-    load_file.on("error", function (message, err) {
-      helper.toaster("file not found", 2000);
+    load_file.search('omap_settings.json');
+    load_file.on('searchComplete', function (needle, filematchcount) {});
+    load_file.on('error', function (message, err) {
+      helper.toaster('file not found', 2000);
     });
 
-    load_file.on("fileFound", function (file, fileinfo, storageName) {
+    load_file.on('fileFound', function (file, fileinfo, storageName) {
       let reader = new FileReader();
 
       reader.readAsText(file);
@@ -75,25 +87,25 @@ const settings = ((_) => {
   };
 
   let export_settings = function () {
-    var sdcard = navigator.getDeviceStorage("sdcard");
+    var sdcard = navigator.getDeviceStorage('sdcard');
 
-    var request_del = sdcard.delete("omap_settings.json");
+    var request_del = sdcard.delete('omap_settings.json');
     request_del.onsuccess = function () {};
     setTimeout(function () {
       let data = JSON.stringify(setting);
-      var file = new Blob(["[" + data + "]"], {
-        type: "application/json",
+      var file = new Blob(['[' + data + ']'], {
+        type: 'application/json',
       });
 
-      var request = sdcard.addNamed(file, "omap_settings.json");
+      var request = sdcard.addNamed(file, 'omap_settings.json');
 
       request.onsuccess = function () {
         var name = this.result;
-        helper.toaster("settings exported, omap_settings.json", 5000);
+        helper.toaster('settings exported, omap_settings.json', 5000);
       };
 
       request.onerror = function () {
-        helper.toaster("Unable to write the file", 2000);
+        helper.toaster('Unable to write the file', 2000);
       };
     }, 2000);
   };

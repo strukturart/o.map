@@ -7,11 +7,14 @@ const module = (() => {
     //remove !numbers
     current_lat = current_lat.replace(/[A-Za-z?=&]+/gi, '');
     current_lng = current_lng.replace(/[A-Za-z?=&]+/gi, '');
-    current_lat = Number(current_lat);
-    current_lng = Number(current_lng);
+    mainmarker.current_lat = Number(current_lat);
+    mainmarker.current_lng = Number(current_lng);
 
     //myMarker = L.marker([current_lat, current_lng]).addTo(map);
-    map.setView([current_lat, current_lng]);
+    map.setView([current_lat, current_lng], 14);
+    L.marker([mainmarker.current_lat, mainmarker.current_lng]).addTo(
+      markers_group
+    );
   };
 
   /////////////////////////
@@ -127,6 +130,7 @@ const module = (() => {
   let index = -1;
   let select_marker = function () {
     status.marker_selection = true;
+    status.windowOpen = 'marker';
 
     let l = markers_group.getLayers();
     index++;
@@ -199,7 +203,6 @@ const module = (() => {
   let calc_distance = function (from_lat, from_lng, to_lat, to_lng) {
     let d = map.distance([from_lat, from_lng], [to_lat, to_lng]);
     d = Math.ceil(d);
-
     return d;
   };
 
