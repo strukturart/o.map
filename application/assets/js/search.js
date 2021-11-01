@@ -1,16 +1,16 @@
-"use strict";
+'use strict';
 
 let olc_lat_lng;
-let ac = "";
+let ac = '';
 
 //https://www.devbridge.com/sourcery/components/jquery-autocomplete/
 $(document).ready(function () {
-  ac = $("#search").autocomplete({
+  ac = $('#search').autocomplete({
     serviceUrl:
-      "https://nominatim.openstreetmap.org/search?format=json&addressdetails=0",
+      'https://nominatim.openstreetmap.org/search?format=json&addressdetails=0',
     minChars: 1,
     showNoSuggestionNotice: true,
-    paramName: "q",
+    paramName: 'q',
     lookupLimit: 10,
     deferRequestBy: 1000,
     transformResult: function (response) {
@@ -28,11 +28,11 @@ $(document).ready(function () {
     onSearchStart: function () {},
     onSearchError: function (query, jqXHR, textStatus, errorThrown) {
       helper.toaster(
-        "it looks like your device is not connected to the internet"
+        'it looks like your device is not connected to the internet'
       );
 
       helper.allow_unsecure(
-        "https://nominatim.openstreetmap.org/search?format=json&addressdetails=0&q=berlin"
+        'https://nominatim.openstreetmap.org/search?format=json&addressdetails=0&q=berlin'
       );
     },
     onSelect: function (suggestion) {
@@ -45,9 +45,9 @@ $(document).ready(function () {
       mainmarker.current_lat = n.lat;
       mainmarker.current_lng = n.lng;
 
-      $("#search").autocomplete("clear");
+      $('#search').autocomplete('clear');
 
-      helper.toaster("press 9 to add an marker", 3000);
+      helper.toaster('press 9 to add an marker', 3000);
     },
   });
 });
@@ -56,72 +56,74 @@ $(document).ready(function () {
 /////////////////////////
 const search = (() => {
   let showSearch = function () {
-    bottom_bar("close", "select", "");
-    document.querySelector("div#search-box").style.display = "block";
-    document.querySelector("div#search-box input").focus();
-    document.querySelector("div#bottom-bar").style.display = "block";
+    bottom_bar('close', 'select', '');
+    document.querySelector('div#search-box').style.display = 'block';
+    document.querySelector('div#search-box input').focus();
+    document.querySelector('div#bottom-bar').style.display = 'block';
 
-    status.windowOpen = "search";
-    setTimeout(function () {}, 3000);
+    status.windowOpen = 'search';
   };
 
   let hideSearch = function () {
-    document.querySelector("div#bottom-bar").style.display = "none";
-    document.querySelector("div#search-box").style.display = "none";
-    document.querySelector("div#search-box input").value = "";
-    document.querySelector("div#search-box input").blur();
-    document.querySelector("div#olc").style.display = "none";
-    status.windowOpen = "map";
+    document.querySelector('div#bottom-bar').style.display = 'none';
+    document.querySelector('div#search-box').style.display = 'none';
+    document.querySelector('div#search-box input').value = '';
+    document.querySelector('div#search-box input').blur();
+    document.querySelector('div#olc').style.display = 'none';
+
+    setTimeout(function () {
+      status.windowOpen = 'map';
+    }, 1000);
   };
 
   //////////////////////////
   ////OLC////////////
   /////////////////////////
 
-  document.getElementById("search").addEventListener("input", function () {
-    let input_val = document.querySelector("input#search").value;
+  document.getElementById('search').addEventListener('input', function () {
+    let input_val = document.querySelector('input#search').value;
 
-    if (input_val.startsWith("/")) {
-      document.getElementById("search-info").style.display = "none";
+    if (input_val.startsWith('/')) {
+      document.getElementById('search-info').style.display = 'none';
 
-      input_val = input_val.replace("/", "");
-      $("#search").autocomplete().disable();
+      input_val = input_val.replace('/', '');
+      $('#search').autocomplete().disable();
 
-      document.querySelector("div#olc").style.display = "block";
-      document.querySelector("#olc").innerText = OLC.decode(input_val);
+      document.querySelector('div#olc').style.display = 'block';
+      document.querySelector('#olc').innerText = OLC.decode(input_val);
 
       let ll = String(OLC.decode(input_val));
 
-      if (ll.includes("NaN") == false) {
-        olc_lat_lng = ll.split(",");
+      if (ll.includes('NaN') == false) {
+        olc_lat_lng = ll.split(',');
         map.setView([olc_lat_lng[0], olc_lat_lng[1]]);
 
         mainmarker.current_lat = olc_lat_lng[0];
         mainmarker.current_lng = olc_lat_lng[1];
       }
 
-      helper.toaster("press 9 to add an marker", 3000);
+      helper.toaster('press 9 to add an marker', 3000);
 
       return true;
     }
 
-    if (input_val.startsWith("+")) {
-      let d = input_val.replace("+", "");
-      d = d.split(",");
+    if (input_val.startsWith('+')) {
+      let d = input_val.replace('+', '');
+      d = d.split(',');
 
       mainmarker.current_lat = d[0];
       mainmarker.current_lng = d[1];
-      $("#search").autocomplete("clear");
-      $("#search").autocomplete().disable();
+      $('#search').autocomplete('clear');
+      $('#search').autocomplete().disable();
 
       map.setView([d[0], d[1]]);
-      document.getElementById("search-info").style.display = "none";
+      document.getElementById('search-info').style.display = 'none';
       return true;
     }
 
-    document.querySelector("div.autocomplete-suggestions").style.display =
-      "block";
-    document.querySelector("div#olc").style.display = "none";
+    document.querySelector('div.autocomplete-suggestions').style.display =
+      'block';
+    document.querySelector('div#olc').style.display = 'none';
     ac.autocomplete().enable();
   });
 

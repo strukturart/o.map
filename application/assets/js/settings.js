@@ -22,10 +22,10 @@ const settings = ((_) => {
     p.checked = !p.checked;
     if (p.checked) {
       localStorage.setItem(localstorage_name, 'true');
-      setting[localstorage_name] = 'true';
+      setting[localstorage_name] = true;
     } else {
       localStorage.setItem(localstorage_name, 'false');
-      setting[localstorage_name] = 'false';
+      setting[localstorage_name] = false;
     }
   };
 
@@ -35,7 +35,6 @@ const settings = ((_) => {
     document.getElementById('cache-zoom').value = setting.cache_zoom;
     document.getElementById('export-path').value = setting.export_path;
 
-    
     setting.tracking_screenlock
       ? (document.getElementById('screenlock-ckb').checked = true)
       : (document.getElementById('screenlock-ckb').checked = false);
@@ -46,6 +45,18 @@ const settings = ((_) => {
     setting.scale
       ? (document.getElementById('scale-ckb').checked = true)
       : (document.getElementById('scale-ckb').checked = false);
+
+    //show / hidde crosshair
+    setting.crosshair
+      ? (document.getElementById('cross').style.visibility = 'visible')
+      : (document.getElementById('cross').style.visibility = 'hidden');
+    ///show / hidde scale
+
+    if (setting.scale) {
+      scale.addTo(map);
+    } else {
+      scale.remove();
+    }
   };
 
   let load_settings_from_file = function () {

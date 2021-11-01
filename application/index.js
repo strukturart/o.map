@@ -88,8 +88,6 @@ if (!navigator.geolocation) {
   helper.toaster("Your device does't support geolocation!", 2000);
 }
 
-settings.load_settings();
-
 console.log(setting);
 //////////////////////////////
 ////MOZ ACTIVITY////////////
@@ -130,13 +128,11 @@ let map = L.map('map-container', {
   keyboard: true,
 });
 
-L.control
-  .scale({
-    position: 'topright',
-    metric: true,
-    imperial: false,
-  })
-  .remove(map);
+let scale = L.control.scale({
+  position: 'topright',
+  metric: true,
+  imperial: false,
+});
 
 map.on('load', function () {
   maps.attribution();
@@ -144,24 +140,8 @@ map.on('load', function () {
 });
 
 document.addEventListener('DOMContentLoaded', function () {
-  //show / hidde crosshair
-  setting.crosshair == true
-    ? (document.getElementById('cross').style.visibility = 'visible')
-    : (document.getElementById('cross').style.visibility = 'hidden');
-
-  if (setting.scale == true) {
-    L.control
-      .scale({
-        position: 'topright',
-        metric: true,
-        imperial: false,
-      })
-      .addTo(map);
-  } else {
-    L.control.scale().remove();
-  }
-
   //load KaiOs ads or not
+  settings.load_settings();
 
   function manifest(a) {
     document.getElementById('intro-footer').innerText =
@@ -618,14 +598,6 @@ document.addEventListener('DOMContentLoaded', function () {
           maps.weather_map();
           document.querySelector('div#finder').style.display = 'none';
           status.windowOpen = 'map';
-        }
-
-        if (item_value == 'otm') {
-          map.removeLayer(tilesLayer);
-          maps.opentopo_map();
-          document.querySelector('div#finder').style.display = 'none';
-          status.windowOpen = 'map';
-          maps.attribution();
         }
 
         if (item_value == 'earthquake') {
@@ -1200,9 +1172,7 @@ document.addEventListener('DOMContentLoaded', function () {
           status.marker_selection = false;
           document.activeElement.blur();
 
-          setting.crosshair == 'true'
-            ? (document.getElementById('cross').style.visibility = 'visible')
-            : (document.getElementById('cross').style.visibility = 'hidden');
+          settings.load_settings();
 
           top_bar('', '', '');
           bottom_bar('', '', '');

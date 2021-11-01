@@ -51,14 +51,14 @@ p {
 }
 
 h1 {
-  font-size: 1.1rem;
+  font-size: 1rem;
   margin: 25px 0 5px 0;
   color: gray;
   text-transform: uppercase;
 }
 
 h2 {
-  font-size: 1.1rem;
+  font-size: 1rem;
   margin: 25px 0 5px 0;
   color: gray;
   text-transform: uppercase;
@@ -93,6 +93,51 @@ input[type='checkbox'] {
   height: 20px;
   background: #fcfff4;
   border-radius: 50px;
+  opacity: 0;
+}
+
+div.ckb-icon {
+  background: rgb(203, 209, 201);
+  width: 40px;
+  height: 20px;
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  margin-top: -10px;
+  opacity: 0.6;
+}
+
+div.toogle-button {
+  background: rgb(105, 110, 102);
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  position: absolute;
+
+  right: 23px;
+  top: 50%;
+  margin-top: -8px;
+  z-index: 3;
+}
+input[type='checkbox']:checked ~ div.ckb-icon {
+  background: rgb(255, 255, 255);
+  opacity: 1;
+}
+
+input[type='checkbox']:checked ~ div.toogle-button {
+  right: 7px;
+}
+
+input:focus {
+  background: var(--color-three);
+}
+
+.input-parent:focus {
+  background: var(--color-three);
+}
+
+.input-parent {
+  position: relative;
 }
 
 div.textarea-footer {
@@ -259,14 +304,6 @@ div#toast {
 
 /*/ ////////////////
 USER INPUT////////////////*/
-
-input:focus {
-  background: var(--color-three);
-}
-
-.input-parent:focus {
-  background: var(--color-three);
-}
 
 div#user-input {
   position: fixed;
