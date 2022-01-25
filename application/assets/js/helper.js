@@ -1,3 +1,7 @@
+if (window.NodeList && !NodeList.prototype.forEach) {
+  NodeList.prototype.forEach = Array.prototype.forEach;
+}
+
 const helper = (() => {
   let isOnline = function () {
     var xhttp = new XMLHttpRequest({
@@ -226,9 +230,8 @@ function localStorageWriteRead(item, value) {
 //bottom bar
 function bottom_bar(left, center, right) {
   document.querySelector("div#bottom-bar div#button-left").textContent = left;
-  document.querySelector(
-    "div#bottom-bar div#button-center"
-  ).textContent = center;
+  document.querySelector("div#bottom-bar div#button-center").textContent =
+    center;
   document.querySelector("div#bottom-bar div#button-right").textContent = right;
 
   if (left == "" && center == "" && right == "") {
