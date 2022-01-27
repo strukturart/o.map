@@ -60,7 +60,7 @@ const maps = (() => {
       //console.log("Cache miss: ", ev.url);
     });
     tilesLayer.on("tilecacheerror", function (ev) {
-      //console.log("Cache error: ", ev.tile, ev.error);
+      console.log("Cache error: ", ev.tile, ev.error);
     });
   };
 
@@ -120,177 +120,83 @@ const maps = (() => {
       });
   };
 
-  //https://stackoverflow.com/questions/37229561/how-to-import-export-database-from-pouchdb
-  function export_mapdata() {
-    tilesLayer._db
-      .info()
-      .then(function (result) {
-        console.log(result);
-      })
-      .catch(function (err) {
-        console.log(err);
+  let attribution = function () {
+    document.querySelector(".leaflet-control-attribution").style.display =
+      "block";
+    setTimeout(function () {
+      document.querySelector(".leaflet-control-attribution").style.display =
+        "none";
+    }, 8000);
+  };
+
+  let overlayer = "";
+
+  let addMap = function (url, attribution, max_zoom, type) {
+    //map
+    if (type == "map") {
+      if (map.hasLayer(tilesLayer)) {
+        map.removeLayer(tilesLayer);
+      }
+
+      tilesLayer = L.tileLayer(url, {
+        useCache: true,
+        saveToCache: false,
+        crossOrigin: true,
+        cacheMaxAge: caching_time,
+        useOnlyCache: false,
+        maxZoom: max_zoom,
+        attribution: attribution,
       });
 
-    tilesLayer._db
-      .allDocs({
-        include_docs: true,
-        attachments: true,
-      })
-      .then(function (result) {
-        console.log(result);
-      })
-      .catch(function (err) {
-        console.log(err);
-      });
-  }
+      map.addLayer(tilesLayer);
+      caching_events();
+      localStorage.setItem("last_map", url);
 
-  function import_mapdata({
-    target: {
-      files: [file],
-    },
-  }) {
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = ({ target: { result } }) => {
-        db.bulkDocs(
-          JSON.parse(result),
-          { new_edits: false }, // not change revision
-          (...args) => console.log("DONE", args)
-        );
-      };
-      reader.readAsText(file);
+      if (helper.isOnline == true) {
+        tilesLayer.on("tileerror", function (error, tile) {
+          url = url.replace("{z}", "1");
+          url = url.replace("{y}", "1");
+          url = url.replace("{x}", "1");
+
+          helper.allow_unsecure(url);
+        });
+      }
+
+      document.querySelector(".leaflet-control-attribution").style.display =
+        "block";
+      setTimeout(function () {
+        document.querySelector(".leaflet-control-attribution").style.display =
+          "none";
+      }, 8000);
     }
-  }
+    //overlayer
+    if (type == "overlayer") {
+      if (map.hasLayer(overlayer)) {
+        map.removeLayer(overlayer);
+        return false;
+      }
 
-  function moon_map() {
-    tilesUrl =
-      "https://cartocdn-gusc.global.ssl.fastly.net/opmbuilder/api/v1/map/named/opm-moon-basemap-v0-1/all/{z}/{x}/{y}.png";
-    tilesLayer = L.tileLayer(tilesUrl, {
-      useCache: true,
-      saveToCache: false,
-      crossOrigin: true,
-      cacheMaxAge: caching_time,
-      useOnlyCache: false,
-      maxZoom: 12,
-      minZoom: 2,
-      attribution:
-        'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-        '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
-    });
-
-    map.addLayer(tilesLayer);
-    caching_events();
-
-    localStorage.setItem("last_map", "moon_map");
-  }
-
-  function terrain_map() {
-    tilesUrl = "https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png";
-    tilesLayer = L.tileLayer(tilesUrl, {
-      useCache: true,
-      saveToCache: false,
-      crossOrigin: true,
-      cacheMaxAge: caching_time,
-      useOnlyCache: false,
-      maxZoom: 16,
-      attribution:
-        "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL",
-    });
-
-    map.addLayer(tilesLayer);
-    caching_events();
-    localStorage.setItem("last_map", "terrain_map");
-  }
-
-  function opentopo_map() {
-    tilesUrl = "https://tile.opentopomap.org/{z}/{x}/{y}.png";
-    tilesLayer = L.tileLayer(tilesUrl, {
-      useCache: true,
-      saveToCache: false,
-      crossOrigin: true,
-      cacheMaxAge: caching_time,
-      useOnlyCache: false,
-      maxZoom: 17,
-      attribution:
-        "Map data &copy;<div> © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)</div>",
-    });
-
-    map.addLayer(tilesLayer);
-    caching_events();
-    localStorage.setItem("last_map", "opentopo_map");
-
-    if (helper.isOnline == true) {
-      console.log("check");
-      tilesLayer.on("tileerror", function (error, tile) {
-        helper.allow_unsecure("https://tile.opentopomap.org/1/1/1.png");
+      overlayer = L.tileLayer(url, {
+        useCache: true,
+        saveToCache: false,
+        crossOrigin: true,
+        cacheMaxAge: caching_time,
+        useOnlyCache: false,
+        maxZoom: max_zoom,
+        attribution: attribution,
       });
+
+      map.addLayer(overlayer);
+      caching_events();
     }
-  }
+  };
 
-  function satellite_map() {
-    tilesUrl =
-      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
-    tilesLayer = L.tileLayer(tilesUrl, {
-      useCache: true,
-      saveToCache: false,
-      crossOrigin: true,
-      cacheMaxAge: caching_time,
-      useOnlyCache: false,
-      maxZoom: 16,
-
-      attribution:
-        "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
-    });
-
-    map.addLayer(tilesLayer);
-    caching_events();
-    localStorage.setItem("last_map", "satellite_map");
-  }
-
-  function osm_map() {
-    tilesUrl = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-    tilesLayer = L.tileLayer(tilesUrl, {
-      useCache: true,
-      saveToCache: false,
-      crossOrigin: true,
-      cacheMaxAge: caching_time,
-      useOnlyCache: false,
-      maxZoom: 18,
-
-      attribution:
-        'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-        '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
-    });
-
-    map.addLayer(tilesLayer);
-    caching_events();
-    localStorage.setItem("last_map", "osm_map");
-  }
-
-  let railwayLayer;
-  function railway_layer() {
-    if (map.hasLayer(railwayLayer)) {
-      map.removeLayer(railwayLayer);
+  map.on("layeradd", function (event) {
+    if (map.hasLayer(overlayer)) {
+      overlayer.bringToFront();
       return false;
     }
-
-    tilesUrl = "https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png";
-
-    railwayLayer = L.tileLayer(tilesUrl, {
-      useCache: true,
-      saveToCache: false,
-      crossOrigin: true,
-      cacheMaxAge: caching_time,
-      useOnlyCache: false,
-      maxZoom: 18,
-
-      attribution:
-        'Daten <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap-Mitwirkende</a>, Grafik: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>',
-    });
-
-    map.addLayer(railwayLayer);
-    caching_events();
-  }
+  });
 
   function formatDate(date, format) {
     const map = {
@@ -302,15 +208,6 @@ const maps = (() => {
 
     return format.replace(/mm|dd|yy|yyy/gi, (matched) => map[matched]);
   }
-
-  let attribution = function () {
-    document.querySelector(".leaflet-control-attribution").style.display =
-      "block";
-    setTimeout(function () {
-      document.querySelector(".leaflet-control-attribution").style.display =
-        "none";
-    }, 8000);
-  };
 
   let markers_group_eq = new L.FeatureGroup();
   let earthquake_layer = function () {
@@ -577,16 +474,10 @@ const maps = (() => {
     select_icon,
     tracking_icon,
     attribution,
-    moon_map,
     earthquake_layer,
-    terrain_map,
-    opentopo_map,
-    osm_map,
     weather_map,
-    satellite_map,
-    railway_layer,
     caching_tiles,
     delete_cache,
-    export_mapdata,
+    addMap,
   };
 })();

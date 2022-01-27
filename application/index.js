@@ -36,16 +36,6 @@ let mainmarker = {
       : [0, 0],
 };
 
-let general = {
-  step: 0.001,
-  zoomlevel: 12,
-  ads: false,
-  last_map:
-    localStorage.getItem("last_map") != null
-      ? localStorage.getItem("last_map")
-      : "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-};
-
 let setting = {
   export_path:
     localStorage.getItem("export-path") != null
@@ -73,7 +63,22 @@ let setting = {
       : true,
 };
 
-console.log(setting);
+let general = {
+  step: 0.001,
+  zoomlevel: 12,
+  ads: false,
+  measurement_unit: "km",
+  last_map:
+    localStorage.getItem("last_map") != null
+      ? localStorage.getItem("last_map")
+      : "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+};
+
+setting.measurement == true
+  ? (general.measurement_unit = "km")
+  : (general.measurement_unit = "mil");
+
+console.log(general);
 
 let status = {
   visible: "visible",
@@ -122,9 +127,10 @@ document.addEventListener("DOMContentLoaded", function () {
       "O.MAP Version " + a.manifest.version;
     if (a.installOrigin == "app://kaios-plus.kaiostech.com") {
       general.ads = true;
-      document.querySelector("#ad-container iframe").src = "ads.html";
+      document.querySelector("#ads-container iframe").src = "ads.html";
     } else {
       console.log("Ads free");
+
       let t = document.getElementById("kaisos-ads");
       t.remove();
     }
@@ -728,19 +734,19 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("sunrise").innerText = sunrise;
         document.getElementById("sunset").innerText = sunset;
         //distance to current position
-
         let calc = module.calc_distance(
           mainmarker.device_lat,
           mainmarker.device_lng,
           f.lat,
-          f.lng
+          f.lng,
+          general.measurement_unit
         );
         calc = calc / 1000;
         calc.toFixed(2);
         parseFloat(calc);
 
         document.querySelector("div#coordinations div#distance").innerText =
-          "to device: " + calc + " km";
+          "to device: " + calc + " " + general.measurement_unit;
 
         //accurancy
         document.querySelector(
@@ -780,7 +786,8 @@ document.addEventListener("DOMContentLoaded", function () {
             mainmarker.device_lat,
             mainmarker.device_lng,
             mainmarker.target_marker.lat,
-            mainmarker.target_marker.lng
+            mainmarker.target_marker.lng,
+            general.measurement_unit
           );
           calc = calc / 1000;
           calc.toFixed(2);
@@ -788,7 +795,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
           let k = document.querySelector("div#target");
           k.style.display = "block";
-          k.innerText = "to the goal marker: " + calc + " km";
+          k.innerText =
+            "to the goal marker: " + calc + " " + general.measurement_unit;
         }
 
         document.querySelector("div#coordinations div#compass").style.display =
@@ -930,9 +938,9 @@ document.addEventListener("DOMContentLoaded", function () {
   let finder_navigation = function (dir) {
     tabIndex = 0;
 
-    for (let b = 0; b < panels.length; b++) {
-      panels[b].style.display = "none";
-    }
+    panels.forEach(function (e) {
+      e.style.display = "none";
+    });
 
     if (dir == "start") {
       document.getElementById(finder_panels[count].id).style.display = "block";
@@ -941,13 +949,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (dir == "+1") {
       count++;
-      if (count > finder_panels.length - 1) count = finder_panels.length - 1;
+      if (count == finder_panels.length) count = 0;
       document.getElementById(finder_panels[count].id).style.display = "block";
       finder_tabindex();
     }
     if (dir == "-1") {
       count--;
-      if (count < 0) count = 0;
+      if (count < 0) count = finder_panels.length - 1;
       document.getElementById(finder_panels[count].id).style.display = "block";
       finder_tabindex();
     }

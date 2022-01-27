@@ -73,7 +73,15 @@
     </div>
 
 
-    <div id="map-container"></div>
+    <div id="map-container">
+      
+    </div>
+    <div id="menu" class="flex justify-content-spacebetween">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
 
 
     <div id="cross">
@@ -116,30 +124,30 @@
             <div id="heading"></div>
             <div id="compass"></div>
             <div id="accuracy">accuracy: +-<span></span> m </div> 
-
-            <strong><u>Tracking</u></strong>
-            <div id="tracking-distance"></div>
-
+            <div id="tracking">
+                <strong><u>Tracking</u></strong>
+                <div id="tracking-distance"></div>
+            </div>
+                    
 
             <strong><u>Distances</u></strong>
             <div id="distance"></div>
             <div id="target"></div>
             <div id="time"></div>
             <div id="weather">
-                <strong>weather forecast hourly</strong>
+                <strong><u>weather forecast hourly</u></strong>
                 <div class="flex">
-
                     <div id="temp"></div>
                     <div id="weather-description">  </div>
                 </div>
-                <br>
+            </div>
+                
                 <div id="sun">sun: 
                     <span>⬆</span>
                     <span id="sunrise"></span>
                     <span>⬇</span>
                     <span id="sunset"></span>
                 </div>
-            </div>
         </div>
     </div>
 
@@ -198,33 +206,56 @@
                 <input  type="tel" pattern="^[0-9]*$" id="cache-time" />
             </div>
 
+            <h2>Crosshair</h2>
+            <div class="item input-parent flex" tabindex="3">
+                <label for="crosshair-ckb" class="grid-col-14">show crosshair ?</label>
+                <input class="checkboxes grid-col-2" type="checkbox" id="crosshair-ckb"  value="crosshair">
+                <div class="ckb-icon"></div>
+                <div class="toogle-button"></div>
+            </div>
+
+            <h2>Scale</h2>
+            <div class="item input-parent flex" tabindex="4">
+                <label for="scale-ckb" class="grid-col-14">show scale ?</label>
+                <input class="checkboxes grid-col-2" type="checkbox" id="scale-ckb"  value="scale">
+                <div class="ckb-icon"></div>
+                <div class="toogle-button"></div>
+            </div>
+
+            <h2>Unit of measurement</h2>
+            <div class="item input-parent flex" tabindex="5">
+                <label for="measurement-ckb" class="grid-col-14"></label>
+                <input class="checkboxes grid-col-2" type="checkbox" id="measurement-ckb" value="measurement">
+                
+            </div>
+
+
 
             <h2>Tracking</h2>
-            <div class="item input-parent flex align-item-center justify-content-center" tabindex="2">
-                <label for="screenlock-ckb" class="grid-col-19">screen lock during tracking ?</label>
-                <input class="checkboxes grid-col-2" type="checkbox" id="screenlock-ckb"  value="screenlock">
+            <div class="item input-parent flex" tabindex="6">
+                <label for="screenlock-ckb" class="grid-col-14">screen lock during tracking ?</label>
+                <input class="checkboxes grid-col-2" type="checkbox" id="screenlock-ckb"  value="tracking_screenlock">
+                <div class="ckb-icon"></div>
+                <div class="toogle-button"></div>
             </div>
 
             <h2>Cache</h2>
-            <div class="item input-parent" tabindex="3">
+            <div class="item input-parent" tabindex="7">
                 <label for="cache-zoom">How much zoom level should be saved ?</label>
                 <input type="tel" pattern="^[0-9]*$" min="0" max="18" id="cache-zoom" />
             </div>
 
-            <button  class="item" id="clear-cache" tabindex="4">clear offline cache</button>
+            <button  class="item" id="clear-cache" tabindex="8">clear offline cache</button>
 
             <h2>Export</h2>
-            <div class="item input-parent" tabindex="5">
+            <div class="item input-parent" tabindex="9">
                 <label for="export-path">Export path</label>
                 <input  type="text"   id="export-path"  />
             </div>
             
-            <button tabindex="6" class="item" id="save-settings">save</button>
-            <button tabindex="7" class="item" id="export-settings">export settings</button>
-            <button tabindex="8" class="item" id="load_settings_from_file">load settings</button>
-
-
-            
+            <button tabindex="10" class="item" id="save-settings">save</button>
+            <button tabindex="11" class="item" id="export-settings">export settings</button>
+            <button tabindex="12" class="item" id="load_settings_from_file">load settings</button>     
         </div>
 
         
@@ -390,13 +421,8 @@
             </div>
         </div>
 
-
-
-
-
-
         <div class="panel" id="kaisos-ads" name="KaiOsAds">
-            <div id="ad-container" class="item"></div>
+            <div id="ad-container" class="item"><iframe src=""></iframe></div>
         </div>
 
     </div>
@@ -404,6 +430,7 @@
 
 
   
+    <script defer src="assets/js/suncalc.js"></script>
 
     <script defer src="assets/js/wikilocation.js"></script>
     <script defer src="assets/js/jsQR.js"></script>
@@ -413,9 +440,7 @@
     <script defer src="assets/js/applait.finder.min.js"></script>
     <script defer src="assets/js/olc.js"></script>
     <script defer src="assets/js/leaflet.js"></script>
-    <!--<script defer src="aassets/js/pouchDB.js"></script>-->
     <script defer src="assets/js/pouchdb-7.2.1.min.js"></script>
-    <script defer src="assets/js/pouchdb.replication-stream.min.js"></script>
 
 
     
@@ -432,8 +457,8 @@
     <script defer src="assets/js/openweather.js"></script>
     <script defer src="assets/js/module.js"></script>
 
-    <script defer src="assets/js/kaiads.v5.min.js"></script>
-    <script defer src="assets/js/kaios-ads.js"></script>
+
+
 
 </body>
 

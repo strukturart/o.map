@@ -718,3 +718,18 @@ div#coordinations div#tracking {
 div#coordinations div#sun {
   margin: 10px 0 0 0;
 }
+
+div#ads-container {
+  height: 220px;
+  max-height: 240px;
+
+  padding: 0px;
+}
+
+div#ads-container iframe {
+  margin: 0px;
+  padding: 0px;
+  width: 100%;
+  min-height: 220px;
+  max-height: 220px;
+}

@@ -51,14 +51,14 @@ p {
 }
 
 h1 {
-  font-size: 1.1rem;
+  font-size: 1rem;
   margin: 25px 0 5px 0;
   color: gray;
   text-transform: uppercase;
 }
 
 h2 {
-  font-size: 1.1rem;
+  font-size: 1rem;
   margin: 25px 0 5px 0;
   color: gray;
   text-transform: uppercase;
@@ -93,6 +93,51 @@ input[type="checkbox"] {
   height: 20px;
   background: #fcfff4;
   border-radius: 50px;
+  opacity: 0;
+}
+
+div.ckb-icon {
+  background: rgb(203, 209, 201);
+  width: 40px;
+  height: 20px;
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  margin-top: -10px;
+  opacity: 0.6;
+}
+
+div.toogle-button {
+  background: rgb(105, 110, 102);
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  position: absolute;
+
+  right: 23px;
+  top: 50%;
+  margin-top: -8px;
+  z-index: 3;
+}
+input[type="checkbox"]:checked ~ div.ckb-icon {
+  background: rgb(255, 255, 255);
+  opacity: 1;
+}
+
+input[type="checkbox"]:checked ~ div.toogle-button {
+  right: 7px;
+}
+
+input:focus {
+  background: var(--color-three);
+}
+
+.input-parent:focus {
+  background: var(--color-three);
+}
+
+.input-parent {
+  position: relative;
 }
 
 div.textarea-footer {
@@ -251,7 +296,6 @@ div#toast {
   min-width: 100%;
   padding: 5px;
   top: 0px;
-  //display:none;
 
   transition: all 0.5s ease-in-out;
   transform-origin: left top;
@@ -260,14 +304,6 @@ div#toast {
 
 /*/ ////////////////
 USER INPUT////////////////*/
-
-input:focus {
-  background: var(--color-three);
-}
-
-.input-parent:focus {
-  background: var(--color-three);
-}
 
 div#user-input {
   position: fixed;
@@ -309,8 +345,28 @@ div#cross {
   opacity: 100;
 }
 
-/*crosshair*/
+div#menu {
+  position: absolute;
+  bottom: 5px;
+  width: 22px;
+  height: 22px;
 
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  z-index: 3;
+}
+
+div#menu div {
+  width: 8px;
+  height: 8px;
+  background: rgb(58, 57, 57);
+}
+
+/*crosshair*/
+div#cross {
+}
 div#cross div#cross-inner {
   position: relative;
 }
@@ -622,6 +678,8 @@ div#markers-option div:focus {
 
 div#coordinations {
   position: absolute;
+  height: 100vh;
+  overflow: hidden;
   z-index: 5;
   left: 0;
   top: 0;
@@ -653,8 +711,10 @@ div#coordinations div#weather div {
   margin: 0px 0 0 -2px;
 }
 
-div#coordinations div#weather div img {
-  height: 35px;
-  position: absolute;
-  margin: -5px 0 0 0;
+div#coordinations div#tracking {
+  display: none;
+}
+
+div#coordinations div#sun {
+  margin: 10px 0 0 0;
 }

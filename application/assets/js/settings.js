@@ -30,7 +30,7 @@ const settings = ((_) => {
 
     //change label text
     let d = document.querySelector("label[for='measurement-ckb']");
-    setting.measurement ? (d.innerText = "metric") : (d.innerText = "imperial");
+    setting.measurement ? (d.innerText = "kilometer") : (d.innerText = "miles");
   };
 
   let load_settings = function () {

@@ -17,14 +17,20 @@ const settings = ((_) => {
     helper.toaster("saved successfully", 2000);
   };
 
-  let save_chk = function () {
-    let p = document.getElementById("screenlock-ckb");
+  let save_chk = function (id, localstorage_name) {
+    let p = document.getElementById(id, localstorage_name);
     p.checked = !p.checked;
     if (p.checked) {
-      localStorage.setItem("tracking_screenlock", "true");
+      localStorage.setItem(localstorage_name, "true");
+      setting[localstorage_name] = true;
     } else {
-      localStorage.setItem("tracking_screenlock", "false");
+      localStorage.setItem(localstorage_name, "false");
+      setting[localstorage_name] = false;
     }
+
+    //change label text
+    let d = document.querySelector("label[for='measurement-ckb']");
+    setting.measurement ? (d.innerText = "kilometer") : (d.innerText = "miles");
   };
 
   let load_settings = function () {
@@ -32,8 +38,41 @@ const settings = ((_) => {
     document.getElementById("cache-time").value = setting.cache_time;
     document.getElementById("cache-zoom").value = setting.cache_zoom;
     document.getElementById("export-path").value = setting.export_path;
-    if (setting.tracking_screenlock)
-      document.getElementById("screenlock-ckb").checked = true;
+
+    setting.tracking_screenlock
+      ? (document.getElementById("screenlock-ckb").checked = true)
+      : (document.getElementById("screenlock-ckb").checked = false);
+    setting.crosshair
+      ? (document.getElementById("crosshair-ckb").checked = true)
+      : (document.getElementById("crosshair-ckb").checked = false);
+
+    setting.scale
+      ? (document.getElementById("scale-ckb").checked = true)
+      : (document.getElementById("scale-ckb").checked = false);
+
+    setting.measurement
+      ? (document.getElementById("measurement-ckb").checked = true)
+      : (document.getElementById("measurement-ckb").checked = false);
+
+    //show / hidde crosshair
+    setting.crosshair
+      ? (document.getElementById("cross").style.visibility = "visible")
+      : (document.getElementById("cross").style.visibility = "hidden");
+    ///show / hidde scale
+
+    if (setting.scale) {
+      scale.addTo(map);
+    } else {
+      scale.remove();
+    }
+
+    if (setting.measurement) {
+      document.querySelector("label[for='measurement-ckb']").innerText =
+        "metric";
+    } else {
+      document.querySelector("label[for='measurement-ckb']").innerText =
+        "imperial";
+    }
   };
 
   let load_settings_from_file = function () {

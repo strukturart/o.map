@@ -7,11 +7,14 @@ const module = (() => {
     //remove !numbers
     current_lat = current_lat.replace(/[A-Za-z?=&]+/gi, "");
     current_lng = current_lng.replace(/[A-Za-z?=&]+/gi, "");
-    current_lat = Number(current_lat);
-    current_lng = Number(current_lng);
+    mainmarker.current_lat = Number(current_lat);
+    mainmarker.current_lng = Number(current_lng);
 
     //myMarker = L.marker([current_lat, current_lng]).addTo(map);
-    map.setView([current_lat, current_lng]);
+    map.setView([current_lat, current_lng], 14);
+    L.marker([mainmarker.current_lat, mainmarker.current_lng]).addTo(
+      markers_group
+    );
   };
 
   /////////////////////////
@@ -127,6 +130,7 @@ const module = (() => {
   let index = -1;
   let select_marker = function () {
     status.marker_selection = true;
+    status.windowOpen = "marker";
 
     let l = markers_group.getLayers();
     index++;
@@ -196,10 +200,13 @@ const module = (() => {
   };
 
   //calc distance between markers
-  let calc_distance = function (from_lat, from_lng, to_lat, to_lng) {
+  let calc_distance = function (from_lat, from_lng, to_lat, to_lng, unit) {
     let d = map.distance([from_lat, from_lng], [to_lat, to_lng]);
-    d = Math.ceil(d);
+    if (unit == "miles") {
+      d = d * 0.00062137119;
+    }
 
+    d = Math.ceil(d);
     return d;
   };
 
@@ -293,6 +300,8 @@ const module = (() => {
     }
 
     if (action == "destroy_tracking") {
+      document.querySelector("div#coordinations div#tracking").style.display =
+        "none";
       tracking_group.clearLayers();
       polyline_tracking = L.polyline(tracking_latlngs, path_option).addTo(
         tracking_group
@@ -303,6 +312,8 @@ const module = (() => {
     }
 
     if (action == "tracking") {
+      document.querySelector("div#coordinations div#tracking").style.display =
+        "block";
       if (localStorage.getItem("tracking_cache") != null) {
         if (
           window.confirm(
@@ -368,6 +379,9 @@ const module = (() => {
           clearInterval(tracking_interval);
           if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
           screenWakeLock("unlock", "gps");
+          document.querySelector(
+            "div#coordinations div#tracking"
+          ).style.display = "none";
         }
       }, 10000);
     }
@@ -401,7 +415,10 @@ const module = (() => {
       parseFloat(calc);
 
       l[l.length - 1]
-        .bindPopup(calc.toString() + "km", popup_option)
+        .bindPopup(
+          calc.toString() + " " + general.measurement_unit,
+          popup_option
+        )
         .openPopup();
     }
   };
