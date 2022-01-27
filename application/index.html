@@ -211,7 +211,8 @@
                 <label for="crosshair-ckb" class="grid-col-14">show crosshair ?</label>
                 <input class="checkboxes grid-col-2" type="checkbox" id="crosshair-ckb"  value="crosshair">
                 <div class="ckb-icon"></div>
-                <div class="toogle-button"></div>            </div>
+                <div class="toogle-button"></div>
+            </div>
 
             <h2>Scale</h2>
             <div class="item input-parent flex" tabindex="4">
@@ -219,12 +220,19 @@
                 <input class="checkboxes grid-col-2" type="checkbox" id="scale-ckb"  value="scale">
                 <div class="ckb-icon"></div>
                 <div class="toogle-button"></div>
+            </div>
 
+            <h2>Unit of measurement</h2>
+            <div class="item input-parent flex" tabindex="5">
+                <label for="measurement-ckb" class="grid-col-14"></label>
+                <input class="checkboxes grid-col-2" type="checkbox" id="measurement-ckb" value="measurement">
+                
             </div>
 
 
+
             <h2>Tracking</h2>
-            <div class="item input-parent flex" tabindex="5">
+            <div class="item input-parent flex" tabindex="6">
                 <label for="screenlock-ckb" class="grid-col-14">screen lock during tracking ?</label>
                 <input class="checkboxes grid-col-2" type="checkbox" id="screenlock-ckb"  value="tracking_screenlock">
                 <div class="ckb-icon"></div>
@@ -232,22 +240,22 @@
             </div>
 
             <h2>Cache</h2>
-            <div class="item input-parent" tabindex="6">
+            <div class="item input-parent" tabindex="7">
                 <label for="cache-zoom">How much zoom level should be saved ?</label>
                 <input type="tel" pattern="^[0-9]*$" min="0" max="18" id="cache-zoom" />
             </div>
 
-            <button  class="item" id="clear-cache" tabindex="7">clear offline cache</button>
+            <button  class="item" id="clear-cache" tabindex="8">clear offline cache</button>
 
             <h2>Export</h2>
-            <div class="item input-parent" tabindex="8">
+            <div class="item input-parent" tabindex="9">
                 <label for="export-path">Export path</label>
                 <input  type="text"   id="export-path"  />
             </div>
             
-            <button tabindex="9" class="item" id="save-settings">save</button>
-            <button tabindex="10" class="item" id="export-settings">export settings</button>
-            <button tabindex="11" class="item" id="load_settings_from_file">load settings</button>     
+            <button tabindex="10" class="item" id="save-settings">save</button>
+            <button tabindex="11" class="item" id="export-settings">export settings</button>
+            <button tabindex="12" class="item" id="load_settings_from_file">load settings</button>     
         </div>
 
         
@@ -413,13 +421,8 @@
             </div>
         </div>
 
-
-
-
-
-
         <div class="panel" id="kaisos-ads" name="KaiOsAds">
-            <div id="ad-container" class="item"></div>
+            <div id="ad-container" class="item"><iframe src=""></iframe></div>
         </div>
 
     </div>
@@ -457,8 +460,6 @@
     <script defer src="assets/js/module.js"></script>
 
 
-    <script defer src="assets/js/kaiads.v5.min.js"></script>
-    <script defer src="assets/js/kaios-ads.js"></script>
 
 
 </body>

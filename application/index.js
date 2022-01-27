@@ -43,7 +43,7 @@ let general = {
   last_map:
     localStorage.getItem("last_map") != null
       ? localStorage.getItem("last_map")
-      : "https://tile.opentopomap.org/{z}/{x}/{y}.png",
+      : "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
 };
 
 let setting = {
@@ -66,7 +66,14 @@ let setting = {
     localStorage.getItem("tracking_screenlock") != null
       ? JSON.parse(localStorage.getItem("tracking_screenlock"))
       : true,
+
+  measurement:
+    localStorage.getItem("measurement") != null
+      ? JSON.parse(localStorage.getItem("measurement"))
+      : true,
 };
+
+console.log(setting);
 
 let status = {
   visible: "visible",
@@ -88,39 +95,6 @@ if (!navigator.geolocation) {
   helper.toaster("Your device does't support geolocation!", 2000);
 }
 
-console.log(setting);
-//////////////////////////////
-////MOZ ACTIVITY////////////
-//////////////////////////////
-
-if (navigator.mozSetMessageHandler) {
-  navigator.mozSetMessageHandler("activity", function (activityRequest) {
-    var option = activityRequest.source;
-    //gpx
-    if (option.name == "open") {
-      loadGPX(option.data.url);
-    }
-    //link
-    if (option.name == "view") {
-      const url_split = option.data.url.split("/");
-      current_lat = url_split[url_split.length - 2];
-      current_lng = url_split[url_split.length - 1];
-
-      //remove !numbers
-      current_lat = current_lat.replace(/[A-Za-z?=&]+/gi, "");
-      current_lng = current_lng.replace(/[A-Za-z?=&]+/gi, "");
-      mainmarker.device_lat = Number(current_lat);
-      mainmarker.device_lng = Number(current_lng);
-
-      myMarker = L.marker([mainmarker.device_lat, mainmarker.device_lng]).addTo(
-        markers_group
-      );
-
-      map.setView([mainmarker.device_lat, mainmarker.device_lng], 13);
-    }
-  });
-}
-
 //leaflet add basic map
 let map = L.map("map-container", {
   zoomControl: false,
@@ -130,8 +104,8 @@ let map = L.map("map-container", {
 
 let scale = L.control.scale({
   position: "topright",
-  metric: true,
-  imperial: false,
+  metric: setting.measurement,
+  imperial: setting.measurement ? false : true,
 });
 
 map.on("load", function () {
@@ -148,12 +122,13 @@ document.addEventListener("DOMContentLoaded", function () {
       "O.MAP Version " + a.manifest.version;
     if (a.installOrigin == "app://kaios-plus.kaiostech.com") {
       general.ads = true;
+      document.querySelector("#ad-container iframe").src = "ads.html";
     } else {
+      console.log("Ads free");
       let t = document.getElementById("kaisos-ads");
       t.remove();
     }
   }
-
   helper.getManifest(manifest);
 
   setTimeout(function () {
@@ -364,6 +339,7 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   let open_finder = function () {
+    settings.load_settings();
     finder_tabindex();
     wikilocation.load();
     document.querySelector("div#finder").style.display = "block";
@@ -578,9 +554,8 @@ document.addEventListener("DOMContentLoaded", function () {
       if (document.activeElement.hasAttribute("data-url")) {
         let item_url = document.activeElement.getAttribute("data-url");
         let item_type = document.activeElement.getAttribute("data-type");
-        let item_attribution = document.activeElement.getAttribute(
-          "data-attribution"
-        );
+        let item_attribution =
+          document.activeElement.getAttribute("data-attribution");
         let item_maxzoom = document.activeElement.getAttribute("data-maxzoom");
 
         maps.addMap(item_url, item_attribution, item_maxzoom, item_type);
@@ -744,7 +719,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         let f = map.getCenter();
 
-        //todo https://github.com/mourner/suncalc
+        //https://github.com/mourner/suncalc
         //sunset
         let times = SunCalc.getTimes(new Date(), f.lat, f.lng);
         let sunrise =
@@ -994,6 +969,12 @@ document.addEventListener("DOMContentLoaded", function () {
   //to do
   function nav(move) {
     if (
+      document.activeElement.nodeName == "SELECT" ||
+      document.activeElement.type == "date" ||
+      document.activeElement.type == "time"
+    )
+      return false;
+    if (
       status.windowOpen == "finder" ||
       status.windowOpen == "markers_option"
     ) {
@@ -1082,6 +1063,12 @@ document.addEventListener("DOMContentLoaded", function () {
     bottom_bar("", "", "");
   });
 
+  const checkbox = document.getElementById("measurement-ckb");
+
+  checkbox.addEventListener("change", function () {
+    alert();
+  });
+
   //////////////////////////////
   ////KEYPAD HANDLER////////////
   //////////////////////////////
@@ -1129,11 +1116,12 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "Backspace":
+        window.close();
         if (status.windowOpen == "map") {
           //status.windowOpen = "";
           status.crash = false;
           localStorage.setItem("crash", "false");
-          //window.goodbye();
+          window.goodbye();
         }
         break;
 
@@ -1618,7 +1606,6 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("keyup", handleKeyUp);
 
   document.addEventListener("visibilitychange", function () {
-    console.log(document.visibilityState);
     setTimeout(function () {
       status.visible = document.visibilityState;
     }, 1000);

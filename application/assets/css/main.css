@@ -26,13 +26,13 @@
 }
 
 @font-face {
-  font-family: 'Lato-Regular';
-  src: url('../fonts/Lato-Regular.ttf');
+  font-family: "Lato-Regular";
+  src: url("../fonts/Lato-Regular.ttf");
 }
 
 html,
 body {
-  font-family: 'Lato-Regular';
+  font-family: "Lato-Regular";
   font-weight: 100;
   width: 100%;
   position: relative;
@@ -88,7 +88,7 @@ label {
   display: block;
 }
 
-input[type='checkbox'] {
+input[type="checkbox"] {
   width: 20px;
   height: 20px;
   background: #fcfff4;
@@ -119,12 +119,12 @@ div.toogle-button {
   margin-top: -8px;
   z-index: 3;
 }
-input[type='checkbox']:checked ~ div.ckb-icon {
+input[type="checkbox"]:checked ~ div.ckb-icon {
   background: rgb(255, 255, 255);
   opacity: 1;
 }
 
-input[type='checkbox']:checked ~ div.toogle-button {
+input[type="checkbox"]:checked ~ div.toogle-button {
   right: 7px;
 }
 
