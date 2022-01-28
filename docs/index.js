@@ -127,9 +127,10 @@ document.addEventListener("DOMContentLoaded", function () {
       "O.MAP Version " + a.manifest.version;
     if (a.installOrigin == "app://kaios-plus.kaiostech.com") {
       general.ads = true;
-      document.querySelector("#ad-container iframe").src = "ads.html";
+      document.querySelector("#ads-container iframe").src = "ads.html";
     } else {
       console.log("Ads free");
+
       let t = document.getElementById("kaisos-ads");
       t.remove();
     }
@@ -927,19 +928,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let panels = document.querySelectorAll("div#finder div.panel");
 
-  for (let i = 0; i < panels.length; i++) {
+  panels.forEach(function (e) {
     finder_panels.push({
-      name: panels[i].getAttribute("name"),
-      id: panels[i].getAttribute("id"),
+      name: e.getAttribute("name"),
+      id: e.getAttribute("id"),
     });
-  }
+  });
 
   let finder_navigation = function (dir) {
     tabIndex = 0;
 
-    for (let b = 0; b < panels.length; b++) {
-      panels[b].style.display = "none";
-    }
+    panels.forEach(function (e) {
+      e.style.display = "none";
+    });
 
     if (dir == "start") {
       document.getElementById(finder_panels[count].id).style.display = "block";
@@ -948,13 +949,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (dir == "+1") {
       count++;
-      if (count > finder_panels.length - 1) count = finder_panels.length - 1;
+      if (count == finder_panels.length - 1) count = 0;
       document.getElementById(finder_panels[count].id).style.display = "block";
       finder_tabindex();
     }
     if (dir == "-1") {
       count--;
-      if (count < 0) count = 0;
+      if (count < 0) count = finder_panels.length - 1;
       document.getElementById(finder_panels[count].id).style.display = "block";
       finder_tabindex();
     }
@@ -973,7 +974,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (finder_panels[count].id == "tips") bottom_bar("", "", "");
   };
 
-  //to do
   function nav(move) {
     if (
       document.activeElement.nodeName == "SELECT" ||
@@ -1329,10 +1329,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (document.activeElement.classList.contains("input-parent")) {
           document.activeElement.children[0].focus();
-          settings.save_chk(
-            document.activeElement.id,
-            document.activeElement.value
-          );
+          if (document.activeElement.type == "checkbox") {
+            settings.save_chk(
+              document.activeElement.id,
+              document.activeElement.value
+            );
+          }
         }
 
         if (

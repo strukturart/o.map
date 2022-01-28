@@ -1,16 +1,20 @@
 [
+  
     {
-       "name":"openTopoMap",
-       "type":"map",
-       "url":"https://tile.opentopomap.org/{z}/{x}/{y}.png",
-       "attribution":"Openstreetmap / OpenTopoMap (CC-BY-SA)",
-       "maxzoom":18
-    },
-    {
-        "name":"hiking",
+        "name":"Hiking",
         "type":"overlayer",
         "url":"http://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png",
         "attribution":"hiking.waymarkedtrails.org",
         "maxzoom":18
+     },
+
+ 
+
+        {
+         "name":"Google Satelite",
+         "type":"map",
+         "url":"http://mt0.google.com/vt/lyrs=r&hl=en&x={x}&y={y}&z={z}",
+         "attribution":"Google",
+        "maxzoom":18
      }
- ]
+]

@@ -19,6 +19,7 @@ const settings = ((_) => {
 
   let save_chk = function (id, localstorage_name) {
     let p = document.getElementById(id, localstorage_name);
+
     p.checked = !p.checked;
     if (p.checked) {
       localStorage.setItem(localstorage_name, "true");
@@ -31,6 +32,7 @@ const settings = ((_) => {
     //change label text
     let d = document.querySelector("label[for='measurement-ckb']");
     setting.measurement ? (d.innerText = "kilometer") : (d.innerText = "miles");
+    document.getElementById(id).parentElement.focus();
   };
 
   let load_settings = function () {

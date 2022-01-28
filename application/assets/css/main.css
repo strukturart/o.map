@@ -8,8 +8,8 @@
   --color-five: rgb(38, 38, 38);
   --color-six: rgb(78, 206, 144);
   --color-seven: gainsboro;
-  --color-eight: red;
-  --color-ten: rgb(73, 86, 55);
+  --color-eight: rgb(241, 86, 24);
+  --color-ten: rgb(218, 229, 253);
 }
 
 *,
@@ -79,6 +79,7 @@ button:focus {
 textarea {
   background: white;
   width: 100%;
+  color: black;
 }
 
 label {
@@ -583,7 +584,7 @@ div#finder div#close {
 }
 
 div#finder .item:focus {
-  background: var(--color-three);
+  background: var(--color-eight);
   color: black;
 }
 
@@ -640,14 +641,24 @@ div#settings #screenlock-ckb {
 }
 
 div#imprint {
-  overflow: scroll !important;
-  max-height: 240px !important;
+  overflow-y: scroll !important;
+  color: white;
+}
+div#imprint:focus {
+  background: black !important;
+  color: white !important;
 }
 
 div#tips {
-  overflow: scroll !important;
-  max-height: 240px !important;
+  overflow-y: scroll !important;
 }
+
+div#tips:focus {
+  background: black !important;
+  color: white !important;
+}
+
+/*MARKERS OPTION*/
 
 div#markers-option {
   background: rgba(0, 0, 0, 0.808);
@@ -669,7 +680,7 @@ div#markers-option div {
 }
 
 div#markers-option div:focus {
-  background: yellow;
+  background: var(--color-eight);
   color: black;
 }
 
@@ -718,6 +729,8 @@ div#coordinations div#tracking {
 div#coordinations div#sun {
   margin: 10px 0 0 0;
 }
+
+/*ADS*/
 
 div#ads-container {
   height: 220px;

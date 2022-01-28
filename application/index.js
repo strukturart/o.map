@@ -928,12 +928,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let panels = document.querySelectorAll("div#finder div.panel");
 
-  for (let i = 0; i < panels.length; i++) {
+  panels.forEach(function (e) {
     finder_panels.push({
-      name: panels[i].getAttribute("name"),
-      id: panels[i].getAttribute("id"),
+      name: e.getAttribute("name"),
+      id: e.getAttribute("id"),
     });
-  }
+  });
 
   let finder_navigation = function (dir) {
     tabIndex = 0;
@@ -949,7 +949,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (dir == "+1") {
       count++;
-      if (count == finder_panels.length) count = 0;
+      if (count == finder_panels.length - 1) count = 0;
       document.getElementById(finder_panels[count].id).style.display = "block";
       finder_tabindex();
     }
@@ -974,7 +974,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (finder_panels[count].id == "tips") bottom_bar("", "", "");
   };
 
-  //to do
   function nav(move) {
     if (
       document.activeElement.nodeName == "SELECT" ||
@@ -1330,10 +1329,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (document.activeElement.classList.contains("input-parent")) {
           document.activeElement.children[0].focus();
-          settings.save_chk(
-            document.activeElement.id,
-            document.activeElement.value
-          );
+          if (document.activeElement.type == "checkbox") {
+            settings.save_chk(
+              document.activeElement.id,
+              document.activeElement.value
+            );
+          }
         }
 
         if (

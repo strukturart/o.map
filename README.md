@@ -38,8 +38,6 @@ O.Map is an openstreetmap app for KaiOs, it is a good companion for your next ou
 ## Layers
 
 - rain/snow layer
-- OpenWeatherMap
-- Railwaylayer
 
 ### Manual
 
@@ -64,10 +62,42 @@ O.Map is an openstreetmap app for KaiOs, it is a good companion for your next ou
 
 you have the possibility to import gpx and geojson. Markers can also be exported as geojson so that you can e.g. share them or edit them in another program.
 
+## custom maps and layer
+
+you have the possibility to use your own maps/layers.
+For this you have to create a JSON file with the following structure:
+
+```javascript
+[
+  {
+    "name": "Hiking",
+    "type": "overlayer",
+    "url": "http://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png",
+    "attribution": "hiking.waymarkedtrails.org",
+    "maxzoom": 18,
+  },
+
+  {
+    "name": "Google Satelite",
+    "type": "map",
+    "url": "http://mt0.google.com/vt/lyrs=r&hl=en&x={x}&y={y}&z={z}",
+    "attribution": "Google",
+    "maxzoom": 18,
+  },
+];
+```
+
+you can find an example file here: [omap_maps.json](omap_maps.json)
+
 ### Search
 
 The search can be opened with key 2, you can search for locations or start the search with / and then enter an open location code
 [open location code](https://en.wikipedia.org/wiki/Open_Location_Code)
+
+### Good to know
+
+Some layers cannot be loaded because KaiOs has not equipped the devices with a valid Let's Encrypt certificate. If your device is rooted you can do it yourself:
+https://github.com/openGiraffes/b2g-certificates
 
 ## Desktop Version
 
@@ -75,12 +105,8 @@ https://strukturart.github.io/o.map/
 
 ## How to install
 
-The app is not available through the https://www.kaiostech.com/store/ They are only accepting apps that are monetized using <a href="https://developer.kaiostech.com/submit-to-kaistore">KaiAds SDK</a>, and that's something I'm not interested in integrating.
-For this reason, you have to side-load (upload) the app to your phone if you want to use it.
-Martin Kaptein wrote a comprehensive, <a href="https://www.martinkaptein.com/blog/sideloading-and-deploying-apps-to-kai-os/">step-by-step article</a> that you can use to side-load the app. If you prefer a video, this one on YouTube walks you through the process.
-The Developer Portal also contains a guide, and if nothing seems to work, you can <a href="https://discord.com/invite/rQ93zEu">ask for help on Discord</a>.
-You can download the latest version from the Releases page.
-The app is not auto-updating. To update it, you have to follow the same steps you took when installing it.
+- KaiOs Store
+- Sideloading <a href="https://www.martinkaptein.com/blog/sideloading-and-deploying-apps-to-kai-os/">step-by-step article</a> by martinkaptein
 
 ### Thank you
 
@@ -101,7 +127,6 @@ The app is not auto-updating. To update it, you have to follow the same steps yo
 - Leaflet - BSD-2-Clause License
 - Ajax AutoComplete - MIT License
 - leaflet.tilelayer.pouchdbcached MIT license
-- leaflet ruler MIT License
 - wikipedia
 
 ### other map apps for KaiOs
