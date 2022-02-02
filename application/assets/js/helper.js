@@ -97,6 +97,27 @@ const helper = (() => {
     }, time);
   };
 
+  //get location by ip
+  let geoip = function (callback) {
+    const url =
+      "https://api.freegeoip.app/json/?apikey=2a0f8c30-844a-11ec-b0fe-af6fd1eb1209";
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.open("GET", url);
+
+    xhr.responseType = "json";
+
+    xhr.send();
+
+    xhr.onload = function () {
+      let responseObj = xhr.response;
+      let latlng = [responseObj.latitude, responseObj.longitude];
+      console.log(JSON.stringify(latlng));
+      callback(latlng);
+    };
+  };
+
   //goodbye
 
   let goodbye = function () {
@@ -156,35 +177,36 @@ const helper = (() => {
     goodbye,
     isOnline,
     allow_unsecure,
+    geoip,
   };
 })();
 
-function notify(param_title, param_text, param_silent) {
-  var options = {
-    body: param_text,
-    silent: true,
-  };
-  // Let's check if the browser supports notifications
-  if (!("Notification" in window)) {
-    alert("This browser does not support desktop notification");
-  }
+  function notify(param_title, param_text, param_silent) {
+    var options = {
+      body: param_text,
+      silent: true,
+    };
+    // Let's check if the browser supports notifications
+    if (!("Notification" in window)) {
+      alert("This browser does not support desktop notification");
+    }
 
-  // Let's check whether notification permissions have already been granted
-  else if (Notification.permission === "granted") {
-    // If it's okay let's create a notification
-    var notification = new Notification(param_title, options);
-  }
+    // Let's check whether notification permissions have already been granted
+    else if (Notification.permission === "granted") {
+      // If it's okay let's create a notification
+      var notification = new Notification(param_title, options);
+    }
 
-  // Otherwise, we need to ask the user for permission
-  else if (Notification.permission !== "denied") {
-    Notification.requestPermission().then(function (permission) {
-      // If the user accepts, let's create a notification
-      if (permission === "granted") {
-        var notification = new Notification(param_title, options);
-      }
-    });
+    // Otherwise, we need to ask the user for permission
+    else if (Notification.permission !== "denied") {
+      Notification.requestPermission().then(function (permission) {
+        // If the user accepts, let's create a notification
+        if (permission === "granted") {
+          var notification = new Notification(param_title, options);
+        }
+      });
+    }
   }
-}
 
 function user_input(param, file_name, label) {
   if (param == "open") {

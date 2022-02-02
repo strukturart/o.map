@@ -532,10 +532,10 @@ div#intro div#icon {
   width: 70px;
   display: block;
   z-index: 8;
-  top: 100px;
+  top: 125px;
   position: absolute;
   left: 50%;
-  margin: 0 0 0 -40px;
+  margin: 0 0 0 -35px;
 }
 
 div#intro div#intro-footer {

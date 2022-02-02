@@ -78,8 +78,6 @@ setting.measurement == true
   ? (general.measurement_unit = "km")
   : (general.measurement_unit = "mil");
 
-console.log(general);
-
 let status = {
   visible: "visible",
   caching_tiles_started: false,
@@ -136,6 +134,18 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
   helper.getManifest(manifest);
+  let geoip_callback = function (data) {
+    mainmarker.current_lat = data[0];
+    mainmarker.current_lng = data[1];
+
+    mainmarker.device_lat = data[0];
+    mainmarker.device_lng = data[1];
+    myMarker.setLatLng([mainmarker.device_lat, mainmarker.device_lng]).update();
+    console.log(data[0] + "/" + data[1]);
+    setTimeout(function () {
+      map.setView([mainmarker.device_lat, mainmarker.device_lng], 12);
+    }, 1000);
+  };
 
   setTimeout(function () {
     //get location if not an activity open url
@@ -143,7 +153,7 @@ document.addEventListener("DOMContentLoaded", function () {
     build_menu();
     module.startup_marker("", "add");
     getLocation("init");
-    helper.toaster("Press Enter to open the menu", 5000);
+
     status.windowOpen = "map";
   }, 5000);
 
@@ -367,6 +377,9 @@ document.addEventListener("DOMContentLoaded", function () {
   function getLocation(option) {
     if (option == "init") {
       helper.toaster("try to determine your position", 3000);
+      myMarker = L.marker([0, 0]).addTo(markers_group);
+      myMarker.setIcon(maps.default_icon);
+      map.setView([mainmarker.device_lat, mainmarker.device_lng], 12);
     }
 
     let options = {
@@ -386,6 +399,10 @@ document.addEventListener("DOMContentLoaded", function () {
       mainmarker.device_alt = crd.altitude;
       mainmarker.accuracy = crd.accuracy;
 
+      setTimeout(function () {
+        map.setView([mainmarker.device_lat, mainmarker.device_lng], 12);
+      }, 1000);
+
       //store location as fallout
       let b = [crd.latitude, crd.longitude];
       localStorage.setItem("last_location", JSON.stringify(b));
@@ -393,14 +410,6 @@ document.addEventListener("DOMContentLoaded", function () {
       if (option == "init") {
         geolocationWatch();
 
-        myMarker = L.marker([
-          mainmarker.device_lat,
-          mainmarker.device_lng,
-        ]).addTo(markers_group);
-
-        map.setView([mainmarker.device_lat, mainmarker.device_lng], 12);
-
-        myMarker.setIcon(maps.default_icon);
         document.getElementById("cross").style.opacity = 1;
 
         return true;
@@ -408,20 +417,28 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function error(err) {
-      helper.toaster("Position not found, load last known position", 4000);
-      mainmarker.current_lat = mainmarker.last_location[0];
-      mainmarker.current_lng = mainmarker.last_location[1];
-      mainmarker.current_alt = 0;
-
-      mainmarker.device_lat = mainmarker.last_location[0];
-      mainmarker.device_lng = mainmarker.last_location[1];
-
-      myMarker = L.marker([mainmarker.device_lat, mainmarker.device_lng]).addTo(
-        markers_group
+      //helper.toaster("Position not found, load last known position", 4000);
+      var z = confirm(
+        "do you want to find out your position by your ip address ?"
       );
+      if (z == true) {
+        helper.geoip(geoip_callback);
+      } else {
+        helper.toaster("Position not found, load last known position", 4000);
+        mainmarker.current_lat = mainmarker.last_location[0];
+        mainmarker.current_lng = mainmarker.last_location[1];
+        mainmarker.current_alt = 0;
 
-      map.setView([mainmarker.device_lat, mainmarker.device_lng], 12);
-      return false;
+        mainmarker.device_lat = mainmarker.last_location[0];
+        mainmarker.device_lng = mainmarker.last_location[1];
+
+        myMarker
+          .setLatLng([mainmarker.device_lat, mainmarker.device_lng])
+          .update();
+        setTimeout(function () {
+          map.setView([mainmarker.device_lat, mainmarker.device_lng], 12);
+        }, 1000);
+      }
     }
 
     navigator.geolocation.getCurrentPosition(success, error, options);
@@ -510,7 +527,7 @@ document.addEventListener("DOMContentLoaded", function () {
         mainmarker.target_marker = mainmarker.selected_marker._latlng;
         mainmarker.selected_marker.setIcon(maps.goal_icon);
         helper.toaster(
-          "target marker set, press key 4 to be informed about the current distance in the info panel.",
+          "target marker set, press key 6 to be informed about the current distance in the info panel.",
           4000
         );
         document.querySelector("div#markers-option").style.display = "none";
