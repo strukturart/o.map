@@ -1,134 +1,167 @@
-'use strict';
+"use strict";
 
 let olc_lat_lng;
-let ac = '';
 
-//https://www.devbridge.com/sourcery/components/jquery-autocomplete/
-$(document).ready(function () {
-  ac = $('#search').autocomplete({
-    serviceUrl:
-      'https://nominatim.openstreetmap.org/search?format=json&addressdetails=0',
-    minChars: 1,
-    showNoSuggestionNotice: true,
-    paramName: 'q',
-    lookupLimit: 10,
-    deferRequestBy: 1000,
-    transformResult: function (response) {
-      var obj = $.parseJSON(response);
-      return {
-        suggestions: $.map(obj, function (dataItem) {
-          return {
-            value: dataItem.display_name,
-            data_lat: dataItem.lat,
-            data_lon: dataItem.lon,
-          };
-        }),
-      };
-    },
-    onSearchStart: function () {},
-    onSearchError: function (query, jqXHR, textStatus, errorThrown) {
-      helper.toaster(
-        'it looks like your device is not connected to the internet'
-      );
-
-      helper.allow_unsecure(
-        'https://nominatim.openstreetmap.org/search?format=json&addressdetails=0&q=berlin'
-      );
-    },
-    onSelect: function (suggestion) {
-      let lat_lon = [suggestion.data_lat, suggestion.data_lon];
-      map.setView([lat_lon[0], lat_lon[1]], 13);
-      search.hideSearch();
-
-      let n = map.getCenter();
-
-      mainmarker.current_lat = n.lat;
-      mainmarker.current_lng = n.lng;
-
-      $('#search').autocomplete('clear');
-
-      helper.toaster('press 9 to add an marker', 3000);
-    },
-  });
-});
 //////////////////////////
 ////SEARCH BOX////////////
 /////////////////////////
 const search = (() => {
   let showSearch = function () {
-    bottom_bar('close', 'select', '');
-    document.querySelector('div#search-box').style.display = 'block';
-    document.querySelector('div#search-box input').focus();
-    document.querySelector('div#bottom-bar').style.display = 'block';
+    bottom_bar("close", "select", "search");
+    document.querySelector("div#search-box").style.display = "block";
+    document.querySelector("div#search-box input").focus();
+    document.querySelector("div#bottom-bar").style.display = "block";
 
-    status.windowOpen = 'search';
+    status.windowOpen = "search";
   };
 
   let hideSearch = function () {
-    document.querySelector('div#bottom-bar').style.display = 'none';
-    document.querySelector('div#search-box').style.display = 'none';
-    document.querySelector('div#search-box input').value = '';
-    document.querySelector('div#search-box input').blur();
-    document.querySelector('div#olc').style.display = 'none';
+    document.querySelector("div#bottom-bar").style.display = "none";
+    document.querySelector("div#search-box").style.display = "none";
+    document.querySelector("div#search-box input").value = "";
+    document.querySelector("div#search-box input").blur();
+    document.querySelector("div#olc").style.display = "none";
 
     setTimeout(function () {
-      status.windowOpen = 'map';
+      status.windowOpen = "map";
     }, 1000);
   };
+
+  //SEARCH
+
+  function search_nav(move) {
+    const currentIndex = document.activeElement.tabIndex;
+    const next = currentIndex + move;
+    const items = document.querySelectorAll(".items");
+    const targetElement = items[next];
+    targetElement.focus();
+
+    // smooth center scrolling
+    const rect = document.activeElement.getBoundingClientRect();
+    const elY =
+      rect.top - document.body.getBoundingClientRect().top + rect.height / 2;
+
+    document.activeElement.parentNode.scrollBy({
+      left: 0,
+      top: elY - window.innerHeight / 2,
+      behavior: "smooth",
+    });
+  }
+
+  let create_html = function () {
+    var template = document.getElementById("template-search").innerHTML;
+    var rendered = Mustache.render(template, { data: datalist });
+    document.getElementById("result-container").innerHTML = rendered;
+  };
+  let datalist;
+
+  let result_data = function (data) {
+    document.querySelector("#search-info").style.display = "none";
+    datalist = [];
+    data.forEach(function (item, index) {
+      datalist.push({
+        lat: item.lat,
+        lng: item.lon,
+        name: item.display_name,
+        index: index + 1,
+      });
+    });
+    if (document.activeElement.id == "search") create_html();
+  };
+
+  //SEARCH
+
+  let start_search = function () {
+    let search_term = document.getElementById("search").value;
+    if (search_term.length < 3) return false;
+    const url =
+      "https://nominatim.openstreetmap.org/search?format=json&addressdetails=0&q=" +
+      search_term;
+
+    const options = { method: "GET" };
+
+    fetch(url, options)
+      .then((response) => response.json())
+      .then((result) => result_data(result))
+      .catch((error) => {
+        console.error(
+          "There has been a problem with your fetch operation:",
+          error
+        );
+      });
+  };
+
+  let search_return_data = function () {
+    search.hideSearch();
+    let f = document.activeElement.getAttribute("data-latlng");
+    f = f.split(",");
+
+    map.setView([f[0], f[1]], 13);
+
+    mainmarker.current_lat = f[0];
+    mainmarker.current_lng = f[1];
+    helper.toaster("press 9 to add an marker", 3000);
+    document.getElementById("result-container").innerHTML = "";
+    datalist = [];
+    status.windowOpen = "map";
+  };
+
+  document.getElementById("search").addEventListener("keyup", function (e) {
+    //if (e.key != "ArrowDown") start_search();
+  });
 
   //////////////////////////
   ////OLC////////////
   /////////////////////////
 
-  document.getElementById('search').addEventListener('input', function () {
-    let input_val = document.querySelector('input#search').value;
+  document.getElementById("search").addEventListener("input", function () {
+    let input_val = document.querySelector("input#search").value;
+    start_search();
 
-    if (input_val.startsWith('/')) {
-      document.getElementById('search-info').style.display = 'none';
+    if (input_val.startsWith("/")) {
+      document.getElementById("search-info").style.display = "none";
 
-      input_val = input_val.replace('/', '');
-      $('#search').autocomplete().disable();
+      input_val = input_val.replace("/", "");
+      $("#search").autocomplete().disable();
 
-      document.querySelector('div#olc').style.display = 'block';
-      document.querySelector('#olc').innerText = OLC.decode(input_val);
+      document.querySelector("div#olc").style.display = "block";
+      document.querySelector("#olc").innerText = OLC.decode(input_val);
 
       let ll = String(OLC.decode(input_val));
 
-      if (ll.includes('NaN') == false) {
-        olc_lat_lng = ll.split(',');
+      if (ll.includes("NaN") == false) {
+        olc_lat_lng = ll.split(",");
         map.setView([olc_lat_lng[0], olc_lat_lng[1]]);
 
         mainmarker.current_lat = olc_lat_lng[0];
         mainmarker.current_lng = olc_lat_lng[1];
       }
 
-      helper.toaster('press 9 to add an marker', 3000);
+      helper.toaster("press 9 to add an marker", 3000);
 
       return true;
     }
 
-    if (input_val.startsWith('+')) {
-      let d = input_val.replace('+', '');
-      d = d.split(',');
+    if (input_val.startsWith("+")) {
+      let d = input_val.replace("+", "");
+      d = d.split(",");
 
       mainmarker.current_lat = d[0];
       mainmarker.current_lng = d[1];
-      $('#search').autocomplete('clear');
-      $('#search').autocomplete().disable();
 
       map.setView([d[0], d[1]]);
-      document.getElementById('search-info').style.display = 'none';
+      document.getElementById("search-info").style.display = "none";
       return true;
     }
 
-    document.querySelector('div.autocomplete-suggestions').style.display =
-      'block';
-    document.querySelector('div#olc').style.display = 'none';
-    ac.autocomplete().enable();
+    document.querySelector("div#olc").style.display = "none";
   });
 
   return {
     showSearch,
     hideSearch,
+    start_search,
+    search_return_data,
+    search_nav,
   };
 })();

@@ -113,8 +113,6 @@ https://strukturart.github.io/o.map/
 - wikipedia
 - Openstreetmap
 - OpenTopoMap
-- http://maps.stamen.com/toner/ Tonermap
-- https://www.openplanetary.org/ Moonmap
 - https://www.rainviewer.com/api.html
 - https://github.com/MazeMap/Leaflet.TileLayer.PouchDBCached
 - leaflet.js
@@ -125,7 +123,6 @@ https://strukturart.github.io/o.map/
 
 - o.map [UNLICENSE](UNLICENSE)
 - Leaflet - BSD-2-Clause License
-- Ajax AutoComplete - MIT License
 - leaflet.tilelayer.pouchdbcached MIT license
 - wikipedia
 

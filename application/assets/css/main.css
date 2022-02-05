@@ -366,8 +366,7 @@ div#menu div {
 }
 
 /*crosshair*/
-div#cross {
-}
+
 div#cross div#cross-inner {
   position: relative;
 }
@@ -745,4 +744,22 @@ div#ads-container iframe {
   width: 100%;
   min-height: 220px;
   max-height: 220px;
+}
+
+div#result-container {
+  background: rgb(216, 216, 216) !important;
+  max-height: 60vh;
+  overflow-y: hidden;
+}
+
+li.items {
+  background: silver;
+  padding: 3px;
+  margin: 0 0 10px 0;
+  list-style: none !important;
+}
+
+li.items:focus {
+  background: black !important;
+  color: white;
 }

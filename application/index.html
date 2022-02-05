@@ -37,11 +37,26 @@
     </div>
 
 
+    <script id="template-search" type="x-tmpl-mustache">
+      {{#data}}
+    
+        <li class="items" tabindex={{index}} data-latlng="{{ lat }}, {{ lng }}"> {{ name }}
+        </li>
+      {{/data}}
+    
+    </script>
+
+
 
     <div id="toast" class="width-100"></div>
 
     <div id="search-box">
-        <input type="text" id="search" placeholder="search" />
+        <input type="search" id="search" class="items" placeholder="search" autofocus tabindex="0"/>
+        <div id="result-container">
+            <ul>
+        
+            </ul>
+        </div>
         <div id="search-info">
             <br>
             you can search for locations, names or OLC. <br>
@@ -435,20 +450,20 @@
     <script defer src="assets/js/jsQR.js"></script>
     <script defer src="assets/js/scan.js"></script>
     <script defer src="assets/js/settings.js"></script>
-    <script defer src="assets/js/jQuery-3.1.0.js"></script>
     <script defer src="assets/js/applait.finder.min.js"></script>
     <script defer src="assets/js/olc.js"></script>
     <script defer src="assets/js/leaflet.js"></script>
     <script defer src="assets/js/pouchdb-7.2.1.min.js"></script>
 
+    <script defer src="assets/js/mustache.js"></script>
 
     
     <script defer src="assets/js/L.TileLayer.PouchDBCached.js"></script>
-    <script defer src="assets/js/jquery.autocomplete.min.js"></script>
     <script defer src="assets/js/tile.stamen.1.3.0.min.js"></script>
     <script defer src="assets/js/gpx.js"></script>
-    <script defer src="assets/js/search.js"></script>
     <script defer src="index.js"></script>
+    <script defer src="assets/js/search.js"></script>
+
     <script defer src="assets/js/maps.js"></script>
     <script defer src="assets/js/helper.js"></script>
     <script defer src="assets/js/exportGeoJson.js"></script>

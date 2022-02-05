@@ -1254,6 +1254,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "SoftRight":
       case "Alt":
+        if (status.windowOpen == "search") {
+          start_search();
+          break;
+        }
         if (status.path_selection && status.windowOpen == "map") {
           save_mode = "geojson-path";
           user_input("open", "", "save this marker as geojson file");
@@ -1365,6 +1369,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (status.windowOpen == "search") {
+          search.search_return_data();
+
           map.setView([olc_lat_lng[0], olc_lat_lng[1]]);
           search.hideSearch();
           mainmarker.current_lat = Number(olc_lat_lng[0]);
@@ -1518,6 +1524,7 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "9":
+        console.log(status.windowOpen);
         if (status.windowOpen == "map")
           L.marker([mainmarker.current_lat, mainmarker.current_lng]).addTo(
             markers_group
@@ -1565,12 +1572,16 @@ document.addEventListener("DOMContentLoaded", function () {
         if (status.windowOpen == "map" || status.windowOpen == "coordinations")
           MovemMap("up");
 
+        if (status.windowOpen == "search") search.search_nav(-1);
         nav("-1");
         break;
 
       case "ArrowDown":
         if (status.windowOpen == "map" || status.windowOpen == "coordinations")
           MovemMap("down");
+
+        if (status.windowOpen == "search") search.search_nav(+1);
+
         nav("+1");
         break;
     }
@@ -1608,7 +1619,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function handleKeyUp(evt) {
     if (status.visible === "hidden") return false;
-
     evt.preventDefault();
 
     if (evt.key == "Backspace") evt.preventDefault();
