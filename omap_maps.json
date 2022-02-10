@@ -8,13 +8,16 @@
         "maxzoom":18
      },
 
- 
 
-        {
-         "name":"Google Satelite",
+ 
+          {
+         "name":"Satelite",
          "type":"map",
-         "url":"http://mt0.google.com/vt/lyrs=r&hl=en&x={x}&y={y}&z={z}",
+         "url":"https://clarity.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{zoom}/{y}/{x}",
          "attribution":"Google",
         "maxzoom":18
      }
+
+
+     
 ]

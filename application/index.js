@@ -199,6 +199,7 @@ document.addEventListener("DOMContentLoaded", function () {
         '<div class="item" data-map="earthquake">Earthquake <i>Layer</i></div>'
       );
 
+
     find_gpx();
     find_geojson();
     load_maps();
