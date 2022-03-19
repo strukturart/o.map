@@ -1,7 +1,3 @@
-if (window.NodeList && !NodeList.prototype.forEach) {
-  NodeList.prototype.forEach = Array.prototype.forEach;
-}
-
 const helper = (() => {
   let isOnline = function () {
     var xhttp = new XMLHttpRequest({
@@ -97,6 +93,27 @@ const helper = (() => {
     }, time);
   };
 
+  //get location by ip
+  let geoip = function (callback) {
+    const url =
+      "https://api.freegeoip.app/json/?apikey=2a0f8c30-844a-11ec-b0fe-af6fd1eb1209";
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.open("GET", url);
+
+    xhr.responseType = "json";
+
+    xhr.send();
+
+    xhr.onload = function () {
+      let responseObj = xhr.response;
+      let latlng = [responseObj.latitude, responseObj.longitude];
+      console.log(JSON.stringify(latlng));
+      callback(latlng);
+    };
+  };
+
   //goodbye
 
   let goodbye = function () {
@@ -156,8 +173,13 @@ const helper = (() => {
     goodbye,
     isOnline,
     allow_unsecure,
+    geoip,
   };
 })();
+
+if (window.NodeList && !NodeList.prototype.forEach) {
+  NodeList.prototype.forEach = Array.prototype.forEach;
+}
 
 function notify(param_title, param_text, param_silent) {
   var options = {

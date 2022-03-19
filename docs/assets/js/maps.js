@@ -132,6 +132,7 @@ const maps = (() => {
   let overlayer = "";
 
   let addMap = function (url, attribution, max_zoom, type) {
+    console.log(url, attribution, max_zoom, type);
     //map
     if (type == "map") {
       if (map.hasLayer(tilesLayer)) {
@@ -158,7 +159,7 @@ const maps = (() => {
           url = url.replace("{y}", "1");
           url = url.replace("{x}", "1");
 
-          helper.allow_unsecure(url);
+          //helper.allow_unsecure(url);
         });
       }
 
@@ -176,15 +177,7 @@ const maps = (() => {
         return false;
       }
 
-      overlayer = L.tileLayer(url, {
-        useCache: true,
-        saveToCache: false,
-        crossOrigin: true,
-        cacheMaxAge: caching_time,
-        useOnlyCache: false,
-        maxZoom: max_zoom,
-        attribution: attribution,
-      });
+      overlayer = L.tileLayer(url);
 
       map.addLayer(overlayer);
       caching_events();
@@ -234,7 +227,6 @@ const maps = (() => {
           // Marker Icon
           pointToLayer: function (feature, latlng) {
             if (feature.properties.type == "earthquake") {
-              console.log(latlng);
               let t = L.marker(latlng, {
                 icon: L.divIcon({
                   html: '<i class="eq-marker"></i>',
