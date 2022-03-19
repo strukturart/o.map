@@ -122,7 +122,7 @@ const search = (() => {
       document.getElementById("search-info").style.display = "none";
 
       input_val = input_val.replace("/", "");
-      $("#search").autocomplete().disable();
+      //$("#search").autocomplete().disable();
 
       document.querySelector("div#olc").style.display = "block";
       document.querySelector("#olc").innerText = OLC.decode(input_val);

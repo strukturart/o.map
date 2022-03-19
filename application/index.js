@@ -199,7 +199,6 @@ document.addEventListener("DOMContentLoaded", function () {
         '<div class="item" data-map="earthquake">Earthquake <i>Layer</i></div>'
       );
 
-
     find_gpx();
     find_geojson();
     load_maps();
@@ -333,6 +332,111 @@ document.addEventListener("DOMContentLoaded", function () {
 
       reader.readAsText(file);
     });
+  };
+  ///////////////
+  ///OSM SERVER
+  /////////////
+
+  let osm_server_list_gpx = function () {
+    //alert(localStorage.getItem("openstreetmap_token"));
+    let n = "Bearer " + localStorage.getItem("openstreetmap_token");
+
+    const myHeaders = new Headers({
+      Authorization: n,
+    });
+
+    return fetch("https://api.openstreetmap.org/api/0.6/user/gpx_files", {
+      method: "GET",
+      headers: myHeaders,
+    })
+      .then((response) => response.text())
+      .then((data) => {
+        document.querySelector("div#osm-server-gpx").innerHTML = "";
+        //alert(data);
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(data, "application/xml");
+        let s = xml.getElementsByTagName("gpx_file");
+        for (let i = 0; i < s.length; i++) {
+          let m = {
+            name: s[i].getAttribute("name"),
+            id: s[i].getAttribute("id"),
+            tag: s[i].childNodes[0].innerText,
+          };
+
+          // alert(m.tag);
+          document
+            .querySelector("div#osm-server-gpx")
+            .insertAdjacentHTML(
+              "afterend",
+              '<div class="item" data-id=' +
+                m.id +
+                ' data-map="gpx-osm">' +
+                m.name +
+                "</div>"
+            );
+          //alert(s[i].getAttribute('name'));
+        }
+      })
+
+      .catch((error) => {
+        alert(error);
+      });
+  };
+
+  if (
+    localStorage.getItem("openstreetmap_token") != null ||
+    localStorage.getItem("openstreetmap_token") != ""
+  ) {
+    osm_server_list_gpx();
+  }
+
+  let osm_server_load_gpx = function (id) {
+    let n = "Bearer " + localStorage.getItem("openstreetmap_token");
+
+    const myHeaders = new Headers({
+      Authorization: n,
+    });
+
+    fetch("https://api.openstreetmap.org/api/0.6/gpx/" + id + "/data", {
+      method: "GET",
+      headers: myHeaders,
+      redirect: "follow",
+    })
+      .then(function (response) {
+        alert(response.status);
+        if (response.ok) {
+          return response.blob();
+        } else {
+          throw new Error(Error);
+        }
+      })
+      .then(function (data) {
+        alert(data);
+
+        var file = window.URL.createObjectURL(data);
+        window.location.assign(file);
+      })
+      .catch(function (error) {
+        alert(error);
+      });
+  };
+
+  let OAuth_osm = function () {
+    let n = window.location.href;
+    const url = new URL("https://www.openstreetmap.org/oauth2/authorize");
+    url.searchParams.append("response_type", "code");
+    url.searchParams.append(
+      "client_id",
+      "KEcqDV16BjfRr-kYuOyRGmiQcx6YCyRz8T21UjtQWy4"
+    );
+    url.searchParams.append(
+      "redirect_uri",
+      "https://strukturart.github.io/o.map/"
+    );
+    url.searchParams.append("scope", "read_gpx");
+    const windowRef = window.open(url.toString());
+
+    windowRef.addEventListener("tokens", (ev) => alert("got tokens", ev));
   };
 
   //////////////////////////////////
@@ -700,6 +804,10 @@ document.addEventListener("DOMContentLoaded", function () {
         //add gpx data
         if (item_value == "gpx") {
           module.loadGPX(document.activeElement.innerText);
+        }
+
+        if (item_value == "gpx-osm") {
+          osm_server_load_gpx(document.activeElement.getAttribute("data-id"));
         }
       }
     }
@@ -1389,6 +1497,18 @@ document.addEventListener("DOMContentLoaded", function () {
           document.activeElement == document.getElementById("save-settings")
         ) {
           settings.save_settings();
+          break;
+        }
+
+        if (document.activeElement == document.getElementById("oauth")) {
+          OAuth_osm();
+
+          break;
+        }
+
+        if (document.activeElement == document.getElementById("list-osm-gpx")) {
+          osm_server_list_gpx();
+
           break;
         }
 

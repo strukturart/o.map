@@ -14,12 +14,19 @@
 
   "developer": {
     "name": "strukturart",
-    "url": "https://github.com/strukturart/osm-map"
+    "url": "https://github.com/strukturart/o.map"
   },
 
   "dependencies": {
     "ads-sdk": "1.5.0"
   },
+
+  "redirects": [
+    {
+      "from": "https://strukturart.github.io/o.map/oauth.html",
+      "to": "/oauth.html"
+    }
+  ],
 
   "locales": {
     "en-US": {
