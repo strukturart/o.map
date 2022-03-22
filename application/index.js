@@ -431,7 +431,7 @@ document.addEventListener("DOMContentLoaded", function () {
     );
     url.searchParams.append(
       "redirect_uri",
-      "https://strukturart.github.io/o.map/oauth.html"
+      "https://strukturart.github.io/o.map/"
     );
     url.searchParams.append("scope", "read_gpx");
     const windowRef = window.open(url.toString());

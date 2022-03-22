@@ -23,7 +23,8 @@
 
   "redirects": [
     {
-      "from": "https://strukturart.github.io/o.map/oauth.html",
+
+      "from": "https://strukturart.github.io/o.map/",
       "to": "/oauth.html"
     }
   ],
