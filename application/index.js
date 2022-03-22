@@ -338,7 +338,6 @@ document.addEventListener("DOMContentLoaded", function () {
   /////////////
 
   let osm_server_list_gpx = function () {
-    //alert(localStorage.getItem("openstreetmap_token"));
     let n = "Bearer " + localStorage.getItem("openstreetmap_token");
 
     const myHeaders = new Headers({
@@ -391,35 +390,33 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   let osm_server_load_gpx = function (id) {
-    let n = "Bearer " + localStorage.getItem("openstreetmap_token");
+    let token = localStorage.getItem("openstreetmap_token");
+    let n = "Bearer " + token;
+    let url = "https://api.openstreetmap.org/api/0.6/gpx/" + id + "/data";
+    let xmlhttp = new XMLHttpRequest();
 
-    const myHeaders = new Headers({
-      Authorization: n,
-    });
+    xmlhttp.onreadystatechange = function () {
+      helper.toaster(xmlhttp.status, 1000);
+      helper.toaster(xmlhttp.response, 1000);
+    };
 
-    fetch("https://api.openstreetmap.org/api/0.6/gpx/" + id + "/data", {
-      method: "GET",
-      headers: myHeaders,
-      redirect: "follow",
-    })
-      .then(function (response) {
-        alert(response.status);
-        if (response.ok) {
-          return response.blob();
-        } else {
-          throw new Error(Error);
-        }
-      })
-      .then(function (data) {
-        alert(data);
+    xmlhttp.onload = function () {
+      if (xhr.status != 200) {
+        // HTTP error?
+        // handle error
+        alert("Error: " + xhr.status);
+        return;
+      }
 
-        var file = window.URL.createObjectURL(data);
-        window.location.assign(file);
-      })
-      .catch(function (error) {
-        alert(error);
-      });
-  };
+      // get the response from xhr.response
+    };
+
+    xmlhttp.open("GET", url, true);
+    xmlhttp.setRequestHeader("Authorization", n);
+    xmlhttp.withCredentials = true;
+    xmlhttp.timeout = 2000;
+    xmlhttp.send(null);
+  };;
 
   let OAuth_osm = function () {
     let n = window.location.href;
