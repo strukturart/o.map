@@ -963,40 +963,40 @@ document.addEventListener("DOMContentLoaded", function () {
   map.on("zoomend", function (ev) {
     let zoom_level = map.getZoom();
     if (zoom_level < 2) {
-      general.step = 10;
+      general.step = 20;
     }
     if (zoom_level > 2) {
-      general.step = 7.5;
+      general.step = 8;
     }
     if (zoom_level > 3) {
-      general.step = 5;
+      general.step = 4.5;
     }
     if (zoom_level > 4) {
-      general.step = 1;
+      general.step = 2.75;
     }
     if (zoom_level > 5) {
-      general.step = 0.5;
+      general.step = 1.2;
     }
     if (zoom_level > 6) {
-      general.step = 0.25;
+      general.step = 0.5;
     }
     if (zoom_level > 7) {
-      general.step = 0.1;
+      general.step = 0.3;
     }
     if (zoom_level > 8) {
-      general.step = 0.075;
+      general.step = 0.15;
     }
     if (zoom_level > 9) {
-      general.step = 0.05;
+      general.step = 0.075;
     }
     if (zoom_level > 10) {
-      general.step = 0.025;
+      general.step = 0.04;
     }
     if (zoom_level > 11) {
-      general.step = 0.01;
+      general.step = 0.02;
     }
     if (zoom_level > 12) {
-      general.step = 0.0075;
+      general.step = 0.01;
     }
     if (zoom_level > 13) {
       general.step = 0.005;
@@ -1008,7 +1008,7 @@ document.addEventListener("DOMContentLoaded", function () {
       general.step = 0.001;
     }
     if (zoom_level > 16) {
-      general.step = 0.0001;
+      general.step = 0.0005;
     }
   });
 
