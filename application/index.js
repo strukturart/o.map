@@ -339,6 +339,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let osm_server_list_gpx = function () {
     let n = "Bearer " + localStorage.getItem("openstreetmap_token");
+    //let token = "C_6istcvv43Lu6mQqfA0HqVQJ4jC6b_4L7mL6JSsXZs";
+    //n = "Bearer " + token;
 
     const myHeaders = new Headers({
       Authorization: n,
@@ -391,32 +393,42 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let osm_server_load_gpx = function (id) {
     let token = localStorage.getItem("openstreetmap_token");
-    let n = "Bearer " + token;
+    console.log(token);
+    //token = "C_6istcvv43Lu6mQqfA0HqVQJ4jC6b_4L7mL6JSsXZs ";
+    let nn = "Bearer " + token;
     let url = "https://api.openstreetmap.org/api/0.6/gpx/" + id + "/data";
     let xmlhttp = new XMLHttpRequest();
 
+    helper.toaster(id, 1000);
+
     xmlhttp.onreadystatechange = function () {
-      helper.toaster(xmlhttp.status, 1000);
-      helper.toaster(xmlhttp.response, 1000);
+      console.log(xmlhttp.getResponseHeader("Location"));
+    };
+
+    xmlhttp.onloadend = function () {
+      console.log(xmlhttp.getResponseHeader("Location"));
     };
 
     xmlhttp.onload = function () {
-      if (xhr.status != 200) {
-        // HTTP error?
-        // handle error
-        alert("Error: " + xhr.status);
-        return;
-      }
-
-      // get the response from xhr.response
+      console.log(xmlhttp.getResponseHeader("Location"));
     };
 
+    xmlhttp.onerror = function () {
+      console.log(xmlhttp.getResponseHeader("Location"));
+    };
+
+    console.log(xmlhttp.status);
+
     xmlhttp.open("GET", url, true);
-    xmlhttp.setRequestHeader("Authorization", n);
-    xmlhttp.withCredentials = true;
-    xmlhttp.timeout = 2000;
+
+    xmlhttp.setRequestHeader("Authorization", nn);
+    xmlhttp.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+    xmlhttp.setRequestHeader("Access-Control-Request-Method", "GET");
+    xmlhttp.setRequestHeader("Access-Control-Allow-Methods", "GET");
+
     xmlhttp.send(null);
-  };;
+    helper.toaster("done", 1000);
+  };
 
   let OAuth_osm = function () {
     let n = window.location.href;

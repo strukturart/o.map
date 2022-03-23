@@ -338,8 +338,9 @@ document.addEventListener("DOMContentLoaded", function () {
   /////////////
 
   let osm_server_list_gpx = function () {
-    //alert(localStorage.getItem("openstreetmap_token"));
     let n = "Bearer " + localStorage.getItem("openstreetmap_token");
+    let token = "pVOCkTG-lfDjps6HMXEYDE_tBsnW76fT-Xnl8WFuX70";
+    n = "Bearer " + token;
 
     const myHeaders = new Headers({
       Authorization: n,
@@ -391,34 +392,36 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   let osm_server_load_gpx = function (id) {
-    let n = "Bearer " + localStorage.getItem("openstreetmap_token");
+    let token = localStorage.getItem("openstreetmap_token");
+    console.log(token);
+    token = "pVOCkTG-lfDjps6HMXEYDE_tBsnW76fT-Xnl8WFuX70";
+    let nn = "Bearer " + token;
+    let url = "https://api.openstreetmap.org/api/0.6/gpx/" + id + "/data";
+    let xmlhttp = new XMLHttpRequest();
 
-    const myHeaders = new Headers({
-      Authorization: n,
-    });
+    xmlhttp.onreadystatechange = function () {
+      helper.toaster(xmlhttp.statusText, 1000);
+      //alert(xmlhttp.requestURL);
+      console.log(xmlhttp.getResponseHeader("Location"));
+    };
 
-    fetch("https://api.openstreetmap.org/api/0.6/gpx/" + id + "/data", {
-      method: "GET",
-      headers: myHeaders,
-      redirect: "follow",
-    })
-      .then(function (response) {
-        alert(response.status);
-        if (response.ok) {
-          return response.blob();
-        } else {
-          throw new Error(Error);
-        }
-      })
-      .then(function (data) {
-        alert(data);
+    xmlhttp.onloadend = function () {
+      console.log(xmlhttp.getResponseHeader("Location"));
+    };
 
-        var file = window.URL.createObjectURL(data);
-        window.location.assign(file);
-      })
-      .catch(function (error) {
-        alert(error);
-      });
+    xmlhttp.onload = function () {
+      console.log(xmlhttp.getResponseHeader("Location"));
+    };
+
+    xmlhttp.open("GET", url, true);
+
+    xmlhttp.setRequestHeader("Authorization", nn);
+    xmlhttp.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+    xmlhttp.setRequestHeader("Access-Control-Request-Method", "GET");
+    xmlhttp.setRequestHeader("Access-Control-Allow-Methods", "GET");
+
+    xmlhttp.send(null);
+    helper.toaster("done", 1000);
   };
 
   let OAuth_osm = function () {
@@ -431,7 +434,7 @@ document.addEventListener("DOMContentLoaded", function () {
     );
     url.searchParams.append(
       "redirect_uri",
-      "https://strukturart.github.io/o.map/oauth.html"
+      "https://strukturart.github.io/o.map/"
     );
     url.searchParams.append("scope", "read_gpx");
     const windowRef = window.open(url.toString());
@@ -963,40 +966,40 @@ document.addEventListener("DOMContentLoaded", function () {
   map.on("zoomend", function (ev) {
     let zoom_level = map.getZoom();
     if (zoom_level < 2) {
-      general.step = 10;
+      general.step = 20;
     }
     if (zoom_level > 2) {
-      general.step = 7.5;
+      general.step = 8;
     }
     if (zoom_level > 3) {
-      general.step = 5;
+      general.step = 4.5;
     }
     if (zoom_level > 4) {
-      general.step = 1;
+      general.step = 2.75;
     }
     if (zoom_level > 5) {
-      general.step = 0.5;
+      general.step = 1.2;
     }
     if (zoom_level > 6) {
-      general.step = 0.25;
+      general.step = 0.5;
     }
     if (zoom_level > 7) {
-      general.step = 0.1;
+      general.step = 0.3;
     }
     if (zoom_level > 8) {
-      general.step = 0.075;
+      general.step = 0.15;
     }
     if (zoom_level > 9) {
-      general.step = 0.05;
+      general.step = 0.075;
     }
     if (zoom_level > 10) {
-      general.step = 0.025;
+      general.step = 0.04;
     }
     if (zoom_level > 11) {
-      general.step = 0.01;
+      general.step = 0.02;
     }
     if (zoom_level > 12) {
-      general.step = 0.0075;
+      general.step = 0.01;
     }
     if (zoom_level > 13) {
       general.step = 0.005;
@@ -1008,7 +1011,7 @@ document.addEventListener("DOMContentLoaded", function () {
       general.step = 0.001;
     }
     if (zoom_level > 16) {
-      general.step = 0.0001;
+      general.step = 0.0005;
     }
   });
 
