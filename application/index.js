@@ -41,6 +41,8 @@ let setting = {
     localStorage.getItem("export-path") != null
       ? localStorage.getItem("export-path")
       : "",
+  osm_tag: localStorage.getItem("osm-tag"),
+
   cache_time: localStorage.getItem("cache-time"),
   cache_zoom: localStorage.getItem("cache-zoom"),
   openweather_api: localStorage.getItem("owm-key"),
@@ -339,8 +341,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let osm_server_list_gpx = function () {
     let n = "Bearer " + localStorage.getItem("openstreetmap_token");
-    //let token = "C_6istcvv43Lu6mQqfA0HqVQJ4jC6b_4L7mL6JSsXZs";
-    //n = "Bearer " + token;
 
     const myHeaders = new Headers({
       Authorization: n,
@@ -353,34 +353,55 @@ document.addEventListener("DOMContentLoaded", function () {
       .then((response) => response.text())
       .then((data) => {
         document.querySelector("div#osm-server-gpx").innerHTML = "";
-        //alert(data);
         const parser = new DOMParser();
         const xml = parser.parseFromString(data, "application/xml");
         let s = xml.getElementsByTagName("gpx_file");
+        //filter by tag
         for (let i = 0; i < s.length; i++) {
-          let m = {
-            name: s[i].getAttribute("name"),
-            id: s[i].getAttribute("id"),
-            tag: s[i].childNodes[0].innerText,
-          };
+          if (setting.osm_tag == null || setting.osm_tag == "") {
+            let m = {
+              name: s[i].getAttribute("name"),
+              id: s[i].getAttribute("id"),
+            };
 
-          // alert(m.tag);
-          document
-            .querySelector("div#osm-server-gpx")
-            .insertAdjacentHTML(
-              "afterend",
-              '<div class="item" data-id=' +
-                m.id +
-                ' data-map="gpx-osm">' +
-                m.name +
-                "</div>"
-            );
-          //alert(s[i].getAttribute('name'));
+            document
+              .querySelector("div#osm-server-gpx")
+              .insertAdjacentHTML(
+                "afterend",
+                '<div class="item" data-id=' +
+                  m.id +
+                  ' data-map="gpx-osm">' +
+                  m.name +
+                  "</div>"
+              );
+          } else {
+            for (let n = 0; n < s[i].childNodes.length; n++) {
+              if (s[i].childNodes[n].tagName == "tag") {
+                if (s[i].childNodes[n].textContent == setting.osm_tag) {
+                  let m = {
+                    name: s[i].getAttribute("name"),
+                    id: s[i].getAttribute("id"),
+                  };
+
+                  document
+                    .querySelector("div#osm-server-gpx")
+                    .insertAdjacentHTML(
+                      "afterend",
+                      '<div class="item" data-id=' +
+                        m.id +
+                        ' data-map="gpx-osm">' +
+                        m.name +
+                        "</div>"
+                    );
+                }
+              }
+            }
+          }
         }
       })
 
       .catch((error) => {
-        alert(error);
+        console.log(error);
       });
   };
 
@@ -392,42 +413,35 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   let osm_server_load_gpx = function (id) {
-    let token = localStorage.getItem("openstreetmap_token");
-    console.log(token);
-    //token = "C_6istcvv43Lu6mQqfA0HqVQJ4jC6b_4L7mL6JSsXZs ";
-    let nn = "Bearer " + token;
-    let url = "https://api.openstreetmap.org/api/0.6/gpx/" + id + "/data";
-    let xmlhttp = new XMLHttpRequest();
+    let n = "Bearer " + localStorage.getItem("openstreetmap_token");
 
-    helper.toaster(id, 1000);
+    const myHeaders = new Headers({
+      Authorization: n,
+      Accept: "application/gpx+xml",
+    });
 
-    xmlhttp.onreadystatechange = function () {
-      console.log(xmlhttp.getResponseHeader("Location"));
-    };
+    return fetch("https://api.openstreetmap.org/api/0.6/gpx/" + id + "/data", {
+      method: "GET",
+      headers: myHeaders,
+    })
+      .then((response) => response.text())
+      .then((data) => {
+        var gpx = data;
+        new L.GPX(gpx, {
+          async: true,
+        })
+          .on("loaded", function (e) {
+            map.fitBounds(e.target.getBounds());
+          })
+          .addTo(map);
 
-    xmlhttp.onloadend = function () {
-      console.log(xmlhttp.getResponseHeader("Location"));
-    };
+        document.querySelector("div#finder").style.display = "none";
+        status.windowOpen = "map";
+      })
 
-    xmlhttp.onload = function () {
-      console.log(xmlhttp.getResponseHeader("Location"));
-    };
-
-    xmlhttp.onerror = function () {
-      console.log(xmlhttp.getResponseHeader("Location"));
-    };
-
-    console.log(xmlhttp.status);
-
-    xmlhttp.open("GET", url, true);
-
-    xmlhttp.setRequestHeader("Authorization", nn);
-    xmlhttp.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-    xmlhttp.setRequestHeader("Access-Control-Request-Method", "GET");
-    xmlhttp.setRequestHeader("Access-Control-Allow-Methods", "GET");
-
-    xmlhttp.send(null);
-    helper.toaster("done", 1000);
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   let OAuth_osm = function () {
@@ -440,12 +454,12 @@ document.addEventListener("DOMContentLoaded", function () {
     );
     url.searchParams.append(
       "redirect_uri",
-      "https://strukturart.github.io/o.map/"
+      "https://strukturart.github.io/o.map/oauth.html"
     );
     url.searchParams.append("scope", "read_gpx");
     const windowRef = window.open(url.toString());
 
-    windowRef.addEventListener("tokens", (ev) => alert("got tokens", ev));
+    windowRef.addEventListener("tokens", (ev) => osm_server_list_gpx());
   };
 
   //////////////////////////////////

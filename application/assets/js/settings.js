@@ -14,6 +14,8 @@ const settings = ((_) => {
       document.getElementById("export-path").value
     );
 
+    localStorage.setItem("osm-tag", document.getElementById("osm-tag").value);
+
     helper.toaster("saved successfully", 2000);
   };
 
@@ -40,6 +42,7 @@ const settings = ((_) => {
     document.getElementById("cache-time").value = setting.cache_time;
     document.getElementById("cache-zoom").value = setting.cache_zoom;
     document.getElementById("export-path").value = setting.export_path;
+    document.getElementById("osm-tag").value = setting.osm_tag;
 
     setting.tracking_screenlock
       ? (document.getElementById("screenlock-ckb").checked = true)

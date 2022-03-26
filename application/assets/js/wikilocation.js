@@ -4,16 +4,16 @@
 const wikilocation = (() => {
   let load = function () {
     let source_url =
-      'https://wikipedia.org/w/api.php?action=query&format=json&list=geosearch&gscoord=' +
+      "https://wikipedia.org/w/api.php?action=query&format=json&list=geosearch&gscoord=" +
       mainmarker.current_lat +
-      '|' +
+      "|" +
       mainmarker.current_lng +
-      '&gsradius=10000&gslimit=5';
+      "&gsradius=10000&gslimit=5";
     let xhttp = new XMLHttpRequest({
       mozSystem: true,
     });
 
-    xhttp.open('GET', source_url, true);
+    xhttp.open("GET", source_url, true);
     xhttp.timeout = 5000;
     xhttp.onload = function () {
       if (xhttp.readyState === xhttp.DONE && xhttp.status === 200) {
@@ -33,10 +33,17 @@ const wikilocation = (() => {
       write_error();
     };
 
-    xhttp.send();
-    let el = document.querySelector('div#wikilocation');
+    xhttp.setRequestHeader(
+      "Access-Control-Allow-Origin",
+      "https://strukturart.github.io/o.map/"
+    );
+    xhttp.setRequestHeader("Access-Control-Allow-Credentials", true);
+    xhttp.setRequestHeader("Content-Type", "application/json");
+    xhttp.send(null);
+
+    let el = document.querySelector("div#wikilocation");
     let write_error = function () {
-      el.insertAdjacentHTML('afterbegin', '<div>nothing to show</div>');
+      el.insertAdjacentHTML("afterbegin", "<div>nothing to show</div>");
     };
 
     let write_data = function (json) {
@@ -45,12 +52,12 @@ const wikilocation = (() => {
       }
       json.query.geosearch.forEach(function (element) {
         el.insertAdjacentHTML(
-          'afterbegin',
+          "afterbegin",
           "<button class='link item button' data-href='https://en.m.wikipedia.org/?curid=" +
             element.pageid +
             "'>" +
             element.title +
-            '</button>'
+            "</button>"
         );
       });
     };
