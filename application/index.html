@@ -39,9 +39,7 @@
 
     <script id="template-search" type="x-tmpl-mustache">
       {{#data}}
-    
-        <li class="items" tabindex={{index}} data-latlng="{{ lat }}, {{ lng }}"> {{ name }}
-        </li>
+        <li class="items" tabindex={{index}} data-latlng="{{ lat }}, {{ lng }}"> {{ name }}</li>
       {{/data}}
     
     </script>
@@ -198,13 +196,13 @@
             <h2>LAYERS</h2>
             <div id="layers"></div>
 
-            <h2>TRACKS & Markers</h2>
+            <h2 id="tracks-title">TRACKS & Markers</h2>
             <div id="tracksmarkers"></div>
 
-            <h2>GPX</h2>
+            <h2  id="gpx-title">GPX</h2>
             <div id="gpx"></div>
             
-            <h2>OSM SERVER GPX</h2>
+            <h2 id="osm-server-gpx-title">OSM SERVER GPX</h2>
             <div id="osm-server-gpx"></div>
         </div>
 
@@ -264,7 +262,6 @@
 
             <button  class="item" id="clear-cache" tabindex="8">clear offline cache</button>
 
-            <h2>openstreetmap.org</h2>
             <h2>connect with openstreetmap.org</h2>
             <button class="item" id="oauth" tabindex="8">connect</button>
 
@@ -293,6 +290,7 @@
 
 
         <div class="panel" id="wikilocation" name="Wikilocation"></div>
+
         <div class="panel" id="shortcuts" name="Shortcuts">
             <div class="item start-stop-tracking" autofocus  tabindex="0" data-map="tracking">
                 <div class="flex justify-content-spacebetween">
@@ -421,16 +419,13 @@
                 <h2>Software</h2>
                 <li>o.map <span>UNLICENSE</span></li>
                 <li>Leaflet <span>BSD-2-Clause License</span></li>
-                <li>Ajax AutoComplete <span>MIT License</span></li>
                 <li>leaflet.tilelayer.pouchdbcached <span>MIT license</span></li>
-                <li>leaflet ruler <span>MIT License</span></li>
+                <li>gpx.js <span>MIT License</span></li>
             </ul>       
             <ul>
                 <h2>Maps and Layers</h2>
                 <li>openstreetmap</li>
                 <li>opentopomap</li>
-                <li>earthquake.usgs.gov</li>
-                <li>openrailwaymap.org</li>
                 <li>openweathermap.org</li>
             </ul>
             <ul>
@@ -460,7 +455,6 @@
 
   
     <script defer src="assets/js/suncalc.js"></script>
-
     <script defer src="assets/js/wikilocation.js"></script>
     <script defer src="assets/js/jsQR.js"></script>
     <script defer src="assets/js/scan.js"></script>
