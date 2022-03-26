@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", function () {
   //load KaiOs ads or not
   settings.load_settings();
 
-  function manifest(a) {
+  let manifest = function (a) {
     document.getElementById("intro-footer").innerText =
       "O.MAP Version " + a.manifest.version;
     if (a.installOrigin == "app://kaios-plus.kaiostech.com") {
@@ -130,11 +130,11 @@ document.addEventListener("DOMContentLoaded", function () {
       document.querySelector("#ads-container iframe").src = "ads.html";
     } else {
       console.log("Ads free");
-
       let t = document.getElementById("kaisos-ads");
       t.remove();
     }
-  }
+  };
+
   helper.getManifest(manifest);
   let geoip_callback = function (data) {
     mainmarker.current_lat = data[0];
@@ -192,13 +192,6 @@ document.addEventListener("DOMContentLoaded", function () {
       .insertAdjacentHTML(
         "afterend",
         '<div class="item" data-map="weather">Weather <i>Layer</i></div>'
-      );
-
-    document
-      .querySelector("div#layers")
-      .insertAdjacentHTML(
-        "afterend",
-        '<div class="item" data-map="earthquake">Earthquake <i>Layer</i></div>'
       );
 
     find_gpx();
@@ -462,16 +455,11 @@ document.addEventListener("DOMContentLoaded", function () {
     windowRef.addEventListener("tokens", (ev) => osm_server_list_gpx());
   };
 
-  if (
-    localStorage.getItem("openstreetmap_token") != null ||
-    localStorage.getItem("openstreetmap_token") != "" ||
-    localStorage.getItem("openstreetmap_token") != undefined
-  ) {
-    osm_server_list_gpx();
-    document.getElementById("osm-server-gpx-title").style.display = "block";
-  }
   if (localStorage.getItem("openstreetmap_token") == null) {
     document.getElementById("osm-server-gpx-title").style.display = "none";
+  } else {
+    osm_server_list_gpx();
+    document.getElementById("osm-server-gpx-title").style.display = "block";
   }
 
   //////////////////////////////////
@@ -548,10 +536,7 @@ document.addEventListener("DOMContentLoaded", function () {
       localStorage.setItem("last_location", JSON.stringify(b));
 
       if (option == "init") {
-        geolocationWatch();
-
-        current_lng = crd.longitude;
-        current_lat = crd.latitude;
+        geolocationWatch(true);
 
         document.getElementById("cross").style.opacity = 1;
 
@@ -594,7 +579,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let state_geoloc = false;
   let geoLoc = navigator.geolocation;
 
-  function geolocationWatch() {
+  function geolocationWatch(init) {
     state_geoloc = true;
     function showLocation(position) {
       let crd = position.coords;
@@ -606,6 +591,11 @@ document.addEventListener("DOMContentLoaded", function () {
       mainmarker.device_lat = crd.latitude;
       mainmarker.device_lng = crd.longitude;
       mainmarker.device_alt = crd.altitude;
+
+      if (init) {
+        mainmarker.current_lng = crd.longitude;
+        mainmarker.current_lat = crd.latitude;
+      }
 
       if (mainmarker.tracking == false) {
         myMarker.setIcon(maps.default_icon);
@@ -739,13 +729,6 @@ document.addEventListener("DOMContentLoaded", function () {
           maps.weather_map();
           document.querySelector("div#finder").style.display = "none";
           status.windowOpen = "map";
-        }
-
-        if (item_value == "earthquake") {
-          maps.earthquake_layer();
-          document.querySelector("div#finder").style.display = "none";
-          status.windowOpen = "map";
-          maps.attribution();
         }
 
         if (item_value == "share") {
@@ -1106,21 +1089,19 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     if (dir == "start") {
-      finder_tabindex();
     }
 
     if (dir == "+1") {
       count++;
       if (count == finder_panels.length - 1) count = 0;
-      finder_tabindex();
     }
     if (dir == "-1") {
       count--;
       if (count == -1) count = finder_panels.length - 1;
-      finder_tabindex();
     }
 
     document.getElementById(finder_panels[count].id).style.display = "block";
+    finder_tabindex();
 
     top_bar("◀", finder_panels[count].name, "▶");
 
@@ -1287,7 +1268,6 @@ document.addEventListener("DOMContentLoaded", function () {
       case "Backspace":
         window.close();
         if (status.windowOpen == "map") {
-          //status.windowOpen = "";
           status.crash = false;
           localStorage.setItem("crash", "false");
           window.goodbye();

@@ -132,7 +132,6 @@ const maps = (() => {
   let overlayer = "";
 
   let addMap = function (url, attribution, max_zoom, type) {
-    console.log(url, attribution, max_zoom, type);
     //map
     if (type == "map") {
       if (map.hasLayer(tilesLayer)) {
@@ -158,8 +157,6 @@ const maps = (() => {
           url = url.replace("{z}", "1");
           url = url.replace("{y}", "1");
           url = url.replace("{x}", "1");
-
-          //helper.allow_unsecure(url);
         });
       }
 
@@ -190,72 +187,6 @@ const maps = (() => {
       return false;
     }
   });
-
-  function formatDate(date, format) {
-    const map = {
-      mm: date.getMonth() + 1,
-      dd: date.getDate(),
-      yy: date.getFullYear().toString().slice(-2),
-      yyyy: date.getFullYear(),
-    };
-
-    return format.replace(/mm|dd|yy|yyy/gi, (matched) => map[matched]);
-  }
-
-  let markers_group_eq = new L.FeatureGroup();
-  let earthquake_layer = function () {
-    top_bar("", "", "");
-    if (map.hasLayer(markers_group_eq)) {
-      map.removeLayer(markers_group_eq);
-      return false;
-    }
-
-    const today = new Date();
-    const two_days_before = new Date(Date.now() - 24 * 3600 * 1000);
-
-    fetch(
-      "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=" +
-        formatDate(two_days_before, "yy-mm-dd") +
-        "&endtime=" +
-        formatDate(today, "yy-mm-dd")
-    )
-      .then(function (response) {
-        return response.json();
-      })
-      .then(function (data) {
-        L.geoJSON(data, {
-          // Marker Icon
-          pointToLayer: function (feature, latlng) {
-            if (feature.properties.type == "earthquake") {
-              let t = L.marker(latlng, {
-                icon: L.divIcon({
-                  html: '<i class="eq-marker"></i>',
-                  iconSize: [10, 10],
-                  className: "earthquake-marker",
-                }),
-              });
-              t.addTo(markers_group_eq);
-              map.addLayer(markers_group_eq);
-
-              status.windowOpen = "map";
-            }
-          },
-
-          // Popup
-          onEachFeature: function (feature, layer) {
-            console.log(feature);
-          },
-        }).addTo(map);
-
-        top_bar(
-          "",
-          formatDate(two_days_before, "yy-mm-dd") +
-            " - " +
-            formatDate(today, "yy-mm-dd"),
-          ""
-        );
-      });
-  };
 
   let formDat = function (timestamp) {
     (date = new Date(timestamp * 1000)),
@@ -466,7 +397,6 @@ const maps = (() => {
     select_icon,
     tracking_icon,
     attribution,
-    earthquake_layer,
     weather_map,
     caching_tiles,
     delete_cache,

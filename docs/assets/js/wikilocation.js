@@ -33,10 +33,7 @@ const wikilocation = (() => {
       write_error();
     };
 
-    xhttp.setRequestHeader(
-      "Access-Control-Allow-Origin",
-      "https://strukturart.github.io/o.map/"
-    );
+    xhttp.setRequestHeader("Acept", "application/json");
     xhttp.setRequestHeader("Access-Control-Allow-Credentials", true);
     xhttp.setRequestHeader("Content-Type", "application/json");
     xhttp.send(null);

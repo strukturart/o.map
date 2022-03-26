@@ -29,26 +29,6 @@ const helper = (() => {
     };
   };
 
-  /////////////////////
-  ///Let's Encrypt
-  ///////////////////
-
-  let allow_unsecure = function (url) {
-    status.windowOpen = "system";
-    search.hideSearch;
-
-    if (
-      confirm(
-        "It looks like the data cannot be loaded, do you want to try an unsafe version? If you press yes you will be redirected to the website that offers the data, there you have to accept the unsafe version."
-      )
-    ) {
-      // Save it!
-      window.open(url);
-    } else {
-      // Do nothing!
-    }
-  };
-
   let getManifest = function (callback) {
     if (!navigator.mozApps) {
       let t = document.getElementById("kaisos-ads");
@@ -172,7 +152,6 @@ const helper = (() => {
     deleteFile,
     goodbye,
     isOnline,
-    allow_unsecure,
     geoip,
   };
 })();
