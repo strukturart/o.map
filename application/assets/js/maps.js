@@ -54,10 +54,10 @@ const maps = (() => {
   let caching_events = function () {
     // Listen to cache hits and misses and spam the console
     tilesLayer.on("tilecachehit", function (ev) {
-      //console.log("Cache hit: ", ev.url);
+      console.log("Cache hit: ", ev.url);
     });
     tilesLayer.on("tilecachemiss", function (ev) {
-      //console.log("Cache miss: ", ev.url);
+      console.log("Cache miss: ", ev.url);
     });
     tilesLayer.on("tilecacheerror", function (ev) {
       console.log("Cache error: ", ev.tile, ev.error);
@@ -65,7 +65,7 @@ const maps = (() => {
   };
 
   let caching_tiles = function () {
-    if (status.caching_tiles_started) return false;
+    // if (status.caching_tiles_started) return false;
     let swLat = map.getBounds()._southWest.lat;
     let swLng = map.getBounds()._southWest.lng;
     let neLat = map.getBounds()._northEast.lat;
@@ -90,14 +90,15 @@ const maps = (() => {
     tilesLayer.on("seedend", function (seedData) {
       document.querySelector("div#top-bar div.button-center").innerText =
         "Downloads finished";
-      caching_tiles_started = false;
+      status.caching_tiles_started = false;
       setTimeout(() => {
         top_bar("", "", "");
       }, 2000);
     });
 
     tilesLayer.on("error", function (seedData) {
-      caching_tiles_started = false;
+      console.log(eror);
+      status.caching_tiles_started = false;
 
       document.querySelector("div#top-bar div.button-center").innerText =
         seedData;
@@ -140,12 +141,14 @@ const maps = (() => {
 
       tilesLayer = L.tileLayer(url, {
         useCache: true,
-        saveToCache: false,
+        saveToCache: true,
         crossOrigin: true,
         cacheMaxAge: caching_time,
         useOnlyCache: false,
         maxZoom: max_zoom,
         attribution: attribution,
+        format: "image/png",
+        transparent: true,
       });
 
       map.addLayer(tilesLayer);
