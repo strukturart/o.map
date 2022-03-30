@@ -36,13 +36,6 @@ let mainmarker = {
       : [0, 0],
 };
 
-if (
-  localStorage.getItem("cache-time") != null &&
-  localStorage.getItem("cache-time") != ""
-) {
-  alert("");
-}
-
 let setting = {
   export_path:
     localStorage.getItem("export-path") != null
@@ -50,16 +43,8 @@ let setting = {
       : "",
   osm_tag: localStorage.getItem("osm-tag"),
 
-  cache_time:
-    localStorage.getItem("cache-time") != null &&
-    localStorage.getItem("cache-time") != ""
-      ? localStorage.getItem("cache-time")
-      : "10",
-  cache_zoom:
-    localStorage.getItem("cache-zoom") != null &&
-    localStorage.getItem("cache-zoom") != ""
-      ? localStorage.getItem("cache-zoom")
-      : "12",
+  cache_time: localStorage["cache-time"] || "10",
+  cache_zoom: localStorage["cache-zoom"] || "12",
   openweather_api: localStorage.getItem("owm-key"),
   crosshair:
     localStorage.getItem("crosshair") != null
