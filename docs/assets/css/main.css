@@ -161,6 +161,11 @@ a.button:focus {
   background: var(--color-three);
 }
 
+a {
+  font-style: normal;
+  text-decoration: none;
+}
+
 #goodbye {
   position: fixed;
   z-index: 20000;

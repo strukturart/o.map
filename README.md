@@ -61,6 +61,7 @@ O.Map is an openstreetmap app for KaiOs, it is a good companion for your next ou
 ## import/export
 
 you have the possibility to import gpx and geojson. Markers can also be exported as geojson so that you can e.g. share them or edit them in another program.
+it is also possible to connect the app to your openstreetmap account to load gpx files from there.
 
 ## custom maps and layer
 
@@ -96,7 +97,7 @@ The search can be opened with key 2, you can search for locations or start the s
 
 ### Good to know
 
-Some layers cannot be loaded because KaiOs has not equipped the devices with a valid Let's Encrypt certificate. If your device is rooted you can do it yourself:
+Some layers cannot be loaded because KaiOs has not equipped all devices with a valid Let's Encrypt certificate. If your device is rooted you can do it yourself:
 https://github.com/openGiraffes/b2g-certificates
 
 ## Desktop Version
@@ -119,12 +120,20 @@ https://strukturart.github.io/o.map/
 - [Bananna Hackers Group](https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/bananahackers)
 - Luxferre [olc](https://gist.github.com/plugnburn/95de231ff94130f1de8eb2a2afaf8516)
 
-### License
+### LICENSES
+
+This software (except KaiAds) is open source and licensed under the MIT License. View the source code.
+OpenStreetMap is a trademark of the OpenStreetMap Foundation. o.map is not endorsed by or affiliated with the OpenStreetMap Foundation.
 
 - o.map [UNLICENSE](UNLICENSE)
 - Leaflet - BSD-2-Clause License
 - leaflet.tilelayer.pouchdbcached MIT license
-- wikipedia
+- wikipedia CC BY-SA License.
+- OpenStreetMap®
+
+### Privacy Policy
+
+This software uses KaiAds. This is a third party service that may collect information used to identify you. Pricacy policy of KaiAds.
 
 ### other map apps for KaiOs
 

@@ -121,15 +121,6 @@ const maps = (() => {
       });
   };
 
-  let attribution = function () {
-    document.querySelector(".leaflet-control-attribution").style.display =
-      "block";
-    setTimeout(function () {
-      document.querySelector(".leaflet-control-attribution").style.display =
-        "none";
-    }, 8000);
-  };
-
   let overlayer = "";
 
   let addMap = function (url, attribution, max_zoom, type) {
@@ -154,6 +145,7 @@ const maps = (() => {
       map.addLayer(tilesLayer);
       caching_events();
       localStorage.setItem("last_map", url);
+      general.last_map = url;
 
       if (helper.isOnline == true) {
         tilesLayer.on("tileerror", function (error, tile) {
@@ -165,10 +157,12 @@ const maps = (() => {
 
       document.querySelector(".leaflet-control-attribution").style.display =
         "block";
-      setTimeout(function () {
-        document.querySelector(".leaflet-control-attribution").style.display =
-          "none";
-      }, 8000);
+      if (window.innerWidth < 600) {
+        setTimeout(function () {
+          document.querySelector(".leaflet-control-attribution").style.display =
+            "none";
+        }, 8000);
+      }
     }
     //overlayer
     if (type == "overlayer") {
@@ -214,8 +208,12 @@ const maps = (() => {
     weather_layer3;
 
   function weather_map() {
+    map.attributionControl.setPrefix(
+      "<a href='https://www.rainviewer.com/terms.html'>waether data collected by rainviewer.com</a>"
+    );
+
     let weather_url;
-    if (running == true) {
+    if (running) {
       top_bar("", "", "");
       map.removeLayer(weather_layer);
       map.removeLayer(weather_layer0);
@@ -224,6 +222,8 @@ const maps = (() => {
       map.removeLayer(weather_layer3);
       clearInterval(k);
       running = false;
+
+      map.attributionControl.setPrefix("");
       return false;
     }
 
@@ -399,7 +399,6 @@ const maps = (() => {
     goal_icon,
     select_icon,
     tracking_icon,
-    attribution,
     weather_map,
     caching_tiles,
     delete_cache,

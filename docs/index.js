@@ -43,8 +43,8 @@ let setting = {
       : "",
   osm_tag: localStorage.getItem("osm-tag"),
 
-  cache_time: localStorage.getItem("cache-time"),
-  cache_zoom: localStorage.getItem("cache-zoom"),
+  cache_time: localStorage["cache-time"] || "10",
+  cache_zoom: localStorage["cache-zoom"] || "12",
   openweather_api: localStorage.getItem("owm-key"),
   crosshair:
     localStorage.getItem("crosshair") != null
@@ -70,6 +70,7 @@ let general = {
   zoomlevel: 12,
   ads: false,
   measurement_unit: "km",
+  active_layer: "",
   last_map:
     localStorage.getItem("last_map") != null
       ? localStorage.getItem("last_map")
@@ -114,9 +115,32 @@ let scale = L.control.scale({
 });
 
 map.on("load", function () {
-  maps.attribution();
-  maps.addMap(general.last_map, "", 18, "map");
+  maps.addMap(
+    general.last_map,
+    "Map data &copy; OpenStreetMap contributors, CC-BY-SA",
+    18,
+    "map"
+  );
 });
+
+//highlight active layer
+let active_layer = function () {
+  let n = document.querySelectorAll("div[data-type]");
+  n.forEach(function (e) {
+    e.style.color = "white";
+    if (e.getAttribute("data-url") == general.last_map) {
+      e.style.color = "red";
+    }
+  });
+
+  let m = document.querySelectorAll("div[data-map]");
+  m.forEach(function (e) {
+    e.style.color = "white";
+    if (e.getAttribute("data-map") == general.active_layer) {
+      e.style.color = "red";
+    }
+  });
+};
 
 document.addEventListener("DOMContentLoaded", function () {
   //load KaiOs ads or not
@@ -184,7 +208,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     el.insertAdjacentHTML(
       "afterend",
-      '<div class="item" data-type="map" data-url="https://tile.opentopomap.org/{z}/{x}/{y}.png" data-maxzoom="18" data-attribution="Map data &copy; © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)">OpenTopoMap</div>'
+      '<div class="item" data-type="map" data-url="https://tile.opentopomap.org/{z}/{x}/{y}.png" data-maxzoom="18" data-attribution="Kartendaten: © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap</a>(CC-BY-SA)">OpenTopoMap</div>'
     );
 
     document
@@ -489,6 +513,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelector("div#finder").style.display = "block";
     finder_navigation("start");
     status.windowOpen = "finder";
+    active_layer();
   };
 
   //////////////////////////
@@ -729,6 +754,16 @@ document.addEventListener("DOMContentLoaded", function () {
           maps.weather_map();
           document.querySelector("div#finder").style.display = "none";
           status.windowOpen = "map";
+          //toggle
+          if (
+            document.activeElement.getAttribute("data-map") ==
+            general.active_layer
+          ) {
+            general.active_layer = "";
+          } else {
+            general.active_layer =
+              document.activeElement.getAttribute("data-map");
+          }
         }
 
         if (item_value == "share") {
@@ -1093,7 +1128,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (dir == "+1") {
       count++;
-      if (count == finder_panels.length - 1) count = 0;
+      if (count == finder_panels.length) count = 0;
     }
     if (dir == "-1") {
       count--;

@@ -54,10 +54,10 @@ const maps = (() => {
   let caching_events = function () {
     // Listen to cache hits and misses and spam the console
     tilesLayer.on("tilecachehit", function (ev) {
-      //console.log("Cache hit: ", ev.url);
+      console.log("Cache hit: ", ev.url);
     });
     tilesLayer.on("tilecachemiss", function (ev) {
-      //console.log("Cache miss: ", ev.url);
+      console.log("Cache miss: ", ev.url);
     });
     tilesLayer.on("tilecacheerror", function (ev) {
       console.log("Cache error: ", ev.tile, ev.error);
@@ -65,7 +65,7 @@ const maps = (() => {
   };
 
   let caching_tiles = function () {
-    if (status.caching_tiles_started) return false;
+    // if (status.caching_tiles_started) return false;
     let swLat = map.getBounds()._southWest.lat;
     let swLng = map.getBounds()._southWest.lng;
     let neLat = map.getBounds()._northEast.lat;
@@ -90,14 +90,15 @@ const maps = (() => {
     tilesLayer.on("seedend", function (seedData) {
       document.querySelector("div#top-bar div.button-center").innerText =
         "Downloads finished";
-      caching_tiles_started = false;
+      status.caching_tiles_started = false;
       setTimeout(() => {
         top_bar("", "", "");
       }, 2000);
     });
 
     tilesLayer.on("error", function (seedData) {
-      caching_tiles_started = false;
+      console.log(eror);
+      status.caching_tiles_started = false;
 
       document.querySelector("div#top-bar div.button-center").innerText =
         seedData;
@@ -120,15 +121,6 @@ const maps = (() => {
       });
   };
 
-  let attribution = function () {
-    document.querySelector(".leaflet-control-attribution").style.display =
-      "block";
-    setTimeout(function () {
-      document.querySelector(".leaflet-control-attribution").style.display =
-        "none";
-    }, 8000);
-  };
-
   let overlayer = "";
 
   let addMap = function (url, attribution, max_zoom, type) {
@@ -140,17 +132,20 @@ const maps = (() => {
 
       tilesLayer = L.tileLayer(url, {
         useCache: true,
-        saveToCache: false,
+        saveToCache: true,
         crossOrigin: true,
         cacheMaxAge: caching_time,
         useOnlyCache: false,
         maxZoom: max_zoom,
         attribution: attribution,
+        format: "image/png",
+        transparent: true,
       });
 
       map.addLayer(tilesLayer);
       caching_events();
       localStorage.setItem("last_map", url);
+      general.last_map = url;
 
       if (helper.isOnline == true) {
         tilesLayer.on("tileerror", function (error, tile) {
@@ -162,10 +157,12 @@ const maps = (() => {
 
       document.querySelector(".leaflet-control-attribution").style.display =
         "block";
-      setTimeout(function () {
-        document.querySelector(".leaflet-control-attribution").style.display =
-          "none";
-      }, 8000);
+      if (window.innerWidth < 600) {
+        setTimeout(function () {
+          document.querySelector(".leaflet-control-attribution").style.display =
+            "none";
+        }, 8000);
+      }
     }
     //overlayer
     if (type == "overlayer") {
@@ -211,8 +208,12 @@ const maps = (() => {
     weather_layer3;
 
   function weather_map() {
+    map.attributionControl.setPrefix(
+      "<a href='https://www.rainviewer.com/terms.html'>waether data collected by rainviewer.com</a>"
+    );
+
     let weather_url;
-    if (running == true) {
+    if (running) {
       top_bar("", "", "");
       map.removeLayer(weather_layer);
       map.removeLayer(weather_layer0);
@@ -221,6 +222,8 @@ const maps = (() => {
       map.removeLayer(weather_layer3);
       clearInterval(k);
       running = false;
+
+      map.attributionControl.setPrefix("");
       return false;
     }
 
@@ -396,7 +399,6 @@ const maps = (() => {
     goal_icon,
     select_icon,
     tracking_icon,
-    attribution,
     weather_map,
     caching_tiles,
     delete_cache,
