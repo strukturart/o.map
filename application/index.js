@@ -812,10 +812,9 @@ document.addEventListener("DOMContentLoaded", function () {
           status.windowOpen = "scan";
 
           qr.start_scan(function (callback) {
-            let slug = callback;
-            helper.toaster(slug, 3000);
-            module.link_to_marker(slug);
             status.windowOpen = "map";
+            helper.toaster(callback, 3000);
+            module.link_to_marker(callback);
           });
         }
 
@@ -1328,6 +1327,9 @@ document.addEventListener("DOMContentLoaded", function () {
       case "Backspace":
         if (status.windowOpen == "scan") {
           qr.stop_scan();
+
+          open_finder();
+          windowOpen = "finder";
         }
 
         if (
@@ -1608,14 +1610,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (status.windowOpen == "finder") {
           addMapLayers();
-
-          break;
-        }
-
-        if (status.windowOpen == "finder") {
           addMapLayers("delete");
+
           break;
         }
+
         break;
 
       case "1":

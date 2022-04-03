@@ -10,7 +10,6 @@ const module = (() => {
     mainmarker.current_lat = Number(current_lat);
     mainmarker.current_lng = Number(current_lng);
 
-    //myMarker = L.marker([current_lat, current_lng]).addTo(map);
     map.setView([current_lat, current_lng], 14);
     L.marker([mainmarker.current_lat, mainmarker.current_lng]).addTo(
       markers_group
