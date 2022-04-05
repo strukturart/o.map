@@ -5,6 +5,7 @@ let markers_group = new L.FeatureGroup();
 let measure_group_path = new L.FeatureGroup();
 let measure_group = new L.FeatureGroup();
 let tracking_group = new L.FeatureGroup();
+
 let myMarker;
 let tilesLayer = "";
 
@@ -128,22 +129,73 @@ let active_layer = function () {
   let n = document.querySelectorAll("div[data-type]");
   n.forEach(function (e) {
     e.style.color = "white";
+    //e.style.background = "none";
     if (e.getAttribute("data-url") == general.last_map) {
-      e.style.color = "red";
+      e.style.color = "black";
+      e.style.background = "white";
     }
   });
 
   let m = document.querySelectorAll("div[data-map]");
   m.forEach(function (e) {
     e.style.color = "white";
+    //e.style.background = "none";
     if (e.getAttribute("data-map") == general.active_layer) {
-      e.style.color = "red";
+      e.style.color = "black";
+      e.style.background = "white";
     }
   });
 };
 
 document.addEventListener("DOMContentLoaded", function () {
+  tracking_group.properties = { Title: "Hello" };
+
+  let e = tracking_group.toGeoJSON();
+  let extData = JSON.stringify(e);
+  console.log(extData);
+
   //load KaiOs ads or not
+  let load_ads = function () {
+    var js = document.createElement("script");
+    js.type = "text/javascript";
+    js.src = "assets/js/kaiads.v5.min.js";
+
+    js.onload = function () {
+      getKaiAd({
+        publisher: "4408b6fa-4e1d-438f-af4d-f3be2fa97208",
+        app: "omap",
+        slot: "omap",
+        test: 0,
+        timeout: 10000,
+        h: 220,
+        w: 220,
+        container: document.getElementById("kaios-ads"),
+        onerror: (err) => console.error("Error:", err),
+        onready: (ad) => {
+          ad.on("close", () => console.log("close event"));
+
+          // user clicked the ad
+          ad.on("click", () => console.log("click event"));
+
+          // user closed the ad (currently only with fullscreen)
+          ad.on("close", () => console.log("close event"));
+
+          // the ad succesfully displayed
+          ad.on("display", () => console.log("display event"));
+
+          // Ad is ready to be displayed
+          // calling 'display' will display the ad
+          ad.call("display", {
+            navClass: "item",
+            display: "block",
+          });
+        },
+      });
+    };
+    document.head.appendChild(js);
+  };
+
+  //load settings
   settings.load_settings();
 
   let manifest = function (a) {
@@ -151,15 +203,15 @@ document.addEventListener("DOMContentLoaded", function () {
       "O.MAP Version " + a.manifest.version;
     if (a.installOrigin == "app://kaios-plus.kaiostech.com") {
       general.ads = true;
-      document.querySelector("#ads-container iframe").src = "ads.html";
+      load_ads();
     } else {
       console.log("Ads free");
-      let t = document.getElementById("kaisos-ads");
-      t.remove();
+      let t = document.getElementById("kaios-ads").remove();
     }
   };
 
   helper.getManifest(manifest);
+
   let geoip_callback = function (data) {
     mainmarker.current_lat = data[0];
     mainmarker.current_lng = data[1];
@@ -1105,6 +1157,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let finder_panels = [];
   let count = 0;
+  let kaios_ads_click = false;
 
   let panels = document.querySelectorAll("div#finder div.panel");
 
@@ -1122,9 +1175,6 @@ document.addEventListener("DOMContentLoaded", function () {
       e.style.display = "none";
     });
 
-    if (dir == "start") {
-    }
-
     if (dir == "+1") {
       count++;
       if (count == finder_panels.length) count = 0;
@@ -1133,7 +1183,8 @@ document.addEventListener("DOMContentLoaded", function () {
       count--;
       if (count == -1) count = finder_panels.length - 1;
     }
-
+    console.log(count);
+    console.log(finder_panels[count]);
     document.getElementById(finder_panels[count].id).style.display = "block";
     finder_tabindex();
 
@@ -1145,9 +1196,14 @@ document.addEventListener("DOMContentLoaded", function () {
       bottom_bar("", "edit", "");
       return;
     }
-
     if (finder_panels[count].id == "imprint") bottom_bar("", "", "");
-    if (finder_panels[count].id == "kaisos-ads") bottom_bar("", "", "");
+    if (finder_panels[count].id == "kaios-ads") {
+      bottom_bar("", "open", "");
+      document.getElementById("kaios-ads").focus();
+      kaios_ads_click = true;
+    } else {
+      kaios_ads_click = false;
+    }
     if (finder_panels[count].id == "tips") bottom_bar("", "", "");
   };
 
@@ -1249,9 +1305,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const checkbox = document.getElementById("measurement-ckb");
 
-  checkbox.addEventListener("change", function () {
-    alert();
-  });
+  checkbox.addEventListener("change", function () {});
 
   //////////////////////////////
   ////KEYPAD HANDLER////////////
@@ -1411,6 +1465,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
           break;
         }
+        if (status.windowOpen == "finder" && kaios_ads_click == true) {
+          const iframe = document.getElementById("ads-frame");
+          const iWindow = iframe.contentWindow;
+          const iDocument = iWindow.document;
+
+          // accessing the element
+          const element = iDocument.getElementById("KaiOsAd");
+          element.click();
+
+          break;
+        }
 
         break;
 
@@ -1497,6 +1562,9 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "Enter":
+        if (status.windowOpen == "finder" && kaios_ads_click == true) {
+          break;
+        }
         if (status.windowOpen == "map") {
           open_finder();
           status.windowOpen = "finder";

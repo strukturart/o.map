@@ -46,6 +46,7 @@ body {
   margin: 0;
 }
 
+
 p {
   margin: 1rem 0 1rem 0;
 }
@@ -737,20 +738,14 @@ div#coordinations div#sun {
 
 /*ADS*/
 
-div#ads-container {
-  height: 220px;
+div#kaios-ads {
+  min-height: 240px;
   max-height: 240px;
-
+  min-width: 240px;
   padding: 0px;
 }
 
-div#ads-container iframe {
-  margin: 0px;
-  padding: 0px;
-  width: 100%;
-  min-height: 220px;
-  max-height: 220px;
-}
+
 
 div#result-container {
   background: rgb(216, 216, 216) !important;

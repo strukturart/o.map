@@ -31,7 +31,7 @@ const helper = (() => {
 
   let getManifest = function (callback) {
     if (!navigator.mozApps) {
-      let t = document.getElementById("kaisos-ads");
+      let t = document.getElementById("kaios-ads");
       t.remove();
       return false;
     }

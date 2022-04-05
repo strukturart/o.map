@@ -355,13 +355,14 @@ const module = (() => {
       }
       if (setting.tracking_screenlock) screenWakeLock("lock", "screen");
 
-      screenWakeLock("lock", "gps");
+      //screenWakeLock("lock", "gps");
       let calc = 0;
 
       tracking_interval = setInterval(function () {
         polyline_tracking.addLatLng([
           mainmarker.device_lat,
           mainmarker.device_lng,
+          mainmarker.device_alt,
         ]);
 
         tracking_cache.push({
@@ -393,7 +394,7 @@ const module = (() => {
         if (mainmarker.tracking == false) {
           clearInterval(tracking_interval);
           if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
-          screenWakeLock("unlock", "gps");
+          //screenWakeLock("unlock", "gps");
           document.querySelector(
             "div#coordinations div#tracking"
           ).style.display = "none";
