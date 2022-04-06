@@ -46,7 +46,6 @@ body {
   margin: 0;
 }
 
-
 p {
   margin: 1rem 0 1rem 0;
 }
@@ -590,7 +589,12 @@ div#finder div#close {
 }
 
 div#finder .item:focus {
-  background: var(--color-eight);
+  background: var(--color-eight) !important;
+  color: black;
+}
+
+div#finder .item.panel:focus {
+  background: black !important;
   color: black;
 }
 
@@ -744,8 +748,6 @@ div#kaios-ads {
   min-width: 240px;
   padding: 0px;
 }
-
-
 
 div#result-container {
   background: rgb(216, 216, 216) !important;

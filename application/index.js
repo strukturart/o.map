@@ -5,7 +5,7 @@ let markers_group = new L.FeatureGroup();
 let measure_group_path = new L.FeatureGroup();
 let measure_group = new L.FeatureGroup();
 let tracking_group = new L.FeatureGroup();
-
+let tracking_timestamp = [];
 let myMarker;
 let tilesLayer = "";
 
@@ -125,35 +125,25 @@ map.on("load", function () {
 });
 
 //highlight active layer
-let active_layer = function () {
+let activelayer = function () {
   let n = document.querySelectorAll("div[data-type]");
   n.forEach(function (e) {
+    e.style.background = "none";
     e.style.color = "white";
-    //e.style.background = "none";
-    if (e.getAttribute("data-url") == general.last_map) {
-      e.style.color = "black";
-      e.style.background = "white";
-    }
   });
 
-  let m = document.querySelectorAll("div[data-map]");
-  m.forEach(function (e) {
-    e.style.color = "white";
-    //e.style.background = "none";
-    if (e.getAttribute("data-map") == general.active_layer) {
-      e.style.color = "black";
+  n.forEach(function (e) {
+    if (
+      e.getAttribute("data-url") == general.last_map ||
+      e.getAttribute("data-url") == general.active_layer
+    ) {
       e.style.background = "white";
+      e.style.color = "black";
     }
   });
 };
 
 document.addEventListener("DOMContentLoaded", function () {
-  tracking_group.properties = { Title: "Hello" };
-
-  let e = tracking_group.toGeoJSON();
-  let extData = JSON.stringify(e);
-  console.log(extData);
-
   //load KaiOs ads or not
   let load_ads = function () {
     var js = document.createElement("script");
@@ -267,7 +257,7 @@ document.addEventListener("DOMContentLoaded", function () {
       .querySelector("div#layers")
       .insertAdjacentHTML(
         "afterend",
-        '<div class="item" data-map="weather">Weather <i>Layer</i></div>'
+        '<div class="item"  data-type="layer" data-url="weather" data-map="weather">Weather <i>Layer</i></div>'
       );
 
     find_gpx();
@@ -565,7 +555,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelector("div#finder").style.display = "block";
     finder_navigation("start");
     status.windowOpen = "finder";
-    active_layer();
+    activelayer();
   };
 
   //////////////////////////
@@ -656,7 +646,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let state_geoloc = false;
   let geoLoc = navigator.geolocation;
 
-  function geolocationWatch(init) {
+  function geolocationWatch() {
     state_geoloc = true;
     function showLocation(position) {
       let crd = position.coords;
@@ -668,11 +658,6 @@ document.addEventListener("DOMContentLoaded", function () {
       mainmarker.device_lat = crd.latitude;
       mainmarker.device_lng = crd.longitude;
       mainmarker.device_alt = crd.altitude;
-
-      if (init) {
-        mainmarker.current_lng = crd.longitude;
-        mainmarker.current_lat = crd.latitude;
-      }
 
       if (mainmarker.tracking == false) {
         myMarker.setIcon(maps.default_icon);
@@ -802,20 +787,13 @@ document.addEventListener("DOMContentLoaded", function () {
       if (document.activeElement.hasAttribute("data-map")) {
         let item_value = document.activeElement.getAttribute("data-map");
 
+        console.log(item_value);
+
         if (item_value == "weather") {
-          maps.weather_map();
           document.querySelector("div#finder").style.display = "none";
           status.windowOpen = "map";
-          //toggle
-          if (
-            document.activeElement.getAttribute("data-map") ==
-            general.active_layer
-          ) {
-            general.active_layer = "";
-          } else {
-            general.active_layer =
-              document.activeElement.getAttribute("data-map");
-          }
+          console.log(general.active_layer);
+          maps.weather_map();
         }
 
         if (item_value == "share") {
@@ -1160,7 +1138,6 @@ document.addEventListener("DOMContentLoaded", function () {
   let kaios_ads_click = false;
 
   let panels = document.querySelectorAll("div#finder div.panel");
-
   panels.forEach(function (e) {
     finder_panels.push({
       name: e.getAttribute("name"),
@@ -1183,7 +1160,6 @@ document.addEventListener("DOMContentLoaded", function () {
       count--;
       if (count == -1) count = finder_panels.length - 1;
     }
-    console.log(count);
     console.log(finder_panels[count]);
     document.getElementById(finder_panels[count].id).style.display = "block";
     finder_tabindex();
@@ -1524,6 +1500,7 @@ document.addEventListener("DOMContentLoaded", function () {
             setting.export_path + user_input("return") + ".geojson",
             "path"
           );
+
           save_mode = "";
           break;
         }
@@ -1541,7 +1518,11 @@ document.addEventListener("DOMContentLoaded", function () {
           status.windowOpen == "user-input" &&
           save_mode == "geojson-tracking"
         ) {
-          geojson.save_geojson(user_input("return") + ".geojson", "tracking");
+          //geojson.save_geojson(user_input("return") + ".geojson", "tracking");
+          geojson.save_gpx(
+            setting.export_path + user_input("return") + ".gpx",
+            "tracking"
+          );
           save_mode = "";
           break;
         }
@@ -1562,9 +1543,6 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "Enter":
-        if (status.windowOpen == "finder" && kaios_ads_click == true) {
-          break;
-        }
         if (status.windowOpen == "map") {
           open_finder();
           status.windowOpen = "finder";
@@ -1678,7 +1656,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (status.windowOpen == "finder") {
           addMapLayers();
-          addMapLayers("delete");
+          //addMapLayers("delete");
 
           break;
         }
@@ -1757,7 +1735,6 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "9":
-        console.log(status.windowOpen);
         if (status.windowOpen == "map")
           L.marker([mainmarker.current_lat, mainmarker.current_lng]).addTo(
             markers_group
@@ -1766,7 +1743,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "0":
         if (status.windowOpen == "map") {
-          //maps.export_mapdata();
           mozactivity.share_position();
         }
         break;

@@ -31,6 +31,13 @@ const geojson = ((_) => {
 
     if (type == "tracking") {
       let e = tracking_group.toGeoJSON();
+      e.features[0].properties.software = "o.map";
+      e.features[0].properties.timestamp = tracking_timestamp;
+
+      let option = { featureCoordTimes: "timestamp" };
+
+      alert(togpx(e, option));
+
       extData = JSON.stringify(e);
     }
 
@@ -66,6 +73,7 @@ const geojson = ((_) => {
       if (type == "tracking") {
         module.measure_distance("destroy_tracking");
         mainmarker.tracking = false;
+        localStorage.removeItem("tracking_cache");
       }
 
       if (type == "path") {
@@ -86,7 +94,57 @@ const geojson = ((_) => {
     };
   };
 
+  ///////////
+  //save geoJson file
+  /////////////////
+  const save_gpx = function (file_path_name, type) {
+    let extData = "";
+
+    if (type == "tracking") {
+      let e = tracking_group.toGeoJSON();
+      e.features[0].properties.software = "o.map";
+      e.features[0].properties.timestamp = tracking_timestamp;
+
+      let option = { featureCoordTimes: "timestamp", creator: "o.map" };
+
+      extData = togpx(e, option);
+    }
+
+    let geojson_file = new Blob([extData], {
+      type: "application/gpx+xm",
+    });
+
+    let sdcard = navigator.getDeviceStorage("sdcard");
+
+    let requestAdd = sdcard.addNamed(geojson_file, file_path_name);
+
+    requestAdd.onsuccess = function () {
+      status.windowOpen = "map";
+      helper.toaster("succesfull saved", 5000);
+      bottom_bar("", "", "");
+
+      if (type == "tracking") {
+        module.measure_distance("destroy_tracking");
+        mainmarker.tracking = false;
+        localStorage.removeItem("tracking_cache");
+      }
+
+      setTimeout(function () {
+        build_menu();
+      }, 2000);
+    };
+
+    requestAdd.onerror = function () {
+      helper.toaster(
+        "Unable to write the file, the file name may already be used",
+        10000
+      );
+      status.windowOpen = "map";
+    };
+  };
+
   return {
     save_geojson,
+    save_gpx,
   };
 })();

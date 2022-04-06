@@ -345,20 +345,24 @@ const module = (() => {
             polyline_tracking.addLatLng([
               tracking_cache[i].lat,
               tracking_cache[i].lng,
+              tracking_cache[i].timestamp,
             ]);
+
+            tracking_timestamp.push(tracking_cache[i].timestamp);
           }
         } else {
           localStorage.removeItem("tracking_cache");
           tracking_cache = [];
         }
-      } else {
       }
       if (setting.tracking_screenlock) screenWakeLock("lock", "screen");
 
-      //screenWakeLock("lock", "gps");
       let calc = 0;
 
       tracking_interval = setInterval(function () {
+        let ts = new Date();
+        tracking_timestamp.push(ts.toISOString());
+
         polyline_tracking.addLatLng([
           mainmarker.device_lat,
           mainmarker.device_lng,
@@ -369,6 +373,7 @@ const module = (() => {
           lat: mainmarker.device_lat,
           lng: mainmarker.device_lng,
           alt: mainmarker.device_alt,
+          timestamp: ts.toISOString(),
         });
 
         if (tracking_cache.length > 2) {
@@ -384,17 +389,17 @@ const module = (() => {
           calc += Number(tracking_distance);
 
           document.querySelector("div#tracking-distance").innerText =
-            calc.toFixed(2) + " km";
+            calc.toFixed(2) + general.measurement_unit;
 
           //check if old tracking
           let k = JSON.stringify(tracking_cache);
 
           localStorage.setItem("tracking_cache", k);
         }
+
         if (mainmarker.tracking == false) {
           clearInterval(tracking_interval);
           if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
-          //screenWakeLock("unlock", "gps");
           document.querySelector(
             "div#coordinations div#tracking"
           ).style.display = "none";
