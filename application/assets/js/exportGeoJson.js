@@ -5,7 +5,6 @@ const geojson = ((_) => {
   const save_geojson = function (file_path_name, type) {
     let extData = "";
 
-    //todo
     if (type == "single-direct") {
       let l = markers_group.getLayers();
       let single = l[l.length - 1].toGeoJSON();
@@ -33,10 +32,6 @@ const geojson = ((_) => {
       let e = tracking_group.toGeoJSON();
       e.features[0].properties.software = "o.map";
       e.features[0].properties.timestamp = tracking_timestamp;
-
-      let option = { featureCoordTimes: "timestamp" };
-
-      alert(togpx(e, option));
 
       extData = JSON.stringify(e);
     }
@@ -67,7 +62,7 @@ const geojson = ((_) => {
 
     requestAdd.onsuccess = function () {
       status.windowOpen = "map";
-      helper.toaster("succesfull saved", 5000);
+      helper.side_toaster("<img src='./assets/image/E25C.svg'>", 5000);
       bottom_bar("", "", "");
 
       if (type == "tracking") {
@@ -120,7 +115,7 @@ const geojson = ((_) => {
 
     requestAdd.onsuccess = function () {
       status.windowOpen = "map";
-      helper.toaster("succesfull saved", 5000);
+      helper.side_toaster("<img src='./assets/image/E25C.svg'>", 3000);
       bottom_bar("", "", "");
 
       if (type == "tracking") {

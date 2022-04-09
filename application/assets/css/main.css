@@ -309,6 +309,27 @@ div#toast {
   transform: translate(0px, -100px);
 }
 
+div#side-toast {
+  position: fixed;
+  height: auto;
+  overflow: none;
+  background: orange;
+  color: white;
+  z-index: 10;
+  padding: 8px;
+  top: 70vh;
+  border-bottom-right-radius: 15px;
+  border-top-right-radius: 15px;
+
+  transition: all 0.5s ease-in-out;
+  transform-origin: left top;
+  transform: translate(-100vw, 0px);
+}
+
+div#side-toast img {
+  width: 30px;
+}
+
 /*/ ////////////////
 USER INPUT////////////////*/
 
@@ -552,7 +573,7 @@ div#intro div#intro-footer {
   left: 0px;
 }
 
-/*///////////////////////////
+/*/ //////////////////////////
 ///FINDER////////////////*/
 
 div#finder {

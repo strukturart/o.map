@@ -69,7 +69,6 @@ let setting = {
 let general = {
   step: 0.001,
   zoomlevel: 12,
-  ads: false,
   measurement_unit: "km",
   active_layer: "",
   last_map:
@@ -124,25 +123,6 @@ map.on("load", function () {
   );
 });
 
-//highlight active layer
-let activelayer = function () {
-  let n = document.querySelectorAll("div[data-type]");
-  n.forEach(function (e) {
-    e.style.background = "none";
-    e.style.color = "white";
-  });
-
-  n.forEach(function (e) {
-    if (
-      e.getAttribute("data-url") == general.last_map ||
-      e.getAttribute("data-url") == general.active_layer
-    ) {
-      e.style.background = "white";
-      e.style.color = "black";
-    }
-  });
-};
-
 document.addEventListener("DOMContentLoaded", function () {
   //load KaiOs ads or not
   let load_ads = function () {
@@ -192,7 +172,6 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("intro-footer").innerText =
       "O.MAP Version " + a.manifest.version;
     if (a.installOrigin == "app://kaios-plus.kaiostech.com") {
-      general.ads = true;
       load_ads();
     } else {
       console.log("Ads free");
@@ -531,6 +510,24 @@ document.addEventListener("DOMContentLoaded", function () {
   //////////////////////////////////
   ///MENU//////////////////////////
   /////////////////////////////////
+  //highlight active layer
+  let activelayer = function () {
+    let n = document.querySelectorAll("div[data-type]");
+    n.forEach(function (e) {
+      e.style.background = "none";
+      e.style.color = "white";
+    });
+
+    n.forEach(function (e) {
+      if (
+        e.getAttribute("data-url") == general.last_map ||
+        e.getAttribute("data-url") == general.active_layer
+      ) {
+        e.style.background = "white";
+        e.style.color = "black";
+      }
+    });
+  };
   let tabIndex = 0;
 
   let finder_tabindex = function () {
@@ -768,6 +765,8 @@ document.addEventListener("DOMContentLoaded", function () {
       document.activeElement.className == "item" &&
       status.windowOpen == "finder"
     ) {
+      top_bar("", "", "");
+      bottom_bar("", "", "");
       //custom maps and layers from json file
       if (document.activeElement.hasAttribute("data-url")) {
         let item_url = document.activeElement.getAttribute("data-url");
@@ -895,9 +894,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
     }
-
-    top_bar("", "", "");
-    bottom_bar("", "", "");
   }
 
   ////////////////////////////////////////
@@ -1135,15 +1131,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let finder_panels = [];
   let count = 0;
-  let kaios_ads_click = false;
+  let panels;
 
-  let panels = document.querySelectorAll("div#finder div.panel");
-  panels.forEach(function (e) {
-    finder_panels.push({
-      name: e.getAttribute("name"),
-      id: e.getAttribute("id"),
+  setTimeout(function () {
+    panels = document.querySelectorAll("div#finder div.panel");
+    panels.forEach(function (e) {
+      finder_panels.push({
+        name: e.getAttribute("name"),
+        id: e.getAttribute("id"),
+      });
     });
-  });
+  }, 1000);
 
   let finder_navigation = function (dir) {
     tabIndex = 0;
@@ -1176,9 +1174,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (finder_panels[count].id == "kaios-ads") {
       bottom_bar("", "open", "");
       document.getElementById("kaios-ads").focus();
-      kaios_ads_click = true;
-    } else {
-      kaios_ads_click = false;
     }
     if (finder_panels[count].id == "tips") bottom_bar("", "", "");
   };
@@ -1570,9 +1565,10 @@ document.addEventListener("DOMContentLoaded", function () {
           status.windowOpen == "user-input" &&
           save_mode == "geojson-tracking"
         ) {
+          module.measure_distance("destroy_tracking");
+
           user_input("close");
           save_mode = "";
-          module.measure_distance("destroy_tracking");
           break;
         }
 
@@ -1650,14 +1646,14 @@ document.addEventListener("DOMContentLoaded", function () {
           mainmarker.selected_marker != ""
         ) {
           markers_action();
-
           break;
         }
 
-        if (status.windowOpen == "finder") {
+        if (
+          status.windowOpen == "finder" &&
+          document.activeElement.classList.contains("item")
+        ) {
           addMapLayers();
-          //addMapLayers("delete");
-
           break;
         }
 

@@ -315,6 +315,11 @@ const module = (() => {
     }
 
     if (action == "destroy_tracking") {
+      clearInterval(tracking_interval);
+      setTimeout(function () {
+        localStorage.removeItem("tracking_cache");
+      }, 10000);
+
       document.querySelector("div#coordinations div#tracking").style.display =
         "none";
       tracking_group.clearLayers();
@@ -322,7 +327,6 @@ const module = (() => {
         tracking_group
       );
       mainmarker.tracking = false;
-      localStorage.removeItem("tracking_cache");
       return true;
     }
 
@@ -360,6 +364,11 @@ const module = (() => {
       let calc = 0;
 
       tracking_interval = setInterval(function () {
+        //only write data if accuracy
+        if (mainmarker.accuracy > 100) {
+          console.log("the gps is very inaccurate right now");
+          return false;
+        }
         let ts = new Date();
         tracking_timestamp.push(ts.toISOString());
 
@@ -404,7 +413,7 @@ const module = (() => {
             "div#coordinations div#tracking"
           ).style.display = "none";
         }
-      }, 10000);
+      }, 8000);
     }
 
     if (action == "addMarker") {
