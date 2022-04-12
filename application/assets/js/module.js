@@ -297,6 +297,7 @@ const module = (() => {
   let tracking_latlngs = [];
   let tracking_interval;
   let tracking_cache = [];
+  let gps_lock;
 
   let tracking_distance;
 
@@ -315,6 +316,7 @@ const module = (() => {
     }
 
     if (action == "destroy_tracking") {
+      gps_lock.unlock();
       clearInterval(tracking_interval);
       setTimeout(function () {
         localStorage.removeItem("tracking_cache");
@@ -331,6 +333,8 @@ const module = (() => {
     }
 
     if (action == "tracking") {
+      gps_lock = window.navigator.requestWakeLock("gps");
+
       document.querySelector("div#coordinations div#tracking").style.display =
         "block";
       if (localStorage.getItem("tracking_cache") != null) {
@@ -365,7 +369,7 @@ const module = (() => {
 
       tracking_interval = setInterval(function () {
         //only write data if accuracy
-        if (mainmarker.accuracy > 100) {
+        if (mainmarker.accuracy > 5000) {
           console.log("the gps is very inaccurate right now");
           return false;
         }
