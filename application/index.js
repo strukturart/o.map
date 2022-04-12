@@ -899,6 +899,22 @@ document.addEventListener("DOMContentLoaded", function () {
   ////////////////////////////////////////
   ////COORDINATIONS PANEL/////////////////
   ///////////////////////////////////////
+  let section_slider_index = 0;
+  let section_slider_items = ["section-1", "section-2"];
+  let section_slider = function () {
+    if (section_slider_index == 1) section_slider_index = -1;
+
+    section_slider_index++;
+
+    section_slider_items.forEach(function (e) {
+      document.getElementById(e).style.display = "none";
+    });
+
+    document.getElementById(
+      section_slider_items[section_slider_index]
+    ).style.display = "block";
+  };
+
   let coordinations = function () {
     status.windowOpen = "coordinations";
 
@@ -1708,6 +1724,11 @@ document.addEventListener("DOMContentLoaded", function () {
           bottom_bar("cancel", "", "save");
           break;
         }
+
+        if (status.windowOpen == "coordinations") {
+          section_slider();
+        }
+
         break;
 
       case "6":

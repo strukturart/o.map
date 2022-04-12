@@ -733,7 +733,7 @@ div#coordinations {
   overflow: hidden;
 }
 
-div#coordinations div {
+div#coordinations section {
   background: none;
   color: white;
   font-size: 14px;
@@ -759,6 +759,10 @@ div#coordinations div#tracking {
 
 div#coordinations div#sun {
   margin: 10px 0 0 0;
+}
+
+div#coordinations section#section-2 {
+  display: none;
 }
 
 /*ADS*/
