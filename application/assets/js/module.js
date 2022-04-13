@@ -281,6 +281,40 @@ const module = (() => {
   ////PATH & TRACKING
   ///////////////////
 
+  //calculation of altitude ascents and descents
+
+  let evolution = function (t) {
+    let up_e = 0;
+    let down_e = 0;
+    let evo = {};
+    //the gps is too inaccurate, a boundary mark so help to spot errors
+    let limit = 50;
+
+    t.forEach(function (item, index) {
+      if (index > 0) {
+        if (item > t[index - 1]) {
+          let c = item - t[index - 1];
+          if (c > limit) return false;
+          up_e += c;
+        }
+        if (item < t[index - 1]) {
+          let cc = t[index - 1] - item;
+          if (cc > limit) return false;
+          down_e += cc;
+        }
+
+        evo.up = up_e;
+        evo.down = down_e;
+      }
+    });
+    document.querySelector("#tracking-evo-up span").innerText =
+      evo.up.toFixed(2);
+    document.querySelector("#tracking-evo-down span").innerText =
+      evo.down.toFixed(2);
+  };
+
+  //tool to measure distance
+
   let popup_option = {
     closeButton: false,
     maxWidth: 200,
@@ -298,6 +332,7 @@ const module = (() => {
   let tracking_interval;
   let tracking_cache = [];
   let gps_lock;
+  let tracking_altitude = [];
 
   let tracking_distance;
 
@@ -317,6 +352,7 @@ const module = (() => {
 
     if (action == "destroy_tracking") {
       gps_lock.unlock();
+      tracking_altitude = [];
       clearInterval(tracking_interval);
       setTimeout(function () {
         localStorage.removeItem("tracking_cache");
@@ -369,7 +405,7 @@ const module = (() => {
 
       tracking_interval = setInterval(function () {
         //only write data if accuracy
-        if (mainmarker.accuracy > 5000) {
+        if (mainmarker.accuracy > 15000) {
           console.log("the gps is very inaccurate right now");
           return false;
         }
@@ -387,7 +423,18 @@ const module = (() => {
           lng: mainmarker.device_lng,
           alt: mainmarker.device_alt,
           timestamp: ts.toISOString(),
+          tracking_altitude: mainmarker.device_alt,
         });
+        tracking_altitude = [];
+        tracking_cache.forEach(function (e) {
+          if (e.tracking_altitude != null)
+            tracking_altitude.push(e.tracking_altitude);
+        });
+
+        document.getElementById("tracking-altitude").innerText =
+          mainmarker.device_alt.toFixed(2);
+
+        evolution(tracking_altitude);
 
         if (tracking_cache.length > 2) {
           tracking_distance = calc_distance(
