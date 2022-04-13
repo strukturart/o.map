@@ -25,9 +25,11 @@ let mainmarker = {
   device_lat: "",
   device_lng: "",
   device_alt: "",
+  device_speed: 0,
   current_lng: 0,
   current_lat: 0,
   current_alt: 0,
+
   current_heading: 0,
   accuracy: 0,
   map: "unknown",
@@ -654,7 +656,10 @@ document.addEventListener("DOMContentLoaded", function () {
       //store device location
       mainmarker.device_lat = crd.latitude;
       mainmarker.device_lng = crd.longitude;
-      mainmarker.device_alt = crd.altitude;
+      if (crd.altitude != undefined || crd.altitude != null) {
+        mainmarker.device_alt = crd.altitude;
+      }
+      mainmarker.device_speed = crd.speed;
 
       if (mainmarker.tracking == false) {
         myMarker.setIcon(maps.default_icon);
@@ -1554,6 +1559,9 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "Enter":
+        if (status.windowOpen == "coordinations") {
+          section_slider();
+        }
         if (status.windowOpen == "map") {
           open_finder();
           status.windowOpen = "finder";
@@ -1723,10 +1731,6 @@ document.addEventListener("DOMContentLoaded", function () {
           user_input("open", "", "save this marker as geojson file");
           bottom_bar("cancel", "", "save");
           break;
-        }
-
-        if (status.windowOpen == "coordinations") {
-          section_slider();
         }
 
         break;

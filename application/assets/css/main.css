@@ -740,6 +740,10 @@ div#coordinations section {
   padding: 3px;
 }
 
+div#coordinations section div.block {
+  margin: 0 0 10px 0;
+}
+
 div#coordinations div#weather {
   width: 200px;
   position: relative;
