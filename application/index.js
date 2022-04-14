@@ -17,7 +17,6 @@ let mainmarker = {
       ? JSON.parse(localStorage.getItem("startup_markers"))
       : [],
   startup_marker_toggle: false,
-  tracking: false,
   tracking_distance: 0,
   tracking_alt_up: 0,
   tracking_alt_down: 0,
@@ -84,11 +83,13 @@ setting.measurement == true
   : (general.measurement_unit = "mil");
 
 let status = {
+  tracking_running: false,
   visible: "visible",
   caching_tiles_started: false,
   marker_selection: false,
   path_selection: false,
   windowOpen: "map",
+  sub_status: "",
   crash:
     localStorage.getItem("crash") != null
       ? JSON.parse(localStorage.getItem("crash"))
@@ -555,6 +556,7 @@ document.addEventListener("DOMContentLoaded", function () {
     finder_navigation("start");
     status.windowOpen = "finder";
     activelayer();
+    coordinations();
   };
 
   //////////////////////////
@@ -661,10 +663,10 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       mainmarker.device_speed = crd.speed;
 
-      if (mainmarker.tracking == false) {
+      if (status.tracking_running == false) {
         myMarker.setIcon(maps.default_icon);
       }
-      if (mainmarker.tracking == true) {
+      if (status.tracking_running == true) {
         myMarker.setIcon(maps.follow_icon);
       }
 
@@ -904,36 +906,36 @@ document.addEventListener("DOMContentLoaded", function () {
   ////////////////////////////////////////
   ////COORDINATIONS PANEL/////////////////
   ///////////////////////////////////////
-  let section_slider_index = 0;
-  let section_slider_items = ["section-1", "section-2"];
-  let section_slider = function () {
-    if (section_slider_index == 1) section_slider_index = -1;
 
-    section_slider_index++;
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-    section_slider_items.forEach(function (e) {
-      document.getElementById(e).style.display = "none";
-    });
-
-    document.getElementById(
-      section_slider_items[section_slider_index]
-    ).style.display = "block";
+  let getDay = function (dt) {
+    let t = new Date(dt);
+    return days[t.getDay()];
   };
 
   let coordinations = function () {
     status.windowOpen = "coordinations";
 
-    document.querySelector("div#finder").style.display = "none";
-    document.querySelector("div#coordinations").style.display = "block";
-
     if (setting.openweather_api && setting.openweather_api != undefined) {
-      document.querySelector("div#coordinations div#weather").style.display =
-        "block";
-
       function openweather_callback(some) {
-        document.getElementById("temp").innerText = some.hourly[0].temp + " °C";
-        document.getElementById("weather-description").innerText =
-          some.hourly[0].weather[0].description;
+        document.querySelector("section#forecast-hourly div.temp").innerText =
+          some.hourly[0].temp + " °C";
+        document.querySelector(
+          "section#forecast-hourly div.description"
+        ).innerText = some.hourly[0].weather[0].description;
+
+        for (let i = 0; i < 4; i++) {
+          document.querySelector("div#day-" + i + " div.time").innerText =
+            getDay(some.daily[i].dt * 1000);
+
+          document.querySelector("div#day-" + i + " div.temp").innerText =
+            some.daily[i].temp.day + " °C";
+
+          document.querySelector(
+            "div#day-" + i + " div.description"
+          ).innerText = some.daily[i].weather[0].description;
+        }
       }
 
       let c = map.getCenter();
@@ -1179,7 +1181,6 @@ document.addEventListener("DOMContentLoaded", function () {
       count--;
       if (count == -1) count = finder_panels.length - 1;
     }
-    console.log(finder_panels[count]);
     document.getElementById(finder_panels[count].id).style.display = "block";
     finder_tabindex();
 
@@ -1189,14 +1190,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (document.activeElement.classList.contains("input-parent")) {
       bottom_bar("", "edit", "");
-      return;
+      //return;
     }
     if (finder_panels[count].id == "imprint") bottom_bar("", "", "");
+    if (finder_panels[count].id == "coordinations") bottom_bar("", "", "");
+
     if (finder_panels[count].id == "kaios-ads") {
       bottom_bar("", "open", "");
       document.getElementById("kaios-ads").focus();
     }
     if (finder_panels[count].id == "tips") bottom_bar("", "", "");
+    if (finder_panels[count].id == "coordinations") {
+      bottom_bar("", "", "");
+      status.sub_status = "coordinations";
+      document.querySelector("div#coordinations:nth-child(1)").focus();
+    }
+    if (finder_panels[count].id == "tracking") {
+      bottom_bar("", "", "");
+    }
   };
 
   function nav(move) {
@@ -1387,7 +1398,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (status.windowOpen != "map") {
           document.querySelector("div#finder").style.display = "none";
           document.querySelector("div#markers-option").style.display = "none";
-          document.querySelector("div#coordinations").style.display = "none";
           status.windowOpen = "map";
           status.marker_selection = false;
           document.activeElement.blur();
@@ -1439,10 +1449,7 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
-        if (
-          status.windowOpen == "map" ||
-          status.windowOpen == "coordinations"
-        ) {
+        if (status.windowOpen == "map") {
           ZoomMap("out");
           break;
         }
@@ -1543,10 +1550,7 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
-        if (
-          status.windowOpen == "map" ||
-          status.windowOpen == "coordinations"
-        ) {
+        if (status.windowOpen == "map") {
           ZoomMap("in");
           break;
         }
@@ -1559,9 +1563,6 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "Enter":
-        if (status.windowOpen == "coordinations") {
-          section_slider();
-        }
         if (status.windowOpen == "map") {
           open_finder();
           status.windowOpen = "finder";
@@ -1685,15 +1686,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "1":
         if (status.windowOpen == "map") {
-          if (mainmarker.tracking) {
+          if (status.tracking_running) {
             helper.toaster("tracking paused", 5000);
             save_mode = "geojson-tracking";
             user_input("open", "", "Export path as geojson file");
             bottom_bar("cancel", "don't save", "save");
-
             return true;
           } else {
-            mainmarker.tracking = true;
+            status.tracking_running = true;
             helper.toaster(
               "tracking started,\n stop tracking with key 1",
               4000
@@ -1736,7 +1736,6 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "6":
-        if (status.windowOpen == "map") coordinations();
         break;
 
       case "7":

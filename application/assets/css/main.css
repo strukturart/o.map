@@ -581,7 +581,7 @@ div#finder {
   z-index: 5;
   top: 0px;
   left: 0px;
-  background: black;
+  background: rgba(0, 0, 0, 1);
   padding: 5px;
   color: white;
   display: none;
@@ -623,6 +623,24 @@ div#finder .item:focus label {
   color: black;
 }
 
+div#finder section {
+  margin: 0 0 10px 0;
+}
+
+div#finder div.temp {
+  margin: 0 0 8px 0;
+  width: 60px;
+}
+
+div#finder div.time {
+  margin: 0 0 8px 0;
+  width: 40px;
+  color: yellow;
+}
+
+div#finder div.description {
+  margin: 0 0 8px 0;
+}
 div#finder div#question {
   background: black;
   color: white;
@@ -638,9 +656,9 @@ div.panel {
   display: none;
   margin: 30px 0px 0px 0px;
   padding: 5px;
-  max-height: 75vh;
+  max-height: 80vh;
   color: white;
-  background: black;
+  background: none;
   overflow: hidden !important;
 }
 
@@ -713,60 +731,6 @@ div#markers-option div {
 div#markers-option div:focus {
   background: var(--color-eight);
   color: black;
-}
-
-/*/ //////////////////////////
-///LOCATION////////////////*/
-
-div#coordinations {
-  position: absolute;
-  height: 100vh;
-  overflow: hidden;
-  z-index: 5;
-  left: 0;
-  top: 0;
-  background: rgba(0, 0, 0, 0.726);
-  color: white;
-  font-size: 14px;
-  padding: 5px 10px 70px 5px;
-  display: none;
-  overflow: hidden;
-}
-
-div#coordinations section {
-  background: none;
-  color: white;
-  font-size: 14px;
-  padding: 3px;
-}
-
-div#coordinations section div.block {
-  margin: 0 0 10px 0;
-}
-
-div#coordinations div#weather {
-  width: 200px;
-  position: relative;
-  height: 40px;
-  background: none;
-  display: none;
-}
-
-div#coordinations div#weather div {
-  height: 15px;
-  margin: 0px 0 0 -2px;
-}
-
-div#coordinations div#tracking {
-  display: none;
-}
-
-div#coordinations div#sun {
-  margin: 10px 0 0 0;
-}
-
-div#coordinations section#section-2 {
-  display: none;
 }
 
 /*ADS*/

@@ -288,7 +288,7 @@ const module = (() => {
     let down_e = 0;
     let evo = {};
     //the gps is too inaccurate, a boundary mark so help to spot errors
-    let limit = 50;
+    let limit = 20;
 
     t.forEach(function (item, index) {
       if (index > 0) {
@@ -358,21 +358,20 @@ const module = (() => {
         localStorage.removeItem("tracking_cache");
       }, 10000);
 
-      document.querySelector("div#coordinations div#tracking").style.display =
-        "none";
       tracking_group.clearLayers();
       polyline_tracking = L.polyline(tracking_latlngs, path_option).addTo(
         tracking_group
       );
       mainmarker.tracking = false;
+      status.tracking_running = true;
+
       return true;
     }
 
     if (action == "tracking") {
       gps_lock = window.navigator.requestWakeLock("gps");
+      status.tracking_running = true;
 
-      document.querySelector("div#coordinations div#tracking").style.display =
-        "block";
       if (localStorage.getItem("tracking_cache") != null) {
         if (
           window.confirm(
@@ -460,9 +459,6 @@ const module = (() => {
         if (mainmarker.tracking == false) {
           clearInterval(tracking_interval);
           if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
-          document.querySelector(
-            "div#coordinations div#tracking"
-          ).style.display = "none";
         }
       }, 8000);
     }
