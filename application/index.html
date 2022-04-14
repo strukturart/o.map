@@ -132,39 +132,47 @@
 
     <div id="coordinations" class="flex justify-content-center align-item-center width-100 height-100">
         <section id="section-1">
-            <div id="lat"></div>
-            <div id="lng"></div>
-            <div id="altitude"></div>
-            <div id="heading"></div>
-            <div id="compass"></div>
-            <div id="accuracy">accuracy: +-<span></span> m </div> 
+            <div class="block">
+                <div id="lat"></div>
+                <div id="lng"></div>
+                <div id="altitude"></div>
+                <div id="heading"></div>
+                <div id="compass"></div>
+                <div id="accuracy">accuracy: +-<span></span> m </div>
+            </div>
         
                     
-
-            <strong><u>Distances</u></strong>
-            <div id="distance"></div>
-            <div id="target"></div>
-            <div id="time"></div>
-            <div id="weather">
+            <div class="block">
+                <strong><u>Distances</u></strong>
+                <div id="distance"></div>
+                <div id="target"></div>
+                <div id="time"></div>
+            </div>
+            
+            <div id="weather" class="block">
                 <strong><u>weather forecast hourly</u></strong>
                 <div class="flex">
                     <div id="temp"></div>
                     <div id="weather-description">  </div>
                 </div>
             </div>
-                <div class="block">
-                    <div id="sun">sun:
-                        <span>⬆</span>
-                        <span id="sunrise"></span>
-                        <span>⬇</span>
-                        <span id="sunset"></span>
-                    </div>
+
+            <div class="block">
+                <strong><u>Sun</u></strong>
+                <div id="sun">
+                    <span>⬆</span>
+                    <span id="sunrise"></span>
+                    <span>⬇</span>
+                    <span id="sunset"></span>
+                </div>
                 </div>
            
         </section>
         <section id="section-2">
             <div id="tracking">
-                <strong><u>Tracking</u></strong>
+                <div class="block">
+                    <strong><u>Tracking</u></strong>
+                </div>
                 <div class="block">
                     <strong><u>Distance</u></strong>
                     <div id="tracking-distance"></div>

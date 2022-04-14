@@ -1559,6 +1559,9 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "Enter":
+        if (status.windowOpen == "coordinations") {
+          section_slider();
+        }
         if (status.windowOpen == "map") {
           open_finder();
           status.windowOpen = "finder";
@@ -1728,10 +1731,6 @@ document.addEventListener("DOMContentLoaded", function () {
           user_input("open", "", "save this marker as geojson file");
           bottom_bar("cancel", "", "save");
           break;
-        }
-
-        if (status.windowOpen == "coordinations") {
-          section_slider();
         }
 
         break;
