@@ -288,7 +288,7 @@ const module = (() => {
     let down_e = 0;
     let evo = {};
     //the gps is too inaccurate, a boundary mark so help to spot errors
-    let limit = 20;
+    let limit = 15;
 
     t.forEach(function (item, index) {
       if (index > 0) {
@@ -351,9 +351,10 @@ const module = (() => {
     }
 
     if (action == "destroy_tracking") {
-      gps_lock.unlock();
       tracking_altitude = [];
-      clearInterval(tracking_interval);
+      document.getElementById("tracking-altitude").innerText = "";
+      document.querySelector("div#tracking-distance").innerText = "";
+        clearInterval(tracking_interval);
       setTimeout(function () {
         localStorage.removeItem("tracking_cache");
       }, 10000);
@@ -362,8 +363,8 @@ const module = (() => {
       polyline_tracking = L.polyline(tracking_latlngs, path_option).addTo(
         tracking_group
       );
-      mainmarker.tracking = false;
-      status.tracking_running = true;
+      status.tracking_running = false;
+      gps_lock.unlock();
 
       return true;
     }
@@ -404,7 +405,7 @@ const module = (() => {
 
       tracking_interval = setInterval(function () {
         //only write data if accuracy
-        if (mainmarker.accuracy > 15000) {
+        if (mainmarker.accuracy > 10000) {
           console.log("the gps is very inaccurate right now");
           return false;
         }
