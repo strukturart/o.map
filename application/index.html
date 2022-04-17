@@ -124,12 +124,6 @@
     </div>
 
 
-    <!--
-/////////////////////////
-///LOCATION AND MAP//////
-/////////////////////////
--->
-
 
 
     <!--
@@ -256,8 +250,73 @@
             <button tabindex="12" class="item" id="load_settings_from_file">load settings</button>     
         </div>
 
-        <div class="panel" id="tracking" name="Tracking">
+
+        <div class="panel" name="Device position" id="coordinations">
+
+            <section id="device-position">
+                <div class="lat">Lat <span></span></div>
+                <div class="lng">Lng <span></span></div>
+                <div class="altitude">Alt <span></span></div>
+                <div class="heading">Heading <span></span></div>
+                <div class="speed">Speed <span></span></div>
+                <div class="compass"></div>
+                <div class="accuracy">accuracy +- <span></span> m </div>
+            </section>
+
+       
+
+            <section id="device-distance">
+                <strong><u>Distances</u></strong>
+                <div class="distance">to map center <span></span></div>
+                <div class="target">to the goal marker <span></span></div>
+            </section>
             
+            
+            
+            <section id="device-sun">
+                <strong><u>Sun</u></strong>
+                <div>
+                    <span>⬆</span>
+                    <span class="sunrise"></span>
+                    <span>⬇</span>
+                    <span class="sunset"></span>
+                </div>
+            </section>
+
+        </div>
+
+
+        <div class="panel" name="Map center" id="mapcenter">
+            <section id="mapcenter-position">
+                <div class="lat">Lat <span></span></div>
+                <div class="lng">Lng <span></span></div>
+            </section>
+            
+            
+            <section id="mapcenter-distance">
+                <strong><u>Distances</u></strong>
+                <div class="distance">to device <span></span></div>
+                <div class="target">to the goal marker <span></span></div>
+            </section>
+                
+                
+                
+            <section id="mapcenter-sun">
+                <strong><u>Sun</u></strong>
+                <div>
+                    <span>⬆</span>
+                    <span class="sunrise"></span>
+                    <span>⬇</span>
+                    <span class="sunset"></span>
+                </div>
+            </section>
+                
+        </div>
+
+
+
+        <div class="panel" id="tracking" name="Tracking">
+        
             <section>
                 <strong><u>Distance</u></strong>
                 <div id="tracking-distance"></div>
@@ -267,89 +326,56 @@
                 <div id="tracking-evo-up">⬆<span></span></div>
                 <div id="tracking-evo-down">⬇<span></span></div>
             </section>
-
+        
             <section>
                 <strong><u>Alitude</u></strong>
                 <div id="tracking-altitude"></div>
             </section>
-
+        
         </div>
 
-        <div class="panel" id="coordinations">
+        <div class="panel" id="weather" name="Weather">
 
-            <section>
-                <div id="lat"></div>
-                <div id="lng"></div>
-                <div id="altitude"></div>
-                <div id="heading"></div>
-                <div id="compass"></div>
-                <div id="accuracy">accuracy: +-<span></span> m </div>
-            </section>
-
-
-            <section>
-                <strong><u>Distances</u></strong>
-                <div id="distance"></div>
-                <div id="target"></div>
-                <div id="time"></div>
-            </section>
-
-       
-
-            <section>
-                <strong><u>Sun</u></strong>
-                <div id="sun">
-                    <span>⬆</span>
-                    <span id="sunrise"></span>
-                    <span>⬇</span>
-                    <span id="sunset"></span>
+            <section id="forecast-hourly">
+                <strong><u>forecast coming hour</u></strong>
+                <div class="flex">
+                    <div class="temp"></div>
+                    <div class="description"></div>
                 </div>
             </section>
 
-        </div>
-
-                <div class="panel" id="weather" name="Weather">
-
-                        <section id="forecast-hourly">
-                            <strong><u>forecast coming hour</u></strong>
-                            <div class="flex">
-                                <div class="temp"></div>
-                                <div class="description"></div>
-                            </div>
-                        </section>
-
-                        <section>
-                            <strong><u>forecast coming days</u></strong>
-                            
-                            <div id="day-0" class="flex">
-                                <div class="time"></div>
-                                <div class="temp"></div>
-                                <div class="description"></div>
-                            </div>
-                            <div id="day-1" class="flex">
-                                <div class="time"></div>
-                                <div class="temp"></div>
-                                <div class="description"></div>
-                            </div>
-                            <div id="day-2" class="flex">
-                                <div class="time"></div>
-                                <div class="temp"></div>
-                                <div class="description"></div>
-                            </div>
-                            <div id="day-3" class="flex">
-                                <div class="time"></div>
-                                <div class="temp"></div>
-                                <div class="description"></div>
-                            </div>
-                            <div id="day-4" class="flex">
-                                <div class="time"></div>
-                                <div class="temp"></div>
-                                <div class="description"></div>
-                            </div>
-                        </section>
-
-
+            <section>
+                <strong><u>forecast coming days</u></strong>
+                
+                <div id="day-0" class="flex">
+                    <div class="time"></div>
+                    <div class="temp"></div>
+                    <div class="description"></div>
                 </div>
+                <div id="day-1" class="flex">
+                    <div class="time"></div>
+                    <div class="temp"></div>
+                    <div class="description"></div>
+                </div>
+                <div id="day-2" class="flex">
+                    <div class="time"></div>
+                    <div class="temp"></div>
+                    <div class="description"></div>
+                </div>
+                <div id="day-3" class="flex">
+                    <div class="time"></div>
+                    <div class="temp"></div>
+                    <div class="description"></div>
+                </div>
+                <div id="day-4" class="flex">
+                    <div class="time"></div>
+                    <div class="temp"></div>
+                    <div class="description"></div>
+                </div>
+            </section>
+
+
+        </div>
 
 
         

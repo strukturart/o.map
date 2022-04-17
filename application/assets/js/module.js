@@ -16,6 +16,21 @@ const module = (() => {
     );
   };
 
+  let sunrise = function (lat, lng) {
+    //get sunset
+    //https://github.com/mourner/suncalc
+    //sunset
+    let times = SunCalc.getTimes(new Date(), lat, lng);
+    let sunrise = times.sunrise.getHours() + ":" + times.sunrise.getMinutes();
+    let sunset = times.sunset.getHours() + ":" + times.sunrise.getMinutes();
+
+    let result = {
+      sunrise: sunrise,
+      sunset: sunset,
+    };
+    return result;
+  };
+
   /////////////////////////
   /////Load GPX///////////
   ///////////////////////
@@ -354,7 +369,9 @@ const module = (() => {
       tracking_altitude = [];
       document.getElementById("tracking-altitude").innerText = "";
       document.querySelector("div#tracking-distance").innerText = "";
-        clearInterval(tracking_interval);
+      document.querySelector("div#tracking-evo-up").innerText = "";
+      document.querySelector("div#tracking-evo-down").innerText = "";
+      clearInterval(tracking_interval);
       setTimeout(function () {
         localStorage.removeItem("tracking_cache");
       }, 10000);
@@ -511,5 +528,6 @@ const module = (() => {
     startup_marker,
     loadGeoJSON,
     loadGPX,
+    sunrise,
   };
 })();

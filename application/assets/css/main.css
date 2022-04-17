@@ -662,6 +662,10 @@ div.panel {
   overflow: hidden !important;
 }
 
+div.panel span {
+  color: yellow;
+}
+
 div#setting {
   top: 0;
   padding: 10px;
