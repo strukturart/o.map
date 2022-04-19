@@ -63,6 +63,7 @@ let setting = {
     localStorage.getItem("measurement") != null
       ? JSON.parse(localStorage.getItem("measurement"))
       : true,
+  measurement_unit: "",
 };
 
 let general = {
@@ -77,8 +78,8 @@ let general = {
 };
 
 setting.measurement == true
-  ? (general.measurement_unit = "km")
-  : (general.measurement_unit = "mil");
+  ? (setting.measurement_unit = "km")
+  : (setting.measurement_unit = "mil");
 
 let status = {
   tracking_running: false,
@@ -722,8 +723,8 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     function success(pos) {
-      helper.toaster("Position  found", 2000);
-
+      helper.side_toaster("Position  found", 2000);
+      console.log(pos);
       let crd = pos.coords;
 
       //to store device loaction
@@ -828,9 +829,25 @@ document.addEventListener("DOMContentLoaded", function () {
       if (crd.speed != undefined || crd.speed != null) {
         mainmarker.device_speed = crd.speed;
 
-        document.querySelector(
-          "section#device-position div.speed span"
-        ).innerText = crd.speed.toFixed(2);
+        console.log("hey" + setting);
+
+        if (setting.measurement_unit == "km") {
+          let n = crd.speed * 3.6;
+          n = n.toFixed(2);
+
+          document.querySelector(
+            "section#device-position div.speed span"
+          ).innerText = n + " km/h";
+        }
+
+        if (setting.measurement_unit == "mil") {
+          let n = crd.speed * 2.236936;
+          n = n.toFixed(2);
+
+          document.querySelector(
+            "section#device-position div.speed span"
+          ).innerText = n + " mph";
+        }
       }
 
       //sun
