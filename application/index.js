@@ -177,7 +177,7 @@ document.addEventListener("DOMContentLoaded", function () {
       load_ads();
     } else {
       console.log("Ads free");
-      let t = document.getElementById("kaios-ads").remove();
+      //let t = document.getElementById("kaios-ads").remove();
     }
   };
 
@@ -571,8 +571,6 @@ document.addEventListener("DOMContentLoaded", function () {
       "section#mapcenter-distance div.distance span"
     ).innerText = calc2 + " " + general.measurement_unit;
 
-    console.log(mainmarker);
-
     if (mainmarker.target_marker != undefined) {
       //target marker
 
@@ -724,7 +722,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function success(pos) {
       helper.side_toaster("Position  found", 2000);
-      console.log(pos);
       let crd = pos.coords;
 
       //to store device loaction
@@ -828,8 +825,6 @@ document.addEventListener("DOMContentLoaded", function () {
       //speed
       if (crd.speed != undefined || crd.speed != null) {
         mainmarker.device_speed = crd.speed;
-
-        console.log("hey" + setting);
 
         if (setting.measurement_unit == "km") {
           let n = crd.speed * 3.6;
@@ -1255,13 +1250,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (finder_panels[count].id == "kaios-ads") {
       bottom_bar("", "open", "");
-      document.getElementById("kaios-ads").focus();
+      document.querySelector("#kaios-ads .item").focus();
     }
     if (finder_panels[count].id == "tips") bottom_bar("", "", "");
     if (finder_panels[count].id == "coordinations") {
       bottom_bar("", "", "");
       status.sub_status = "coordinations";
-      //document.querySelector("div#coordinations:nth-child(1)").focus();
     }
     if (finder_panels[count].id == "tracking") {
       bottom_bar("", "", "");
