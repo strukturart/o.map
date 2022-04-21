@@ -276,6 +276,28 @@ img.marker-1 {
   top: 23px;
   left: 23px;
 }
+
+.climbing {
+  width: 15px;
+  height: 15px;
+  background-color: #ce1496;
+  border-radius: 50%;
+  position: absolute;
+  top: 23px;
+  left: 23px;
+  border: 3px solid black;
+}
+
+.water {
+  width: 15px;
+  height: 15px;
+  background-color: #5621e9;
+  border-radius: 50%;
+  position: absolute;
+  top: 23px;
+  left: 23px;
+  border: 3px solid black;
+}
 @-webkit-keyframes pulsate {
   0% {
     -webkit-transform: scale(0.1, 0.1);

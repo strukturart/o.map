@@ -176,10 +176,12 @@ const module = (() => {
         p.options.className != "follow-marker" &&
         p.options.className != "goal-marker"
       ) {
-        l[t].setIcon(maps.default_icon);
+        //l[t].setIcon(maps.default_icon);
       }
 
-      l[t].closePopup();
+      setTimeout(function () {
+        l[index].closePopup();
+      }, 3000);
     }
 
     let p = l[index].getIcon();
@@ -187,7 +189,7 @@ const module = (() => {
       p.options.className != "follow-marker" &&
       p.options.className != "goal-marker"
     ) {
-      l[index].setIcon(maps.select_icon);
+      //l[index].setIcon(maps.select_icon);
     }
 
     //popup

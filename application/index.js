@@ -241,6 +241,20 @@ document.addEventListener("DOMContentLoaded", function () {
         '<div class="item"  data-type="layer" data-url="weather" data-map="weather">Weather <i>Layer</i></div>'
       );
 
+    document
+      .querySelector("div#layers")
+      .insertAdjacentHTML(
+        "afterend",
+        '<div class="item"  data-type="layer" data-url="climbing" data-map="climbing">Climbing <i>Layer</i></div>'
+      );
+
+    document
+      .querySelector("div#layers")
+      .insertAdjacentHTML(
+        "afterend",
+        '<div class="item"  data-type="layer" data-url="water" data-map="water">Drinking water <i>Layer</i></div>'
+      );
+
     find_gpx();
     find_geojson();
     load_maps();
@@ -993,6 +1007,24 @@ document.addEventListener("DOMContentLoaded", function () {
           status.windowOpen = "map";
           console.log(general.active_layer);
           maps.weather_map();
+        }
+
+        if (item_value == "climbing") {
+          document.querySelector("div#finder").style.display = "none";
+          status.windowOpen = "map";
+          map.setZoom(14);
+          setTimeout(function () {
+            overpass.call(map, "sport=climbing", "climbing_icon");
+          }, 1000);
+        }
+
+        if (item_value == "water") {
+          document.querySelector("div#finder").style.display = "none";
+          status.windowOpen = "map";
+          map.setZoom(14);
+          setTimeout(function () {
+            overpass.call(map, "amenity=drinking_water", "water_icon");
+          }, 1000);
         }
 
         if (item_value == "share") {

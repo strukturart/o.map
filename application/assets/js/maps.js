@@ -37,6 +37,20 @@ const maps = (() => {
     html: '<div class="ringring"></div><div class="goal"></div>',
   });
 
+  const climbing_icon = L.divIcon({
+    iconSize: [40, 40],
+    iconAnchor: [30, 40],
+    className: "climbing-marker",
+    html: '<div></div><div class="climbing"></div>',
+  });
+
+  const water_icon = L.divIcon({
+    iconSize: [40, 40],
+    iconAnchor: [30, 40],
+    className: "water-marker",
+    html: '<div></div><div class="water"></div>',
+  });
+
   //caching settings from settings panel
   let caching_time;
 
@@ -400,6 +414,8 @@ const maps = (() => {
     follow_icon,
     default_icon,
     goal_icon,
+    climbing_icon,
+    water_icon,
     select_icon,
     tracking_icon,
     weather_map,
