@@ -49,7 +49,7 @@ const qr = ((_) => {
 
               if (code) {
                 callback(code.data);
-                stop_scan();
+                stop_scan("with_success");
                 clearInterval(intv);
               }
             }, 1000);
@@ -64,7 +64,7 @@ const qr = ((_) => {
     }
   };
 
-  let stop_scan = function () {
+  let stop_scan = function (a) {
     const stream = video.srcObject;
     const tracks = stream.getTracks();
     video.srcObject = null;
@@ -73,9 +73,9 @@ const qr = ((_) => {
       track.stop();
       document.getElementById("qr-screen").style.display = "none";
     });
-
-    status.windowOpen = "finder";
-    finder_navigation("+1");
+    if (a != "with_success") {
+     
+    }
   };
 
   return {

@@ -2,11 +2,15 @@
 
 let save_mode = "";
 let markers_group = new L.FeatureGroup();
+let overpass_group = new L.FeatureGroup();
+
 let measure_group_path = new L.FeatureGroup();
 let measure_group = new L.FeatureGroup();
 let tracking_group = new L.FeatureGroup();
+let tracking_timestamp = [];
 let myMarker;
 let tilesLayer = "";
+const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 let mainmarker = {
   target_marker: "",
@@ -16,14 +20,12 @@ let mainmarker = {
       ? JSON.parse(localStorage.getItem("startup_markers"))
       : [],
   startup_marker_toggle: false,
-  tracking: false,
   tracking_distance: 0,
-  tracking_alt_up: 0,
-  tracking_alt_down: 0,
   auto_view_center: false,
   device_lat: "",
   device_lng: "",
   device_alt: "",
+  device_speed: 0,
   current_lng: 0,
   current_lat: 0,
   current_alt: 0,
@@ -63,12 +65,12 @@ let setting = {
     localStorage.getItem("measurement") != null
       ? JSON.parse(localStorage.getItem("measurement"))
       : true,
+  measurement_unit: "",
 };
 
 let general = {
   step: 0.001,
   zoomlevel: 12,
-  ads: false,
   measurement_unit: "km",
   active_layer: "",
   last_map:
@@ -78,15 +80,17 @@ let general = {
 };
 
 setting.measurement == true
-  ? (general.measurement_unit = "km")
-  : (general.measurement_unit = "mil");
+  ? (setting.measurement_unit = "km")
+  : (setting.measurement_unit = "mil");
 
 let status = {
+  tracking_running: false,
   visible: "visible",
   caching_tiles_started: false,
   marker_selection: false,
   path_selection: false,
   windowOpen: "map",
+  sub_status: "",
   crash:
     localStorage.getItem("crash") != null
       ? JSON.parse(localStorage.getItem("crash"))
@@ -123,43 +127,64 @@ map.on("load", function () {
   );
 });
 
-//highlight active layer
-let active_layer = function () {
-  let n = document.querySelectorAll("div[data-type]");
-  n.forEach(function (e) {
-    e.style.color = "white";
-    if (e.getAttribute("data-url") == general.last_map) {
-      e.style.color = "red";
-    }
-  });
-
-  let m = document.querySelectorAll("div[data-map]");
-  m.forEach(function (e) {
-    e.style.color = "white";
-    if (e.getAttribute("data-map") == general.active_layer) {
-      e.style.color = "red";
-    }
-  });
-};
-
 document.addEventListener("DOMContentLoaded", function () {
   //load KaiOs ads or not
+  let load_ads = function () {
+    var js = document.createElement("script");
+    js.type = "text/javascript";
+    js.src = "assets/js/kaiads.v5.min.js";
+
+    js.onload = function () {
+      getKaiAd({
+        publisher: "4408b6fa-4e1d-438f-af4d-f3be2fa97208",
+        app: "omap",
+        slot: "omap",
+        test: 0,
+        timeout: 10000,
+        h: 220,
+        w: 220,
+        container: document.getElementById("kaios-ads"),
+        onerror: (err) => console.error("Error:", err),
+        onready: (ad) => {
+          ad.on("close", () => console.log("close event"));
+
+          // user clicked the ad
+          ad.on("click", () => console.log("click event"));
+
+          // user closed the ad (currently only with fullscreen)
+          ad.on("close", () => console.log("close event"));
+
+          // the ad succesfully displayed
+          ad.on("display", () => console.log("display event"));
+
+          // Ad is ready to be displayed
+          // calling 'display' will display the ad
+          ad.call("display", {
+            navClass: "item",
+            display: "block",
+          });
+        },
+      });
+    };
+    document.head.appendChild(js);
+  };
+
+  //load settings
   settings.load_settings();
 
   let manifest = function (a) {
     document.getElementById("intro-footer").innerText =
       "O.MAP Version " + a.manifest.version;
     if (a.installOrigin == "app://kaios-plus.kaiostech.com") {
-      general.ads = true;
-      document.querySelector("#ads-container iframe").src = "ads.html";
+      load_ads();
     } else {
       console.log("Ads free");
-      let t = document.getElementById("kaisos-ads");
-      t.remove();
+      //let t = document.getElementById("kaios-ads").remove();
     }
   };
 
   helper.getManifest(manifest);
+
   let geoip_callback = function (data) {
     mainmarker.current_lat = data[0];
     mainmarker.current_lng = data[1];
@@ -215,7 +240,21 @@ document.addEventListener("DOMContentLoaded", function () {
       .querySelector("div#layers")
       .insertAdjacentHTML(
         "afterend",
-        '<div class="item" data-map="weather">Weather <i>Layer</i></div>'
+        '<div class="item"  data-type="layer" data-url="weather" data-map="weather">Weather <i>Layer</i></div>'
+      );
+
+    document
+      .querySelector("div#layers")
+      .insertAdjacentHTML(
+        "afterend",
+        '<div class="item"  data-type="layer" data-url="climbing" data-map="climbing">Climbing <i>Layer</i></div>'
+      );
+
+    document
+      .querySelector("div#layers")
+      .insertAdjacentHTML(
+        "afterend",
+        '<div class="item"  data-type="layer" data-url="water" data-map="water">Drinking water <i>Layer</i></div>'
       );
 
     find_gpx();
@@ -486,9 +525,147 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("osm-server-gpx-title").style.display = "block";
   }
 
+  /////openweather callback
+  ////build elements in wheater panel
+
+  let getDay = function (dt) {
+    let t = new Date(dt);
+    return days[t.getDay()];
+  };
+
+  function openweather_callback(some) {
+    document.querySelector("section#forecast-hourly div.temp").innerText =
+      some.hourly[0].temp + " °C";
+    document.querySelector(
+      "section#forecast-hourly div.description"
+    ).innerText = some.hourly[0].weather[0].description;
+
+    for (let i = 0; i < 4; i++) {
+      document.querySelector("div#day-" + i + " div.time").innerText = getDay(
+        some.daily[i].dt * 1000
+      );
+
+      document.querySelector("div#day-" + i + " div.temp").innerText =
+        some.daily[i].temp.day + " °C";
+
+      document.querySelector("div#day-" + i + " div.description").innerText =
+        some.daily[i].weather[0].description;
+    }
+  }
+
+  //distance to target marker
+  let distance_to_target = function () {
+    //device
+    let calc = module.calc_distance(
+      mainmarker.current_lat,
+      mainmarker.current_lng,
+      mainmarker.device_lat,
+      mainmarker.device_lng,
+      general.measurement_unit
+    );
+    calc = calc / 1000;
+    calc.toFixed(2);
+    parseFloat(calc);
+
+    document.querySelector(
+      "section#device-distance div.distance span"
+    ).innerText = calc + " " + general.measurement_unit;
+
+    //map center
+    let calc2 = module.calc_distance(
+      mainmarker.current_lat,
+      mainmarker.current_lng,
+      mainmarker.device_lat,
+      mainmarker.device_lng,
+      general.measurement_unit
+    );
+    calc2 = calc2 / 1000;
+    calc2.toFixed(2);
+    parseFloat(calc2);
+
+    document.querySelector(
+      "section#mapcenter-distance div.distance span"
+    ).innerText = calc2 + " " + general.measurement_unit;
+
+    if (mainmarker.target_marker != undefined) {
+      //target marker
+
+      let calc3 = module.calc_distance(
+        mainmarker.current_lat,
+        mainmarker.current_lng,
+        mainmarker.target_marker.lat,
+        mainmarker.target_marker.lng,
+        general.measurement_unit
+      );
+      calc3 = calc3 / 1000;
+      calc3.toFixed(2);
+      parseFloat(calc3);
+
+      document.querySelector(
+        "section#mapcenter-distance div.target span"
+      ).innerText = calc3 + " " + general.measurement_unit;
+    }
+
+    let calc4 = module.calc_distance(
+      mainmarker.device_lat,
+      mainmarker.device_lng,
+      mainmarker.target_marker.lat,
+      mainmarker.target_marker.lng,
+      general.measurement_unit
+    );
+    calc4 = calc4 / 1000;
+    calc4.toFixed(2);
+    parseFloat(calc4);
+
+    document.querySelector(
+      "section#device-distance div.target span"
+    ).innerText = calc4 + " " + general.measurement_unit;
+  };
+
+  //update data fields
+
+  let mapcenter_position = function () {
+    let f = map.getCenter();
+
+    mainmarker.current_lat = f.lat;
+    mainmarker.current_lng = f.lng;
+
+    //lat lng
+    document.querySelector("div#mapcenter div.lat span").innerText =
+      f.lat.toFixed(5);
+    document.querySelector("div#mapcenter div.lng span").innerText =
+      f.lng.toFixed(5);
+
+    //sun
+    let n = module.sunrise(f.lat, f.lng);
+
+    document.querySelector("section#mapcenter-sun span.sunrise").innerText =
+      n.sunrise;
+    document.querySelector("section#mapcenter-sun span.sunset").innerText =
+      n.sunset;
+  };
+
   //////////////////////////////////
   ///MENU//////////////////////////
   /////////////////////////////////
+  //highlight active layer
+  let activelayer = function () {
+    let n = document.querySelectorAll("div[data-type]");
+    n.forEach(function (e) {
+      e.style.background = "none";
+      e.style.color = "white";
+    });
+
+    n.forEach(function (e) {
+      if (
+        e.getAttribute("data-url") == general.last_map ||
+        e.getAttribute("data-url") == general.active_layer
+      ) {
+        e.style.background = "white";
+        e.style.color = "black";
+      }
+    });
+  };
   let tabIndex = 0;
 
   let finder_tabindex = function () {
@@ -513,7 +690,21 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelector("div#finder").style.display = "block";
     finder_navigation("start");
     status.windowOpen = "finder";
-    active_layer();
+    activelayer();
+    mapcenter_position();
+
+    //openweather request
+    if (setting.openweather_api == "") return false;
+    let c = map.getCenter();
+
+    weather.openweather_call(
+      c.lat,
+      c.lng,
+      setting.openweather_api,
+      openweather_callback
+    );
+
+    distance_to_target();
   };
 
   //////////////////////////
@@ -533,6 +724,10 @@ document.addEventListener("DOMContentLoaded", function () {
       myMarker = L.marker([0, 0]).addTo(markers_group);
       myMarker.setIcon(maps.default_icon);
       map.setView([mainmarker.device_lat, mainmarker.device_lng], 12);
+      setTimeout(function () {
+        mainmarker.current_lat = mainmarker.device_lat;
+        mainmarker.current_lng = mainmarker.device_lng;
+      }, 5000);
     }
 
     let options = {
@@ -542,8 +737,7 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     function success(pos) {
-      helper.toaster("Position  found", 2000);
-
+      helper.side_toaster("Position  found", 2000);
       let crd = pos.coords;
 
       //to store device loaction
@@ -604,28 +798,82 @@ document.addEventListener("DOMContentLoaded", function () {
   let state_geoloc = false;
   let geoLoc = navigator.geolocation;
 
-  function geolocationWatch(init) {
+  function geolocationWatch() {
     state_geoloc = true;
     function showLocation(position) {
       let crd = position.coords;
 
-      if (crd.heading) mainmarker.current_heading = crd.heading;
-      mainmarker.accuracy = crd.accuracy;
-
       //store device location
       mainmarker.device_lat = crd.latitude;
-      mainmarker.device_lng = crd.longitude;
-      mainmarker.device_alt = crd.altitude;
 
-      if (init) {
-        mainmarker.current_lng = crd.longitude;
-        mainmarker.current_lat = crd.latitude;
+      document.querySelector("section#device-position div.lat span").innerText =
+        crd.latitude.toFixed(2);
+
+      mainmarker.device_lng = crd.longitude;
+
+      document.querySelector("section#device-position div.lng span").innerText =
+        crd.longitude.toFixed(2);
+      //accuracy
+      if (crd.accuracy != undefined || crd.accuracy != null) {
+        mainmarker.accuracy = crd.accuracy;
+
+        document.querySelector(
+          "section#device-position div.accuracy span"
+        ).innerText = crd.accuracy.toFixed(2);
       }
 
-      if (mainmarker.tracking == false) {
+      //alitude
+      if (crd.altitude != undefined || crd.altitude != null) {
+        mainmarker.device_alt = crd.altitude;
+
+        document.querySelector(
+          "section#device-position div.altitude span"
+        ).innerText = crd.altitude.toFixed(2);
+      }
+      //heading
+      if (crd.heading != undefined || crd.heading != null) {
+        mainmarker.current_heading = crd.heading;
+        mainmarker.device_heading = crd.heading;
+        document.querySelector(
+          "section#device-position div.heading span"
+        ).innerText = crd.heading.toFixed(2);
+      }
+      //speed
+      if (crd.speed != undefined || crd.speed != null) {
+        mainmarker.device_speed = crd.speed;
+
+        if (setting.measurement_unit == "km") {
+          let n = crd.speed * 3.6;
+          n = n.toFixed(2);
+
+          document.querySelector(
+            "section#device-position div.speed span"
+          ).innerText = n + " km/h";
+        }
+
+        if (setting.measurement_unit == "mil") {
+          let n = crd.speed * 2.236936;
+          n = n.toFixed(2);
+
+          document.querySelector(
+            "section#device-position div.speed span"
+          ).innerText = n + " mph";
+        }
+      }
+
+      //sun
+
+      let n = module.sunrise(crd.latitude, crd.longitude);
+
+      document.querySelector("section#device-sun  span.sunrise").innerText =
+        n.sunrise;
+      document.querySelector("section#device-sun  span.sunset").innerText =
+        n.sunset;
+
+      if (status.tracking_running == false) {
         myMarker.setIcon(maps.default_icon);
       }
-      if (mainmarker.tracking == true) {
+      if (status.tracking_running == true) {
         myMarker.setIcon(maps.follow_icon);
       }
 
@@ -640,6 +888,10 @@ document.addEventListener("DOMContentLoaded", function () {
       if (mainmarker.auto_view_center) {
         map.flyTo(new L.LatLng(mainmarker.device_lat, mainmarker.device_lng));
       }
+
+      //distances
+
+      distance_to_target();
     }
 
     function errorHandler(err) {
@@ -660,12 +912,12 @@ document.addEventListener("DOMContentLoaded", function () {
   let auto_update_view = function () {
     if (mainmarker.auto_view_center) {
       mainmarker.auto_view_center = false;
-      helper.toaster("autoupdate view off", 2000);
+      helper.side_toaster("autoupdate view off", 2000);
       document.getElementById("cross").style.opacity = 1;
       return true;
     } else {
       mainmarker.auto_view_center = true;
-      helper.toaster("autoupdate view on", 2000);
+      helper.side_toaster("autoupdate view on", 2000);
       document.getElementById("cross").style.opacity = 0;
     }
   };
@@ -685,7 +937,7 @@ document.addEventListener("DOMContentLoaded", function () {
         mainmarker.target_marker = mainmarker.selected_marker._latlng;
         mainmarker.selected_marker.setIcon(maps.goal_icon);
         helper.toaster(
-          "target marker set, press key 6 to be informed about the current distance in the info panel.",
+          "target marker set, press enter to be informed about the current distance.",
           4000
         );
         document.querySelector("div#markers-option").style.display = "none";
@@ -731,6 +983,8 @@ document.addEventListener("DOMContentLoaded", function () {
       document.activeElement.className == "item" &&
       status.windowOpen == "finder"
     ) {
+      top_bar("", "", "");
+      bottom_bar("", "", "");
       //custom maps and layers from json file
       if (document.activeElement.hasAttribute("data-url")) {
         let item_url = document.activeElement.getAttribute("data-url");
@@ -751,19 +1005,28 @@ document.addEventListener("DOMContentLoaded", function () {
         let item_value = document.activeElement.getAttribute("data-map");
 
         if (item_value == "weather") {
-          maps.weather_map();
           document.querySelector("div#finder").style.display = "none";
           status.windowOpen = "map";
-          //toggle
-          if (
-            document.activeElement.getAttribute("data-map") ==
-            general.active_layer
-          ) {
-            general.active_layer = "";
-          } else {
-            general.active_layer =
-              document.activeElement.getAttribute("data-map");
-          }
+          console.log(general.active_layer);
+          maps.weather_map();
+        }
+
+        if (item_value == "climbing") {
+          document.querySelector("div#finder").style.display = "none";
+          status.windowOpen = "map";
+          map.setZoom(14);
+          setTimeout(function () {
+            overpass.call(map, "sport=climbing", "climbing_icon");
+          }, 1000);
+        }
+
+        if (item_value == "water") {
+          document.querySelector("div#finder").style.display = "none";
+          status.windowOpen = "map";
+          map.setZoom(14);
+          setTimeout(function () {
+            overpass.call(map, "amenity=drinking_water", "water_icon");
+          }, 1000);
         }
 
         if (item_value == "share") {
@@ -812,10 +1075,9 @@ document.addEventListener("DOMContentLoaded", function () {
           status.windowOpen = "scan";
 
           qr.start_scan(function (callback) {
-            let slug = callback;
-            helper.toaster(slug, 3000);
-            module.link_to_marker(slug);
             status.windowOpen = "map";
+            helper.toaster(callback, 3000);
+            module.link_to_marker(callback);
           });
         }
 
@@ -866,136 +1128,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
     }
-
-    top_bar("", "", "");
-    bottom_bar("", "", "");
   }
-
-  ////////////////////////////////////////
-  ////COORDINATIONS PANEL/////////////////
-  ///////////////////////////////////////
-  let coordinations = function () {
-    status.windowOpen = "coordinations";
-
-    document.querySelector("div#finder").style.display = "none";
-    document.querySelector("div#coordinations").style.display = "block";
-
-    if (setting.openweather_api && setting.openweather_api != undefined) {
-      document.querySelector("div#coordinations div#weather").style.display =
-        "block";
-
-      function openweather_callback(some) {
-        document.getElementById("temp").innerText = some.hourly[0].temp + " °C";
-        document.getElementById("weather-description").innerText =
-          some.hourly[0].weather[0].description;
-      }
-
-      let c = map.getCenter();
-
-      weather.openweather_call(
-        c.lat,
-        c.lng,
-        setting.openweather_api,
-        openweather_callback
-      );
-    }
-
-    let update_view = setInterval(() => {
-      if (mainmarker.current_lat != "" && mainmarker.current_lng != "") {
-        //when marker is loaded from menu
-
-        let f = map.getCenter();
-
-        //https://github.com/mourner/suncalc
-        //sunset
-        let times = SunCalc.getTimes(new Date(), f.lat, f.lng);
-        let sunrise =
-          times.sunrise.getHours() + ":" + times.sunrise.getMinutes();
-        let sunset = times.sunset.getHours() + ":" + times.sunrise.getMinutes();
-        document.getElementById("sunrise").innerText = sunrise;
-        document.getElementById("sunset").innerText = sunset;
-        //distance to current position
-        let calc = module.calc_distance(
-          mainmarker.device_lat,
-          mainmarker.device_lng,
-          f.lat,
-          f.lng,
-          general.measurement_unit
-        );
-        calc = calc / 1000;
-        calc.toFixed(2);
-        parseFloat(calc);
-
-        document.querySelector("div#coordinations div#distance").innerText =
-          "to device: " + calc + " " + general.measurement_unit;
-
-        //accurancy
-        document.querySelector(
-          "div#coordinations div#accuracy span"
-        ).innerText = mainmarker.accuracy.toFixed(2);
-
-        document.querySelector("div#coordinations div#lat").innerText =
-          "Lat " + mainmarker.current_lat.toFixed(5);
-        document.querySelector("div#coordinations div#lng").innerText =
-          "Lng " + mainmarker.current_lng.toFixed(5);
-
-        if (mainmarker.current_alt) {
-          document.querySelector(
-            "div#coordinations div#altitude"
-          ).style.display = "block";
-          document.querySelector("div#coordinations div#altitude").innerText =
-            "alt " + mainmarker.current_alt.toFixed(2);
-        } else {
-          document.querySelector(
-            "div#coordinations div#altitude"
-          ).style.display = "none";
-        }
-        if (mainmarker.current_heading != "unknown") {
-          document.querySelector(
-            "div#coordinations div#heading"
-          ).style.display = "block";
-          document.querySelector("div#coordinations div#heading").innerText =
-            "heading " + mainmarker.current_heading.toFixed(2);
-        } else {
-          document.querySelector(
-            "div#coordinations div#heading"
-          ).style.display = "none";
-        }
-        //distance to target marker
-        if (mainmarker.target_marker != undefined) {
-          let calc = module.calc_distance(
-            mainmarker.device_lat,
-            mainmarker.device_lng,
-            mainmarker.target_marker.lat,
-            mainmarker.target_marker.lng,
-            general.measurement_unit
-          );
-          calc = calc / 1000;
-          calc.toFixed(2);
-          parseFloat(calc);
-
-          let k = document.querySelector("div#target");
-          k.style.display = "block";
-          k.innerText =
-            "to the goal marker: " + calc + " " + general.measurement_unit;
-        }
-
-        document.querySelector("div#coordinations div#compass").style.display =
-          "block";
-
-        if (mainmarker.current_heading != null) {
-          document.querySelector("div#coordinations div#compass").innerText =
-            "compass " + module.compass(mainmarker.current_heading);
-        } else {
-          document.querySelector("div#coordinations div#compass").innerText =
-            "compass:  ";
-        }
-      }
-      //stop interval
-      if (document.querySelector("div#coordinations").style.display == "none")
-        clearInterval(update_view);
-    }, 1000);
-  };
 
   /////////////////////
   ////ZOOM MAP/////////
@@ -1072,7 +1205,9 @@ document.addEventListener("DOMContentLoaded", function () {
   /////////////////////
 
   function MovemMap(direction) {
-    if (status.windowOpen == "map" || status.windowOpen == "coordinations") {
+    if (status.windowOpen == "map") {
+      mapcenter_position();
+
       let n = map.getCenter();
 
       mainmarker.current_lat = n.lat;
@@ -1106,15 +1241,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let finder_panels = [];
   let count = 0;
+  let panels;
 
-  let panels = document.querySelectorAll("div#finder div.panel");
-
-  panels.forEach(function (e) {
-    finder_panels.push({
-      name: e.getAttribute("name"),
-      id: e.getAttribute("id"),
+  setTimeout(function () {
+    panels = document.querySelectorAll("div#finder div.panel");
+    panels.forEach(function (e) {
+      finder_panels.push({
+        name: e.getAttribute("name"),
+        id: e.getAttribute("id"),
+      });
     });
-  });
+  }, 1000);
 
   let finder_navigation = function (dir) {
     tabIndex = 0;
@@ -1122,9 +1259,6 @@ document.addEventListener("DOMContentLoaded", function () {
     panels.forEach(function (e) {
       e.style.display = "none";
     });
-
-    if (dir == "start") {
-    }
 
     if (dir == "+1") {
       count++;
@@ -1134,7 +1268,6 @@ document.addEventListener("DOMContentLoaded", function () {
       count--;
       if (count == -1) count = finder_panels.length - 1;
     }
-
     document.getElementById(finder_panels[count].id).style.display = "block";
     finder_tabindex();
 
@@ -1144,12 +1277,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (document.activeElement.classList.contains("input-parent")) {
       bottom_bar("", "edit", "");
-      return;
+      //return;
     }
-
     if (finder_panels[count].id == "imprint") bottom_bar("", "", "");
-    if (finder_panels[count].id == "kaisos-ads") bottom_bar("", "", "");
+    if (finder_panels[count].id == "coordinations") bottom_bar("", "", "");
+
+    if (finder_panels[count].id == "kaios-ads") {
+      bottom_bar("", "open", "");
+      document.querySelector("#kaios-ads .item").focus();
+    }
     if (finder_panels[count].id == "tips") bottom_bar("", "", "");
+    if (finder_panels[count].id == "coordinations") {
+      bottom_bar("", "", "");
+      status.sub_status = "coordinations";
+    }
+    if (finder_panels[count].id == "tracking") {
+      bottom_bar("", "", "");
+    }
   };
 
   function nav(move) {
@@ -1250,9 +1394,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const checkbox = document.getElementById("measurement-ckb");
 
-  checkbox.addEventListener("change", function () {
-    alert();
-  });
+  checkbox.addEventListener("change", function () {});
 
   //////////////////////////////
   ////KEYPAD HANDLER////////////
@@ -1328,6 +1470,9 @@ document.addEventListener("DOMContentLoaded", function () {
       case "Backspace":
         if (status.windowOpen == "scan") {
           qr.stop_scan();
+
+          open_finder();
+          windowOpen = "finder";
         }
 
         if (
@@ -1339,7 +1484,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (status.windowOpen != "map") {
           document.querySelector("div#finder").style.display = "none";
           document.querySelector("div#markers-option").style.display = "none";
-          document.querySelector("div#coordinations").style.display = "none";
           status.windowOpen = "map";
           status.marker_selection = false;
           document.activeElement.blur();
@@ -1391,10 +1535,7 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
-        if (
-          status.windowOpen == "map" ||
-          status.windowOpen == "coordinations"
-        ) {
+        if (status.windowOpen == "map") {
           ZoomMap("out");
           break;
         }
@@ -1406,6 +1547,17 @@ document.addEventListener("DOMContentLoaded", function () {
             let slug = callback;
             document.getElementById("owm-key").value = slug;
           });
+
+          break;
+        }
+        if (status.windowOpen == "finder" && kaios_ads_click == true) {
+          const iframe = document.getElementById("ads-frame");
+          const iWindow = iframe.contentWindow;
+          const iDocument = iWindow.document;
+
+          // accessing the element
+          const element = iDocument.getElementById("KaiOsAd");
+          element.click();
 
           break;
         }
@@ -1457,6 +1609,7 @@ document.addEventListener("DOMContentLoaded", function () {
             setting.export_path + user_input("return") + ".geojson",
             "path"
           );
+
           save_mode = "";
           break;
         }
@@ -1474,15 +1627,16 @@ document.addEventListener("DOMContentLoaded", function () {
           status.windowOpen == "user-input" &&
           save_mode == "geojson-tracking"
         ) {
-          geojson.save_geojson(user_input("return") + ".geojson", "tracking");
+          //geojson.save_geojson(user_input("return") + ".geojson", "tracking");
+          geojson.save_gpx(
+            setting.export_path + user_input("return") + ".gpx",
+            "tracking"
+          );
           save_mode = "";
           break;
         }
 
-        if (
-          status.windowOpen == "map" ||
-          status.windowOpen == "coordinations"
-        ) {
+        if (status.windowOpen == "map") {
           ZoomMap("in");
           break;
         }
@@ -1522,9 +1676,10 @@ document.addEventListener("DOMContentLoaded", function () {
           status.windowOpen == "user-input" &&
           save_mode == "geojson-tracking"
         ) {
+          module.measure_distance("destroy_tracking");
+
           user_input("close");
           save_mode = "";
-          module.measure_distance("destroy_tracking");
           break;
         }
 
@@ -1602,33 +1757,29 @@ document.addEventListener("DOMContentLoaded", function () {
           mainmarker.selected_marker != ""
         ) {
           markers_action();
-
           break;
         }
 
-        if (status.windowOpen == "finder") {
+        if (
+          status.windowOpen == "finder" &&
+          document.activeElement.classList.contains("item")
+        ) {
           addMapLayers();
-
           break;
         }
 
-        if (status.windowOpen == "finder") {
-          addMapLayers("delete");
-          break;
-        }
         break;
 
       case "1":
         if (status.windowOpen == "map") {
-          if (mainmarker.tracking) {
+          if (status.tracking_running) {
             helper.toaster("tracking paused", 5000);
             save_mode = "geojson-tracking";
             user_input("open", "", "Export path as geojson file");
             bottom_bar("cancel", "don't save", "save");
-
             return true;
           } else {
-            mainmarker.tracking = true;
+            status.tracking_running = true;
             helper.toaster(
               "tracking started,\n stop tracking with key 1",
               4000
@@ -1667,10 +1818,10 @@ document.addEventListener("DOMContentLoaded", function () {
           bottom_bar("cancel", "", "save");
           break;
         }
+
         break;
 
       case "6":
-        if (status.windowOpen == "map") coordinations();
         break;
 
       case "7":
@@ -1690,7 +1841,6 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "9":
-        console.log(status.windowOpen);
         if (status.windowOpen == "map")
           L.marker([mainmarker.current_lat, mainmarker.current_lng]).addTo(
             markers_group
@@ -1699,7 +1849,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "0":
         if (status.windowOpen == "map") {
-          //maps.export_mapdata();
           mozactivity.share_position();
         }
         break;

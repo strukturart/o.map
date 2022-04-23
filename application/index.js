@@ -2,6 +2,10 @@
 
 let save_mode = "";
 let markers_group = new L.FeatureGroup();
+let overpass_group = new L.FeatureGroup();
+let contained = [];
+let overpass_query = ""; //to toggle overpass layer
+
 let measure_group_path = new L.FeatureGroup();
 let measure_group = new L.FeatureGroup();
 let tracking_group = new L.FeatureGroup();
@@ -208,6 +212,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   //add group layers
   map.addLayer(markers_group);
+  map.addLayer(overpass_group);
   map.addLayer(measure_group);
   map.addLayer(measure_group_path);
   map.addLayer(tracking_group);

@@ -156,13 +156,33 @@ const module = (() => {
   ///////////////////
   //select marker
   ////////////////////
-
+  contained = []; //makers in map boundingbox
+  let l = [];
   let index = -1;
   let select_marker = function () {
+    if (contained == "") {
+      //merge markers in viewport
+      if (overpass_group != "") {
+        overpass_group.eachLayer(function (l) {
+          if (l instanceof L.Marker && map.getBounds().contains(l.getLatLng()))
+            contained.push(l);
+        });
+      }
+
+      markers_group.eachLayer(function (l) {
+        contained.push(l);
+        if (l instanceof L.Marker && map.getBounds().contains(l.getLatLng()))
+          contained.push(l);
+      });
+    }
+
+    l = contained;
+
+    console.log(l);
+
     status.marker_selection = true;
     status.windowOpen = "marker";
 
-    let l = markers_group.getLayers();
     index++;
 
     if (index >= l.length) index = 0;

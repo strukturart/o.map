@@ -1,19 +1,5 @@
 const overpass = (() => {
   function call(map, overpassQuery, icon) {
-    if (overpass_group != "") {
-      overpass_group.clearLayers();
-      contained = [];
-    }
-
-    if (overpass_query == overpassQuery) {
-      overpass_group.clearLayers();
-      contained = [];
-      overpass_query = "";
-      return false;
-    }
-
-    overpass_query = overpassQuery;
-
     let e = map.getBounds().getEast();
     let w = map.getBounds().getWest();
     let n = map.getBounds().getNorth();
@@ -39,7 +25,6 @@ const overpass = (() => {
           helper.side_toaster("no data", 2000);
           return false;
         }
-
         data.elements.forEach((element) => {
           if (element.type == "node") {
             L.marker([element.lat, element.lon])

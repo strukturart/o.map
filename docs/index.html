@@ -47,6 +47,7 @@
 
 
     <div id="toast" class="width-100"></div>
+    <div id="side-toast"></div>
 
     <div id="search-box">
         <input type="search" id="search" class="items" placeholder="search" autofocus tabindex="0"/>
@@ -123,46 +124,7 @@
     </div>
 
 
-    <!--
-/////////////////////////
-///LOCATION AND MAP//////
-/////////////////////////
--->
 
-    <div id="coordinations" class="flex justify-content-center align-item-center width-100 height-100">
-        <div>
-            <div id="lat"></div>
-            <div id="lng"></div>
-            <div id="altitude"></div>
-            <div id="heading"></div>
-            <div id="compass"></div>
-            <div id="accuracy">accuracy: +-<span></span> m </div> 
-            <div id="tracking">
-                <strong><u>Tracking</u></strong>
-                <div id="tracking-distance"></div>
-            </div>
-                    
-
-            <strong><u>Distances</u></strong>
-            <div id="distance"></div>
-            <div id="target"></div>
-            <div id="time"></div>
-            <div id="weather">
-                <strong><u>weather forecast hourly</u></strong>
-                <div class="flex">
-                    <div id="temp"></div>
-                    <div id="weather-description">  </div>
-                </div>
-            </div>
-                
-                <div id="sun">sun: 
-                    <span>⬆</span>
-                    <span id="sunrise"></span>
-                    <span>⬇</span>
-                    <span id="sunset"></span>
-                </div>
-        </div>
-    </div>
 
     <!--
 
@@ -189,6 +151,8 @@
 
 
     <div id="finder" class="flex width-100 height-100">
+
+  
         <div class="panel" id="mapstracks" name="Imagery">
             <h2>MAPS</h2>
             <div id="maps"></div>
@@ -213,7 +177,7 @@
             <h2>Openweathermap</h2>
             <div class="item input-parent" tabindex="0">
                 <label for="owm-key">Openweathermap API-Key</label>
-                <input type="tel" class="qr" id="owm-key" />
+                <input type="text" class="qr" id="owm-key" />
             </div>
 
           
@@ -286,11 +250,135 @@
             <button tabindex="12" class="item" id="load_settings_from_file">load settings</button>     
         </div>
 
+
+        <div class="panel" name="Device position" id="coordinations">
+
+            <section id="device-position">
+                <div class="lat">Lat <span></span></div>
+                <div class="lng">Lng <span></span></div>
+                <div class="altitude">Alt <span></span></div>
+                <div class="heading">Heading <span></span></div>
+                <div class="speed">Speed <span></span></div>
+                <div class="compass"></div>
+                <div class="accuracy">accuracy +- <span></span> m </div>
+            </section>
+
+       
+
+            <section id="device-distance">
+                <strong><u>Distances</u></strong>
+                <div class="distance">to map center <span></span></div>
+                <div class="target">to the goal marker <span></span></div>
+            </section>
+            
+            
+            
+            <section id="device-sun">
+                <strong><u>Sun</u></strong>
+                <div>
+                    <span>⬆</span>
+                    <span class="sunrise"></span>
+                    <span>⬇</span>
+                    <span class="sunset"></span>
+                </div>
+            </section>
+
+        </div>
+
+
+        <div class="panel" name="Map center" id="mapcenter">
+            <section id="mapcenter-position">
+                <div class="lat">Lat <span></span></div>
+                <div class="lng">Lng <span></span></div>
+            </section>
+            
+            
+            <section id="mapcenter-distance">
+                <strong><u>Distances</u></strong>
+                <div class="distance">to device <span></span></div>
+                <div class="target">to the goal marker <span></span></div>
+            </section>
+                
+                
+                
+            <section id="mapcenter-sun">
+                <strong><u>Sun</u></strong>
+                <div>
+                    <span>⬆</span>
+                    <span class="sunrise"></span>
+                    <span>⬇</span>
+                    <span class="sunset"></span>
+                </div>
+            </section>
+                
+        </div>
+
+
+
+        <div class="panel" id="tracking" name="Tracking">
         
+            <section>
+                <strong><u>Distance</u></strong>
+                <div id="tracking-distance"></div>
+            </section>
+            <section>
+                <strong><u>Evolution</u></strong>
+                <div id="tracking-evo-up">⬆<span></span></div>
+                <div id="tracking-evo-down">⬇<span></span></div>
+            </section>
+        
+            <section>
+                <strong><u>Alitude</u></strong>
+                <div id="tracking-altitude"></div>
+            </section>
+        
+        </div>
+
+        <div class="panel" id="weather" name="Weather">
+
+            <section id="forecast-hourly">
+                <strong><u>forecast coming hour</u></strong>
+                <div class="flex">
+                    <div class="temp"></div>
+                    <div class="description"></div>
+                </div>
+            </section>
+
+            <section>
+                <strong><u>forecast coming days</u></strong>
+                
+                <div id="day-0" class="flex">
+                    <div class="time"></div>
+                    <div class="temp"></div>
+                    <div class="description"></div>
+                </div>
+                <div id="day-1" class="flex">
+                    <div class="time"></div>
+                    <div class="temp"></div>
+                    <div class="description"></div>
+                </div>
+                <div id="day-2" class="flex">
+                    <div class="time"></div>
+                    <div class="temp"></div>
+                    <div class="description"></div>
+                </div>
+                <div id="day-3" class="flex">
+                    <div class="time"></div>
+                    <div class="temp"></div>
+                    <div class="description"></div>
+                </div>
+                <div id="day-4" class="flex">
+                    <div class="time"></div>
+                    <div class="temp"></div>
+                    <div class="description"></div>
+                </div>
+            </section>
 
 
+        </div>
 
 
+        
         <div class="panel" id="wikilocation" name="Wikilocation"></div>
 
         <div class="panel" id="shortcuts" name="Shortcuts">
@@ -336,12 +424,7 @@
                 </div>
             </div>
 
-            <div class="item" data-map="coordinations">
-                <div class="flex justify-content-spacebetween">
-                    <div>coordinations</div>
-                    <div>6</div>
-                </div>
-            </div>
+     
 
             <div class="item" data-map="draw-path">
                 <div class="flex justify-content-spacebetween">
@@ -417,13 +500,7 @@
                 Various software and map data are used in this app, please note the licenses.
                 <br>
             </div>
-            <ul>
-                <h2>Software</h2>
-                <li>o.map <span>UNLICENSE</span></li>
-                <li>Leaflet <span>BSD-2-Clause License</span></li>
-                <li>leaflet.tilelayer.pouchdbcached <span>MIT license</span></li>
-                <li>gpx.js <span>MIT License</span></li>
-            </ul>       
+                 
             <ul>
                 <h2>Maps and Layers</h2>
                 <li><a href="https://www.openstreetmap.org/copyright">OpenStreetMap® </a></li>
@@ -433,11 +510,14 @@
             </ul>
             <ul>
                 <h2>License</h2>
-                <li>o.map [UNLICENSE](UNLICENSE)</li>
-                <li>Leaflet - BSD-2-Clause License</li>
-                <li>leaflet.tilelayer.pouchdbcached MIT license</li>
-                <li>wikipedia CC BY-SA License.</li>
+                <li>wikipedia <span>CC BY-SA License</span></li>
                 <li><a href="https://www.openstreetmap.org/copyright">OpenStreetMap® </a></li>
+                <li><a href="https://github.com/drolbr/Overpass-API/blob/master/COPYING">Overpass </a></li>
+                <li>o.map <span>UNLICENSE</span></li>
+                <li>Leaflet <span>BSD-2-Clause License</span></li>
+                <li>leaflet.tilelayer.pouchdbcached <span>MIT license</span></li>
+                <li>gpx.js <span>MIT License</span></li>
+
             </ul>
             <ul>
                 <h2>Privacy Policy</h2>
@@ -457,15 +537,12 @@
             </div>
         </div>
 
-        <div class="panel item" id="kaisos-ads" name="KaiOsAds">
-            <div id="ads-container"><iframe src=""></iframe></div>
+        <div class="panel item" id="kaios-ads" name="KaiOsAds">
+
         </div>
 
     </div>
 
-
-
-  
     <script defer src="assets/js/suncalc.js"></script>
     <script defer src="assets/js/wikilocation.js"></script>
     <script defer src="assets/js/jsQR.js"></script>
@@ -478,6 +555,8 @@
     <script defer src="assets/js/mustache.js"></script>
     <script defer src="assets/js/L.TileLayer.PouchDBCached.js"></script>
     <script defer src="assets/js/gpx.js"></script>
+    <script defer src="assets/js/overpass.js"></script>
+
     <script defer src="index.js"></script>
     <script defer src="assets/js/search.js"></script>
     <script defer src="assets/js/maps.js"></script>
@@ -487,6 +566,7 @@
     <script defer src="assets/js/openweather.js"></script>
     <script defer src="assets/js/togpx.js"></script>
     <script defer src="assets/js/module.js"></script>
+
 
 
 

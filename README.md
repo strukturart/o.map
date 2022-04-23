@@ -127,6 +127,7 @@ OpenStreetMap is a trademark of the OpenStreetMap Foundation. o.map is not endor
 - leaflet.tilelayer.pouchdbcached MIT license
 - wikipedia CC BY-SA License.
 - OpenStreetMap®
+- Overpass [Affero GPL](https://github.com/drolbr/Overpass-API/blob/master/COPYING)
 
 ### Privacy Policy
 

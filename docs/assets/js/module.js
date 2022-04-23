@@ -10,11 +10,25 @@ const module = (() => {
     mainmarker.current_lat = Number(current_lat);
     mainmarker.current_lng = Number(current_lng);
 
-    //myMarker = L.marker([current_lat, current_lng]).addTo(map);
     map.setView([current_lat, current_lng], 14);
     L.marker([mainmarker.current_lat, mainmarker.current_lng]).addTo(
       markers_group
     );
+  };
+
+  let sunrise = function (lat, lng) {
+    //get sunset
+    //https://github.com/mourner/suncalc
+    //sunset
+    let times = SunCalc.getTimes(new Date(), lat, lng);
+    let sunrise = times.sunrise.getHours() + ":" + times.sunrise.getMinutes();
+    let sunset = times.sunset.getHours() + ":" + times.sunrise.getMinutes();
+
+    let result = {
+      sunrise: sunrise,
+      sunset: sunset,
+    };
+    return result;
   };
 
   /////////////////////////
@@ -149,7 +163,7 @@ const module = (() => {
     status.windowOpen = "marker";
 
     let l = markers_group.getLayers();
-    index++;
+    console.log(overpass_group.getLayers());
 
     if (index >= l.length) index = 0;
     bottom_bar("cancel", "option", "");
@@ -162,10 +176,12 @@ const module = (() => {
         p.options.className != "follow-marker" &&
         p.options.className != "goal-marker"
       ) {
-        l[t].setIcon(maps.default_icon);
+        //l[t].setIcon(maps.default_icon);
       }
 
-      l[t].closePopup();
+      setTimeout(function () {
+        l[index].closePopup();
+      }, 3000);
     }
 
     let p = l[index].getIcon();
@@ -173,7 +189,7 @@ const module = (() => {
       p.options.className != "follow-marker" &&
       p.options.className != "goal-marker"
     ) {
-      l[index].setIcon(maps.select_icon);
+      //l[index].setIcon(maps.select_icon);
     }
 
     //popup
@@ -282,6 +298,40 @@ const module = (() => {
   ////PATH & TRACKING
   ///////////////////
 
+  //calculation of altitude ascents and descents
+
+  let evolution = function (t) {
+    let up_e = 0;
+    let down_e = 0;
+    let evo = {};
+    //the gps is too inaccurate, a boundary mark so help to spot errors
+    let limit = 15;
+
+    t.forEach(function (item, index) {
+      if (index > 0) {
+        if (item > t[index - 1]) {
+          let c = item - t[index - 1];
+          if (c > limit) return false;
+          up_e += c;
+        }
+        if (item < t[index - 1]) {
+          let cc = t[index - 1] - item;
+          if (cc > limit) return false;
+          down_e += cc;
+        }
+
+        evo.up = up_e;
+        evo.down = down_e;
+      }
+    });
+    document.querySelector("#tracking-evo-up span").innerText =
+      evo.up.toFixed(2);
+    document.querySelector("#tracking-evo-down span").innerText =
+      evo.down.toFixed(2);
+  };
+
+  //tool to measure distance
+
   let popup_option = {
     closeButton: false,
     maxWidth: 200,
@@ -298,6 +348,8 @@ const module = (() => {
   let tracking_latlngs = [];
   let tracking_interval;
   let tracking_cache = [];
+  let gps_lock;
+  let tracking_altitude = [];
 
   let tracking_distance;
 
@@ -316,20 +368,30 @@ const module = (() => {
     }
 
     if (action == "destroy_tracking") {
-      document.querySelector("div#coordinations div#tracking").style.display =
-        "none";
+      tracking_altitude = [];
+      document.getElementById("tracking-altitude").innerText = "";
+      document.querySelector("div#tracking-distance").innerText = "";
+      document.querySelector("div#tracking-evo-up").innerText = "";
+      document.querySelector("div#tracking-evo-down").innerText = "";
+      clearInterval(tracking_interval);
+      setTimeout(function () {
+        localStorage.removeItem("tracking_cache");
+      }, 10000);
+
       tracking_group.clearLayers();
       polyline_tracking = L.polyline(tracking_latlngs, path_option).addTo(
         tracking_group
       );
-      mainmarker.tracking = false;
-      localStorage.removeItem("tracking_cache");
+      status.tracking_running = false;
+      gps_lock.unlock();
+
       return true;
     }
 
     if (action == "tracking") {
-      document.querySelector("div#coordinations div#tracking").style.display =
-        "block";
+      gps_lock = window.navigator.requestWakeLock("gps");
+      status.tracking_running = true;
+
       if (localStorage.getItem("tracking_cache") != null) {
         if (
           window.confirm(
@@ -346,30 +408,52 @@ const module = (() => {
             polyline_tracking.addLatLng([
               tracking_cache[i].lat,
               tracking_cache[i].lng,
+              tracking_cache[i].timestamp,
             ]);
+
+            tracking_timestamp.push(tracking_cache[i].timestamp);
           }
         } else {
           localStorage.removeItem("tracking_cache");
           tracking_cache = [];
         }
-      } else {
       }
       if (setting.tracking_screenlock) screenWakeLock("lock", "screen");
 
-      screenWakeLock("lock", "gps");
       let calc = 0;
 
       tracking_interval = setInterval(function () {
+        //only write data if accuracy
+        if (mainmarker.accuracy > 10000) {
+          console.log("the gps is very inaccurate right now");
+          return false;
+        }
+        let ts = new Date();
+        tracking_timestamp.push(ts.toISOString());
+
         polyline_tracking.addLatLng([
           mainmarker.device_lat,
           mainmarker.device_lng,
+          mainmarker.device_alt,
         ]);
 
         tracking_cache.push({
           lat: mainmarker.device_lat,
           lng: mainmarker.device_lng,
           alt: mainmarker.device_alt,
+          timestamp: ts.toISOString(),
+          tracking_altitude: mainmarker.device_alt,
         });
+        tracking_altitude = [];
+        tracking_cache.forEach(function (e) {
+          if (e.tracking_altitude != null)
+            tracking_altitude.push(e.tracking_altitude);
+        });
+
+        document.getElementById("tracking-altitude").innerText =
+          mainmarker.device_alt.toFixed(2);
+
+        evolution(tracking_altitude);
 
         if (tracking_cache.length > 2) {
           tracking_distance = calc_distance(
@@ -384,22 +468,19 @@ const module = (() => {
           calc += Number(tracking_distance);
 
           document.querySelector("div#tracking-distance").innerText =
-            calc.toFixed(2) + " km";
+            calc.toFixed(2) + general.measurement_unit;
 
           //check if old tracking
           let k = JSON.stringify(tracking_cache);
 
           localStorage.setItem("tracking_cache", k);
         }
+
         if (mainmarker.tracking == false) {
           clearInterval(tracking_interval);
           if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
-          screenWakeLock("unlock", "gps");
-          document.querySelector(
-            "div#coordinations div#tracking"
-          ).style.display = "none";
         }
-      }, 10000);
+      }, 8000);
     }
 
     if (action == "addMarker") {
@@ -449,5 +530,6 @@ const module = (() => {
     startup_marker,
     loadGeoJSON,
     loadGPX,
+    sunrise,
   };
 })();

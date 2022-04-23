@@ -37,6 +37,20 @@ const maps = (() => {
     html: '<div class="ringring"></div><div class="goal"></div>',
   });
 
+  const climbing_icon = L.divIcon({
+    iconSize: [40, 40],
+    iconAnchor: [30, 40],
+    className: "climbing-marker",
+    html: '<div></div><div class="climbing"></div>',
+  });
+
+  const water_icon = L.divIcon({
+    iconSize: [40, 40],
+    iconAnchor: [30, 40],
+    className: "water-marker",
+    html: '<div></div><div class="water"></div>',
+  });
+
   //caching settings from settings panel
   let caching_time;
 
@@ -54,13 +68,13 @@ const maps = (() => {
   let caching_events = function () {
     // Listen to cache hits and misses and spam the console
     tilesLayer.on("tilecachehit", function (ev) {
-      console.log("Cache hit: ", ev.url);
+      // console.log("Cache hit: ", ev.url);
     });
     tilesLayer.on("tilecachemiss", function (ev) {
-      console.log("Cache miss: ", ev.url);
+      //console.log("Cache miss: ", ev.url);
     });
     tilesLayer.on("tilecacheerror", function (ev) {
-      console.log("Cache error: ", ev.tile, ev.error);
+      // console.log("Cache error: ", ev.tile, ev.error);
     });
   };
 
@@ -97,7 +111,7 @@ const maps = (() => {
     });
 
     tilesLayer.on("error", function (seedData) {
-      console.log(eror);
+      //console.log(eror);
       status.caching_tiles_started = false;
 
       document.querySelector("div#top-bar div.button-center").innerText =
@@ -165,17 +179,20 @@ const maps = (() => {
       }
     }
     //overlayer
+    /*
     if (type == "overlayer") {
       if (map.hasLayer(overlayer)) {
         map.removeLayer(overlayer);
+        general.active_layer = "";
         return false;
       }
+      general.active_layer = url;
 
       overlayer = L.tileLayer(url);
-
       map.addLayer(overlayer);
       caching_events();
     }
+    */
   };
 
   map.on("layeradd", function (event) {
@@ -199,7 +216,6 @@ const maps = (() => {
     return datevalues;
   };
 
-  let running = false;
   let k;
   let weather_layer,
     weather_layer0,
@@ -208,12 +224,10 @@ const maps = (() => {
     weather_layer3;
 
   function weather_map() {
-    map.attributionControl.setPrefix(
-      "<a href='https://www.rainviewer.com/terms.html'>waether data collected by rainviewer.com</a>"
-    );
-
+    console.log("status: " + general.active_layer);
     let weather_url;
-    if (running) {
+    if (general.active_layer == "weather") {
+      general.active_layer = "";
       top_bar("", "", "");
       map.removeLayer(weather_layer);
       map.removeLayer(weather_layer0);
@@ -221,182 +235,187 @@ const maps = (() => {
       map.removeLayer(weather_layer2);
       map.removeLayer(weather_layer3);
       clearInterval(k);
-      running = false;
-
       map.attributionControl.setPrefix("");
       return false;
+    } else {
+      fetch("https://api.rainviewer.com/public/maps.json")
+        .then(function (response) {
+          general.active_layer = "weather";
+          map.attributionControl.setPrefix(
+            "<a href='https://www.rainviewer.com/terms.html'>waether data collected by rainviewer.com</a>"
+          );
+          return response.json();
+        })
+        .then(function (data) {
+          weather_url =
+            "https://tilecache.rainviewer.com/v2/radar/" +
+            data[data.length - 5] +
+            "/256/{z}/{x}/{y}/2/1_1.png";
+          weather_layer = L.tileLayer(weather_url);
+
+          weather_url0 =
+            "https://tilecache.rainviewer.com/v2/radar/" +
+            data[data.length - 4] +
+            "/256/{z}/{x}/{y}/2/1_1.png";
+          weather_layer0 = L.tileLayer(weather_url0);
+
+          weather_url1 =
+            "https://tilecache.rainviewer.com/v2/radar/" +
+            data[data.length - 3] +
+            "/256/{z}/{x}/{y}/2/1_1.png";
+          weather_layer1 = L.tileLayer(weather_url1);
+
+          weather_url2 =
+            "https://tilecache.rainviewer.com/v2/radar/" +
+            data[data.length - 2] +
+            "/256/{z}/{x}/{y}/2/1_1.png";
+          weather_layer2 = L.tileLayer(weather_url2);
+
+          weather_url3 =
+            "https://tilecache.rainviewer.com/v2/radar/" +
+            data[data.length - 1] +
+            "/256/{z}/{x}/{y}/2/1_1.png";
+          weather_layer3 = L.tileLayer(weather_url3);
+
+          map.addLayer(weather_layer);
+          map.addLayer(weather_layer0);
+          map.addLayer(weather_layer1);
+          map.addLayer(weather_layer2);
+          map.addLayer(weather_layer3);
+
+          let i = -1;
+          k = setInterval(() => {
+            i++;
+
+            if (i == 0) {
+              map.addLayer(weather_layer);
+              map.removeLayer(weather_layer0);
+              map.removeLayer(weather_layer1);
+              map.removeLayer(weather_layer2);
+              map.removeLayer(weather_layer3);
+              let t = formDat(data[data.length - 5]);
+              top_bar(
+                "",
+                t.year +
+                  "." +
+                  t.month +
+                  "." +
+                  t.day +
+                  ", " +
+                  t.hour +
+                  ":" +
+                  t.minute,
+                ""
+              );
+            }
+
+            if (i == 1) {
+              map.removeLayer(weather_layer);
+              map.addLayer(weather_layer0);
+              map.removeLayer(weather_layer1);
+              map.removeLayer(weather_layer2);
+              map.removeLayer(weather_layer3);
+              let t = formDat(data[data.length - 4]);
+              top_bar(
+                "",
+                t.year +
+                  "." +
+                  t.month +
+                  "." +
+                  t.day +
+                  ", " +
+                  t.hour +
+                  ":" +
+                  t.minute,
+                ""
+              );
+            }
+
+            if (i == 2) {
+              map.removeLayer(weather_layer);
+              map.removeLayer(weather_layer0);
+              map.addLayer(weather_layer1);
+              map.removeLayer(weather_layer2);
+              map.removeLayer(weather_layer3);
+              let t = formDat(data[data.length - 3]);
+              top_bar(
+                "",
+                t.year +
+                  "." +
+                  t.month +
+                  "." +
+                  t.day +
+                  ", " +
+                  t.hour +
+                  ":" +
+                  t.minute,
+                ""
+              );
+            }
+
+            if (i == 3) {
+              map.removeLayer(weather_layer);
+              map.removeLayer(weather_layer0);
+              map.removeLayer(weather_layer1);
+              map.addLayer(weather_layer2);
+              map.removeLayer(weather_layer3);
+              let t = formDat(data[data.length - 2]);
+              top_bar(
+                "",
+                t.year +
+                  "." +
+                  t.month +
+                  "." +
+                  t.day +
+                  ", " +
+                  t.hour +
+                  ":" +
+                  t.minute,
+                ""
+              );
+            }
+            if (i == 4) {
+              map.removeLayer(weather_layer);
+              map.removeLayer(weather_layer0);
+              map.removeLayer(weather_layer1);
+              map.removeLayer(weather_layer2);
+              map.addLayer(weather_layer3);
+              let t = formDat(data[data.length - 1]);
+              top_bar(
+                "",
+                t.year +
+                  "." +
+                  t.month +
+                  "." +
+                  t.day +
+                  ", " +
+                  t.hour +
+                  ":" +
+                  t.minute,
+                ""
+              );
+            }
+            if (i == 5) {
+              i = -1;
+            }
+          }, 2000);
+        })
+        .catch(function (err) {
+          if (helper.isOnline == true) {
+            helper.allow_unsecure(
+              "https://api.rainviewer.com/public/maps.json"
+            );
+            toaster("Can't load weather data" + err, 3000);
+          }
+        });
     }
-
-    fetch("https://api.rainviewer.com/public/maps.json")
-      .then(function (response) {
-        running = true;
-        return response.json();
-      })
-      .then(function (data) {
-        weather_url =
-          "https://tilecache.rainviewer.com/v2/radar/" +
-          data[data.length - 5] +
-          "/256/{z}/{x}/{y}/2/1_1.png";
-        weather_layer = L.tileLayer(weather_url);
-
-        weather_url0 =
-          "https://tilecache.rainviewer.com/v2/radar/" +
-          data[data.length - 4] +
-          "/256/{z}/{x}/{y}/2/1_1.png";
-        weather_layer0 = L.tileLayer(weather_url0);
-
-        weather_url1 =
-          "https://tilecache.rainviewer.com/v2/radar/" +
-          data[data.length - 3] +
-          "/256/{z}/{x}/{y}/2/1_1.png";
-        weather_layer1 = L.tileLayer(weather_url1);
-
-        weather_url2 =
-          "https://tilecache.rainviewer.com/v2/radar/" +
-          data[data.length - 2] +
-          "/256/{z}/{x}/{y}/2/1_1.png";
-        weather_layer2 = L.tileLayer(weather_url2);
-
-        weather_url3 =
-          "https://tilecache.rainviewer.com/v2/radar/" +
-          data[data.length - 1] +
-          "/256/{z}/{x}/{y}/2/1_1.png";
-        weather_layer3 = L.tileLayer(weather_url3);
-
-        map.addLayer(weather_layer);
-        map.addLayer(weather_layer0);
-        map.addLayer(weather_layer1);
-        map.addLayer(weather_layer2);
-        map.addLayer(weather_layer3);
-
-        let i = -1;
-        k = setInterval(() => {
-          i++;
-
-          if (i == 0) {
-            map.addLayer(weather_layer);
-            map.removeLayer(weather_layer0);
-            map.removeLayer(weather_layer1);
-            map.removeLayer(weather_layer2);
-            map.removeLayer(weather_layer3);
-            let t = formDat(data[data.length - 5]);
-            top_bar(
-              "",
-              t.year +
-                "." +
-                t.month +
-                "." +
-                t.day +
-                ", " +
-                t.hour +
-                ":" +
-                t.minute,
-              ""
-            );
-          }
-
-          if (i == 1) {
-            map.removeLayer(weather_layer);
-            map.addLayer(weather_layer0);
-            map.removeLayer(weather_layer1);
-            map.removeLayer(weather_layer2);
-            map.removeLayer(weather_layer3);
-            let t = formDat(data[data.length - 4]);
-            top_bar(
-              "",
-              t.year +
-                "." +
-                t.month +
-                "." +
-                t.day +
-                ", " +
-                t.hour +
-                ":" +
-                t.minute,
-              ""
-            );
-          }
-
-          if (i == 2) {
-            map.removeLayer(weather_layer);
-            map.removeLayer(weather_layer0);
-            map.addLayer(weather_layer1);
-            map.removeLayer(weather_layer2);
-            map.removeLayer(weather_layer3);
-            let t = formDat(data[data.length - 3]);
-            top_bar(
-              "",
-              t.year +
-                "." +
-                t.month +
-                "." +
-                t.day +
-                ", " +
-                t.hour +
-                ":" +
-                t.minute,
-              ""
-            );
-          }
-
-          if (i == 3) {
-            map.removeLayer(weather_layer);
-            map.removeLayer(weather_layer0);
-            map.removeLayer(weather_layer1);
-            map.addLayer(weather_layer2);
-            map.removeLayer(weather_layer3);
-            let t = formDat(data[data.length - 2]);
-            top_bar(
-              "",
-              t.year +
-                "." +
-                t.month +
-                "." +
-                t.day +
-                ", " +
-                t.hour +
-                ":" +
-                t.minute,
-              ""
-            );
-          }
-          if (i == 4) {
-            map.removeLayer(weather_layer);
-            map.removeLayer(weather_layer0);
-            map.removeLayer(weather_layer1);
-            map.removeLayer(weather_layer2);
-            map.addLayer(weather_layer3);
-            let t = formDat(data[data.length - 1]);
-            top_bar(
-              "",
-              t.year +
-                "." +
-                t.month +
-                "." +
-                t.day +
-                ", " +
-                t.hour +
-                ":" +
-                t.minute,
-              ""
-            );
-          }
-          if (i == 5) {
-            i = -1;
-          }
-        }, 2000);
-      })
-      .catch(function (err) {
-        if (helper.isOnline == true) {
-          helper.allow_unsecure("https://api.rainviewer.com/public/maps.json");
-          toaster("Can't load weather data" + err, 3000);
-        }
-      });
   }
   return {
     follow_icon,
     default_icon,
     goal_icon,
+    climbing_icon,
+    water_icon,
     select_icon,
     tracking_icon,
     weather_map,
