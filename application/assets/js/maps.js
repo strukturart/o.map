@@ -179,7 +179,7 @@ const maps = (() => {
       }
     }
     //overlayer
-    /*
+
     if (type == "overlayer") {
       if (map.hasLayer(overlayer)) {
         map.removeLayer(overlayer);
@@ -192,7 +192,14 @@ const maps = (() => {
       map.addLayer(overlayer);
       caching_events();
     }
-    */
+    //overpass
+
+    if (type == "overpass") {
+      map.setZoom(14);
+      setTimeout(function () {
+        overpass.call(map, url, "climbing_icon");
+      }, 1000);
+    }
   };
 
   map.on("layeradd", function (event) {

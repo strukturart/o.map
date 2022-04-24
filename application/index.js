@@ -395,6 +395,25 @@ document.addEventListener("DOMContentLoaded", function () {
                   "</div>"
               );
           }
+
+          if (key.type == "overpass") {
+            document
+              .querySelector("div#layers")
+              .insertAdjacentHTML(
+                "afterend",
+                '<div class="item" data-type="' +
+                  key.type +
+                  '"  data-maxzoom="' +
+                  key.maxzoom +
+                  '"  data-url="' +
+                  key.url +
+                  '" data-attribution="' +
+                  key.attribution +
+                  '">' +
+                  key.name +
+                  "</div>"
+              );
+          }
         });
       };
 
@@ -1010,26 +1029,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (item_value == "weather") {
           document.querySelector("div#finder").style.display = "none";
           status.windowOpen = "map";
-          console.log(general.active_layer);
           maps.weather_map();
-        }
-
-        if (item_value == "climbing") {
-          document.querySelector("div#finder").style.display = "none";
-          status.windowOpen = "map";
-          map.setZoom(14);
-          setTimeout(function () {
-            overpass.call(map, "sport=climbing", "climbing_icon");
-          }, 1000);
-        }
-
-        if (item_value == "water") {
-          document.querySelector("div#finder").style.display = "none";
-          status.windowOpen = "map";
-          map.setZoom(14);
-          setTimeout(function () {
-            overpass.call(map, "amenity=drinking_water", "water_icon");
-          }, 1000);
         }
 
         if (item_value == "share") {

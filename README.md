@@ -82,8 +82,26 @@ For this you have to create a JSON file with the following structure:
     "attribution": "Google",
     "maxzoom": 18,
   },
+
+  {
+    "name": "climbing",
+    "type": "overpass",
+    "url": "sport=climbing",
+    "attribution": "Overpass",
+    "maxzoom": 18,
+  },
+
+  {
+    "name": "water",
+    "type": "overpass",
+    "url": "amenity=drinking_water",
+    "attribution": "Overpass",
+    "maxzoom": 18,
+  },
 ];
 ```
+
+you can also add an overpass layer, https://taginfo.openstreetmap.org/ you add the tags in the key url.
 
 you can find an example file here: [omap_maps.json](omap_maps.json)
 

@@ -1,23 +1,34 @@
 [
-  
+  {
+    "name": "Hiking",
+    "type": "overlayer",
+    "url": "http://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png",
+    "attribution": "hiking.waymarkedtrails.org",
+    "maxzoom": 18
+  },
+
+  {
+    "name": "Google Satelite",
+    "type": "map",
+    "url": "http://mt0.google.com/vt/lyrs=r&hl=en&x={x}&y={y}&z={z}",
+    "attribution": "Google",
+    "maxzoom": 18
+  },
+
+
+  {
+    "name": "climbing",
+    "type": "overpass",
+    "url": "sport=climbing",
+    "attribution": "Overpass",
+    "maxzoom": 18
+  },
+
     {
-        "name":"Hiking",
-        "type":"overlayer",
-        "url":"http://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png",
-        "attribution":"hiking.waymarkedtrails.org",
-        "maxzoom":18
-     },
-
-
- 
-          {
-         "name":"Satelite",
-         "type":"map",
-         "url":"https://clarity.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{zoom}/{y}/{x}",
-         "attribution":"Google",
-        "maxzoom":18
-     }
-
-
-     
+    "name": "water",
+    "type": "overpass",
+    "url": "amenity=drinking_water",
+    "attribution": "Overpass",
+    "maxzoom": 18
+  }
 ]

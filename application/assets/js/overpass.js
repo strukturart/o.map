@@ -1,19 +1,22 @@
 const overpass = (() => {
   function call(map, overpassQuery, icon) {
+    //clear group before ad new items
     if (overpass_group != "") {
       overpass_group.clearLayers();
       contained = [];
     }
-
+    //remove layer
     if (overpass_query == overpassQuery) {
       overpass_group.clearLayers();
       contained = [];
       overpass_query = "";
+      helper.side_toaster("layer removed", 2000);
       return false;
     }
 
     overpass_query = overpassQuery;
 
+    //boundingbox
     let e = map.getBounds().getEast();
     let w = map.getBounds().getWest();
     let n = map.getBounds().getNorth();
@@ -49,9 +52,9 @@ const overpass = (() => {
           }
         });
       })
-      .then(helper.side_toaster("loaded", 2000))
+      .then(helper.side_toaster("layer loaded", 2000))
       .catch(function (err) {
-        helper.side_toaster("something went wrong, try again", 2000);
+        helper.side_toaster("something went wrong, try again", 6000);
       });
   }
 
