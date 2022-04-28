@@ -105,7 +105,7 @@ const helper = (() => {
   //get location by ip
   let geoip = function (callback) {
     const url =
-      "https://api.freegeoip.app/json/?apikey=2a0f8c30-844a-11ec-b0fe-af6fd1eb1209";
+      "https://api.ipbase.com/v2/info?apikey=2a0f8c30-844a-11ec-b0fe-af6fd1eb1209";
 
     let xhr = new XMLHttpRequest();
 
@@ -115,9 +115,16 @@ const helper = (() => {
 
     xhr.send();
 
+    xhr.error = function (err) {
+      toaster(err, 2000);
+    };
+
     xhr.onload = function () {
       let responseObj = xhr.response;
-      let latlng = [responseObj.latitude, responseObj.longitude];
+      let latlng = [
+        responseObj.data.location.latitude,
+        responseObj.data.location.longitude,
+      ];
       console.log(JSON.stringify(latlng));
       callback(latlng);
     };

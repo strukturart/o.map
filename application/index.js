@@ -188,6 +188,10 @@ document.addEventListener("DOMContentLoaded", function () {
   helper.getManifest(manifest);
 
   let geoip_callback = function (data) {
+    helper.side_toaster(
+      "your position was found out via your ip address, the accuracy is rather poor",
+      2000
+    );
     mainmarker.current_lat = data[0];
     mainmarker.current_lng = data[1];
 
