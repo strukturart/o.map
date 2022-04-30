@@ -3,7 +3,7 @@
 let save_mode = "";
 let markers_group = new L.FeatureGroup();
 let overpass_group = new L.FeatureGroup();
-let contained = [];
+let contained = []; //markers in viewport
 let overpass_query = ""; //to toggle overpass layer
 
 let measure_group_path = new L.FeatureGroup();
@@ -74,7 +74,7 @@ let general = {
   step: 0.001,
   zoomlevel: 12,
   measurement_unit: "km",
-  active_layer: "",
+  active_layer: [],
   last_map:
     localStorage.getItem("last_map") != null
       ? localStorage.getItem("last_map")
@@ -226,6 +226,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelector("div#tracksmarkers").innerHTML = "";
     document.querySelector("div#maps").innerHTML = "";
     document.querySelector("div#layers").innerHTML = "";
+    document.querySelector("div#overpass").innerHTML = "";
 
     let el = document.querySelector("div#maps");
     el.innerHTML = "";
@@ -251,17 +252,17 @@ document.addEventListener("DOMContentLoaded", function () {
       );
 
     document
-      .querySelector("div#layers")
+      .querySelector("div#overpass")
       .insertAdjacentHTML(
         "afterend",
-        '<div class="item"  data-type="layer" data-url="climbing" data-map="climbing">Climbing <i>Layer</i></div>'
+        '<div class="item"  data-type="overpass" data-url="climbing" data-map="climbing">Climbing <i>Layer</i></div>'
       );
 
     document
-      .querySelector("div#layers")
+      .querySelector("div#overpass")
       .insertAdjacentHTML(
         "afterend",
-        '<div class="item"  data-type="layer" data-url="water" data-map="water">Drinking water <i>Layer</i></div>'
+        '<div class="item"  data-type="overpass" data-url="water" data-map="water">Drinking water <i>Layer</i></div>'
       );
 
     find_gpx();
@@ -402,7 +403,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
           if (key.type == "overpass") {
             document
-              .querySelector("div#layers")
+              .querySelector("div#overpass")
               .insertAdjacentHTML(
                 "afterend",
                 '<div class="item" data-type="' +
@@ -676,17 +677,25 @@ document.addEventListener("DOMContentLoaded", function () {
   /////////////////////////////////
   //highlight active layer
   let activelayer = function () {
+    console.log(JSON.stringify(general.active_layer));
     let n = document.querySelectorAll("div[data-type]");
     n.forEach(function (e) {
-      e.style.background = "none";
+      e.style.background = "black";
       e.style.color = "white";
     });
 
     n.forEach(function (e) {
-      if (
-        e.getAttribute("data-url") == general.last_map ||
-        e.getAttribute("data-url") == general.active_layer
-      ) {
+      if (e.getAttribute("data-url") == general.last_map) {
+        e.style.background = "white";
+        e.style.color = "black";
+      }
+
+      if (overpass_query == e.getAttribute("data-url")) {
+        e.style.background = "white";
+        e.style.color = "black";
+      }
+      console.log(general.active_layer.includes(e.getAttribute("data-url")));
+      if (general.active_layer.includes(e.getAttribute("data-url"))) {
         e.style.background = "white";
         e.style.color = "black";
       }

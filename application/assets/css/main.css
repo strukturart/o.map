@@ -649,6 +649,10 @@ div#finder section {
   margin: 0 0 10px 0;
 }
 
+div#finder div.active {
+  background: #fcfff4;
+}
+
 div#finder div.temp {
   margin: 0 0 8px 0;
   width: 60px;

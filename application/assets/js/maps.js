@@ -139,6 +139,7 @@ const maps = (() => {
 
   let addMap = function (url, attribution, max_zoom, type) {
     //map
+    console.log(type);
     if (type == "map") {
       if (map.hasLayer(tilesLayer)) {
         map.removeLayer(tilesLayer);
@@ -183,10 +184,9 @@ const maps = (() => {
     if (type == "overlayer") {
       if (map.hasLayer(overlayer)) {
         map.removeLayer(overlayer);
-        general.active_layer = "";
         return false;
       }
-      general.active_layer = url;
+      general.active_layer.push(url);
 
       overlayer = L.tileLayer(url);
       map.addLayer(overlayer);
@@ -195,6 +195,13 @@ const maps = (() => {
     //overpass
 
     if (type == "overpass") {
+      if (overpass_query == url) {
+        overpass.call(map, url, "climbing_icon");
+        console.log("layer exist");
+        general.active_layer.splice(general.active_layer.indexOf(url), 1);
+        return false;
+      }
+
       map.setZoom(14);
       setTimeout(function () {
         overpass.call(map, url, "climbing_icon");
@@ -231,10 +238,9 @@ const maps = (() => {
     weather_layer3;
 
   function weather_map() {
-    console.log("status: " + general.active_layer);
     let weather_url;
-    if (general.active_layer == "weather") {
-      general.active_layer = "";
+    if (general.active_layer.includes("weather")) {
+      general.active_layer.splice(general.active_layer.indexOf("weather"), 1);
       top_bar("", "", "");
       map.removeLayer(weather_layer);
       map.removeLayer(weather_layer0);
@@ -243,11 +249,12 @@ const maps = (() => {
       map.removeLayer(weather_layer3);
       clearInterval(k);
       map.attributionControl.setPrefix("");
+      helper.side_toaster("layer removed", 2000);
       return false;
     } else {
       fetch("https://api.rainviewer.com/public/maps.json")
         .then(function (response) {
-          general.active_layer = "weather";
+          general.active_layer.push("weather");
           map.attributionControl.setPrefix(
             "<a href='https://www.rainviewer.com/terms.html'>waether data collected by rainviewer.com</a>"
           );
