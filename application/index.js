@@ -248,14 +248,7 @@ document.addEventListener("DOMContentLoaded", function () {
       .querySelector("div#layers")
       .insertAdjacentHTML(
         "afterend",
-        '<div class="item"  data-type="layer" data-url="weather" data-map="weather">Weather <i>Layer</i></div>'
-      );
-
-    document
-      .querySelector("div#overpass")
-      .insertAdjacentHTML(
-        "afterend",
-        '<div class="item"  data-type="overpass" data-url="climbing" data-map="climbing">Climbing <i>Layer</i></div>'
+        '<div class="item"  data-type="none" data-url="weather" data-map="weather">Weather <i>Layer</i></div>'
       );
 
     document

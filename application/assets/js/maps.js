@@ -183,6 +183,7 @@ const maps = (() => {
 
     if (type == "overlayer") {
       if (map.hasLayer(overlayer)) {
+        general.active_layer.splice(general.active_layer.indexOf(url), 1);
         map.removeLayer(overlayer);
         return false;
       }
@@ -192,12 +193,27 @@ const maps = (() => {
       map.addLayer(overlayer);
       caching_events();
     }
+
+    if (type == "layer") {
+      if (map.hasLayer(overlayer)) {
+        general.active_layer.splice(general.active_layer.indexOf(url), 1);
+        map.removeLayer(overlayer);
+        return false;
+      } else {
+        general.active_layer.push(url);
+
+        overlayer = L.tileLayer(url);
+        map.addLayer(overlayer);
+        caching_events();
+      }
+    }
     //overpass
 
     if (type == "overpass") {
       if (overpass_query == url) {
         overpass.call(map, url, "climbing_icon");
         console.log("layer exist");
+        general.active_layer.splice(general.active_layer.indexOf(url), 1);
         return false;
       }
 
@@ -240,6 +256,7 @@ const maps = (() => {
     let weather_url;
     if (general.active_layer.includes("weather")) {
       general.active_layer.splice(general.active_layer.indexOf("weather"), 1);
+
       top_bar("", "", "");
       map.removeLayer(weather_layer);
       map.removeLayer(weather_layer0);
