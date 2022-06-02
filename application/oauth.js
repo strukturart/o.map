@@ -27,6 +27,7 @@ function getToken() {
 }
 
 getToken().then((result) => {
+  console.log(result);
   localStorage.setItem("openstreetmap_token", result.access_token);
   document.getElementById("success").innerText =
     "you are now successfully connected to the osm service";

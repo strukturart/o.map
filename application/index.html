@@ -1,130 +1,146 @@
 <!DOCTYPE html>
 <html>
-
-<head>
+  <head>
     <title>o.map</title>
-    <meta>
+    <meta />
     <meta charset="utf-8" />
-    <link rel="manifest" href="manifest.webapp" type="application/x-web-app-manifest+json" />
-    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1" />
+    <link
+      rel="manifest"
+      href="manifest.webapp"
+      type="application/x-web-app-manifest+json"
+    />
+    <meta
+      name="viewport"
+      content="width=device-width,user-scalable=no,initial-scale=1"
+    />
     <link rel="stylesheet" href="assets/css/main.css" />
     <link rel="stylesheet" href="assets/css/grid.css" />
     <link rel="stylesheet" href="assets/css/leaflet.css" />
     <link rel="stylesheet" href="assets/css/search.css" />
     <link rel="stylesheet" href="assets/css/qr-reader.css" />
-</head>
+  </head>
 
-<body class="width-100 height-100">
-    <div id="intro" class="flex justify-content-center align-item-center width-100 height-100">
-        <div id="icon"><img src="icons/icon.png"></div>
-        <div id="intro-footer"></div>
+  <body class="width-100 height-100">
+    <div
+      id="intro"
+      class="flex justify-content-center align-item-center width-100 height-100"
+    >
+      <div id="icon"><img src="icons/icon.png" /></div>
+      <div id="intro-footer"></div>
     </div>
 
-    <div id="goodbye" class="flex justify-content-center align-item-center width-100 height-100">
-        <div id="donation">
-            please support my work, <br />make a donation<br />
-            paypal.me/strukturart<br />
-            Thank you!
-        </div>
-        <div id="ciao">
-            Goodbye<br />
-            <br />
-            <ul>
-                <li>Thanks for using O.Map</li>
-                <li></li>
-            </ul>
-        </div>
+    <div
+      id="goodbye"
+      class="flex justify-content-center align-item-center width-100 height-100"
+    >
+      <div id="donation">
+        please support my work, <br />make a donation<br />
+        paypal.me/strukturart<br />
+        Thank you!
+      </div>
+      <div id="ciao">
+        Goodbye<br />
+        <br />
+        <ul>
+          <li>Thanks for using O.Map</li>
+          <li></li>
+        </ul>
+      </div>
     </div>
-
 
     <script id="template-search" type="x-tmpl-mustache">
       {{#data}}
         <li class="items" tabindex={{index}} data-latlng="{{ lat }}, {{ lng }}"> {{ name }}</li>
       {{/data}}
-    
     </script>
-
-
 
     <div id="toast" class="width-100"></div>
     <div id="side-toast"></div>
 
     <div id="search-box">
-        <input type="search" id="search" class="items" placeholder="search" autofocus tabindex="0"/>
-        <div id="result-container">
-            <ul>
-        
-            </ul>
-        </div>
-        <div id="search-info">
-            <br>
-            you can search for locations, names or OLC. <br>
-            To search for OLC, start your search query with /<br>
-            To move the view to a new lat, lng  start your search query with +<br>
-        </div>
+      <input
+        type="search"
+        id="search"
+        class="items"
+        placeholder="search"
+        autofocus
+        tabindex="0"
+      />
+      <div id="result-container">
+        <ul></ul>
+      </div>
+      <div id="search-info">
+        <br />
+        you can search for locations, names or OLC. <br />
+        To search for OLC, start your search query with /<br />
+        To move the view to a new lat, lng start your search query with +<br />
+      </div>
     </div>
     <div id="olc"></div>
 
     <div id="user-input" class="width-100 flex justify-content-spacearound">
-        <div id="user-input-description"></div>
-        <input type="text" />
+      <div id="user-input-description"></div>
+      <input type="text" />
     </div>
 
     <div id="bottom-bar">
-        <div class="inner flex justify-content-spacebetween width-100">
-            <div id="button-left"></div>
-            <div id="button-center"></div>
-            <div id="button-right"></div>
-        </div>
+      <div class="inner flex justify-content-spacebetween width-100">
+        <div id="button-left"></div>
+        <div id="button-center"></div>
+        <div id="button-right"></div>
+      </div>
     </div>
 
     <div id="top-bar">
-        <div class="inner flex justify-content-spacebetween width-100">
-            <div class="button-left"></div>
-            <div class="button-center"></div>
-            <div class="button-right"></div>
-        </div>
+      <div class="inner flex justify-content-spacebetween width-100">
+        <div class="button-left"></div>
+        <div class="button-center"></div>
+        <div class="button-right"></div>
+      </div>
     </div>
 
-
-    <div id="map-container">
-      
-    </div>
+    <div id="map-container"></div>
     <div id="menu" class="flex justify-content-spacebetween">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
     </div>
-
 
     <div id="cross">
-        <div id="cross-inner">
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-        </div>
-    
+      <div id="cross-inner">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
     </div>
-
 
     <div id="markers-option" class="width-100 height-100">
-        <div class="item" data-action="save_marker" tabindex="0">save marker</div>
-        <div class="item" data-action="set_target_marker" tabindex="1">set marker as target</div>
-        <div class="item" data-action="remove_marker" tabindex="2">remove marker</div>
-        <div class="item" data-action="set_startup_marker" tabindex="3">set as startup marker</div>
+      <div class="item" data-action="save_marker" tabindex="0">save marker</div>
+      <div class="item" data-action="set_target_marker" tabindex="1">
+        set marker as target
+      </div>
+      <div class="item" data-action="remove_marker" tabindex="2">
+        remove marker
+      </div>
+      <div class="item" data-action="set_startup_marker" tabindex="3">
+        set as startup marker
+      </div>
 
-        
-        <label for="popup">Popup</label>
-        <div class="item input-parent" tabindex="4">
-            <textarea rows="4" id="popup"></textarea>
-            <div class="textarea-footer">autosave</div>
-        </div>    
+      <label for="popup">Popup</label>
+      <div class="item input-parent" tabindex="4">
+        <textarea rows="4" id="popup"></textarea>
+        <div class="textarea-footer">autosave</div>
+      </div>
     </div>
 
-
-
+    <div id="files-option" class="width-100 height-100">
+      <div class="item" data-action="upload-file-to-osm" tabindex="0">
+        upload gpx file to osm
+      </div>
+      <div class="item" data-action="delete-file" tabindex="1">delete file</div>
+    </div>
 
     <!--
 
@@ -134,12 +150,12 @@
 -->
 
     <div id="qr-screen">
-        <video id="video"></video>
-        <div id="corner-nw"></div>
-        <div id="corner-no"></div>
-        <div id="corner-so"></div>
-        <div id="corner-sw"></div>
-        <div id="startDecoding" hidden>Start Scanning</div>
+      <video id="video"></video>
+      <div id="corner-nw"></div>
+      <div id="corner-no"></div>
+      <div id="corner-so"></div>
+      <div id="corner-sw"></div>
+      <div id="startDecoding" hidden>Start Scanning</div>
     </div>
 
     <!--
@@ -149,402 +165,436 @@
 /////////////////////
 -->
 
-
     <div id="finder" class="flex width-100 height-100">
+      <div class="panel" id="mapstracks" name="Imagery">
+        <h2>MAPS</h2>
+        <div id="maps"></div>
 
-  
-        <div class="panel" id="mapstracks" name="Imagery">
-            <h2>MAPS</h2>
-            <div id="maps"></div>
+        <h2>LAYERS</h2>
+        <div id="layers"></div>
 
-            <h2>LAYERS</h2>
-            <div id="layers"></div>
+        <h2>OVERPASS</h2>
+        <div id="overpass"></div>
 
+        <h2 id="tracks-title">TRACKS & Markers</h2>
+        <div id="tracksmarkers"></div>
 
-            <h2>OVERPASS</h2>
-            <div id="overpass"></div>
+        <h2 id="gpx-title">GPX</h2>
+        <div id="gpx"></div>
 
-            <h2 id="tracks-title">TRACKS & Markers</h2>
-            <div id="tracksmarkers"></div>
+        <h2 id="osm-server-gpx-title">OSM SERVER GPX</h2>
+        <div id="osm-server-gpx"></div>
+      </div>
 
-            <h2  id="gpx-title">GPX</h2>
-            <div id="gpx"></div>
-            
-            <h2 id="osm-server-gpx-title">OSM SERVER GPX</h2>
-            <div id="osm-server-gpx"></div>
+      <div class="panel" id="settings" name="Settings">
+        <h2>Openweathermap</h2>
+        <div class="item input-parent" tabindex="0">
+          <label for="owm-key">Openweathermap API-Key</label>
+          <input type="text" class="qr" id="owm-key" />
         </div>
 
-  
-
-
-        <div class="panel" id="settings" name="Settings">
-            <h2>Openweathermap</h2>
-            <div class="item input-parent" tabindex="0">
-                <label for="owm-key">Openweathermap API-Key</label>
-                <input type="text" class="qr" id="owm-key" />
-            </div>
-
-          
-
-            <h2>Crosshair</h2>
-            <div class="item input-parent flex" tabindex="3">
-                <label for="crosshair-ckb" class="grid-col-14">show crosshair ?</label>
-                <input class="checkboxes grid-col-2" type="checkbox" id="crosshair-ckb"  value="crosshair">
-                <div class="ckb-icon"></div>
-                <div class="toogle-button"></div>
-            </div>
-
-            <h2>Scale</h2>
-            <div class="item input-parent flex" tabindex="4">
-                <label for="scale-ckb" class="grid-col-14">show scale ?</label>
-                <input class="checkboxes grid-col-2" type="checkbox" id="scale-ckb"  value="scale">
-                <div class="ckb-icon"></div>
-                <div class="toogle-button"></div>
-            </div>
-
-            <h2>Unit of measurement</h2>
-            <div class="item input-parent flex" tabindex="5">
-                <label for="measurement-ckb" class="grid-col-14"></label>
-                <input class="checkboxes grid-col-2" type="checkbox" id="measurement-ckb" value="measurement">  
-            </div>
-
-
-
-            <h2>Tracking</h2>
-            <div class="item input-parent flex" tabindex="6">
-                <label for="screenlock-ckb" class="grid-col-14">screen lock during tracking ?</label>
-                <input class="checkboxes grid-col-2" type="checkbox" id="screenlock-ckb"  value="tracking_screenlock">
-                <div class="ckb-icon"></div>
-                <div class="toogle-button"></div>
-            </div>
-
-            <h2>Offline maps</h2>
-            <div class="item input-parent" tabindex="1">
-                <label for="cache-time">After how many days should the maps be re-downloaded?</label>
-                <input type="tel" pattern="^[0-9]*$" id="cache-time" />
-            </div>
-
-            <h2>Cache</h2>
-            <div class="item input-parent" tabindex="7">
-                <label for="cache-zoom">How much zoom level should be saved ?</label>
-                <input type="tel" pattern="^[0-9]*$" min="0" max="18" id="cache-zoom" />
-            </div>
-
-            <button  class="item" id="clear-cache" tabindex="8">clear offline cache</button>
-
-            <h2>connect with openstreetmap.org</h2>
-            <button class="item" id="oauth" tabindex="8">connect</button>
-
-           
-            <div class="item input-parent" tabindex="9">
-                <label for="osm-tag">if you don't want to display all your files from openstreetmap, you can set a tag name which you also use in your files
-                in openstreetmap.</label>
-                <input type="text" id="osm-tag" />
-            </div>
-
-
-            <h2>Export</h2>
-            <div class="item input-parent" tabindex="9">
-                <label for="export-path">Export path</label>
-                <input  type="text"   id="export-path"  />
-            </div>
-            
-            <button tabindex="10" class="item" id="save-settings">save</button>
-            <button tabindex="11" class="item" id="export-settings">export settings</button>
-            <button tabindex="12" class="item" id="load_settings_from_file">load settings</button>     
+        <h2>Crosshair</h2>
+        <div class="item input-parent flex" tabindex="3">
+          <label for="crosshair-ckb" class="grid-col-14"
+            >show crosshair ?</label
+          >
+          <input
+            class="checkboxes grid-col-2"
+            type="checkbox"
+            id="crosshair-ckb"
+            value="crosshair"
+          />
+          <div class="ckb-icon"></div>
+          <div class="toogle-button"></div>
         </div>
 
-
-        <div class="panel" name="Device position" id="coordinations">
-
-            <section id="device-position">
-                <div class="lat">Lat <span></span></div>
-                <div class="lng">Lng <span></span></div>
-                <div class="altitude">Alt <span></span></div>
-                <div class="heading">Heading <span></span></div>
-                <div class="speed">Speed <span></span></div>
-                <div class="compass"></div>
-                <div class="accuracy">accuracy +- <span></span> m </div>
-            </section>
-
-       
-
-            <section id="device-distance">
-                <strong><u>Distances</u></strong>
-                <div class="distance">to map center <span></span></div>
-                <div class="target">to the goal marker <span></span></div>
-            </section>
-            
-            
-            
-            <section id="device-sun">
-                <strong><u>Sun</u></strong>
-                <div>
-                    <span>⬆</span>
-                    <span class="sunrise"></span>
-                    <span>⬇</span>
-                    <span class="sunset"></span>
-                </div>
-            </section>
-
+        <h2>Scale</h2>
+        <div class="item input-parent flex" tabindex="4">
+          <label for="scale-ckb" class="grid-col-14">show scale ?</label>
+          <input
+            class="checkboxes grid-col-2"
+            type="checkbox"
+            id="scale-ckb"
+            value="scale"
+          />
+          <div class="ckb-icon"></div>
+          <div class="toogle-button"></div>
         </div>
 
-
-        <div class="panel" name="Map center" id="mapcenter">
-            <section id="mapcenter-position">
-                <div class="lat">Lat <span></span></div>
-                <div class="lng">Lng <span></span></div>
-            </section>
-            
-            
-            <section id="mapcenter-distance">
-                <strong><u>Distances</u></strong>
-                <div class="distance">to device <span></span></div>
-                <div class="target">to the goal marker <span></span></div>
-            </section>
-                
-                
-                
-            <section id="mapcenter-sun">
-                <strong><u>Sun</u></strong>
-                <div>
-                    <span>⬆</span>
-                    <span class="sunrise"></span>
-                    <span>⬇</span>
-                    <span class="sunset"></span>
-                </div>
-            </section>
-                
+        <h2>Unit of measurement</h2>
+        <div class="item input-parent flex" tabindex="5">
+          <label for="measurement-ckb" class="grid-col-14"></label>
+          <input
+            class="checkboxes grid-col-2"
+            type="checkbox"
+            id="measurement-ckb"
+            value="measurement"
+          />
         </div>
 
-
-
-        <div class="panel" id="tracking" name="Tracking">
-        
-            <section>
-                <strong><u>Distance</u></strong>
-                <div id="tracking-distance"></div>
-            </section>
-            <section>
-                <strong><u>Evolution</u></strong>
-                <div id="tracking-evo-up">⬆<span></span></div>
-                <div id="tracking-evo-down">⬇<span></span></div>
-            </section>
-        
-            <section>
-                <strong><u>Alitude</u></strong>
-                <div id="tracking-altitude"></div>
-            </section>
-        
+        <h2>Tracking</h2>
+        <div class="item input-parent flex" tabindex="6">
+          <label for="screenlock-ckb" class="grid-col-14"
+            >screen lock during tracking ?</label
+          >
+          <input
+            class="checkboxes grid-col-2"
+            type="checkbox"
+            id="screenlock-ckb"
+            value="tracking_screenlock"
+          />
+          <div class="ckb-icon"></div>
+          <div class="toogle-button"></div>
         </div>
 
-        <div class="panel" id="weather" name="Weather">
-
-            <section id="forecast-hourly">
-                <strong><u>forecast coming hour</u></strong>
-                <div class="flex">
-                    <div class="temp"></div>
-                    <div class="description"></div>
-                </div>
-            </section>
-
-            <section>
-                <strong><u>forecast coming days</u></strong>
-                
-                <div id="day-0" class="flex">
-                    <div class="time"></div>
-                    <div class="temp"></div>
-                    <div class="description"></div>
-                </div>
-                <div id="day-1" class="flex">
-                    <div class="time"></div>
-                    <div class="temp"></div>
-                    <div class="description"></div>
-                </div>
-                <div id="day-2" class="flex">
-                    <div class="time"></div>
-                    <div class="temp"></div>
-                    <div class="description"></div>
-                </div>
-                <div id="day-3" class="flex">
-                    <div class="time"></div>
-                    <div class="temp"></div>
-                    <div class="description"></div>
-                </div>
-                <div id="day-4" class="flex">
-                    <div class="time"></div>
-                    <div class="temp"></div>
-                    <div class="description"></div>
-                </div>
-            </section>
-
-
+        <h2>Offline maps</h2>
+        <div class="item input-parent" tabindex="1">
+          <label for="cache-time"
+            >After how many days should the maps be re-downloaded?</label
+          >
+          <input type="tel" pattern="^[0-9]*$" id="cache-time" />
         </div>
 
-
-        
-        <div class="panel" id="wikilocation" name="Wikilocation"></div>
-
-        <div class="panel" id="shortcuts" name="Shortcuts">
-            <div class="item start-stop-tracking" autofocus  tabindex="0" data-map="tracking">
-                <div class="flex justify-content-spacebetween">
-                    <div>start/stop tracking</div>
-                    <div>1</div>
-                </div>
-            </div>
-            <div class="item" data-map="search">
-                <div class="flex justify-content-spacebetween">
-                    <div>search</div>
-                    <div>2</div>
-                </div>
-            </div>
-
-            <div class="item" data-map="autoupdate-view">
-                <div class="flex justify-content-spacebetween">
-                    <div>autoupdate view</div>
-                    <div>4</div>
-                </div>
-            </div>
-
-            <div class="item" data-map="cache-map">
-                <div class="flex justify-content-spacebetween">
-                    <div>download map tiles</div>
-                    <div>#</div>
-                </div>
-            </div>
-
-            <div class="item" data-map="savelocation">
-                <div class="flex justify-content-spacebetween">
-                    <div>save position as marker</div>
-                    <div>5</div>
-                </div>
-            </div>
-
-
-            <div class="item" data-map="read-qr-marker">
-                <div class="flex justify-content-spacebetween">
-                    <div>read qr-code-marker</div>
-                    <div></div>
-                </div>
-            </div>
-
-     
-
-            <div class="item" data-map="draw-path">
-                <div class="flex justify-content-spacebetween">
-                    <div>draw path</div>
-                    <div>7</div>
-                </div>
-            </div>
-
-            <div class="item" data-map="export">
-                <div class="flex justify-content-spacebetween">
-                    <div>export markers</div>
-                    <div>8</div>
-                </div>
-            </div>
-
-            <div class="item" data-map="add-marker-icon">
-                <div class="flex justify-content-spacebetween">
-                    <div>add marker</div>
-                    <div>9</div>
-                </div>
-            </div>
-
-            <div class="item" data-map="null">
-                <div class="flex justify-content-spacebetween">
-                    <div>jump between markers</div>
-                    <div>*</div>
-                </div>
-            </div>
-            
-            <div class="item" data-map="share">
-                <div class="flex justify-content-spacebetween">
-                    <div>share your position</div>
-                    <div>0</div>
-                </div>
-            </div>
-
-            <div class="item" data-map="photo">
-                <div class="flex justify-content-spacebetween">
-                    <div>take a photo</div>
-                    <div></div>
-                </div>
-            </div>
-
-
-            <div class="item" data-map="open_settings_app">
-                <div class="flex justify-content-spacebetween">
-                    <div>open settings app</div>
-                    <div></div>
-                </div>
-            </div>
+        <h2>Cache</h2>
+        <div class="item input-parent" tabindex="7">
+          <label for="cache-zoom">How much zoom level should be saved ?</label>
+          <input
+            type="tel"
+            pattern="^[0-9]*$"
+            min="0"
+            max="18"
+            id="cache-zoom"
+          />
         </div>
 
+        <button class="item" id="clear-cache" tabindex="8">
+          clear offline cache
+        </button>
 
-        <div class="panel item" id="tips" name="Tips">
-            <h2>umap.openstreetmap.fr support</h2>
-            <p>To plan a tour I use the great umap.openstreetmap.fr tool. you can export the created data as geoJson and use it in u.map.
-            </p>
-            <h2>autoload markers or paths</h2>
-            <p>In order to automatically load markers or paths when starting the app, the file name must begin with _, e.g. _track-alps.json</p>
-            <h2>weather data</h2>
-            <p>you have the possibility to call up a weather forecast for positions. for this you have to deposit an api key in the settings, you can get this for free at openweathermap.org.</p>
-            <h2>position determination</h2>
-            <p>
-                Unfortunately there is still a KaiOs bug that prevents the exact position from being found, so it is advisable to switch the data connection to 2G / 3G
-            </p>
-            <h2>system performance</h2>
-            <p>Sometimes the app crashes during tracking, to prevent this please press the power button for a long time and perform a basic memory cleanup.</p>
+        <h2>connect with openstreetmap.org</h2>
+        <button class="item" id="oauth" tabindex="8">connect</button>
+
+        <div class="item input-parent" tabindex="9">
+          <label for="osm-tag"
+            >if you don't want to display all your files from openstreetmap, you
+            can set a tag name which you also use in your files in
+            openstreetmap.</label
+          >
+          <input type="text" id="osm-tag" />
         </div>
 
-
-        <div class="panel item" id="imprint" name="Imprint">
-            <div>
-                Various software and map data are used in this app, please note the licenses.
-                <br>
-            </div>
-                 
-            <ul>
-                <h2>Maps and Layers</h2>
-                <li><a href="https://www.openstreetmap.org/copyright">OpenStreetMap® </a></li>
-                <li><a href='https://opentopomap.org'>opentopomap</a></li>
-                <li><a href='openweathermap.org'>openweathermap.org</a></li>
-                <li><a href='https://www.rainviewer.com/terms.html'>waether layer data collected by rainviewer.com</a></li>
-            </ul>
-            <ul>
-                <h2>License</h2>
-                <li>wikipedia <span>CC BY-SA License</span></li>
-                <li><a href="https://www.openstreetmap.org/copyright">OpenStreetMap® </a></li>
-                <li><a href="https://github.com/drolbr/Overpass-API/blob/master/COPYING">Overpass </a></li>
-                <li>o.map <span>UNLICENSE</span></li>
-                <li>Leaflet <span>BSD-2-Clause License</span></li>
-                <li>leaflet.tilelayer.pouchdbcached <span>MIT license</span></li>
-                <li>gpx.js <span>MIT License</span></li>
-
-            </ul>
-            <ul>
-                <h2>Privacy Policy</h2>
-                <li>This software uses KaiAds if it was installed via the KaiOs store. This is a third party service that may collect information used to identify you. Pricacy
-                policy of KaiAds.
-                </li>
-            </ul>
-                
-
-            <div>
-                <h2>Thank You!</h2>
-                <p>
-                    I thank the people who provide this data 
-                    and take care of their maintenance.
-                </p>
-           
-            </div>
+        <h2>Export</h2>
+        <div class="item input-parent" tabindex="9">
+          <label for="export-path">Export path</label>
+          <input type="text" id="export-path" />
         </div>
 
-        <div class="panel item" id="kaios-ads" name="KaiOsAds">
+        <button tabindex="10" class="item" id="save-settings">save</button>
+        <button tabindex="11" class="item" id="export-settings">
+          export settings
+        </button>
+        <button tabindex="12" class="item" id="load_settings_from_file">
+          load settings
+        </button>
+      </div>
 
+      <div class="panel" name="Device position" id="coordinations">
+        <section id="device-position">
+          <div class="lat">Lat <span></span></div>
+          <div class="lng">Lng <span></span></div>
+          <div class="altitude">Alt <span></span></div>
+          <div class="heading">Heading <span></span></div>
+          <div class="speed">Speed <span></span></div>
+          <div class="compass"></div>
+          <div class="accuracy">accuracy +- <span></span> m</div>
+        </section>
+
+        <section id="device-distance">
+          <strong><u>Distances</u></strong>
+          <div class="distance">to map center <span></span></div>
+          <div class="target">to the goal marker <span></span></div>
+        </section>
+
+        <section id="device-sun">
+          <strong><u>Sun</u></strong>
+          <div>
+            <span>⬆</span>
+            <span class="sunrise"></span>
+            <span>⬇</span>
+            <span class="sunset"></span>
+          </div>
+        </section>
+      </div>
+
+      <div class="panel" name="Map center" id="mapcenter">
+        <section id="mapcenter-position">
+          <div class="lat">Lat <span></span></div>
+          <div class="lng">Lng <span></span></div>
+        </section>
+
+        <section id="mapcenter-distance">
+          <strong><u>Distances</u></strong>
+          <div class="distance">to device <span></span></div>
+          <div class="target">to the goal marker <span></span></div>
+        </section>
+
+        <section id="mapcenter-sun">
+          <strong><u>Sun</u></strong>
+          <div>
+            <span>⬆</span>
+            <span class="sunrise"></span>
+            <span>⬇</span>
+            <span class="sunset"></span>
+          </div>
+        </section>
+      </div>
+
+      <div class="panel" id="tracking" name="Tracking">
+        <section>
+          <strong><u>Distance</u></strong>
+          <div id="tracking-distance"></div>
+        </section>
+        <section>
+          <strong><u>Evolution</u></strong>
+          <div id="tracking-evo-up">⬆<span></span></div>
+          <div id="tracking-evo-down">⬇<span></span></div>
+        </section>
+
+        <section>
+          <strong><u>Alitude</u></strong>
+          <div id="tracking-altitude"></div>
+        </section>
+      </div>
+
+      <div class="panel" id="weather" name="Weather">
+        <section id="forecast-hourly">
+          <strong><u>forecast coming hour</u></strong>
+          <div class="flex">
+            <div class="temp"></div>
+            <div class="description"></div>
+          </div>
+        </section>
+
+        <section>
+          <strong><u>forecast coming days</u></strong>
+
+          <div id="day-0" class="flex">
+            <div class="time"></div>
+            <div class="temp"></div>
+            <div class="description"></div>
+          </div>
+          <div id="day-1" class="flex">
+            <div class="time"></div>
+            <div class="temp"></div>
+            <div class="description"></div>
+          </div>
+          <div id="day-2" class="flex">
+            <div class="time"></div>
+            <div class="temp"></div>
+            <div class="description"></div>
+          </div>
+          <div id="day-3" class="flex">
+            <div class="time"></div>
+            <div class="temp"></div>
+            <div class="description"></div>
+          </div>
+          <div id="day-4" class="flex">
+            <div class="time"></div>
+            <div class="temp"></div>
+            <div class="description"></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="panel" id="wikilocation" name="Wikilocation"></div>
+
+      <div class="panel" id="shortcuts" name="Shortcuts">
+        <div
+          class="item start-stop-tracking"
+          autofocus
+          tabindex="0"
+          data-map="tracking"
+        >
+          <div class="flex justify-content-spacebetween">
+            <div>start/stop tracking</div>
+            <div>1</div>
+          </div>
+        </div>
+        <div class="item" data-map="search">
+          <div class="flex justify-content-spacebetween">
+            <div>search</div>
+            <div>2</div>
+          </div>
         </div>
 
+        <div class="item" data-map="autoupdate-view">
+          <div class="flex justify-content-spacebetween">
+            <div>autoupdate view</div>
+            <div>4</div>
+          </div>
+        </div>
+
+        <div class="item" data-map="cache-map">
+          <div class="flex justify-content-spacebetween">
+            <div>download map tiles</div>
+            <div>#</div>
+          </div>
+        </div>
+
+        <div class="item" data-map="savelocation">
+          <div class="flex justify-content-spacebetween">
+            <div>save position as marker</div>
+            <div>5</div>
+          </div>
+        </div>
+
+        <div class="item" data-map="read-qr-marker">
+          <div class="flex justify-content-spacebetween">
+            <div>read qr-code-marker</div>
+            <div></div>
+          </div>
+        </div>
+
+        <div class="item" data-map="draw-path">
+          <div class="flex justify-content-spacebetween">
+            <div>draw path</div>
+            <div>7</div>
+          </div>
+        </div>
+
+        <div class="item" data-map="export">
+          <div class="flex justify-content-spacebetween">
+            <div>export markers</div>
+            <div>8</div>
+          </div>
+        </div>
+
+        <div class="item" data-map="add-marker-icon">
+          <div class="flex justify-content-spacebetween">
+            <div>add marker</div>
+            <div>9</div>
+          </div>
+        </div>
+
+        <div class="item" data-map="null">
+          <div class="flex justify-content-spacebetween">
+            <div>jump between markers</div>
+            <div>*</div>
+          </div>
+        </div>
+
+        <div class="item" data-map="share">
+          <div class="flex justify-content-spacebetween">
+            <div>share your position</div>
+            <div>0</div>
+          </div>
+        </div>
+
+        <div class="item" data-map="photo">
+          <div class="flex justify-content-spacebetween">
+            <div>take a photo</div>
+            <div></div>
+          </div>
+        </div>
+
+        <div class="item" data-map="open_settings_app">
+          <div class="flex justify-content-spacebetween">
+            <div>open settings app</div>
+            <div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel item" id="tips" name="Tips">
+        <h2>umap.openstreetmap.fr support</h2>
+        <p>
+          To plan a tour I use the great umap.openstreetmap.fr tool. you can
+          export the created data as geoJson and use it in u.map.
+        </p>
+        <h2>autoload markers or paths</h2>
+        <p>
+          In order to automatically load markers or paths when starting the app,
+          the file name must begin with _, e.g. _track-alps.json
+        </p>
+        <h2>weather data</h2>
+        <p>
+          you have the possibility to call up a weather forecast for positions.
+          for this you have to deposit an api key in the settings, you can get
+          this for free at openweathermap.org.
+        </p>
+        <h2>position determination</h2>
+        <p>
+          Unfortunately there is still a KaiOs bug that prevents the exact
+          position from being found, so it is advisable to switch the data
+          connection to 2G / 3G
+        </p>
+        <h2>system performance</h2>
+        <p>
+          Sometimes the app crashes during tracking, to prevent this please
+          press the power button for a long time and perform a basic memory
+          cleanup.
+        </p>
+      </div>
+
+      <div class="panel item" id="imprint" name="Imprint">
+        <div>
+          Various software and map data are used in this app, please note the
+          licenses.
+          <br />
+        </div>
+
+        <ul>
+          <h2>Maps and Layers</h2>
+          <li>
+            <a href="https://www.openstreetmap.org/copyright"
+              >OpenStreetMap®
+            </a>
+          </li>
+          <li><a href="https://opentopomap.org">opentopomap</a></li>
+          <li><a href="openweathermap.org">openweathermap.org</a></li>
+          <li>
+            <a href="https://www.rainviewer.com/terms.html"
+              >waether layer data collected by rainviewer.com</a
+            >
+          </li>
+        </ul>
+        <ul>
+          <h2>License</h2>
+          <li>wikipedia <span>CC BY-SA License</span></li>
+          <li>
+            <a href="https://www.openstreetmap.org/copyright"
+              >OpenStreetMap®
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/drolbr/Overpass-API/blob/master/COPYING"
+              >Overpass
+            </a>
+          </li>
+          <li>o.map <span>UNLICENSE</span></li>
+          <li>Leaflet <span>BSD-2-Clause License</span></li>
+          <li>leaflet.tilelayer.pouchdbcached <span>MIT license</span></li>
+          <li>gpx.js <span>MIT License</span></li>
+        </ul>
+        <ul>
+          <h2>Privacy Policy</h2>
+          <li>
+            This software uses KaiAds if it was installed via the KaiOs store.
+            This is a third party service that may collect information used to
+            identify you. Pricacy policy of KaiAds.
+          </li>
+        </ul>
+
+        <div>
+          <h2>Thank You!</h2>
+          <p>
+            I thank the people who provide this data and take care of their
+            maintenance.
+          </p>
+        </div>
+      </div>
+
+      <div class="panel item" id="kaios-ads" name="KaiOsAds"></div>
     </div>
 
     <script defer src="assets/js/suncalc.js"></script>
@@ -561,7 +611,7 @@
     <script defer src="assets/js/gpx.js"></script>
 
     <script defer src="index.js"></script>
-        <script defer src="assets/js/overpass.js"></script>
+    <script defer src="assets/js/overpass.js"></script>
 
     <script defer src="assets/js/search.js"></script>
     <script defer src="assets/js/maps.js"></script>
@@ -571,11 +621,5 @@
     <script defer src="assets/js/openweather.js"></script>
     <script defer src="assets/js/togpx.js"></script>
     <script defer src="assets/js/module.js"></script>
-
-
-
-
-
-</body>
-
+  </body>
 </html>

@@ -161,25 +161,20 @@ const helper = (() => {
   };
 
   //delete file
-  function deleteFile(storage, path, notification) {
-    let sdcard = navigator.getDeviceStorages("sdcard");
-
-    let requestDel = sdcard[storage].delete(path);
+  let deleteFile = function (filename) {
+    let sdcard = navigator.getDeviceStorage("sdcard");
+    let requestDel = sdcard.delete(filename);
 
     requestDel.onsuccess = function () {
-      if (notification == "notification") {
-        helper.toaster(
-          'File "' +
-            name +
-            '" successfully deleted frome the sdcard storage area'
-        );
-      }
+      console.log("success");
+      helper.side_toaster("File successfully deleted", 2000);
     };
 
     requestDel.onerror = function () {
+      console.log("error");
       helper.toaster("Unable to delete the file: " + this.error);
     };
-  }
+  };
 
   return {
     getManifest,

@@ -763,6 +763,30 @@ div#markers-option div:focus {
   color: black;
 }
 
+div#files-option {
+  background: rgba(0, 0, 0, 1);
+  position: fixed;
+  z-index: 15;
+  display: none;
+}
+
+div#files-option ul {
+  padding: 5px;
+  display: block;
+}
+
+div#files-option div {
+  color: white;
+  margin: 0 0 10px 0;
+  padding: 5px;
+  background: gray;
+}
+
+div#files-option div:focus {
+  background: var(--color-eight);
+  color: black;
+}
+
 /*ADS*/
 
 div#kaios-ads {
@@ -788,4 +812,14 @@ li.items {
 li.items:focus {
   background: black !important;
   color: white;
+}
+
+div#osm-upload-panel {
+  min-width: 100vw;
+  min-height: 100vh;
+  background: black;
+  position: fixed;
+  z-index: 100;
+  display: none;
+  padding: 10px;
 }
