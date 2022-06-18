@@ -1036,6 +1036,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelector("div#markers-option").style.display = "none";
         status.windowOpen = "map";
         bottom_bar("", "", "");
+        module.set_f_upd_markers();
       }
 
       if (item_value == "save_marker") {
@@ -1977,10 +1978,12 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "9":
-        if (status.windowOpen == "map")
+        if (status.windowOpen == "map") {
           L.marker([mainmarker.current_lat, mainmarker.current_lng]).addTo(
             markers_group
           );
+          module.set_f_upd_markers();
+        }
         break;
 
       case "0":

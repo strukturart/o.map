@@ -184,11 +184,21 @@ const module = (() => {
   ///////////////////
   //select marker
   ////////////////////
+  // Flag to keep track of the need 
+  // of generating the new marker lis
+  var f_upd_markers_list = true;
+  let set_f_upd_markers = function () {
+      f_upd_markers_list = true;
+  };
+
   contained = []; //makers in map boundingbox
   let l = [];
   let index = -1;
   let select_marker = function () {
-    if (contained == "") {
+    if (f_upd_markers_list) {
+      // Reset contained list
+      contained = []
+
       //merge markers in viewport
       if (overpass_group != "") {
         overpass_group.eachLayer(function (l) {
@@ -202,6 +212,9 @@ const module = (() => {
         if (l instanceof L.Marker && map.getBounds().contains(l.getLatLng()))
           contained.push(l);
       });
+
+      // Clear flag
+      f_upd_markers_list = false;
     }
 
     l = contained;
@@ -569,6 +582,7 @@ const module = (() => {
   };
 
   return {
+    set_f_upd_markers,
     select_marker,
     calc_distance,
     compass,
