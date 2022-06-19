@@ -718,7 +718,6 @@ document.addEventListener("DOMContentLoaded", function () {
   /////////////////////////////////
   //highlight active layer
   let activelayer = function () {
-    console.log(JSON.stringify(general.active_layer));
     let n = document.querySelectorAll("div[data-type]");
     n.forEach(function (e) {
       e.style.background = "black";
@@ -1120,7 +1119,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         //add gpx data
         if (item_value == "gpx") {
-          console.log("gpxhkjhkjhjhj");
           module.loadGPX(document.activeElement.innerText);
         }
 

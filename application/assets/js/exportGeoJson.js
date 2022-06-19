@@ -126,6 +126,7 @@ const geojson = ((_) => {
 
       setTimeout(function () {
         build_menu();
+        helper.side_toaster("the file was saved", 1000);
       }, 2000);
     };
 

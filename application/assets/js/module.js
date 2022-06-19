@@ -35,7 +35,6 @@ const module = (() => {
   /////Load GPX///////////
   ///////////////////////
   function loadGPX(filename, url) {
-    console.log(filename, url);
     if (url) {
       var gpx = url;
 
@@ -184,11 +183,11 @@ const module = (() => {
   ///////////////////
   //select marker
   ////////////////////
-  // Flag to keep track of the need 
+  // Flag to keep track of the need
   // of generating the new marker lis
   var f_upd_markers_list = true;
   let set_f_upd_markers = function () {
-      f_upd_markers_list = true;
+    f_upd_markers_list = true;
   };
 
   contained = []; //makers in map boundingbox
@@ -197,7 +196,7 @@ const module = (() => {
   let select_marker = function () {
     if (f_upd_markers_list) {
       // Reset contained list
-      contained = []
+      contained = [];
 
       //merge markers in viewport
       if (overpass_group != "") {
@@ -361,7 +360,7 @@ const module = (() => {
 
   //calculation of altitude ascents and descents
 
-  let evolution = function (t) {
+  let elevation = function (t) {
     let up_e = 0;
     let down_e = 0;
     let evo = {};
@@ -389,6 +388,19 @@ const module = (() => {
       evo.up.toFixed(2);
     document.querySelector("#tracking-evo-down span").innerText =
       evo.down.toFixed(2);
+  };
+
+  //json to gpx
+  let toGPX = function () {
+    let e = tracking_group.toGeoJSON();
+    e.features[0].properties.software = "o.map";
+    e.features[0].properties.timestamp = tracking_timestamp;
+
+    let option = { featureCoordTimes: "timestamp", creator: "o.map" };
+
+    extData = togpx(e, option);
+    console.log(extData);
+    return togpx(e, option);
   };
 
   //tool to measure distance
@@ -488,60 +500,81 @@ const module = (() => {
         if (mainmarker.accuracy > 10000) {
           console.log("the gps is very inaccurate right now");
           return false;
+        } else {
+          let ts = new Date();
+          tracking_timestamp.push(ts.toISOString());
+
+          polyline_tracking.addLatLng([
+            mainmarker.device_lat,
+            mainmarker.device_lng,
+            mainmarker.device_alt,
+          ]);
+
+          tracking_cache.push({
+            lat: mainmarker.device_lat,
+            lng: mainmarker.device_lng,
+            alt: mainmarker.device_alt,
+            timestamp: ts.toISOString(),
+            tracking_altitude: mainmarker.device_alt,
+          });
+          tracking_altitude = [];
+          tracking_cache.forEach(function (e) {
+            if (e.tracking_altitude != null)
+              tracking_altitude.push(e.tracking_altitude);
+          });
+
+          document.getElementById("tracking-altitude").innerText =
+            mainmarker.device_alt.toFixed(2);
+
+          //only record the altitude if the accuracy of the measurement is less than 1000.
+          if (mainmarker.accuracy < 1000) {
+            //elevation(tracking_altitude);
+          }
+
+          if (tracking_cache.length > 2) {
+            /*
+            tracking_distance = calc_distance(
+              Number(tracking_cache[tracking_cache.length - 1].lat),
+              Number(tracking_cache[tracking_cache.length - 1].lng),
+              Number(tracking_cache[tracking_cache.length - 2].lat),
+              Number(tracking_cache[tracking_cache.length - 2].lng)
+            );
+
+            tracking_distance = tracking_distance / 1000;
+
+            calc += Number(tracking_distance);
+
+            document.querySelector("div#tracking-distance").innerText =
+              calc.toFixed(2) + general.measurement_unit;
+*/
+            //check if old tracking
+            let k = JSON.stringify(tracking_cache);
+
+            localStorage.setItem("tracking_cache", k);
+
+            //get tracking data to display in view
+            new L.GPX(toGPX(), { async: true }).on("loaded", function (e) {
+              let a = e.target.get_distance() / 1000;
+              document.querySelector("div#tracking-distance").innerText =
+                a.toFixed(2) + general.measurement_unit;
+              console.log(a);
+
+              let b = e.target.get_elevation_min() / 1000;
+              document.querySelector("#tracking-evo-up span").innerText =
+                b.toFixed(2);
+
+              let c = e.target.get_elevation_max() / 1000;
+              document.querySelector("#tracking-evo-down span").innerText =
+                c.toFixed(2);
+            });
+          }
+
+          if (mainmarker.tracking == false) {
+            clearInterval(tracking_interval);
+            if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
+          }
         }
-        let ts = new Date();
-        tracking_timestamp.push(ts.toISOString());
-
-        polyline_tracking.addLatLng([
-          mainmarker.device_lat,
-          mainmarker.device_lng,
-          mainmarker.device_alt,
-        ]);
-
-        tracking_cache.push({
-          lat: mainmarker.device_lat,
-          lng: mainmarker.device_lng,
-          alt: mainmarker.device_alt,
-          timestamp: ts.toISOString(),
-          tracking_altitude: mainmarker.device_alt,
-        });
-        tracking_altitude = [];
-        tracking_cache.forEach(function (e) {
-          if (e.tracking_altitude != null)
-            tracking_altitude.push(e.tracking_altitude);
-        });
-
-        document.getElementById("tracking-altitude").innerText =
-          mainmarker.device_alt.toFixed(2);
-
-        evolution(tracking_altitude);
-
-        if (tracking_cache.length > 2) {
-          tracking_distance = calc_distance(
-            Number(tracking_cache[tracking_cache.length - 1].lat),
-            Number(tracking_cache[tracking_cache.length - 1].lng),
-            Number(tracking_cache[tracking_cache.length - 2].lat),
-            Number(tracking_cache[tracking_cache.length - 2].lng)
-          );
-
-          tracking_distance = tracking_distance / 1000;
-
-          calc += Number(tracking_distance);
-
-          document.querySelector("div#tracking-distance").innerText =
-            calc.toFixed(2) + general.measurement_unit;
-
-          //check if old tracking
-          let k = JSON.stringify(tracking_cache);
-
-          localStorage.setItem("tracking_cache", k);
-        }
-
-        if (mainmarker.tracking == false) {
-          clearInterval(tracking_interval);
-          if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
-        }
-      }, 8000);
+      }, 5000);
     }
 
     if (action == "addMarker") {
