@@ -184,11 +184,11 @@ const module = (() => {
   ///////////////////
   //select marker
   ////////////////////
-  // Flag to keep track of the need 
+  // Flag to keep track of the need
   // of generating the new marker lis
   var f_upd_markers_list = true;
   let set_f_upd_markers = function () {
-      f_upd_markers_list = true;
+    f_upd_markers_list = true;
   };
 
   contained = []; //makers in map boundingbox
@@ -197,7 +197,7 @@ const module = (() => {
   let select_marker = function () {
     if (f_upd_markers_list) {
       // Reset contained list
-      contained = []
+      contained = [];
 
       //merge markers in viewport
       if (overpass_group != "") {
@@ -361,7 +361,7 @@ const module = (() => {
 
   //calculation of altitude ascents and descents
 
-  let evolution = function (t) {
+  let elevation = function (t) {
     let up_e = 0;
     let down_e = 0;
     let evo = {};
@@ -514,7 +514,10 @@ const module = (() => {
         document.getElementById("tracking-altitude").innerText =
           mainmarker.device_alt.toFixed(2);
 
-        evolution(tracking_altitude);
+        //only record the altitude if the accuracy of the measurement is less than 1000.
+        if (mainmarker.accuracy < 1000) {
+          elevation(tracking_altitude);
+        }
 
         if (tracking_cache.length > 2) {
           tracking_distance = calc_distance(

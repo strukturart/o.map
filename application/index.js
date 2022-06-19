@@ -1120,7 +1120,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         //add gpx data
         if (item_value == "gpx") {
-          console.log("gpxhkjhkjhjhj");
           module.loadGPX(document.activeElement.innerText);
         }
 
