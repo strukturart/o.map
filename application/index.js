@@ -68,6 +68,16 @@ let setting = {
       ? JSON.parse(localStorage.getItem("measurement"))
       : true,
   measurement_unit: "",
+
+  wikipedia_view:
+    localStorage.getItem("wikipedia_view") != null
+      ? JSON.parse(localStorage.getItem("wikipedia_view"))
+      : true,
+
+  tips_view:
+    localStorage.getItem("tips_view") != null
+      ? JSON.parse(localStorage.getItem("tips_view"))
+      : true,
 };
 
 let general = {
@@ -761,7 +771,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let open_finder = function () {
     settings.load_settings();
     finder_tabindex();
-    wikilocation.load();
+    if (setting.wikipedia_view) wikilocation.load();
     document.querySelector("div#finder").style.display = "block";
     finder_navigation("start");
     status.windowOpen = "finder";
@@ -772,12 +782,14 @@ document.addEventListener("DOMContentLoaded", function () {
     if (setting.openweather_api == "") return false;
     let c = map.getCenter();
 
-    weather.openweather_call(
-      c.lat,
-      c.lng,
-      setting.openweather_api,
-      openweather_callback
-    );
+    if (setting.openweather_api != "") {
+      weather.openweather_call(
+        c.lat,
+        c.lng,
+        setting.openweather_api,
+        openweather_callback
+      );
+    }
 
     distance_to_target();
   };
@@ -807,7 +819,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let options = {
       enableHighAccuracy: true,
-      timeout: 10000,
+      timeout: 5000,
       maximumAge: 0,
     };
 
@@ -820,6 +832,7 @@ document.addEventListener("DOMContentLoaded", function () {
       mainmarker.device_lng = crd.longitude;
       mainmarker.device_alt = crd.altitude;
       mainmarker.accuracy = crd.accuracy;
+      mainmarker.accuracyAlt = crd.altitudeAccuracy;
 
       setTimeout(function () {
         map.setView([mainmarker.device_lat, mainmarker.device_lng], 12);
@@ -904,6 +917,8 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelector(
           "section#device-position div.altitude span"
         ).innerText = crd.altitude.toFixed(2);
+
+        console.log(crd.altitudeAccuracy);
       }
       //heading
       if (crd.heading != undefined || crd.heading != null) {
@@ -978,7 +993,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     let options = {
-      timeout: 60000,
+      enableHighAccuracy: true,
+      timeout: 5000,
+      maximumAge: 0,
     };
     watchID = geoLoc.watchPosition(showLocation, errorHandler, options);
     return true;
@@ -1351,6 +1368,19 @@ document.addEventListener("DOMContentLoaded", function () {
   let panels;
 
   setTimeout(function () {
+    //remove finder pages
+    if (setting.wikipedia_view == false) {
+      document.getElementById("wikilocation").remove();
+    }
+
+    if (setting.tips_view == false) {
+      document.getElementById("tips").remove();
+    }
+
+    if (setting.openweather_api == "") {
+      document.getElementById("weather").remove();
+    }
+
     panels = document.querySelectorAll("div#finder div.panel");
     panels.forEach(function (e) {
       finder_panels.push({

@@ -16,12 +16,12 @@ const settings = ((_) => {
 
     localStorage.setItem("osm-tag", document.getElementById("osm-tag").value);
 
-    helper.toaster("saved successfully", 2000);
+    helper.side_toaster("saved successfully", 2000);
   };
 
   let save_chk = function (id, localstorage_name) {
-    let p = document.getElementById(id, localstorage_name);
-
+    let p = document.getElementById(id);
+    console.log(id, localstorage_name);
     p.checked = !p.checked;
     if (p.checked) {
       localStorage.setItem(localstorage_name, "true");
@@ -38,6 +38,7 @@ const settings = ((_) => {
   };
 
   let load_settings = function () {
+    console.log(setting);
     document.getElementById("owm-key").value = setting.openweather_api;
     document.getElementById("cache-time").value = setting.cache_time;
     document.getElementById("cache-zoom").value = setting.cache_zoom;
@@ -58,6 +59,14 @@ const settings = ((_) => {
     setting.measurement
       ? (document.getElementById("measurement-ckb").checked = true)
       : (document.getElementById("measurement-ckb").checked = false);
+
+    setting.tips_view
+      ? (document.getElementById("tips-ckb").checked = true)
+      : (document.getElementById("tips-ckb").checked = false);
+
+    setting.wikipedia_view
+      ? (document.getElementById("wikipedia-ckb").checked = true)
+      : (document.getElementById("wikipedia-ckb").checked = false);
 
     //show / hidde crosshair
     setting.crosshair

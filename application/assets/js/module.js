@@ -497,6 +497,17 @@ const module = (() => {
 
       tracking_interval = setInterval(function () {
         //only write data if accuracy
+        let n = 0;
+        if (tracking_cache.length > 2) {
+          n = calc_distance(
+            Number(tracking_cache[tracking_cache.length - 1].lat),
+            Number(tracking_cache[tracking_cache.length - 1].lng),
+            Number(tracking_cache[tracking_cache.length - 2].lat),
+            Number(tracking_cache[tracking_cache.length - 2].lng)
+          );
+
+          console.log("dif: " + n);
+        }
         if (mainmarker.accuracy > 10000) {
           console.log("the gps is very inaccurate right now");
           return false;
@@ -523,9 +534,6 @@ const module = (() => {
               tracking_altitude.push(e.tracking_altitude);
           });
 
-          document.getElementById("tracking-altitude").innerText =
-            mainmarker.device_alt.toFixed(2);
-
           //only record the altitude if the accuracy of the measurement is less than 1000.
           if (mainmarker.accuracy < 1000) {
             //elevation(tracking_altitude);
@@ -547,10 +555,6 @@ const module = (() => {
             document.querySelector("div#tracking-distance").innerText =
               calc.toFixed(2) + general.measurement_unit;
 */
-            //check if old tracking
-            let k = JSON.stringify(tracking_cache);
-
-            localStorage.setItem("tracking_cache", k);
 
             //get tracking data to display in view
             new L.GPX(toGPX(), { async: true }).on("loaded", function (e) {
@@ -559,14 +563,24 @@ const module = (() => {
                 a.toFixed(2) + general.measurement_unit;
               console.log(a);
 
-              let b = e.target.get_elevation_min() / 1000;
+              let b = e.target.get_elevation_max() / 1000;
               document.querySelector("#tracking-evo-up span").innerText =
                 b.toFixed(2);
 
-              let c = e.target.get_elevation_max() / 1000;
+              let c = e.target.get_elevation_min() / 1000;
               document.querySelector("#tracking-evo-down span").innerText =
                 c.toFixed(2);
+
+              let d = e.target.get_duration_string(duration, hidems);
+              document.querySelector("#tracking-moving-time span").innerText =
+                d;
             });
+
+            document.getElementById("tracking-altitude").innerText =
+              mainmarker.device_alt.toFixed(2);
+
+            let k = JSON.stringify(tracking_cache);
+            localStorage.setItem("tracking_cache", k);
           }
 
           if (mainmarker.tracking == false) {
