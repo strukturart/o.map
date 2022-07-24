@@ -1,9 +1,19 @@
 const qr = ((_) => {
-  let video;
+  let video = document.querySelector("video");
   let intv;
-  let start_scan = function (callback) {
-    bottom_bar("", "", "");
+  let mediaStream;
 
+  let stop_scan = function (callback) {
+    mediaStream.getTracks().map(function (val) {
+      val.stop();
+    });
+
+    document.getElementById("qr-screen").style.display = "none";
+
+    callback();
+  };
+
+  let start_scan = function (callback) {
     document.getElementById("qr-screen").style.display = "block";
 
     navigator.getUserMedia =
@@ -21,8 +31,9 @@ const qr = ((_) => {
           },
         },
         function (stream) {
-          video = document.querySelector("video");
           video.srcObject = stream;
+          console.log(stream);
+          mediaStream = stream;
 
           video.onloadedmetadata = function (e) {
             video.play();
@@ -48,9 +59,9 @@ const qr = ((_) => {
               let code = jsQR(idd, imageWidth, imageHeight);
 
               if (code) {
-                callback(code.data);
-                stop_scan("with_success");
                 clearInterval(intv);
+                callback(code.data);
+                stop_scan();
               }
             }, 1000);
           };
@@ -61,20 +72,6 @@ const qr = ((_) => {
       );
     } else {
       console.log("getUserMedia not supported");
-    }
-  };
-
-  let stop_scan = function (a) {
-    const stream = video.srcObject;
-    const tracks = stream.getTracks();
-    video.srcObject = null;
-
-    tracks.forEach(function (track) {
-      track.stop();
-      document.getElementById("qr-screen").style.display = "none";
-    });
-    if (a != "with_success") {
-     
     }
   };
 

@@ -2,6 +2,11 @@ const settings = ((_) => {
   let save_settings = function () {
     localStorage.setItem("owm-key", document.getElementById("owm-key").value);
     localStorage.setItem(
+      "ipbase-key",
+      document.getElementById("ipbase-key").value
+    );
+
+    localStorage.setItem(
       "cache-time",
       document.getElementById("cache-time").value
     );
@@ -21,7 +26,6 @@ const settings = ((_) => {
 
   let save_chk = function (id, localstorage_name) {
     let p = document.getElementById(id);
-    console.log(id, localstorage_name);
     p.checked = !p.checked;
     if (p.checked) {
       localStorage.setItem(localstorage_name, "true");
@@ -38,7 +42,6 @@ const settings = ((_) => {
   };
 
   let load_settings = function () {
-    console.log(setting);
     document.getElementById("owm-key").value = setting.openweather_api;
     document.getElementById("cache-time").value = setting.cache_time;
     document.getElementById("cache-zoom").value = setting.cache_zoom;

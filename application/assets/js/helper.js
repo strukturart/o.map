@@ -103,9 +103,9 @@ const helper = (() => {
   };
 
   //get location by ip
-  let geoip = function (callback) {
-    const url =
-      "https://api.ipbase.com/v2/info?apikey=2a0f8c30-844a-11ec-b0fe-af6fd1eb1209";
+  let geoip = function (callback, key) {
+    //2a0f8c30-844a-11ec-b0fe-af6fd1eb1209
+    const url = "https://api.ipbase.com/v2/info?apikey=" + key;
 
     let xhr = new XMLHttpRequest();
 
@@ -166,13 +166,60 @@ const helper = (() => {
     let requestDel = sdcard.delete(filename);
 
     requestDel.onsuccess = function () {
-      console.log("success");
       helper.side_toaster("File successfully deleted", 2000);
+
+      document.querySelector("[data-filepath='" + filename + "']").remove();
     };
 
     requestDel.onerror = function () {
       console.log("error");
       helper.toaster("Unable to delete the file: " + this.error);
+    };
+  };
+
+  //delete file
+  let renameFile = function (filename) {
+    let sdcard = navigator.getDeviceStorage("sdcard");
+    let request = sdcard.get(filename);
+
+    request.onsuccess = function () {
+      let new_filename = prompt("new filename");
+      let data = this.result;
+
+      let file_extension = data.name.split(".");
+      file_extension = file_extension[file_extension.length - 1];
+
+      let filepath = data.name.split("/").slice(0, -1).join("/") + "/";
+
+      let requestAdd = sdcard.addNamed(
+        data,
+        filepath + new_filename + "." + file_extension
+      );
+      requestAdd.onsuccess = function () {
+        var request_del = sdcard.delete(data.name);
+
+        request_del.onsuccess = function () {
+          // success copy and delete
+
+          document.querySelector(
+            "[data-filepath='" + filename + "']"
+          ).innerText = new_filename + "." + file_extension;
+
+          side_toaster("successfully renamed", 3000);
+        };
+
+        request_del.onerror = function () {
+          // success copy not delete
+          toaster("Unable to write the file", 3000);
+        };
+      };
+      requestAdd.onerror = function () {
+        toaster("Unable to write the file", 3000);
+      };
+    };
+
+    request.onerror = function () {
+      toaster("Unable to write the file", 3000);
     };
   };
 
@@ -185,6 +232,7 @@ const helper = (() => {
     isOnline,
     geoip,
     side_toaster,
+    renameFile,
   };
 })();
 

@@ -50,6 +50,11 @@ let setting = {
   cache_time: localStorage["cache-time"] || "10",
   cache_zoom: localStorage["cache-zoom"] || "12",
   openweather_api: localStorage.getItem("owm-key"),
+  ipbase_api:
+    localStorage.getItem("ipbase-key") != null
+      ? localStorage.getItem("ipbase-key")
+      : "",
+
   crosshair:
     localStorage.getItem("crosshair") != null
       ? JSON.parse(localStorage.getItem("crosshair"))
@@ -339,7 +344,15 @@ document.addEventListener("DOMContentLoaded", function () {
         .querySelector("div#tracksmarkers")
         .insertAdjacentHTML(
           "afterend",
-          '<div class="item" data-map="geojson">' + fileinfo.name + "</div>"
+          '<div class="item" data-map="geojson" data-filename="' +
+            fileinfo.name +
+            '" data-filepath="' +
+            fileinfo.path +
+            "/" +
+            fileinfo.name +
+            '">' +
+            fileinfo.name +
+            "</div>"
         );
 
       //load startup item
@@ -744,7 +757,6 @@ document.addEventListener("DOMContentLoaded", function () {
         e.style.background = "white";
         e.style.color = "black";
       }
-      console.log(general.active_layer.includes(e.getAttribute("data-url")));
       if (general.active_layer.includes(e.getAttribute("data-url"))) {
         e.style.background = "white";
         e.style.color = "black";
@@ -819,7 +831,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let options = {
       enableHighAccuracy: true,
-      timeout: 5000,
+      timeout: 15000,
       maximumAge: 0,
     };
 
@@ -852,10 +864,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function error(err) {
-      //helper.toaster("Position not found, load last known position", 4000);
-      var z = confirm(
-        "do you want to find out your position by your ip address ?"
-      );
+      if (setting.ipbase_api != "") {
+        var z = confirm(
+          "do you want to find out your position by your ip address ?"
+        );
+      }
+
       if (z == true) {
         helper.geoip(geoip_callback);
       } else {
@@ -994,7 +1008,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let options = {
       enableHighAccuracy: true,
-      timeout: 5000,
+      timeout: 15000,
       maximumAge: 0,
     };
     watchID = geoLoc.watchPosition(showLocation, errorHandler, options);
@@ -1025,7 +1039,6 @@ document.addEventListener("DOMContentLoaded", function () {
       status.windowOpen == "files-option"
     ) {
       let item_value = document.activeElement.getAttribute("data-action");
-      console.log(item_value);
 
       if (item_value == "set_target_marker") {
         mainmarker.target_marker = mainmarker.selected_marker._latlng;
@@ -1064,20 +1077,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (item_value == "delete-file") {
         document.querySelector("div#files-option").style.display = "none";
-        helper.deleteFile(general.active_item.getAttribute("data-filename"));
-        document
-          .querySelectorAll("div.item[data-map='gpx']")
-          .forEach(function (e) {
-            e.remove();
-          });
+        helper.deleteFile(general.active_item.getAttribute("data-filepath"));
+        setTimeout(function () {
+          open_finder();
+        }, 1500);
+      }
 
-        document
-          .querySelectorAll("div.item[data-map='geojson']")
-          .forEach(function (e) {
-            e.remove();
-          });
-        find_gpx();
-        find_geojson();
+      if (item_value == "rename-file") {
+        document.querySelector("div#files-option").style.display = "none";
+        helper.renameFile(general.active_item.getAttribute("data-filepath"));
+
         setTimeout(function () {
           open_finder();
         }, 1500);
@@ -1525,21 +1534,28 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   //qr scan listener
-  const qr_listener = document.querySelector("input#owm-key");
+  const qr_listener = document.querySelectorAll("input.qr");
   let qrscan = false;
-  qr_listener.addEventListener("focus", (event) => {
-    bottom_bar("qr-scan", "", "");
-    qrscan = true;
-  });
+  qr_listener.forEach(function (e) {
+    e.addEventListener("focus", () => {
+      bottom_bar("qr-scan", "", "");
+      console.log("scn");
+      qrscan = true;
+    });
 
-  qr_listener.addEventListener("blur", (event) => {
-    qrscan = false;
-    bottom_bar("", "", "");
+    e.addEventListener("blur", (event) => {
+      qrscan = false;
+      bottom_bar("", "", "");
+    });
   });
 
   const checkbox = document.getElementById("measurement-ckb");
 
   checkbox.addEventListener("change", function () {});
+
+  let scan_callback = function (e) {
+    console.log("result" + e);
+  };
 
   //////////////////////////////
   ////KEYPAD HANDLER////////////
@@ -1663,6 +1679,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "SoftLeft":
       case "Control":
+        console.log(qrscan);
         if (status.windowOpen == "search") {
           search.hideSearch();
           break;
@@ -1694,26 +1711,33 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (status.windowOpen == "finder" && qrscan == true) {
+          console.log("hey");
           status.windowOpen = "scan";
-
-          qr.start_scan(function (callback) {
-            let slug = callback;
-            document.getElementById("owm-key").value = slug;
+          let t = document.activeElement;
+          qr.start_scan(function (scan_callback) {
+            let slug = scan_callback;
+            // document.getElementById("owm-key").value = slug;
+            document.activeElement.value = slug;
+            status.windowOpen = "finder";
+            t.focus();
           });
 
           break;
         }
+        /*
         if (status.windowOpen == "finder" && kaios_ads_click == true) {
+         
           const iframe = document.getElementById("ads-frame");
           const iWindow = iframe.contentWindow;
           const iDocument = iWindow.document;
 
           // accessing the element
-          const element = iDocument.getElementById("KaiOsAd");
+          const element = document.getElementById("KaiOsAd");
           element.click();
 
           break;
         }
+        */
 
         break;
 

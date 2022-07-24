@@ -571,7 +571,11 @@ const module = (() => {
               document.querySelector("#tracking-evo-down span").innerText =
                 c.toFixed(2);
 
-              let d = e.target.get_duration_string(duration, hidems);
+              let d = e.target.get_duration_string(
+                e.target.get_total_time(),
+                false
+              );
+              console.log("hey" + d);
               document.querySelector("#tracking-moving-time span").innerText =
                 d;
             });
