@@ -43,6 +43,8 @@ const settings = ((_) => {
 
   let load_settings = function () {
     document.getElementById("owm-key").value = setting.openweather_api;
+    document.getElementById("ipbase-key").value = setting.ipbase_api;
+
     document.getElementById("cache-time").value = setting.cache_time;
     document.getElementById("cache-zoom").value = setting.cache_zoom;
     document.getElementById("export-path").value = setting.export_path;
@@ -54,6 +56,10 @@ const settings = ((_) => {
     setting.crosshair
       ? (document.getElementById("crosshair-ckb").checked = true)
       : (document.getElementById("crosshair-ckb").checked = false);
+
+    setting.useOnlyCache
+      ? (document.getElementById("useOnlyCache-ckb").checked = true)
+      : (document.getElementById("useOnlyCache-ckb").checked = false);
 
     setting.scale
       ? (document.getElementById("scale-ckb").checked = true)

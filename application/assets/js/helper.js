@@ -104,28 +104,23 @@ const helper = (() => {
 
   //get location by ip
   let geoip = function (callback, key) {
-    //2a0f8c30-844a-11ec-b0fe-af6fd1eb1209
     const url = "https://api.ipbase.com/v2/info?apikey=" + key;
-
     let xhr = new XMLHttpRequest();
-
     xhr.open("GET", url);
-
     xhr.responseType = "json";
-
     xhr.send();
-
     xhr.error = function (err) {
-      toaster(err, 2000);
+      console.log(err);
     };
 
     xhr.onload = function () {
       let responseObj = xhr.response;
+      console.log(responseObj);
+      toaster(xhr.response.message, 5000);
       let latlng = [
         responseObj.data.location.latitude,
         responseObj.data.location.longitude,
       ];
-      console.log(JSON.stringify(latlng));
       callback(latlng);
     };
   };

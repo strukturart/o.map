@@ -138,8 +138,18 @@ const maps = (() => {
   let overlayer = "";
 
   let addMap = function (url, attribution, max_zoom, type) {
+    let useOnlyCache = false;
+    if (localStorage.getItem("useOnlyCache") != null) {
+      if (localStorage.getItem("useOnlyCache") == "true") {
+        useOnlyCache = true;
+      } else {
+        useOnlyCache = false;
+      }
+    }
+
+    console.log("useOnlyCache " + useOnlyCache);
+
     //map
-    console.log(type);
     if (type == "map") {
       if (map.hasLayer(tilesLayer)) {
         map.removeLayer(tilesLayer);
@@ -150,7 +160,7 @@ const maps = (() => {
         saveToCache: true,
         crossOrigin: true,
         cacheMaxAge: caching_time,
-        useOnlyCache: false,
+        useOnlyCache: useOnlyCache,
         maxZoom: max_zoom,
         attribution: attribution,
         format: "image/png",

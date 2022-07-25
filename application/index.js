@@ -50,10 +50,12 @@ let setting = {
   cache_time: localStorage["cache-time"] || "10",
   cache_zoom: localStorage["cache-zoom"] || "12",
   openweather_api: localStorage.getItem("owm-key"),
-  ipbase_api:
-    localStorage.getItem("ipbase-key") != null
-      ? localStorage.getItem("ipbase-key")
-      : "",
+  ipbase_api: localStorage.getItem("ipbase-key"),
+
+  useOnlyCache:
+    localStorage.getItem("useOnlyCache") != null
+      ? JSON.parse(localStorage.getItem("useOnlyCache"))
+      : true,
 
   crosshair:
     localStorage.getItem("crosshair") != null
@@ -84,6 +86,8 @@ let setting = {
       ? JSON.parse(localStorage.getItem("tips_view"))
       : true,
 };
+
+console.log(setting);
 
 let general = {
   osm_token:
@@ -871,7 +875,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       if (z == true) {
-        helper.geoip(geoip_callback);
+        helper.geoip(geoip_callback, setting.ipbase_api);
       } else {
         helper.toaster("Position not found, load last known position", 4000);
         mainmarker.current_lat = mainmarker.last_location[0];
