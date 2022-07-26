@@ -204,7 +204,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (a.installOrigin == "app://kaios-plus.kaiostech.com") {
       load_ads();
     } else {
-      console.log("Ads free");
+      //console.log("Ads free");
       let t = document.getElementById("kaios-ads").remove();
     }
   };
@@ -1728,20 +1728,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
           break;
         }
-        /*
-        if (status.windowOpen == "finder" && kaios_ads_click == true) {
-         
-          const iframe = document.getElementById("ads-frame");
-          const iWindow = iframe.contentWindow;
-          const iDocument = iWindow.document;
-
-          // accessing the element
-          const element = document.getElementById("KaiOsAd");
-          element.click();
-
-          break;
-        }
-        */
 
         break;
 
