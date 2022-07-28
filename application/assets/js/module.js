@@ -44,7 +44,7 @@ const module = (() => {
         .on("loaded", function (e) {
           map.fitBounds(e.target.getBounds());
         })
-        .addTo(map);
+        .addTo(gpx_group);
 
       document.querySelector("div#finder").style.display = "none";
       status.windowOpen = "map";
@@ -75,7 +75,8 @@ const module = (() => {
             .on("loaded", function (e) {
               map.fitBounds(e.target.getBounds());
             })
-            .addTo(map);
+            .addTo(gpx_group);
+          //.addTo(map);
 
           document.querySelector("div#finder").style.display = "none";
           status.windowOpen = "map";
@@ -207,7 +208,6 @@ const module = (() => {
       }
 
       markers_group.eachLayer(function (l) {
-        contained.push(l);
         if (l instanceof L.Marker && map.getBounds().contains(l.getLatLng()))
           contained.push(l);
       });
@@ -217,8 +217,6 @@ const module = (() => {
     }
 
     l = contained;
-
-    console.log(l);
 
     status.marker_selection = true;
     status.windowOpen = "marker";
@@ -243,7 +241,6 @@ const module = (() => {
         l[index].closePopup();
       }, 3000);
     }
-
     let p = l[index].getIcon();
     if (
       p.options.className != "follow-marker" &&
@@ -288,14 +285,86 @@ const module = (() => {
     }
 
     map.setView(l[index]._latlng, map.getZoom());
+
     return l[index];
+  };
+
+  //SELECT GPX
+
+  let gpx_selection_count = 0;
+  let select_gpx = function () {
+    let gpx_selection = [];
+
+    gpx_selection_count++;
+
+    gpx_group.eachLayer(function (l) {
+      if (l.getBounds()) gpx_selection.push(l);
+    });
+
+    if (gpx_selection_count > gpx_selection.length - 1) gpx_selection_count = 0;
+    map.fitBounds(gpx_selection[gpx_selection_count].getBounds());
+
+    //store info in object
+    gpx_selection_info.duration =
+      gpx_selection[gpx_selection_count]._info.duration.total;
+    gpx_selection_info.elevation_gain =
+      gpx_selection[gpx_selection_count]._info.elevation.gain;
+
+    gpx_selection_info.elevation_loss =
+      gpx_selection[gpx_selection_count]._info.elevation.loss;
+
+    gpx_selection_info.elevation_loss =
+      gpx_selection[gpx_selection_count]._info.elevation.loss;
+
+    gpx_selection_info.distance =
+      gpx_selection[gpx_selection_count]._info.length;
+
+    gpx_selection_info.name = gpx_selection[gpx_selection_count]._info.name;
+    update_gpx_info();
+
+    console.log(gpx_selection[gpx_selection_count]._info);
+  };
+
+  let update_gpx_info = function () {
+    document.getElementById("gpx-name").innerText = gpx_selection_info.name;
+    document.getElementById("gpx-time").innerText = format_ms(
+      gpx_selection_info.duration
+    );
+    document.querySelector("#gpx-evo-up span").innerText =
+      gpx_selection_info.elevation_gain.toFixed(2);
+
+    document.querySelector("#gpx-evo-down span").innerText =
+      gpx_selection_info.elevation_loss.toFixed(2);
+
+    let n = gpx_selection_info.distance / 1000;
+    n = n.toFixed(2);
+    document.getElementById("gpx-distance").innerText = n;
+  };
+
+  let format_ms = function (millisec) {
+    var seconds = (millisec / 1000).toFixed(0);
+    var minutes = Math.floor(seconds / 60);
+    var hours = "";
+    if (minutes > 59) {
+      hours = Math.floor(minutes / 60);
+      hours = hours >= 10 ? hours : "0" + hours;
+      minutes = minutes - hours * 60;
+      minutes = minutes >= 10 ? minutes : "0" + minutes;
+    }
+
+    seconds = Math.floor(seconds % 60);
+    seconds = seconds >= 10 ? seconds : "0" + seconds;
+    if (hours != "") {
+      return hours + ":" + minutes + ":" + seconds;
+    }
+    return minutes + ":" + seconds;
   };
 
   //calc distance between markers
   let calc_distance = function (from_lat, from_lng, to_lat, to_lng, unit) {
     let d = map.distance([from_lat, from_lng], [to_lat, to_lng]);
-    if (unit == "miles") {
-      d = d * 0.00062137119;
+    if (unit == "mil") {
+      d = d * 3.28084;
     }
 
     d = Math.ceil(d);
@@ -399,7 +468,6 @@ const module = (() => {
     let option = { featureCoordTimes: "timestamp", creator: "o.map" };
 
     extData = togpx(e, option);
-    console.log(extData);
     return togpx(e, option);
   };
 
@@ -444,8 +512,10 @@ const module = (() => {
       tracking_altitude = [];
       document.getElementById("tracking-altitude").innerText = "";
       document.querySelector("div#tracking-distance").innerText = "";
-      document.querySelector("div#tracking-evo-up").innerText = "";
-      document.querySelector("div#tracking-evo-down").innerText = "";
+      document.querySelector("div#tracking-evo-up span").innerText = "";
+      document.querySelector("div#tracking-evo-down span").innerText = "";
+      document.querySelector("div#tracking-moving-time span").innerText = "";
+
       clearInterval(tracking_interval);
       setTimeout(function () {
         localStorage.removeItem("tracking_cache");
@@ -462,7 +532,8 @@ const module = (() => {
     }
 
     if (action == "tracking") {
-      gps_lock = window.navigator.requestWakeLock("gps");
+      if (typeof window.navigator.requestWakeLock !== "undefined")
+        gps_lock = window.navigator.requestWakeLock("gps");
       status.tracking_running = true;
 
       if (localStorage.getItem("tracking_cache") != null) {
@@ -505,8 +576,6 @@ const module = (() => {
             Number(tracking_cache[tracking_cache.length - 2].lat),
             Number(tracking_cache[tracking_cache.length - 2].lng)
           );
-
-          console.log("dif: " + n);
         }
         if (mainmarker.accuracy > 10000) {
           console.log("the gps is very inaccurate right now");
@@ -558,30 +627,48 @@ const module = (() => {
 
             //get tracking data to display in view
             new L.GPX(toGPX(), { async: true }).on("loaded", function (e) {
-              let a = e.target.get_distance() / 1000;
-              document.querySelector("div#tracking-distance").innerText =
-                a.toFixed(2) + general.measurement_unit;
-              console.log(a);
+              //meter
+              if (general.measurement_unit == "km") {
+                let a = e.target.get_distance() / 1000;
+                document.querySelector("div#tracking-distance").innerText =
+                  a.toFixed(2) + general.measurement_unit;
 
-              let b = e.target.get_elevation_max() / 1000;
-              document.querySelector("#tracking-evo-up span").innerText =
-                b.toFixed(2);
+                let b = e.target._info.elevation.gain;
+                document.querySelector("#tracking-evo-up span").innerText =
+                  b.toFixed(2);
 
-              let c = e.target.get_elevation_min() / 1000;
-              document.querySelector("#tracking-evo-down span").innerText =
-                c.toFixed(2);
+                let c = e.target._info.elevation.loss;
+                document.querySelector("#tracking-evo-down span").innerText =
+                  c.toFixed(2);
+
+                document.getElementById("tracking-altitude").innerText =
+                  mainmarker.device_alt;
+              }
+              //miles
+              if (general.measurement_unit == "mil") {
+                let a = e.target.get_distance_imp();
+                document.querySelector("div#tracking-distance").innerText =
+                  a.toFixed(2) + general.measurement_unit;
+
+                let b = e.target.get_elevation_gain_imp();
+                document.querySelector("#tracking-evo-up span").innerText =
+                  b.toFixed(2);
+
+                let c = e.target.get_elevation_loss_imp();
+                document.querySelector("#tracking-evo-down span").innerText =
+                  c.toFixed(2);
+
+                document.getElementById("tracking-altitude").innerText =
+                  mainmarker.device_alt * 3.280839895;
+              }
 
               let d = e.target.get_duration_string(
                 e.target.get_total_time(),
                 false
               );
-              console.log("hey" + d);
               document.querySelector("#tracking-moving-time span").innerText =
                 d;
             });
-
-            document.getElementById("tracking-altitude").innerText =
-              mainmarker.device_alt.toFixed(2);
 
             let k = JSON.stringify(tracking_cache);
             localStorage.setItem("tracking_cache", k);
@@ -632,9 +719,36 @@ const module = (() => {
     }
   };
 
+  let user_input = function (param, file_name, label) {
+    if (param == "open") {
+      document.getElementById("user-input-description").innerText = label;
+
+      document.querySelector("div#user-input").style.bottom = "25px";
+      document.querySelector("div#user-input input").focus();
+      document.querySelector("div#user-input input").value = file_name;
+      status.windowOpen = "user-input";
+    }
+    if (param == "close") {
+      document.querySelector("div#user-input").style.bottom = "-1000px";
+      document.querySelector("div#user-input input").blur();
+      status.windowOpen = "map";
+      bottom_bar("", "", "");
+    }
+
+    if (param == "return") {
+      let input_value = document.querySelector("div#user-input input").value;
+      document.querySelector("div#user-input").style.bottom = "-1000px";
+      document.querySelector("div#user-input input").blur();
+      bottom_bar("", "", "");
+
+      return input_value;
+    }
+  };
+
   return {
     set_f_upd_markers,
     select_marker,
+    select_gpx,
     calc_distance,
     compass,
     measure_distance,
@@ -645,5 +759,6 @@ const module = (() => {
     loadGPX,
     sunrise,
     loadGPX_data,
+    user_input,
   };
 })();

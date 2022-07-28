@@ -9,8 +9,10 @@ let overpass_query = ""; //to toggle overpass layer
 let measure_group_path = new L.FeatureGroup();
 let measure_group = new L.FeatureGroup();
 let tracking_group = new L.FeatureGroup();
+let gpx_group = new L.FeatureGroup();
 let tracking_timestamp = [];
 let myMarker;
+let gpx_selection_info = {};
 let tilesLayer = "";
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -74,7 +76,6 @@ let setting = {
     localStorage.getItem("measurement") != null
       ? JSON.parse(localStorage.getItem("measurement"))
       : true,
-  measurement_unit: "",
 
   wikipedia_view:
     localStorage.getItem("wikipedia_view") != null
@@ -86,8 +87,6 @@ let setting = {
       ? JSON.parse(localStorage.getItem("tips_view"))
       : true,
 };
-
-console.log(setting);
 
 let general = {
   osm_token:
@@ -106,10 +105,11 @@ let general = {
 };
 
 setting.measurement == true
-  ? (setting.measurement_unit = "km")
-  : (setting.measurement_unit = "mil");
+  ? (general.measurement_unit = "km")
+  : (general.measurement_unit = "mil");
 
 let status = {
+  geolocation: false,
   tracking_running: false,
   visible: "visible",
   caching_tiles_started: false,
@@ -244,6 +244,7 @@ document.addEventListener("DOMContentLoaded", function () {
   map.addLayer(measure_group);
   map.addLayer(measure_group_path);
   map.addLayer(tracking_group);
+  map.addLayer(gpx_group);
 
   //build menu
   let build_menu = function () {
@@ -464,7 +465,6 @@ document.addEventListener("DOMContentLoaded", function () {
   /////////////
 
   let osm_server_list_gpx = function () {
-    console.log("load osm");
     let n = "Bearer " + localStorage.getItem("openstreetmap_token");
 
     const myHeaders = new Headers({
@@ -477,7 +477,6 @@ document.addEventListener("DOMContentLoaded", function () {
     })
       .then((response) => response.text())
       .then((data) => {
-        console.log(data);
         document.querySelector("div#osm-server-gpx").innerHTML = "";
         const parser = new DOMParser();
         const xml = parser.parseFromString(data, "application/xml");
@@ -532,7 +531,6 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   let osm_server_load_gpx = function (id) {
-    console.log("token: " + general.osm_token);
     let n = "Bearer " + localStorage.getItem("openstreetmap_token");
 
     const myHeaders = new Headers({
@@ -553,7 +551,7 @@ document.addEventListener("DOMContentLoaded", function () {
           .on("loaded", function (e) {
             map.fitBounds(e.target.getBounds());
           })
-          .addTo(map);
+          .addTo(gpx_group);
 
         document.querySelector("div#finder").style.display = "none";
         status.windowOpen = "map";
@@ -621,7 +619,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   /////openweather callback
-  ////build elements in wheater panel
+  ////build elements in weather panel
 
   let getDay = function (dt) {
     let t = new Date(dt);
@@ -684,7 +682,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (mainmarker.target_marker != undefined) {
       //target marker
-
+      console.log(general.measurement_unit);
       let calc3 = module.calc_distance(
         mainmarker.current_lat,
         mainmarker.current_lng,
@@ -841,6 +839,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function success(pos) {
       helper.side_toaster("Position  found", 2000);
+      status.geolocation = true;
       let crd = pos.coords;
 
       //to store device loaction
@@ -849,6 +848,8 @@ document.addEventListener("DOMContentLoaded", function () {
       mainmarker.device_alt = crd.altitude;
       mainmarker.accuracy = crd.accuracy;
       mainmarker.accuracyAlt = crd.altitudeAccuracy;
+
+      console.log(crd.altitudeAccuracy);
 
       setTimeout(function () {
         map.setView([mainmarker.device_lat, mainmarker.device_lng], 12);
@@ -859,7 +860,7 @@ document.addEventListener("DOMContentLoaded", function () {
       localStorage.setItem("last_location", JSON.stringify(b));
 
       if (option == "init") {
-        geolocationWatch(true);
+        geolocationWatch();
 
         document.getElementById("cross").style.opacity = 1;
 
@@ -884,7 +885,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         mainmarker.device_lat = mainmarker.last_location[0];
         mainmarker.device_lng = mainmarker.last_location[1];
-
+        geolocationWatch();
         myMarker
           .setLatLng([mainmarker.device_lat, mainmarker.device_lng])
           .update();
@@ -905,38 +906,60 @@ document.addEventListener("DOMContentLoaded", function () {
   let geoLoc = navigator.geolocation;
 
   function geolocationWatch() {
+    console.log("try");
     state_geoloc = true;
     function showLocation(position) {
       let crd = position.coords;
 
       //store device location
       mainmarker.device_lat = crd.latitude;
+      mainmarker.device_lng = crd.longitude;
 
       document.querySelector("section#device-position div.lat span").innerText =
         crd.latitude.toFixed(2);
-
-      mainmarker.device_lng = crd.longitude;
 
       document.querySelector("section#device-position div.lng span").innerText =
         crd.longitude.toFixed(2);
       //accuracy
       if (crd.accuracy != undefined || crd.accuracy != null) {
+        if (status.geolocation == false) {
+          helper.side_toaster(
+            "the position of your device could now be found.",
+            2000
+          );
+        }
+        status.geolocation = true;
         mainmarker.accuracy = crd.accuracy;
 
-        document.querySelector(
-          "section#device-position div.accuracy span"
-        ).innerText = crd.accuracy.toFixed(2);
+        if (general.measurement_unit == "km") {
+          document.querySelector(
+            "section#device-position div.accuracy span"
+          ).innerText = crd.accuracy.toFixed(2);
+        }
+
+        if (general.measurement_unit == "mil") {
+          let n = crd.accuracy * 3.280839895;
+          document.querySelector(
+            "section#device-position div.accuracy span"
+          ).innerText = n.toFixed(2);
+        }
       }
 
       //alitude
       if (crd.altitude != undefined || crd.altitude != null) {
         mainmarker.device_alt = crd.altitude;
+        if (general.measurement_unit == "km") {
+          document.querySelector(
+            "section#device-position div.altitude span"
+          ).innerText = crd.altitude.toFixed(2);
+        }
 
-        document.querySelector(
-          "section#device-position div.altitude span"
-        ).innerText = crd.altitude.toFixed(2);
-
-        console.log(crd.altitudeAccuracy);
+        if (general.measurement_unit == "mil") {
+          let n = crd.altitude * 3.280839895;
+          document.querySelector(
+            "section#device-position div.altitude span"
+          ).innerText = n.toFixed(2);
+        }
       }
       //heading
       if (crd.heading != undefined || crd.heading != null) {
@@ -998,25 +1021,28 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       //distances
-
       distance_to_target();
     }
 
     function errorHandler(err) {
+      console.log(err.code);
       if (err.code == 1) {
         helper.toaster("Error: Access is denied!", 2000);
-      } else if (err.code == 2) {
+      }
+      if (err.code == 2) {
         helper.toaster("Error: Position is unavailable!", 2000);
+      }
+      if (err.code == 3) {
+        helper.toaster("Position is unavailable!", 2000);
       }
     }
 
     let options = {
       enableHighAccuracy: true,
-      timeout: 15000,
-      maximumAge: 0,
+      timeout: 35000,
+      maximumAge: 100,
     };
     watchID = geoLoc.watchPosition(showLocation, errorHandler, options);
-    return true;
   }
 
   let auto_update_view = function () {
@@ -1184,7 +1210,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (item_value == "savelocation") {
           document.querySelector("div#finder").style.display = "none";
           save_mode = "geojson-single";
-          user_input("open");
+          module.user_input("open");
           setTimeout(function () {
             bottom_bar("cancel", "", "save");
           }, 1000);
@@ -1193,7 +1219,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (item_value == "export") {
           document.querySelector("div#finder").style.display = "none";
           save_mode = "geojson-collection";
-          user_input("open");
+          module.user_input("open");
           setTimeout(function () {
             bottom_bar("cancel", "", "save");
           }, 1000);
@@ -1419,6 +1445,8 @@ document.addEventListener("DOMContentLoaded", function () {
       if (count == -1) count = finder_panels.length - 1;
     }
     document.getElementById(finder_panels[count].id).style.display = "block";
+    document.getElementById(finder_panels[count].id).focus();
+
     finder_tabindex();
 
     top_bar("◀", finder_panels[count].name, "▶");
@@ -1437,9 +1465,9 @@ document.addEventListener("DOMContentLoaded", function () {
       document.querySelector("#kaios-ads .item").focus();
     }
     if (finder_panels[count].id == "tips") bottom_bar("", "", "");
-    if (finder_panels[count].id == "coordinations") {
+
+    if (finder_panels[count].id == "gpx-file-info") {
       bottom_bar("", "", "");
-      status.sub_status = "coordinations";
     }
     if (finder_panels[count].id == "tracking") {
       bottom_bar("", "", "");
@@ -1618,7 +1646,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "4":
         if (status.windowOpen == "map") {
-          geolocationWatch(false);
+          geolocationWatch();
           screenWakeLock("lock", "gps");
         }
 
@@ -1669,12 +1697,6 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
-        if (status.windowOpen == "scan") {
-          qr.stop_scan();
-          status.windowOpen = "setting";
-          break;
-        }
-
         break;
 
       case "EndCall":
@@ -1683,7 +1705,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "SoftLeft":
       case "Control":
-        console.log(qrscan);
+        console.log(status.windowOpen);
+        if (status.windowOpen == "user-input") {
+          module.user_input("close");
+          save_mode = "";
+          break;
+        }
         if (status.windowOpen == "search") {
           search.hideSearch();
           break;
@@ -1703,24 +1730,16 @@ document.addEventListener("DOMContentLoaded", function () {
           document.getElementById("markers-option").style.display = "none";
         }
 
-        if (status.windowOpen == "user-input") {
-          user_input("close");
-          save_mode = "";
-          break;
-        }
-
         if (status.windowOpen == "map") {
           ZoomMap("out");
           break;
         }
 
         if (status.windowOpen == "finder" && qrscan == true) {
-          console.log("hey");
           status.windowOpen = "scan";
           let t = document.activeElement;
           qr.start_scan(function (scan_callback) {
             let slug = scan_callback;
-            // document.getElementById("owm-key").value = slug;
             document.activeElement.value = slug;
             status.windowOpen = "finder";
             t.focus();
@@ -1739,7 +1758,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (status.path_selection && status.windowOpen == "map") {
           save_mode = "geojson-path";
-          user_input("open", "", "save this marker as geojson file");
+          module.user_input("open", "", "save this marker as geojson file");
           bottom_bar("cancel", "", "save");
 
           break;
@@ -1750,7 +1769,7 @@ document.addEventListener("DOMContentLoaded", function () {
           save_mode == "geojson-single-direct"
         ) {
           geojson.save_geojson(
-            setting.export_path + user_input("return") + ".geojson",
+            setting.export_path + module.user_input("return") + ".geojson",
             "single-direct"
           );
 
@@ -1773,7 +1792,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (status.windowOpen == "user-input" && save_mode == "geojson-path") {
           geojson.save_geojson(
-            setting.export_path + user_input("return") + ".geojson",
+            setting.export_path + module.user_input("return") + ".geojson",
             "path"
           );
 
@@ -1785,7 +1804,10 @@ document.addEventListener("DOMContentLoaded", function () {
           status.windowOpen == "user-input" &&
           save_mode == "geojson-collection"
         ) {
-          geojson.save_geojson(user_input("return") + ".geojson", "collection");
+          geojson.save_geojson(
+            module.user_input("return") + ".geojson",
+            "collection"
+          );
           save_mode = "";
           break;
         }
@@ -1794,9 +1816,8 @@ document.addEventListener("DOMContentLoaded", function () {
           status.windowOpen == "user-input" &&
           save_mode == "geojson-tracking"
         ) {
-          //geojson.save_geojson(user_input("return") + ".geojson", "tracking");
           geojson.save_gpx(
-            setting.export_path + user_input("return") + ".gpx",
+            setting.export_path + module.user_input("return") + ".gpx",
             "tracking"
           );
           save_mode = "";
@@ -1809,7 +1830,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (status.windowOpen == "user-input" && save_mode != "geojson") {
-          filename = user_input("return");
+          filename = module.user_input("return");
           break;
         }
 
@@ -1826,6 +1847,17 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "Enter":
+        if (
+          status.windowOpen == "user-input" &&
+          save_mode == "geojson-tracking"
+        ) {
+          module.user_input("close");
+          module.measure_distance("destroy_tracking");
+
+          save_mode = "";
+          break;
+        }
+
         if (status.windowOpen == "map") {
           open_finder();
           status.windowOpen = "finder";
@@ -1847,17 +1879,6 @@ document.addEventListener("DOMContentLoaded", function () {
               document.activeElement.value
             );
           }
-        }
-
-        if (
-          status.windowOpen == "user-input" &&
-          save_mode == "geojson-tracking"
-        ) {
-          module.measure_distance("destroy_tracking");
-
-          user_input("close");
-          save_mode = "";
-          break;
         }
 
         if (status.windowOpen == "search") {
@@ -1907,7 +1928,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (document.activeElement == document.getElementById("owm-key")) {
           bottom_bar("qr.scan", "", "");
-
           break;
         }
 
@@ -1955,14 +1975,21 @@ document.addEventListener("DOMContentLoaded", function () {
       case "1":
         if (status.windowOpen == "map") {
           if (status.tracking_running) {
-            helper.toaster("tracking paused", 5000);
+            helper.side_toaster("tracking paused", 5000);
             save_mode = "geojson-tracking";
-            user_input("open", "", "Export path as geojson file");
+            module.user_input("open", "", "Save as GPX file");
             bottom_bar("cancel", "don't save", "save");
             return true;
           } else {
+            if (status.geolocation == false) {
+              helper.side_toaster(
+                "can't start tracking, the position of your device could not be determined.",
+                4000
+              );
+              return false;
+            }
             status.tracking_running = true;
-            helper.toaster(
+            helper.side_toaster(
               "tracking started,\n stop tracking with key 1",
               4000
             );
@@ -1993,7 +2020,7 @@ document.addEventListener("DOMContentLoaded", function () {
             markers_group
           );
           save_mode = "geojson-single-direct";
-          user_input("open", "", "save this marker as geojson file");
+          module.user_input("open", "", "save this marker as geojson file");
           bottom_bar("cancel", "", "save");
           break;
         }
@@ -2001,6 +2028,7 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "6":
+        module.select_gpx();
         break;
 
       case "7":
@@ -2013,7 +2041,7 @@ document.addEventListener("DOMContentLoaded", function () {
       case "8":
         if (status.windowOpen == "map") {
           save_mode = "geojson-collection";
-          user_input("open", "", "save all markers as geojson file");
+          module.user_input("open", "", "save all markers as geojson file");
           bottom_bar("cancel", "", "save");
         }
 

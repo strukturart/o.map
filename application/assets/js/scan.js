@@ -9,8 +9,6 @@ const qr = ((_) => {
     });
 
     document.getElementById("qr-screen").style.display = "none";
-
-    callback();
   };
 
   let start_scan = function (callback) {

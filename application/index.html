@@ -355,7 +355,7 @@
           <div class="heading">Heading <span></span></div>
           <div class="speed">Speed <span></span></div>
           <div class="compass"></div>
-          <div class="accuracy">accuracy +- <span></span> m</div>
+          <div class="accuracy">accuracy +- <span></span></div>
         </section>
 
         <section id="device-distance">
@@ -416,6 +416,25 @@
         <section>
           <strong><u>Alitude</u></strong>
           <div id="tracking-altitude"></div>
+        </section>
+      </div>
+
+      <div class="panel" id="gpx-file-info" name="GPX File-Info">
+        <section>
+          <div id="gpx-name"></div>
+        </section>
+        <section>
+          <strong><u>Distance</u></strong>
+          <div id="gpx-distance"></div>
+        </section>
+        <section>
+          <strong><u>Evolution</u></strong>
+          <div id="gpx-evo-up">⬆<span></span></div>
+          <div id="gpx-evo-down">⬇<span></span></div>
+        </section>
+        <section>
+          <strong><u>Time</u></strong>
+          <div id="gpx-time">duration <span></span></div>
         </section>
       </div>
 
@@ -498,6 +517,13 @@
           <div class="flex justify-content-spacebetween">
             <div>save position as marker</div>
             <div>5</div>
+          </div>
+        </div>
+
+        <div class="item" data-map="savelocation">
+          <div class="flex justify-content-spacebetween">
+            <div>jump between loaded gpx</div>
+            <div>6</div>
           </div>
         </div>
 

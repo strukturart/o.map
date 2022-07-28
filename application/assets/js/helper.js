@@ -262,32 +262,6 @@ function notify(param_title, param_text, param_silent) {
   }
 }
 
-function user_input(param, file_name, label) {
-  if (param == "open") {
-    document.getElementById("user-input-description").innerText = label;
-
-    document.querySelector("div#user-input").style.bottom = "25px";
-    document.querySelector("div#user-input input").focus();
-    document.querySelector("div#user-input input").value = file_name;
-    status.windowOpen = "user-input";
-  }
-  if (param == "close") {
-    document.querySelector("div#user-input").style.bottom = "-1000px";
-    document.querySelector("div#user-input input").blur();
-    status.windowOpen = "map";
-    bottom_bar("", "", "");
-  }
-
-  if (param == "return") {
-    let input_value = document.querySelector("div#user-input input").value;
-    document.querySelector("div#user-input").style.bottom = "-1000px";
-    document.querySelector("div#user-input input").blur();
-    bottom_bar("", "", "");
-
-    return input_value;
-  }
-}
-
 function localStorageWriteRead(item, value) {
   if (
     item != "" &&

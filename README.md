@@ -49,6 +49,7 @@ O.Map is an openstreetmap app for KaiOs, it is a good companion for your next ou
 - **key 4** auto center map
 - **key 5** save position or search result as marker on sd-card <br>
   to delete the marker open with 3 the menu select the marker and press long enter (+- 5sec)
+- **key 6** jump between loaded gpx tracks
 - **key 7** measure distance
 - **key 8** export markers as geojson file
 - **key #** offline mode - download map tiles
