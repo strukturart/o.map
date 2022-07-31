@@ -173,12 +173,12 @@ const helper = (() => {
   };
 
   //delete file
-  let renameFile = function (filename) {
+  let renameFile = function (filename, new_filename) {
     let sdcard = navigator.getDeviceStorage("sdcard");
     let request = sdcard.get(filename);
+    // let new_filename = prompt("new filename");
 
     request.onsuccess = function () {
-      let new_filename = prompt("new filename");
       let data = this.result;
 
       let file_extension = data.name.split(".");
@@ -218,6 +218,22 @@ const helper = (() => {
     };
   };
 
+  let addFile = function (filename, data) {
+    var sdcard = navigator.getDeviceStorage("sdcard");
+
+    var request = sdcard.addNamed(data, filename);
+
+    request.onsuccess = function () {
+      var name = this.result;
+      toaster("downloaded", 2000);
+    };
+
+    // An error typically occur if a file with the same name already exist
+    request.onerror = function () {
+      alert("Unable to write the file: " + this.error);
+    };
+  };
+
   return {
     getManifest,
     toaster,
@@ -228,6 +244,7 @@ const helper = (() => {
     geoip,
     side_toaster,
     renameFile,
+    addFile,
   };
 })();
 

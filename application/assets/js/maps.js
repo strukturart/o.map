@@ -147,7 +147,14 @@ const maps = (() => {
       }
     }
 
-    console.log("useOnlyCache " + useOnlyCache);
+    localStorage.setItem("last_map_type", type);
+    general.last_map_type = type;
+
+    localStorage.setItem("last_map_max_zoom", max_zoom);
+    general.last_map_max_zoom = max_zoom;
+
+    localStorage.setItem("last_map_attribution", attribution);
+    general.last_map_attribution = attribution;
 
     //map
     if (type == "map") {
@@ -222,7 +229,6 @@ const maps = (() => {
     if (type == "overpass") {
       if (overpass_query == url) {
         overpass.call(map, url, "climbing_icon");
-        console.log("layer exist");
         general.active_layer.splice(general.active_layer.indexOf(url), 1);
         return false;
       }

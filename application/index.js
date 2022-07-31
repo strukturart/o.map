@@ -1,15 +1,18 @@
 "use strict";
 
 let save_mode = "";
-let markers_group = new L.FeatureGroup();
-let overpass_group = new L.FeatureGroup();
+
 let contained = []; //markers in viewport
 let overpass_query = ""; //to toggle overpass layer
 
+//groups
+let markers_group = new L.FeatureGroup();
+let overpass_group = new L.FeatureGroup();
 let measure_group_path = new L.FeatureGroup();
 let measure_group = new L.FeatureGroup();
 let tracking_group = new L.FeatureGroup();
 let gpx_group = new L.FeatureGroup();
+
 let tracking_timestamp = [];
 let myMarker;
 let gpx_selection_info = {};
@@ -104,10 +107,6 @@ let general = {
       : "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
 };
 
-setting.measurement == true
-  ? (general.measurement_unit = "km")
-  : (general.measurement_unit = "mil");
-
 let status = {
   geolocation: false,
   tracking_running: false,
@@ -117,15 +116,7 @@ let status = {
   path_selection: false,
   windowOpen: "map",
   sub_status: "",
-  crash:
-    localStorage.getItem("crash") != null
-      ? JSON.parse(localStorage.getItem("crash"))
-      : false,
 };
-
-if (status.crash) {
-  helper.toaster("the app has probably experienced a crash", 2000);
-}
 
 if (!navigator.geolocation) {
   helper.toaster("Your device does't support geolocation!", 2000);
@@ -530,7 +521,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   };
 
-  let osm_server_load_gpx = function (id) {
+  let osm_server_load_gpx = function (id, download) {
     let n = "Bearer " + localStorage.getItem("openstreetmap_token");
 
     const myHeaders = new Headers({
@@ -552,6 +543,11 @@ document.addEventListener("DOMContentLoaded", function () {
             map.fitBounds(e.target.getBounds());
           })
           .addTo(gpx_group);
+
+        //download file
+        if (download) {
+          helper.addFile("test.gpx", data);
+        }
 
         document.querySelector("div#finder").style.display = "none";
         status.windowOpen = "map";
@@ -822,6 +818,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function getLocation(option) {
     if (option == "init") {
       helper.toaster("try to determine your position", 3000);
+      document.querySelector("#cross").classList.add("unavailable");
       myMarker = L.marker([0, 0]).addTo(markers_group);
       myMarker.setIcon(maps.default_icon);
       map.setView([mainmarker.device_lat, mainmarker.device_lng], 12);
@@ -838,6 +835,8 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     function success(pos) {
+      document.querySelector("#cross").classList.remove("unavailable");
+
       helper.side_toaster("Position  found", 2000);
       status.geolocation = true;
       let crd = pos.coords;
@@ -909,6 +908,8 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("try");
     state_geoloc = true;
     function showLocation(position) {
+      document.querySelector("#cross").classList.remove("unavailable");
+
       let crd = position.coords;
 
       //store device location
@@ -1026,6 +1027,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function errorHandler(err) {
       console.log(err.code);
+      document.querySelector("#cross").classList.add("unavailable");
+
       if (err.code == 1) {
         helper.toaster("Error: Access is denied!", 2000);
       }
@@ -1115,11 +1118,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (item_value == "rename-file") {
         document.querySelector("div#files-option").style.display = "none";
-        helper.renameFile(general.active_item.getAttribute("data-filepath"));
+        status.windowOpen = "user-input";
+        save_mode = "rename-file";
+        let string =
+          "if you want the file to be loaded automatically when you start the app, start the file name with the _ character";
+        //remove
+        let n = general.active_item.getAttribute("data-filename").split(".");
+        module.user_input("open", n[0], string);
+        bottom_bar("cancel", "rename", "");
+      }
 
-        setTimeout(function () {
-          open_finder();
-        }, 1500);
+      if (item_value == "download-file") {
+        osm_server_load_gpx(
+          document.activeElement.getAttribute("data-id"),
+          true
+        );
       }
 
       if (item_value == "upload-file-to-osm") {
@@ -1274,7 +1287,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         //add gpx data from osm
         if (item_value == "gpx-osm") {
-          osm_server_load_gpx(document.activeElement.getAttribute("data-id"));
+          osm_server_load_gpx(
+            document.activeElement.getAttribute("data-id"),
+            false
+          );
         }
       }
     }
@@ -1638,7 +1654,6 @@ document.addEventListener("DOMContentLoaded", function () {
       case "Backspace":
         window.close();
         if (status.windowOpen == "map") {
-          status.crash = false;
           localStorage.setItem("crash", "false");
           window.goodbye();
         }
@@ -1706,6 +1721,13 @@ document.addEventListener("DOMContentLoaded", function () {
       case "SoftLeft":
       case "Control":
         console.log(status.windowOpen);
+
+        if (status.windowOpen == "user-input" && save_mode == "rename-file") {
+          module.user_input("close");
+          status.windowOpen = "finder";
+          save_mode = "";
+          break;
+        }
         if (status.windowOpen == "user-input") {
           module.user_input("close");
           save_mode = "";
@@ -1837,7 +1859,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (status.windowOpen == "finder") {
           if (
             document.activeElement.getAttribute("data-map") == "gpx" ||
-            document.activeElement.getAttribute("data-map") == "geojson"
+            document.activeElement.getAttribute("data-map") == "geojson" ||
+            document.activeElement.getAttribute("data-map") == "gpx-osm"
           ) {
             show_files_option();
           }
@@ -1854,6 +1877,16 @@ document.addEventListener("DOMContentLoaded", function () {
           module.user_input("close");
           module.measure_distance("destroy_tracking");
 
+          save_mode = "";
+          break;
+        }
+
+        if (status.windowOpen == "user-input" && save_mode == "rename-file") {
+          helper.renameFile(
+            general.active_item.getAttribute("data-filepath"),
+            module.user_input("return")
+          );
+          status.windowOpen = "finder";
           save_mode = "";
           break;
         }

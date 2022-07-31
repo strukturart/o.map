@@ -22,6 +22,14 @@ const settings = ((_) => {
     localStorage.setItem("osm-tag", document.getElementById("osm-tag").value);
 
     helper.side_toaster("saved successfully", 2000);
+    maps.addMap(
+      localStorage.getItem("last_map"),
+      localStorage.getItem("last_map_attribution"),
+      localStorage.getItem("last_map_max_zoom"),
+      localStorage.getItem("last_map_type")
+    );
+
+    load_settings();
   };
 
   let save_chk = function (id, localstorage_name) {
@@ -81,6 +89,11 @@ const settings = ((_) => {
     setting.crosshair
       ? (document.getElementById("cross").style.visibility = "visible")
       : (document.getElementById("cross").style.visibility = "hidden");
+
+    setting.measurement == true
+      ? (general.measurement_unit = "km")
+      : (general.measurement_unit = "mil");
+
     ///show / hidde scale
 
     if (setting.scale) {

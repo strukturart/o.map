@@ -357,21 +357,29 @@ USER INPUT////////////////*/
 
 div#user-input {
   position: fixed;
-  height: 80px;
-  bottom: -80px;
+
   background: gray;
   color: white;
-  z-index: 5;
+  z-index: 50000000;
   padding: 5px;
+  bottom: -1000px;
 }
 
 div#user-input input {
   margin: 5px 0 5px 0;
   padding: 3px;
-  height: 20px;
+  height: 22px;
   width: 90%;
   font-size: 1.1rem;
   background: white !important;
+  position: relative;
+}
+
+div#user-input-description {
+  position: relative;
+  color: white;
+  margin: 10px 0 10px 0;
+  min-width: 11%;
 }
 
 /*///////////////////////////
@@ -445,6 +453,15 @@ div#cross div:nth-child(4) {
   outline: 2px solid white;
   transform: rotate(90deg);
 }
+
+div.unavailable div:nth-child(4) {
+  outline: 2px solid yellow !important;
+}
+
+div.unavailable div:nth-child(3) {
+  outline: 2px solid yellow !important;
+}
+
 /*
  top bar
  */
