@@ -521,7 +521,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   };
 
-  let osm_server_load_gpx = function (id, download) {
+  let osm_server_load_gpx = function (id, filename, download) {
     let n = "Bearer " + localStorage.getItem("openstreetmap_token");
 
     const myHeaders = new Headers({
@@ -536,21 +536,22 @@ document.addEventListener("DOMContentLoaded", function () {
       .then((response) => response.text())
       .then((data) => {
         var gpx = data;
-        new L.GPX(gpx, {
-          async: true,
-        })
-          .on("loaded", function (e) {
-            map.fitBounds(e.target.getBounds());
-          })
-          .addTo(gpx_group);
 
         //download file
-        if (download) {
-          helper.addFile("test.gpx", data);
-        }
+        if (download == true) {
+          helper.downloadFile(filename, data, callback_download);
+        } else {
+          new L.GPX(gpx, {
+            async: true,
+          })
+            .on("loaded", function (e) {
+              map.fitBounds(e.target.getBounds());
+            })
+            .addTo(gpx_group);
 
-        document.querySelector("div#finder").style.display = "none";
-        status.windowOpen = "map";
+          document.querySelector("div#finder").style.display = "none";
+          status.windowOpen = "map";
+        }
       })
 
       .catch((error) => {
@@ -613,6 +614,21 @@ document.addEventListener("DOMContentLoaded", function () {
     osm_server_list_gpx();
     document.getElementById("osm-server-gpx-title").style.display = "block";
   }
+
+  let callback_download = function (filename, filepath) {
+    helper.side_toaster("downloaded successfully", 2000);
+
+    document.querySelector("div#gpx").nextSibling.innerHTML =
+      "<div class='item' data-map='gpx' data-filename='" +
+      filename +
+      "' data-filepath='" +
+      filepath +
+      "'>" +
+      filename +
+      "</div>";
+
+    console.log(filename, filepath);
+  };
 
   /////openweather callback
   ////build elements in weather panel
@@ -1130,14 +1146,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (item_value == "download-file") {
         osm_server_load_gpx(
-          document.activeElement.getAttribute("data-id"),
+          general.active_item.getAttribute("data-id"),
+          general.active_item.innerText,
           true
         );
+        document.querySelector("div#files-option").style.display = "none";
+        open_finder();
+        general.active_item.focus();
       }
 
       if (item_value == "upload-file-to-osm") {
         document.querySelector("div#files-option").style.display = "none";
-        helper.side_toaster("try uploading track", 2000);
+        helper.side_toaster("try uploading file", 2000);
         module.loadGPX_data(
           general.active_item.innerText,
           osm_server_upload_gpx
@@ -1289,6 +1309,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (item_value == "gpx-osm") {
           osm_server_load_gpx(
             document.activeElement.getAttribute("data-id"),
+            "",
             false
           );
         }
@@ -1307,6 +1328,33 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelector("div#files-option div.item:first-child").focus();
     bottom_bar("", "select", "");
     tabIndex = 0;
+
+    if (general.active_item.getAttribute("data-map") == "gpx") {
+      document
+        .querySelectorAll("div.only-gpx-local")
+        .forEach(function (e, index) {
+          e.style.display = "block";
+          e.tabIndex = index;
+        });
+    }
+
+    if (general.active_item.getAttribute("data-map") == "geojson") {
+      document
+        .querySelectorAll("div.only-gpx-local")
+        .forEach(function (e, index) {
+          e.style.display = "block";
+          e.tabIndex = index;
+        });
+    }
+
+    if (general.active_item.getAttribute("data-map") == "gpx-osm") {
+      document
+        .querySelectorAll("div.only-gpx-local")
+        .forEach(function (e, index) {
+          e.style.display = "none";
+          e.tabIndex = index;
+        });
+    }
   };
 
   /////////////////////

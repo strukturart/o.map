@@ -218,19 +218,17 @@ const helper = (() => {
     };
   };
 
-  let addFile = function (filename, data) {
+  let downloadFile = function (filename, data, callback) {
     var sdcard = navigator.getDeviceStorage("sdcard");
+    var filedata = new Blob([data]);
 
-    var request = sdcard.addNamed(data, filename);
-
+    var request = sdcard.addNamed(filedata, filename);
     request.onsuccess = function () {
-      var name = this.result;
-      toaster("downloaded", 2000);
+      callback(filename, request.result);
     };
 
-    // An error typically occur if a file with the same name already exist
     request.onerror = function () {
-      alert("Unable to write the file: " + this.error);
+      side_toaster("Unable to download the file", 2000);
     };
   };
 
@@ -244,7 +242,7 @@ const helper = (() => {
     geoip,
     side_toaster,
     renameFile,
-    addFile,
+    downloadFile,
   };
 })();
 
