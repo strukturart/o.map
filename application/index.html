@@ -116,7 +116,7 @@
       </div>
     </div>
 
-    <div id="markers-option" class="width-100 height-100">
+    <div id="markers-option" class="width-100">
       <div class="item" data-action="save_marker" tabindex="0">save marker</div>
       <div class="item" data-action="set_target_marker" tabindex="1">
         set marker as target
@@ -124,8 +124,18 @@
       <div class="item" data-action="remove_marker" tabindex="2">
         remove marker
       </div>
-      <div class="item" data-action="set_startup_marker" tabindex="3">
-        set as startup marker
+
+      <h2>Routing</h2>
+      <div class="item" data-action="set_marker_route_start" tabindex="3">
+        set as start point
+      </div>
+
+      <div class="item" data-action="set_marker_route_end" tabindex="3">
+        set as end point
+      </div>
+
+      <div class="item" data-action="start-routing" tabindex="3">
+        start routing
       </div>
 
       <label for="popup">Popup</label>
@@ -136,18 +146,16 @@
     </div>
 
     <div id="files-option" class="width-100 height-100">
-      <div class="item" data-action="upload-file-to-osm" tabindex="0">
+      <div class="item" data-action="upload-file-to-osm">
         upload gpx file to osm
       </div>
-      <div class="item only-gpx-local" data-action="delete-file" tabindex="1">
+      <div class="item only-gpx-local" data-action="delete-file">
         delete file
       </div>
-      <div class="item only-gpx-local" data-action="rename-file" tabindex="2">
+      <div class="item only-gpx-local" data-action="rename-file">
         rename file
       </div>
-      <div class="item" data-action="download-file" tabindex="3">
-        download file
-      </div>
+      <div class="item" data-action="download-file">download file</div>
     </div>
 
     <!--
@@ -199,6 +207,21 @@
         <div class="item input-parent" tabindex="0">
           <label for="owm-key">Openweathermap API-Key</label>
           <input type="text" class="qr" id="owm-key" />
+        </div>
+
+        <h2>Routing Service</h2>
+        <div class="item input-parent" tabindex="0">
+          <label for="ors-key">openrouteservice.org API-Key</label>
+          <input type="text" class="qr" id="ors-key" />
+        </div>
+
+        <div class="item input-parent" tabindex="0">
+          <label for="cars">Routing profile</label>
+          <select name="routing-profil" id="routing-profil">
+            <option value="cycling-road">cycling</option>
+            <option value="foot-hiking">hiking</option>
+            <option value="driving-car">car</option>
+          </select>
         </div>
 
         <h2>IP Geolocation</h2>
@@ -442,6 +465,22 @@
         <section>
           <strong><u>Time</u></strong>
           <div id="gpx-time">duration <span></span></div>
+        </section>
+      </div>
+
+      <div class="panel" id="routing" name="Routing">
+        <section>
+          <strong><u>Distance</u></strong>
+          <div id="routing-distance"></div>
+        </section>
+        <section>
+          <strong><u>Evolution</u></strong>
+          <div id="routing-evo-up">⬆<span></span></div>
+          <div id="routing-evo-down">⬇<span></span></div>
+        </section>
+        <section>
+          <strong><u>Duration</u></strong>
+          <div id="routing-duration">duration <span></span></div>
         </section>
       </div>
 
@@ -695,6 +734,7 @@
     <script defer src="assets/js/mustache.js"></script>
     <script defer src="assets/js/L.TileLayer.PouchDBCached.js"></script>
     <script defer src="assets/js/gpx.js"></script>
+    <script defer src="assets/js/route-service.js"></script>
 
     <script defer src="index.js"></script>
     <script defer src="assets/js/overpass.js"></script>

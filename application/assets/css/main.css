@@ -787,16 +787,12 @@ div#files-option {
   display: none;
 }
 
-div#files-option ul {
-  padding: 5px;
-  display: block;
-}
-
 div#files-option div {
   color: white;
   margin: 0 0 10px 0;
   padding: 5px;
   background: gray;
+  display: block;
 }
 
 div#files-option div:focus {

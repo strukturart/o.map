@@ -7,6 +7,13 @@ const settings = ((_) => {
     );
 
     localStorage.setItem(
+      "routing_profil",
+      document.getElementById("routing-profil").value
+    );
+
+    localStorage.setItem("ors-key", document.getElementById("ors-key").value);
+
+    localStorage.setItem(
       "cache-time",
       document.getElementById("cache-time").value
     );
@@ -50,13 +57,55 @@ const settings = ((_) => {
   };
 
   let load_settings = function () {
-    document.getElementById("owm-key").value = setting.openweather_api;
-    document.getElementById("ipbase-key").value = setting.ipbase_api;
+    setting = {
+      export_path:
+        localStorage.getItem("export-path") != null
+          ? localStorage.getItem("export-path")
+          : "",
+      osm_tag: localStorage.getItem("osm-tag"),
 
-    document.getElementById("cache-time").value = setting.cache_time;
-    document.getElementById("cache-zoom").value = setting.cache_zoom;
-    document.getElementById("export-path").value = setting.export_path;
-    document.getElementById("osm-tag").value = setting.osm_tag;
+      cache_time: localStorage["cache-time"] || "10",
+      cache_zoom: localStorage["cache-zoom"] || "12",
+      openweather_api: localStorage.getItem("owm-key"),
+      ipbase_api: localStorage.getItem("ipbase-key"),
+      ors_api: localStorage.getItem("ors-key"),
+      routing_profil: localStorage.getItem("routing_profil")
+        ? localStorage.getItem("routing_profil")
+        : "foot-hiking",
+
+      useOnlyCache:
+        localStorage.getItem("useOnlyCache") != null
+          ? JSON.parse(localStorage.getItem("useOnlyCache"))
+          : true,
+
+      crosshair:
+        localStorage.getItem("crosshair") != null
+          ? JSON.parse(localStorage.getItem("crosshair"))
+          : true,
+      scale:
+        localStorage.getItem("scale") != null
+          ? JSON.parse(localStorage.getItem("scale"))
+          : true,
+      tracking_screenlock:
+        localStorage.getItem("tracking_screenlock") != null
+          ? JSON.parse(localStorage.getItem("tracking_screenlock"))
+          : true,
+
+      measurement:
+        localStorage.getItem("measurement") != null
+          ? JSON.parse(localStorage.getItem("measurement"))
+          : true,
+
+      wikipedia_view:
+        localStorage.getItem("wikipedia_view") != null
+          ? JSON.parse(localStorage.getItem("wikipedia_view"))
+          : true,
+
+      tips_view:
+        localStorage.getItem("tips_view") != null
+          ? JSON.parse(localStorage.getItem("tips_view"))
+          : true,
+    };
 
     setting.tracking_screenlock
       ? (document.getElementById("screenlock-ckb").checked = true)
@@ -95,12 +144,7 @@ const settings = ((_) => {
       : (general.measurement_unit = "mil");
 
     ///show / hidde scale
-
-    if (setting.scale) {
-      scale.addTo(map);
-    } else {
-      scale.remove();
-    }
+    setting.scale ? scale.addTo(map) : scale.remove();
 
     if (setting.measurement) {
       document.querySelector("label[for='measurement-ckb']").innerText =
@@ -109,6 +153,18 @@ const settings = ((_) => {
       document.querySelector("label[for='measurement-ckb']").innerText =
         "imperial";
     }
+
+    //set values in setting page
+
+    document.getElementById("owm-key").value = setting.openweather_api;
+    document.getElementById("ipbase-key").value = setting.ipbase_api;
+    document.getElementById("ors-key").value = setting.ors_api;
+    document.getElementById("routing-profil").value = setting.routing_profil;
+
+    document.getElementById("cache-time").value = setting.cache_time;
+    document.getElementById("cache-zoom").value = setting.cache_zoom;
+    document.getElementById("export-path").value = setting.export_path;
+    document.getElementById("osm-tag").value = setting.osm_tag;
   };
 
   let load_settings_from_file = function () {

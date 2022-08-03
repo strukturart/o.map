@@ -185,108 +185,96 @@ const module = (() => {
   //select marker
   ////////////////////
   // Flag to keep track of the need
-  // of generating the new marker lis
+  // of generating the new marker list
   var f_upd_markers_list = true;
   let set_f_upd_markers = function () {
     f_upd_markers_list = true;
   };
 
-  contained = []; //makers in map boundingbox
+  let markers_collection = []; //makers in map boundingbox
   let l = [];
   let index = -1;
   let select_marker = function () {
     if (f_upd_markers_list) {
       // Reset contained list
-      contained = [];
+      markers_collection = [];
 
       //merge markers in viewport
       if (overpass_group != "") {
         overpass_group.eachLayer(function (l) {
-          if (l instanceof L.Marker && map.getBounds().contains(l.getLatLng()))
-            contained.push(l);
+          markers_collection.push(l);
+          if (
+            l instanceof L.Marker &&
+            map.getBounds().contains(l.getLatLng())
+          ) {
+          }
+          //markers_collection.push(l);
         });
       }
 
       markers_group.eachLayer(function (l) {
-        if (l instanceof L.Marker && map.getBounds().contains(l.getLatLng()))
-          contained.push(l);
+        markers_collection.push(l);
+        if (l instanceof L.Marker && map.getBounds().contains(l.getLatLng())) {
+        }
+        // markers_collection.push(l);
       });
 
       // Clear flag
       f_upd_markers_list = false;
     }
 
-    l = contained;
+    //l = contained;
 
     status.marker_selection = true;
     status.windowOpen = "marker";
 
     index++;
 
-    if (index >= l.length) index = 0;
+    if (index >= markers_collection.length) index = 0;
     bottom_bar("cancel", "option", "");
 
     //reset icons and close popus
-    for (let t = 0; t < l.length; t++) {
-      let p = l[t].getIcon();
+    for (let t = 0; t < markers_collection.length; t++) {
+      let p = markers_collection[t].getIcon();
 
       if (
         p.options.className != "follow-marker" &&
         p.options.className != "goal-marker"
       ) {
-        //l[t].setIcon(maps.default_icon);
+        markers_collection[t].setIcon(maps.default_icon);
       }
-
-      setTimeout(function () {
-        l[index].closePopup();
-      }, 3000);
+      markers_collection[index].closePopup();
     }
-    let p = l[index].getIcon();
+
+    //show selected marker
+    let p = markers_collection[index].getIcon();
     if (
       p.options.className != "follow-marker" &&
       p.options.className != "goal-marker"
     ) {
-      //l[index].setIcon(maps.select_icon);
+      markers_collection[index].setIcon(maps.select_icon);
     }
 
     //popup
     document.querySelector("textarea#popup").value = "";
-    let pu = l[index].getPopup();
+    let pu = markers_collection[index].getPopup();
 
     if (pu != undefined && pu._content != undefined) {
       //get popup content
       document.querySelector("textarea#popup").value = pu._content;
       //show popup
-      l[index].bindPopup(pu._content, popup_option).openPopup();
+      markers_collection[index]
+        .bindPopup(pu._content, popup_option)
+        .openPopup();
       //close popup
       setTimeout(function () {
-        l[index].closePopup();
+        markers_collection[index].closePopup();
       }, 3000);
     }
 
-    //check if marker set as startup marker
+    map.setView(markers_collection[index]._latlng, map.getZoom());
 
-    for (let i = 0; i < mainmarker.startup_markers.length; i++) {
-      if (
-        l[index]._latlng.lng == mainmarker.startup_markers[i].latlng.lng &&
-        l[index]._latlng.lat == mainmarker.startup_markers[i].latlng.lat
-      ) {
-        mainmarker.startup_marker_toggle = true;
-        document.querySelector(
-          "div#markers-option div[data-action='set_startup_marker']"
-        ).innerText = "unset startup marker";
-        i = mainmarker.startup_markers.length;
-      } else {
-        document.querySelector(
-          "div#markers-option div[data-action='set_startup_marker']"
-        ).innerText = "set startup marker";
-        mainmarker.startup_marker_toggle = false;
-      }
-    }
-
-    map.setView(l[index]._latlng, map.getZoom());
-
-    return l[index];
+    return markers_collection[index];
   };
 
   //SELECT GPX

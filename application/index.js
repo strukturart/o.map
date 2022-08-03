@@ -12,12 +12,19 @@ let measure_group_path = new L.FeatureGroup();
 let measure_group = new L.FeatureGroup();
 let tracking_group = new L.FeatureGroup();
 let gpx_group = new L.FeatureGroup();
+let ors_group = new L.FeatureGroup();
 
 let tracking_timestamp = [];
 let myMarker;
 let gpx_selection_info = {};
 let tilesLayer = "";
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+let routing = {
+  start: "",
+  end: "",
+  data: "",
+};
 
 let mainmarker = {
   target_marker: "",
@@ -45,51 +52,7 @@ let mainmarker = {
       : [0, 0],
 };
 
-let setting = {
-  export_path:
-    localStorage.getItem("export-path") != null
-      ? localStorage.getItem("export-path")
-      : "",
-  osm_tag: localStorage.getItem("osm-tag"),
-
-  cache_time: localStorage["cache-time"] || "10",
-  cache_zoom: localStorage["cache-zoom"] || "12",
-  openweather_api: localStorage.getItem("owm-key"),
-  ipbase_api: localStorage.getItem("ipbase-key"),
-
-  useOnlyCache:
-    localStorage.getItem("useOnlyCache") != null
-      ? JSON.parse(localStorage.getItem("useOnlyCache"))
-      : true,
-
-  crosshair:
-    localStorage.getItem("crosshair") != null
-      ? JSON.parse(localStorage.getItem("crosshair"))
-      : true,
-  scale:
-    localStorage.getItem("scale") != null
-      ? JSON.parse(localStorage.getItem("scale"))
-      : true,
-  tracking_screenlock:
-    localStorage.getItem("tracking_screenlock") != null
-      ? JSON.parse(localStorage.getItem("tracking_screenlock"))
-      : true,
-
-  measurement:
-    localStorage.getItem("measurement") != null
-      ? JSON.parse(localStorage.getItem("measurement"))
-      : true,
-
-  wikipedia_view:
-    localStorage.getItem("wikipedia_view") != null
-      ? JSON.parse(localStorage.getItem("wikipedia_view"))
-      : true,
-
-  tips_view:
-    localStorage.getItem("tips_view") != null
-      ? JSON.parse(localStorage.getItem("tips_view"))
-      : true,
-};
+let setting = {};
 
 let general = {
   osm_token:
@@ -145,6 +108,41 @@ map.on("load", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
+  var myLayer = L.geoJSON("", { color: "red" }).addTo(map);
+
+  let routing_service_callback = function (e) {
+    routing.data = e;
+    //clean layer
+    myLayer.clearLayers();
+    myLayer.addData(e);
+    //fly to start point
+    L.geoJSON(e, {
+      onEachFeature: function (feature, layer) {
+        if (feature.geometry != "") {
+          //fly to start
+          let p = feature.geometry.coordinates[0];
+          console.log("yeah" + feature.properties.summary.distance);
+          document.getElementById("routing-distance").innerText =
+            feature.properties.summary.distance;
+
+          document.getElementById("routing-duration").innerText =
+            feature.properties.summary.duration;
+
+          p.reverse();
+          map.flyTo(p);
+        }
+      },
+    });
+
+    //store data
+    routing.data = e;
+    helper.side_toaster(
+      "the track has been loaded, to see information about it open the menu with enter",
+      2000
+    );
+    console.log(routing);
+  };
+
   //load KaiOs ads or not
   let load_ads = function () {
     var js = document.createElement("script");
@@ -236,6 +234,7 @@ document.addEventListener("DOMContentLoaded", function () {
   map.addLayer(measure_group_path);
   map.addLayer(tracking_group);
   map.addLayer(gpx_group);
+  map.addLayer(ors_group);
 
   //build menu
   let build_menu = function () {
@@ -614,20 +613,24 @@ document.addEventListener("DOMContentLoaded", function () {
     osm_server_list_gpx();
     document.getElementById("osm-server-gpx-title").style.display = "block";
   }
-
+  //callback download file
   let callback_download = function (filename, filepath) {
     helper.side_toaster("downloaded successfully", 2000);
 
-    document.querySelector("div#gpx").nextSibling.innerHTML =
-      "<div class='item' data-map='gpx' data-filename='" +
-      filename +
-      "' data-filepath='" +
-      filepath +
-      "'>" +
-      filename +
-      "</div>";
+    document
+      .querySelector("div#gpx")
+      .nextSibling.insertAdjacentHTML(
+        "afterend",
+        "<div class='item' data-map='gpx' data-filename='" +
+          filename +
+          "' data-filepath='" +
+          filepath +
+          "'>" +
+          filename +
+          "</div>"
+      );
 
-    console.log(filename, filepath);
+    finder_tabindex();
   };
 
   /////openweather callback
@@ -990,7 +993,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (crd.speed != undefined || crd.speed != null) {
         mainmarker.device_speed = crd.speed;
 
-        if (setting.measurement_unit == "km") {
+        if (general.measurement_unit == "km") {
           let n = crd.speed * 3.6;
           n = n.toFixed(2);
 
@@ -999,7 +1002,7 @@ document.addEventListener("DOMContentLoaded", function () {
           ).innerText = n + " km/h";
         }
 
-        if (setting.measurement_unit == "mil") {
+        if (general.measurement_unit == "mil") {
           let n = crd.speed * 2.236936;
           n = n.toFixed(2);
 
@@ -1105,6 +1108,45 @@ document.addEventListener("DOMContentLoaded", function () {
         module.startup_marker(mainmarker.selected_marker, "set");
         status.windowOpen = "map";
         bottom_bar("", "", "");
+      }
+
+      if (item_value == "set_marker_route_start") {
+        rs.addPoint("start", "add", mainmarker.selected_marker._latlng);
+        document.querySelector("div#markers-option").style.display = "none";
+
+        status.windowOpen = "map";
+        bottom_bar("", "", "");
+        setTimeout(function () {
+          if (routing.start != "" && routing.end != "") {
+            status.routing = true;
+            rs.request(
+              routing.start,
+              routing.end,
+              setting.ors_api,
+              setting.routing_profil,
+              routing_service_callback
+            );
+          }
+        }, 1000);
+      }
+      if (item_value == "set_marker_route_end") {
+        rs.addPoint("end", "add", mainmarker.selected_marker._latlng);
+        document.querySelector("div#markers-option").style.display = "none";
+
+        status.windowOpen = "map";
+        bottom_bar("", "", "");
+        setTimeout(function () {
+          if (routing.start != "" && routing.end != "") {
+            status.routing = true;
+            rs.request(
+              routing.start,
+              routing.end,
+              setting.ors_api,
+              setting.routing_profil,
+              routing_service_callback
+            );
+          }
+        }, 1000);
       }
 
       if (item_value == "remove_marker") {
@@ -1329,12 +1371,17 @@ document.addEventListener("DOMContentLoaded", function () {
     bottom_bar("", "select", "");
     tabIndex = 0;
 
+    document
+      .querySelectorAll("div#files-option div")
+      .forEach(function (e, index) {
+        e.style.display = "block";
+      });
+
     if (general.active_item.getAttribute("data-map") == "gpx") {
       document
         .querySelectorAll("div.only-gpx-local")
         .forEach(function (e, index) {
           e.style.display = "block";
-          e.tabIndex = index;
         });
     }
 
@@ -1343,7 +1390,6 @@ document.addEventListener("DOMContentLoaded", function () {
         .querySelectorAll("div.only-gpx-local")
         .forEach(function (e, index) {
           e.style.display = "block";
-          e.tabIndex = index;
         });
     }
 
@@ -1352,9 +1398,28 @@ document.addEventListener("DOMContentLoaded", function () {
         .querySelectorAll("div.only-gpx-local")
         .forEach(function (e, index) {
           e.style.display = "none";
-          e.tabIndex = index;
         });
     }
+
+    document.querySelectorAll("#files-option div").forEach(function (e) {
+      e.classList.add("item");
+    });
+
+    let p = 0;
+    document.querySelectorAll("#files-option div.item").forEach(function (e) {
+      e.classList.add("item");
+
+      if (e.style.display == "block") {
+        e.classList.add("item");
+        e.setAttribute("tabindex", p++);
+
+        console.log(e);
+      } else {
+        e.classList.remove("item");
+      }
+    });
+
+    document.querySelector("#files-option div.item[tabindex='0']").focus();
   };
 
   /////////////////////
@@ -1953,7 +2018,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (document.activeElement.classList.contains("input-parent")) {
-          document.activeElement.children[0].focus();
+          document.activeElement.children[1].focus();
           if (document.activeElement.type == "checkbox") {
             settings.save_chk(
               document.activeElement.id,
