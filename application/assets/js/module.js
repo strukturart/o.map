@@ -117,7 +117,7 @@ const module = (() => {
   /////////////////////////
   /////Load GeoJSON///////////
   ///////////////////////
-  let loadGeoJSON = function (filename) {
+  let loadGeoJSON = function (filename, callback) {
     let finder = new Applait.Finder({
       type: "sdcard",
       debugMode: false,
@@ -150,8 +150,11 @@ const module = (() => {
           onEachFeature: function (feature, layer) {
             if (feature.geometry != "") {
               let p = feature.geometry.coordinates[0];
-              p.reverse();
-              map.flyTo(p);
+              map.flyTo([p[1], p[0]]);
+            }
+            //routing data
+            if (feature.properties.segments[0].steps) {
+              callback(geojson_data, true);
             }
           },
           // Marker Icon
@@ -171,7 +174,8 @@ const module = (() => {
           },
 
           // Popup
-        }).addTo(map);
+        }).addTo(geoJSON_group);
+
         document.querySelector("div#finder").style.display = "none";
 
         status.windowOpen = "map";
@@ -239,7 +243,9 @@ const module = (() => {
 
       if (
         p.options.className != "follow-marker" &&
-        p.options.className != "goal-marker"
+        p.options.className != "goal-marker" &&
+        p.options.className != "start-marker" &&
+        p.options.className != "end-marker"
       ) {
         markers_collection[t].setIcon(maps.default_icon);
       }
@@ -247,10 +253,13 @@ const module = (() => {
     }
 
     //show selected marker
+
     let p = markers_collection[index].getIcon();
     if (
       p.options.className != "follow-marker" &&
-      p.options.className != "goal-marker"
+      p.options.className != "goal-marker" &&
+      p.options.className != "start-marker" &&
+      p.options.className != "end-marker"
     ) {
       markers_collection[index].setIcon(maps.select_icon);
     }
@@ -273,15 +282,16 @@ const module = (() => {
     }
 
     map.setView(markers_collection[index]._latlng, map.getZoom());
-
+    status.selected_marker = markers_collection[index];
     return markers_collection[index];
   };
 
   //SELECT GPX
 
   let gpx_selection_count = 0;
+  let gpx_selection = [];
   let select_gpx = function () {
-    let gpx_selection = [];
+    gpx_selection = [];
 
     gpx_selection_count++;
 
@@ -328,6 +338,43 @@ const module = (() => {
     n = n.toFixed(2);
     document.getElementById("gpx-distance").innerText = n;
   };
+  let closest_average = [];
+  //closest point in route/track
+  let get_closest_point = function (route) {
+    let latlng = [mainmarker.device_lat, mainmarker.device_lng];
+
+    if (latlng == "") return false;
+    let k = L.GeometryUtil.closest(map, route, latlng, true);
+    console.log(latlng);
+    console.log(route);
+    console.log(k);
+    //notification
+
+    closest_average.push(k.distance);
+
+    let result = 0;
+    let sum = 0;
+    if (closest_average.length > 48) {
+      closest_average.forEach(function (e) {
+        sum = sum + e;
+      });
+
+      if (closest_average.length > 50) {
+        closest_average.length = 0;
+        sum = 0;
+        result = 0;
+      }
+
+      result = sum / 40;
+      if (setting.routing_notification == false) return false;
+      if (result > 20) {
+        navigator.vibrate([1000, 500, 1000]);
+        console.log("to far");
+      } else {
+        console.log("okay");
+      }
+    }
+  };
 
   let format_ms = function (millisec) {
     var seconds = (millisec / 1000).toFixed(0);
@@ -350,6 +397,8 @@ const module = (() => {
 
   //calc distance between markers
   let calc_distance = function (from_lat, from_lng, to_lat, to_lng, unit) {
+    if (to_lat == undefined || to_lng == undefined) return false;
+
     let d = map.distance([from_lat, from_lng], [to_lat, to_lng]);
     if (unit == "mil") {
       d = d * 3.28084;
@@ -733,7 +782,33 @@ const module = (() => {
     }
   };
 
+  //when the default value is always meter
+  //setting.measurement == true = metric
+  let convert_units = function (unit, value) {
+    //metric
+    let a;
+    if (unit == "kilometer" && setting.measurement == true) {
+      a = value / 1000;
+    }
+
+    if (unit == "meter" && setting.measurement == true) {
+      a = value;
+    }
+
+    //imperial
+
+    if (unit == "meter" && setting.measurement == false) {
+      value * 3.280839895;
+    }
+
+    if (unit == "kilometer" && setting.measurement == false) {
+      value * 0.6213711922;
+    }
+    return a;
+  };
+
   return {
+    convert_units,
     set_f_upd_markers,
     select_marker,
     select_gpx,
@@ -748,5 +823,7 @@ const module = (() => {
     sunrise,
     loadGPX_data,
     user_input,
+    format_ms,
+    get_closest_point,
   };
 })();

@@ -4,6 +4,7 @@ const rs = ((_) => {
       mozSystem: true,
       "Content-Type": "application/json",
     });
+
     xhr.open(
       "GET",
       "https://api.openrouteservice.org/v2/directions/" +
@@ -24,14 +25,13 @@ const rs = ((_) => {
 
     xhr.onload = function () {
       if (xhr.status == 200) {
-        callback(JSON.parse(xhr.responseText));
+        callback(JSON.parse(xhr.responseText), false);
       }
       if (xhr.status == 403) {
         console.log("access forbidden");
       }
       // analyze HTTP status of the response
       if (xhr.status != 200) {
-        console.log(xhr.status);
         helper.side_toaster("the route could not be loaded.", 2000);
       }
     };
@@ -46,15 +46,37 @@ const rs = ((_) => {
     if (action == "add") {
       if (type == "start") {
         routing.start = latlng.lng + "," + latlng.lat;
+        status.selected_marker.setIcon(maps.start_icon);
+        routing.start_marker_id = status.selected_marker._leaflet_id;
       }
 
       if (type == "end") {
         routing.end = latlng.lng + "," + latlng.lat;
+        status.selected_marker.setIcon(maps.end_icon);
+        routing.end_marker_id = status.selected_marker._leaflet_id;
       }
+    }
+    markers_group.eachLayer(function (e) {
+      e.setIcon(maps.default_icon);
+      if (e._leaflet_id == routing.start_marker_id) {
+        e.setIcon(maps.start_icon);
+      }
+      if (e._leaflet_id == routing.end_marker_id) {
+        e.setIcon(maps.end_icon);
+      }
+    });
+  };
+
+  let instructions = function () {
+    if (routing.active == false) {
+      return false;
+    } else {
+      module.get_closest_point(routing.coordinates);
     }
   };
 
   return {
+    instructions,
     request,
     addPoint,
   };

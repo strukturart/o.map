@@ -66,7 +66,7 @@
         autofocus
         tabindex="0"
       />
-      <div id="result-container">
+      <div id="result-container" class="menu-box">
         <ul></ul>
       </div>
       <div id="search-info">
@@ -116,7 +116,7 @@
       </div>
     </div>
 
-    <div id="markers-option" class="width-100">
+    <div id="markers-option" class="width-100 menu-box">
       <div class="item" data-action="save_marker" tabindex="0">save marker</div>
       <div class="item" data-action="set_target_marker" tabindex="1">
         set marker as target
@@ -134,10 +134,6 @@
         set as end point
       </div>
 
-      <div class="item" data-action="start-routing" tabindex="3">
-        start routing
-      </div>
-
       <label for="popup">Popup</label>
       <div class="item input-parent" tabindex="4">
         <textarea rows="4" id="popup"></textarea>
@@ -145,7 +141,7 @@
       </div>
     </div>
 
-    <div id="files-option" class="width-100 height-100">
+    <div id="files-option" class="width-100 height-100 menu-box">
       <div class="item" data-action="upload-file-to-osm">
         upload gpx file to osm
       </div>
@@ -182,7 +178,7 @@
 -->
 
     <div id="finder" class="flex width-100 height-100">
-      <div class="panel" id="mapstracks" name="Imagery">
+      <div class="panel menu-box" id="mapstracks" name="Imagery">
         <h2>MAPS</h2>
         <div id="maps"></div>
 
@@ -191,7 +187,9 @@
 
         <h2>OVERPASS</h2>
         <div id="overpass"></div>
+      </div>
 
+      <div class="panel menu-box" id="files" name="Files">
         <h2 id="tracks-title">TRACKS & Markers</h2>
         <div id="tracksmarkers"></div>
 
@@ -202,7 +200,7 @@
         <div id="osm-server-gpx"></div>
       </div>
 
-      <div class="panel" id="settings" name="Settings">
+      <div class="panel menu-box" id="settings" name="Settings">
         <h2>Openweathermap</h2>
         <div class="item input-parent" tabindex="0">
           <label for="owm-key">Openweathermap API-Key</label>
@@ -215,13 +213,28 @@
           <input type="text" class="qr" id="ors-key" />
         </div>
 
-        <div class="item input-parent" tabindex="0">
+        <div class="item input-parent width-100" tabindex="0">
           <label for="cars">Routing profile</label>
-          <select name="routing-profil" id="routing-profil">
+          <select name="routing-profil" class="select-box" id="routing-profil">
             <option value="cycling-road">cycling</option>
             <option value="foot-hiking">hiking</option>
             <option value="driving-car">car</option>
           </select>
+        </div>
+
+        <div class="item input-parent flex" tabindex="0">
+          <label for="routing-notification-ckb" class="grid-col-14"
+            >receive a vibration notification when you leave the routing
+            path</label
+          >
+          <input
+            class="checkboxes grid-col-2"
+            type="checkbox"
+            id="routing-notification-ckb"
+            value="routing_notification"
+          />
+          <div class="ckb-icon"></div>
+          <div class="toogle-button"></div>
         </div>
 
         <h2>IP Geolocation</h2>
@@ -377,7 +390,7 @@
         </button>
       </div>
 
-      <div class="panel" name="Device position" id="coordinations">
+      <div class="panel menu-box" name="Device position" id="coordinations">
         <section id="device-position">
           <div class="lat">Lat <span></span></div>
           <div class="lng">Lng <span></span></div>
@@ -405,7 +418,7 @@
         </section>
       </div>
 
-      <div class="panel" name="Map center" id="mapcenter">
+      <div class="panel menu-box" name="Map center" id="mapcenter">
         <section id="mapcenter-position">
           <div class="lat">Lat <span></span></div>
           <div class="lng">Lng <span></span></div>
@@ -428,7 +441,7 @@
         </section>
       </div>
 
-      <div class="panel" id="tracking" name="Tracking">
+      <div class="panel menu-box" id="tracking" name="Tracking">
         <section>
           <strong><u>Distance</u></strong>
           <div id="tracking-distance"></div>
@@ -449,7 +462,7 @@
         </section>
       </div>
 
-      <div class="panel" id="gpx-file-info" name="GPX File-Info">
+      <div class="panel menu-box" id="gpx-file-info" name="GPX File-Info">
         <section>
           <div id="gpx-name"></div>
         </section>
@@ -467,24 +480,35 @@
           <div id="gpx-time">duration <span></span></div>
         </section>
       </div>
+      <!--ROUTING-->
+      <div class="panel menu-box" id="routing" name="Routing">
+        <strong><u>Distance</u></strong>
+        <div id="routing-distance"></div>
 
-      <div class="panel" id="routing" name="Routing">
-        <section>
-          <strong><u>Distance</u></strong>
-          <div id="routing-distance"></div>
-        </section>
-        <section>
-          <strong><u>Evolution</u></strong>
-          <div id="routing-evo-up">⬆<span></span></div>
-          <div id="routing-evo-down">⬇<span></span></div>
-        </section>
-        <section>
-          <strong><u>Duration</u></strong>
-          <div id="routing-duration">duration <span></span></div>
-        </section>
+        <strong><u>Duration</u></strong>
+        <div id="routing-duration"><span></span></div>
+
+        <strong><u>Start</u></strong>
+        <div id="routing-start-point"></div>
+
+        <strong><u>End</u></strong>
+        <div id="routing-end-point"></div>
+
+        <button class="item" tabindex="0" data-map="saverouting">
+          save route
+        </button>
+        <button class="item" tabindex="1" data-map="startrouting">start</button>
+
+        <div id="routing-container"></div>
+
+        <script id="template-routing" type="x-tmpl-mustache">
+          {{#data}}
+            <article class="item" tabindex={{index}} > {{ instruction }}</article>
+          {{/data}}
+        </script>
       </div>
-
-      <div class="panel" id="weather" name="Weather">
+      <!--WEATHER-->
+      <div class="panel menu-box" id="weather" name="Weather">
         <section id="forecast-hourly">
           <strong><u>forecast coming hour</u></strong>
           <div class="flex">
@@ -524,9 +548,9 @@
         </section>
       </div>
 
-      <div class="panel" id="wikilocation" name="Wikilocation"></div>
+      <div class="panel menu-box" id="wikilocation" name="Wikilocation"></div>
 
-      <div class="panel" id="shortcuts" name="Shortcuts">
+      <div class="panel menu-box" id="shortcuts" name="Shortcuts">
         <div
           class="item start-stop-tracking"
           autofocus
@@ -630,7 +654,7 @@
         </div>
       </div>
 
-      <div class="panel item" id="tips" name="Tips">
+      <div class="panel item menu-box" id="tips" name="Tips">
         <h2>umap.openstreetmap.fr support</h2>
         <p>
           To plan a tour I use the great umap.openstreetmap.fr tool. you can
@@ -661,7 +685,7 @@
         </p>
       </div>
 
-      <div class="panel item" id="imprint" name="Imprint">
+      <div class="panel item menu-box" id="imprint" name="Imprint">
         <div>
           Various software and map data are used in this app, please note the
           licenses.
@@ -719,7 +743,7 @@
         </div>
       </div>
 
-      <div class="panel item" id="kaios-ads" name="KaiOsAds"></div>
+      <div class="panel item menu-box" id="kaios-ads" name="KaiOsAds"></div>
     </div>
 
     <script defer src="assets/js/suncalc.js"></script>
@@ -730,6 +754,8 @@
     <script defer src="assets/js/applait.finder.min.js"></script>
     <script defer src="assets/js/olc.js"></script>
     <script defer src="assets/js/leaflet.js"></script>
+    <script defer src="assets/js/GeometryUtil.js"></script>
+
     <script defer src="assets/js/pouchdb-7.2.1.min.js"></script>
     <script defer src="assets/js/mustache.js"></script>
     <script defer src="assets/js/L.TileLayer.PouchDBCached.js"></script>
@@ -739,6 +765,8 @@
     <script defer src="index.js"></script>
     <script defer src="assets/js/overpass.js"></script>
 
+    <script defer src="assets/js/module.js"></script>
+
     <script defer src="assets/js/search.js"></script>
     <script defer src="assets/js/maps.js"></script>
     <script defer src="assets/js/helper.js"></script>
@@ -746,6 +774,5 @@
     <script defer src="assets/js/mozactivity.js"></script>
     <script defer src="assets/js/openweather.js"></script>
     <script defer src="assets/js/togpx.js"></script>
-    <script defer src="assets/js/module.js"></script>
   </body>
 </html>

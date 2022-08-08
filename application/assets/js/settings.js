@@ -52,7 +52,7 @@ const settings = ((_) => {
 
     //change label text
     let d = document.querySelector("label[for='measurement-ckb']");
-    setting.measurement ? (d.innerText = "kilometer") : (d.innerText = "miles");
+    setting.measurement ? (d.innerText = "metric") : (d.innerText = "imperial");
     document.getElementById(id).parentElement.focus();
   };
 
@@ -86,6 +86,11 @@ const settings = ((_) => {
         localStorage.getItem("scale") != null
           ? JSON.parse(localStorage.getItem("scale"))
           : true,
+
+      routing_notification:
+        localStorage.getItem("routing_notification") != null
+          ? JSON.parse(localStorage.getItem("routing_notification"))
+          : true,
       tracking_screenlock:
         localStorage.getItem("tracking_screenlock") != null
           ? JSON.parse(localStorage.getItem("tracking_screenlock"))
@@ -113,6 +118,10 @@ const settings = ((_) => {
     setting.crosshair
       ? (document.getElementById("crosshair-ckb").checked = true)
       : (document.getElementById("crosshair-ckb").checked = false);
+
+    setting.routing_notification
+      ? (document.getElementById("routing-notification-ckb").checked = true)
+      : (document.getElementById("routing-notification-ckb").checked = false);
 
     setting.useOnlyCache
       ? (document.getElementById("useOnlyCache-ckb").checked = true)
@@ -143,9 +152,6 @@ const settings = ((_) => {
       ? (general.measurement_unit = "km")
       : (general.measurement_unit = "mil");
 
-    ///show / hidde scale
-    setting.scale ? scale.addTo(map) : scale.remove();
-
     if (setting.measurement) {
       document.querySelector("label[for='measurement-ckb']").innerText =
         "metric";
@@ -165,6 +171,26 @@ const settings = ((_) => {
     document.getElementById("cache-zoom").value = setting.cache_zoom;
     document.getElementById("export-path").value = setting.export_path;
     document.getElementById("osm-tag").value = setting.osm_tag;
+
+    ///show / hidde scale
+
+    if (scale != undefined) scale.remove();
+
+    if (setting.measurement) {
+      scale = L.control.scale({
+        position: "topright",
+        metric: true,
+        imperial: false,
+      });
+    } else {
+      scale = L.control.scale({
+        position: "topright",
+        metric: false,
+        imperial: true,
+      });
+    }
+
+    setting.scale ? scale.addTo(map) : scale.remove();
   };
 
   let load_settings_from_file = function () {

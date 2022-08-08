@@ -51,6 +51,20 @@ const maps = (() => {
     html: '<div></div><div class="water"></div>',
   });
 
+  const start_icon = L.icon({
+    iconUrl: "assets/css/images/start.png",
+    iconSize: [35, 40],
+    iconAnchor: [15, 40],
+    className: "start-marker",
+  });
+
+  const end_icon = L.icon({
+    iconUrl: "assets/css/images/end.png",
+    iconSize: [35, 40],
+    iconAnchor: [15, 40],
+    className: "end-marker",
+  });
+
   //caching settings from settings panel
   let caching_time;
 
@@ -464,6 +478,8 @@ const maps = (() => {
     water_icon,
     select_icon,
     tracking_icon,
+    start_icon,
+    end_icon,
     weather_map,
     caching_tiles,
     delete_cache,
