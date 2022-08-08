@@ -695,6 +695,10 @@ div#finder div#question {
   opacity: 0;
 }
 
+#routing-container {
+  display: block;
+}
+
 div.panel {
   display: none;
   margin: 30px 0px 0px 0px;

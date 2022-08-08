@@ -1,6 +1,7 @@
 "use strict";
 
 let save_mode = "";
+let scale;
 
 let contained = []; //markers in viewport
 let overpass_query = ""; //to toggle overpass layer
@@ -12,18 +13,21 @@ let measure_group_path = new L.FeatureGroup();
 let measure_group = new L.FeatureGroup();
 let tracking_group = new L.FeatureGroup();
 let gpx_group = new L.FeatureGroup();
-let ors_group = new L.FeatureGroup();
-
+var jsonLayer = L.geoJSON("", { color: "red" });
+let map;
 let tracking_timestamp = [];
 let myMarker;
 let gpx_selection_info = {};
 let tilesLayer = "";
+
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 let routing = {
   start: "",
   end: "",
   data: "",
+  active: false,
+  closest: "",
 };
 
 let mainmarker = {
@@ -79,6 +83,7 @@ let status = {
   path_selection: false,
   windowOpen: "map",
   sub_status: "",
+  selected_marker: "",
 };
 
 if (!navigator.geolocation) {
@@ -86,16 +91,10 @@ if (!navigator.geolocation) {
 }
 
 //leaflet add basic map
-let map = L.map("map-container", {
+map = L.map("map-container", {
   zoomControl: false,
   dragging: false,
   keyboard: true,
-});
-
-let scale = L.control.scale({
-  position: "topright",
-  metric: setting.measurement,
-  imperial: setting.measurement ? false : true,
 });
 
 map.on("load", function () {
@@ -105,42 +104,81 @@ map.on("load", function () {
     18,
     "map"
   );
+
+  settings.load_settings();
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-  var myLayer = L.geoJSON("", { color: "red" }).addTo(map);
+  //build html routing instructions
+  function routing_instructions(datalist) {
+    var template = document.getElementById("template-routing").innerHTML;
+    var rendered = Mustache.render(template, { data: datalist });
+    document.getElementById("routing-container").innerHTML = rendered;
+  }
 
-  let routing_service_callback = function (e) {
+  let routing_service_callback = function (e, file_loaded) {
     routing.data = e;
     //clean layer
-    myLayer.clearLayers();
-    myLayer.addData(e);
+    jsonLayer.clearLayers();
+    jsonLayer.addData(e);
+    let i;
+    let instructions = [];
+    let p;
+
     //fly to start point
-    L.geoJSON(e, {
-      onEachFeature: function (feature, layer) {
+    let m = L.geoJSON(e, {
+      onEachFeature: function (feature) {
         if (feature.geometry != "") {
           //fly to start
-          let p = feature.geometry.coordinates[0];
-          console.log("yeah" + feature.properties.summary.distance);
+          p = feature.geometry.coordinates[0];
+          routing.coordinates = feature.geometry.coordinates;
+
           document.getElementById("routing-distance").innerText =
-            feature.properties.summary.distance;
+            feature.properties.summary.distance / 1000;
 
           document.getElementById("routing-duration").innerText =
-            feature.properties.summary.duration;
+            module.format_ms(feature.properties.summary.duration);
 
-          p.reverse();
-          map.flyTo(p);
+          i = feature.properties.segments[0].steps;
+          //if the file is a routing file
+          if (file_loaded) {
+            let m = feature.geometry.coordinates[0];
+            let mm =
+              feature.geometry.coordinates[
+                feature.geometry.coordinates.length - 1
+              ];
+
+            routing.start = [m[1], m[0]];
+            routing.end = [mm[1], mm[0]];
+            //add marker
+            let s = L.marker(routing.start).addTo(markers_group);
+            let f = L.marker(routing.end).addTo(markers_group);
+            //set routing object
+            routing.start_marker_id = s._leaflet_id;
+            routing.end_marker_id = f._leaflet_id;
+
+            s.setIcon(maps.start_icon);
+            f.setIcon(maps.end_icon);
+          }
         }
       },
     });
 
+    i.forEach(function (value, index) {
+      instructions.push({
+        instruction: value.instruction,
+        index: index + 2,
+      });
+    });
+
+    routing_instructions(instructions);
+    routing.active = true;
+
     //store data
-    routing.data = e;
     helper.side_toaster(
       "the track has been loaded, to see information about it open the menu with enter",
-      2000
+      10000
     );
-    console.log(routing);
   };
 
   //load KaiOs ads or not
@@ -184,9 +222,6 @@ document.addEventListener("DOMContentLoaded", function () {
     document.head.appendChild(js);
   };
 
-  //load settings
-  settings.load_settings();
-
   let manifest = function (a) {
     document.getElementById("intro-footer").innerText =
       "O.MAP Version " + a.manifest.version;
@@ -211,7 +246,6 @@ document.addEventListener("DOMContentLoaded", function () {
     mainmarker.device_lat = data[0];
     mainmarker.device_lng = data[1];
     myMarker.setLatLng([mainmarker.device_lat, mainmarker.device_lng]).update();
-    console.log(data[0] + "/" + data[1]);
     setTimeout(function () {
       map.setView([mainmarker.device_lat, mainmarker.device_lng], 12);
     }, 1000);
@@ -234,7 +268,7 @@ document.addEventListener("DOMContentLoaded", function () {
   map.addLayer(measure_group_path);
   map.addLayer(tracking_group);
   map.addLayer(gpx_group);
-  map.addLayer(ors_group);
+  jsonLayer.addTo(map);
 
   //build menu
   let build_menu = function () {
@@ -697,7 +731,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (mainmarker.target_marker != undefined) {
       //target marker
-      console.log(general.measurement_unit);
       let calc3 = module.calc_distance(
         mainmarker.current_lat,
         mainmarker.current_lng,
@@ -919,17 +952,22 @@ document.addEventListener("DOMContentLoaded", function () {
   ///////////
   //watch position
   //////////
+
   let watchID;
   let state_geoloc = false;
   let geoLoc = navigator.geolocation;
 
   function geolocationWatch() {
-    console.log("try");
     state_geoloc = true;
     function showLocation(position) {
       document.querySelector("#cross").classList.remove("unavailable");
 
       let crd = position.coords;
+      let nn = crd.latitude + "," + crd.longitude;
+
+      if (crd != null || crd != "") {
+        rs.instructions();
+      }
 
       //store device location
       mainmarker.device_lat = crd.latitude;
@@ -1291,6 +1329,14 @@ document.addEventListener("DOMContentLoaded", function () {
           }, 1000);
         }
 
+        if (item_value == "saverouting") {
+          save_mode = "routing";
+          module.user_input("open", "", "save route as geoJSON file");
+          setTimeout(function () {
+            bottom_bar("cancel", "", "save");
+          }, 1000);
+        }
+
         if (item_value == "export") {
           document.querySelector("div#finder").style.display = "none";
           save_mode = "geojson-collection";
@@ -1344,7 +1390,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         //add geoJson data
         if (item_value == "geojson") {
-          module.loadGeoJSON(document.activeElement.innerText);
+          module.loadGeoJSON(
+            document.activeElement.innerText,
+            routing_service_callback
+          );
         }
 
         //add gpx data from osm
@@ -1601,8 +1650,13 @@ document.addEventListener("DOMContentLoaded", function () {
     if (finder_panels[count].id == "tracking") {
       bottom_bar("", "", "");
     }
-  };
 
+    if (finder_panels[count].id == "routing") {
+      document.querySelectorAll(".item")[0].focus();
+      bottom_bar("", "", "");
+    }
+  };
+  let focus_history = [];
   function nav(move) {
     if (
       document.activeElement.nodeName == "SELECT" ||
@@ -1621,20 +1675,12 @@ document.addEventListener("DOMContentLoaded", function () {
       ) {
         document.activeElement.parentNode.focus();
       }
+      status.activeElement = document.activeElement;
+      //get items from current
 
-      //get items from current pannel
-
-      let b;
-      let items_list = [];
-
-      b = document.activeElement.parentNode;
-      let items = b.querySelectorAll(".item");
-
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].parentNode.style.display == "block") {
-          items_list.push(items[i]);
-        }
-      }
+      focus_history.push(document.activeElement);
+      let b = document.activeElement.closest("div.menu-box");
+      let items_list = b.querySelectorAll(".item");
 
       if (move == "+1") {
         if (tabIndex < items_list.length - 1) {
@@ -1710,13 +1756,17 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
+  document.querySelectorAll(".select-box").forEach(function (e) {
+    e.addEventListener("keypress", function (n) {
+      setTimeout(function () {
+        e.parentElement.focus();
+      }, 200);
+    });
+  });
+
   const checkbox = document.getElementById("measurement-ckb");
 
   checkbox.addEventListener("change", function () {});
-
-  let scan_callback = function (e) {
-    console.log("result" + e);
-  };
 
   //////////////////////////////
   ////KEYPAD HANDLER////////////
@@ -1947,6 +1997,15 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
+        if (status.windowOpen == "user-input" && save_mode == "routing") {
+          geojson.save_geojson(
+            module.user_input("return") + ".geojson",
+            "routing"
+          );
+          save_mode = "";
+          break;
+        }
+
         if (
           status.windowOpen == "user-input" &&
           save_mode == "geojson-tracking"
@@ -1991,6 +2050,10 @@ document.addEventListener("DOMContentLoaded", function () {
           module.measure_distance("destroy_tracking");
 
           save_mode = "";
+          break;
+        }
+
+        if (status.windowOpen == "user-input" && save_mode == "routing") {
           break;
         }
 

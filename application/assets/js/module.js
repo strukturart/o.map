@@ -117,7 +117,7 @@ const module = (() => {
   /////////////////////////
   /////Load GeoJSON///////////
   ///////////////////////
-  let loadGeoJSON = function (filename) {
+  let loadGeoJSON = function (filename, callback) {
     let finder = new Applait.Finder({
       type: "sdcard",
       debugMode: false,
@@ -150,8 +150,11 @@ const module = (() => {
           onEachFeature: function (feature, layer) {
             if (feature.geometry != "") {
               let p = feature.geometry.coordinates[0];
-              p.reverse();
-              map.flyTo(p);
+              map.flyTo([p[1], p[0]]);
+            }
+            //routing data
+            if (feature.properties.segments[0].steps) {
+              callback(geojson_data, true);
             }
           },
           // Marker Icon
@@ -239,7 +242,9 @@ const module = (() => {
 
       if (
         p.options.className != "follow-marker" &&
-        p.options.className != "goal-marker"
+        p.options.className != "goal-marker" &&
+        p.options.className != "start-marker" &&
+        p.options.className != "end-marker"
       ) {
         markers_collection[t].setIcon(maps.default_icon);
       }
@@ -247,10 +252,13 @@ const module = (() => {
     }
 
     //show selected marker
+
     let p = markers_collection[index].getIcon();
     if (
       p.options.className != "follow-marker" &&
-      p.options.className != "goal-marker"
+      p.options.className != "goal-marker" &&
+      p.options.className != "start-marker" &&
+      p.options.className != "end-marker"
     ) {
       markers_collection[index].setIcon(maps.select_icon);
     }
@@ -273,7 +281,7 @@ const module = (() => {
     }
 
     map.setView(markers_collection[index]._latlng, map.getZoom());
-
+    status.selected_marker = markers_collection[index];
     return markers_collection[index];
   };
 
@@ -748,5 +756,6 @@ const module = (() => {
     sunrise,
     loadGPX_data,
     user_input,
+    format_ms,
   };
 })();
