@@ -51,6 +51,20 @@ const maps = (() => {
     html: '<div></div><div class="water"></div>',
   });
 
+  const start_icon = L.icon({
+    iconUrl: "assets/css/images/start.png",
+    iconSize: [35, 40],
+    iconAnchor: [15, 40],
+    className: "start-marker",
+  });
+
+  const end_icon = L.icon({
+    iconUrl: "assets/css/images/end.png",
+    iconSize: [35, 40],
+    iconAnchor: [15, 40],
+    className: "end-marker",
+  });
+
   //caching settings from settings panel
   let caching_time;
 
@@ -138,8 +152,25 @@ const maps = (() => {
   let overlayer = "";
 
   let addMap = function (url, attribution, max_zoom, type) {
+    let useOnlyCache = false;
+    if (localStorage.getItem("useOnlyCache") != null) {
+      if (localStorage.getItem("useOnlyCache") == "true") {
+        useOnlyCache = true;
+      } else {
+        useOnlyCache = false;
+      }
+    }
+
+    localStorage.setItem("last_map_type", type);
+    general.last_map_type = type;
+
+    localStorage.setItem("last_map_max_zoom", max_zoom);
+    general.last_map_max_zoom = max_zoom;
+
+    localStorage.setItem("last_map_attribution", attribution);
+    general.last_map_attribution = attribution;
+
     //map
-    console.log(type);
     if (type == "map") {
       if (map.hasLayer(tilesLayer)) {
         map.removeLayer(tilesLayer);
@@ -150,7 +181,7 @@ const maps = (() => {
         saveToCache: true,
         crossOrigin: true,
         cacheMaxAge: caching_time,
-        useOnlyCache: false,
+        useOnlyCache: useOnlyCache,
         maxZoom: max_zoom,
         attribution: attribution,
         format: "image/png",
@@ -212,7 +243,6 @@ const maps = (() => {
     if (type == "overpass") {
       if (overpass_query == url) {
         overpass.call(map, url, "climbing_icon");
-        console.log("layer exist");
         general.active_layer.splice(general.active_layer.indexOf(url), 1);
         return false;
       }
@@ -448,6 +478,8 @@ const maps = (() => {
     water_icon,
     select_icon,
     tracking_icon,
+    start_icon,
+    end_icon,
     weather_map,
     caching_tiles,
     delete_cache,

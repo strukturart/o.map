@@ -2,6 +2,18 @@ const settings = ((_) => {
   let save_settings = function () {
     localStorage.setItem("owm-key", document.getElementById("owm-key").value);
     localStorage.setItem(
+      "ipbase-key",
+      document.getElementById("ipbase-key").value
+    );
+
+    localStorage.setItem(
+      "routing_profil",
+      document.getElementById("routing-profil").value
+    );
+
+    localStorage.setItem("ors-key", document.getElementById("ors-key").value);
+
+    localStorage.setItem(
       "cache-time",
       document.getElementById("cache-time").value
     );
@@ -16,12 +28,19 @@ const settings = ((_) => {
 
     localStorage.setItem("osm-tag", document.getElementById("osm-tag").value);
 
-    helper.toaster("saved successfully", 2000);
+    helper.side_toaster("saved successfully", 2000);
+    maps.addMap(
+      localStorage.getItem("last_map"),
+      localStorage.getItem("last_map_attribution"),
+      localStorage.getItem("last_map_max_zoom"),
+      localStorage.getItem("last_map_type")
+    );
+
+    load_settings();
   };
 
   let save_chk = function (id, localstorage_name) {
-    let p = document.getElementById(id, localstorage_name);
-
+    let p = document.getElementById(id);
     p.checked = !p.checked;
     if (p.checked) {
       localStorage.setItem(localstorage_name, "true");
@@ -33,16 +52,65 @@ const settings = ((_) => {
 
     //change label text
     let d = document.querySelector("label[for='measurement-ckb']");
-    setting.measurement ? (d.innerText = "kilometer") : (d.innerText = "miles");
+    setting.measurement ? (d.innerText = "metric") : (d.innerText = "imperial");
     document.getElementById(id).parentElement.focus();
   };
 
   let load_settings = function () {
-    document.getElementById("owm-key").value = setting.openweather_api;
-    document.getElementById("cache-time").value = setting.cache_time;
-    document.getElementById("cache-zoom").value = setting.cache_zoom;
-    document.getElementById("export-path").value = setting.export_path;
-    document.getElementById("osm-tag").value = setting.osm_tag;
+    setting = {
+      export_path:
+        localStorage.getItem("export-path") != null
+          ? localStorage.getItem("export-path")
+          : "",
+      osm_tag: localStorage.getItem("osm-tag"),
+
+      cache_time: localStorage["cache-time"] || "10",
+      cache_zoom: localStorage["cache-zoom"] || "12",
+      openweather_api: localStorage.getItem("owm-key"),
+      ipbase_api: localStorage.getItem("ipbase-key"),
+      ors_api: localStorage.getItem("ors-key"),
+      routing_profil: localStorage.getItem("routing_profil")
+        ? localStorage.getItem("routing_profil")
+        : "foot-hiking",
+
+      useOnlyCache:
+        localStorage.getItem("useOnlyCache") != null
+          ? JSON.parse(localStorage.getItem("useOnlyCache"))
+          : true,
+
+      crosshair:
+        localStorage.getItem("crosshair") != null
+          ? JSON.parse(localStorage.getItem("crosshair"))
+          : true,
+      scale:
+        localStorage.getItem("scale") != null
+          ? JSON.parse(localStorage.getItem("scale"))
+          : true,
+
+      routing_notification:
+        localStorage.getItem("routing_notification") != null
+          ? JSON.parse(localStorage.getItem("routing_notification"))
+          : true,
+      tracking_screenlock:
+        localStorage.getItem("tracking_screenlock") != null
+          ? JSON.parse(localStorage.getItem("tracking_screenlock"))
+          : true,
+
+      measurement:
+        localStorage.getItem("measurement") != null
+          ? JSON.parse(localStorage.getItem("measurement"))
+          : true,
+
+      wikipedia_view:
+        localStorage.getItem("wikipedia_view") != null
+          ? JSON.parse(localStorage.getItem("wikipedia_view"))
+          : true,
+
+      tips_view:
+        localStorage.getItem("tips_view") != null
+          ? JSON.parse(localStorage.getItem("tips_view"))
+          : true,
+    };
 
     setting.tracking_screenlock
       ? (document.getElementById("screenlock-ckb").checked = true)
@@ -50,6 +118,14 @@ const settings = ((_) => {
     setting.crosshair
       ? (document.getElementById("crosshair-ckb").checked = true)
       : (document.getElementById("crosshair-ckb").checked = false);
+
+    setting.routing_notification
+      ? (document.getElementById("routing-notification-ckb").checked = true)
+      : (document.getElementById("routing-notification-ckb").checked = false);
+
+    setting.useOnlyCache
+      ? (document.getElementById("useOnlyCache-ckb").checked = true)
+      : (document.getElementById("useOnlyCache-ckb").checked = false);
 
     setting.scale
       ? (document.getElementById("scale-ckb").checked = true)
@@ -59,17 +135,22 @@ const settings = ((_) => {
       ? (document.getElementById("measurement-ckb").checked = true)
       : (document.getElementById("measurement-ckb").checked = false);
 
+    setting.tips_view
+      ? (document.getElementById("tips-ckb").checked = true)
+      : (document.getElementById("tips-ckb").checked = false);
+
+    setting.wikipedia_view
+      ? (document.getElementById("wikipedia-ckb").checked = true)
+      : (document.getElementById("wikipedia-ckb").checked = false);
+
     //show / hidde crosshair
     setting.crosshair
       ? (document.getElementById("cross").style.visibility = "visible")
       : (document.getElementById("cross").style.visibility = "hidden");
-    ///show / hidde scale
 
-    if (setting.scale) {
-      scale.addTo(map);
-    } else {
-      scale.remove();
-    }
+    setting.measurement == true
+      ? (general.measurement_unit = "km")
+      : (general.measurement_unit = "mil");
 
     if (setting.measurement) {
       document.querySelector("label[for='measurement-ckb']").innerText =
@@ -78,6 +159,38 @@ const settings = ((_) => {
       document.querySelector("label[for='measurement-ckb']").innerText =
         "imperial";
     }
+
+    //set values in setting page
+
+    document.getElementById("owm-key").value = setting.openweather_api;
+    document.getElementById("ipbase-key").value = setting.ipbase_api;
+    document.getElementById("ors-key").value = setting.ors_api;
+    document.getElementById("routing-profil").value = setting.routing_profil;
+
+    document.getElementById("cache-time").value = setting.cache_time;
+    document.getElementById("cache-zoom").value = setting.cache_zoom;
+    document.getElementById("export-path").value = setting.export_path;
+    document.getElementById("osm-tag").value = setting.osm_tag;
+
+    ///show / hidde scale
+
+    if (scale != undefined) scale.remove();
+
+    if (setting.measurement) {
+      scale = L.control.scale({
+        position: "topright",
+        metric: true,
+        imperial: false,
+      });
+    } else {
+      scale = L.control.scale({
+        position: "topright",
+        metric: false,
+        imperial: true,
+      });
+    }
+
+    setting.scale ? scale.addTo(map) : scale.remove();
   };
 
   let load_settings_from_file = function () {

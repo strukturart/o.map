@@ -36,6 +36,11 @@ const geojson = ((_) => {
       extData = JSON.stringify(e);
     }
 
+    if (type == "routing") {
+      let e = routing.data;
+      extData = JSON.stringify(e);
+    }
+
     if (type == "collection") {
       let collection = markers_group.toGeoJSON();
       let bounds = map.getBounds();

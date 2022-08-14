@@ -103,29 +103,24 @@ const helper = (() => {
   };
 
   //get location by ip
-  let geoip = function (callback) {
-    const url =
-      "https://api.ipbase.com/v2/info?apikey=2a0f8c30-844a-11ec-b0fe-af6fd1eb1209";
-
+  let geoip = function (callback, key) {
+    const url = "https://api.ipbase.com/v2/info?apikey=" + key;
     let xhr = new XMLHttpRequest();
-
     xhr.open("GET", url);
-
     xhr.responseType = "json";
-
     xhr.send();
-
     xhr.error = function (err) {
-      toaster(err, 2000);
+      console.log(err);
     };
 
     xhr.onload = function () {
       let responseObj = xhr.response;
+      console.log(responseObj);
+      toaster(xhr.response.message, 5000);
       let latlng = [
         responseObj.data.location.latitude,
         responseObj.data.location.longitude,
       ];
-      console.log(JSON.stringify(latlng));
       callback(latlng);
     };
   };
@@ -166,13 +161,74 @@ const helper = (() => {
     let requestDel = sdcard.delete(filename);
 
     requestDel.onsuccess = function () {
-      console.log("success");
       helper.side_toaster("File successfully deleted", 2000);
+
+      document.querySelector("[data-filepath='" + filename + "']").remove();
     };
 
     requestDel.onerror = function () {
       console.log("error");
       helper.toaster("Unable to delete the file: " + this.error);
+    };
+  };
+
+  //delete file
+  let renameFile = function (filename, new_filename) {
+    let sdcard = navigator.getDeviceStorage("sdcard");
+    let request = sdcard.get(filename);
+    // let new_filename = prompt("new filename");
+
+    request.onsuccess = function () {
+      let data = this.result;
+
+      let file_extension = data.name.split(".");
+      file_extension = file_extension[file_extension.length - 1];
+
+      let filepath = data.name.split("/").slice(0, -1).join("/") + "/";
+
+      let requestAdd = sdcard.addNamed(
+        data,
+        filepath + new_filename + "." + file_extension
+      );
+      requestAdd.onsuccess = function () {
+        var request_del = sdcard.delete(data.name);
+
+        request_del.onsuccess = function () {
+          // success copy and delete
+
+          document.querySelector(
+            "[data-filepath='" + filename + "']"
+          ).innerText = new_filename + "." + file_extension;
+
+          side_toaster("successfully renamed", 3000);
+        };
+
+        request_del.onerror = function () {
+          // success copy not delete
+          toaster("Unable to write the file", 3000);
+        };
+      };
+      requestAdd.onerror = function () {
+        toaster("Unable to write the file", 3000);
+      };
+    };
+
+    request.onerror = function () {
+      toaster("Unable to write the file", 3000);
+    };
+  };
+
+  let downloadFile = function (filename, data, callback) {
+    var sdcard = navigator.getDeviceStorage("sdcard");
+    var filedata = new Blob([data]);
+
+    var request = sdcard.addNamed(filedata, filename);
+    request.onsuccess = function () {
+      callback(filename, request.result);
+    };
+
+    request.onerror = function () {
+      side_toaster("Unable to download the file", 2000);
     };
   };
 
@@ -185,6 +241,8 @@ const helper = (() => {
     isOnline,
     geoip,
     side_toaster,
+    renameFile,
+    downloadFile,
   };
 })();
 
@@ -216,32 +274,6 @@ function notify(param_title, param_text, param_silent) {
         var notification = new Notification(param_title, options);
       }
     });
-  }
-}
-
-function user_input(param, file_name, label) {
-  if (param == "open") {
-    document.getElementById("user-input-description").innerText = label;
-
-    document.querySelector("div#user-input").style.bottom = "25px";
-    document.querySelector("div#user-input input").focus();
-    document.querySelector("div#user-input input").value = file_name;
-    status.windowOpen = "user-input";
-  }
-  if (param == "close") {
-    document.querySelector("div#user-input").style.bottom = "-1000px";
-    document.querySelector("div#user-input input").blur();
-    status.windowOpen = "map";
-    bottom_bar("", "", "");
-  }
-
-  if (param == "return") {
-    let input_value = document.querySelector("div#user-input input").value;
-    document.querySelector("div#user-input").style.bottom = "-1000px";
-    document.querySelector("div#user-input input").blur();
-    bottom_bar("", "", "");
-
-    return input_value;
   }
 }
 
