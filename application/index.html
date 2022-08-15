@@ -442,26 +442,33 @@
       </div>
 
       <div class="panel menu-box" id="tracking" name="Tracking">
-        <section>
+        <section class="item">
           <strong><u>Distance</u></strong>
           <div id="tracking-distance"></div>
         </section>
-        <section>
+
+        <section class="item">
           <strong><u>Evolution</u></strong>
           <div id="tracking-evo-up">⬆<span></span></div>
           <div id="tracking-evo-down">⬇<span></span></div>
         </section>
-        <section>
-          <strong><u>Time</u></strong>
-          <div id="tracking-moving-time">duration <span></span></div>
+
+        <section class="item">
+          <strong><u>Duration</u></strong>
+          <div id="tracking-moving-time"><span></span></div>
         </section>
 
-        <section>
+        <section class="item">
+          <strong><u>Average speed</u></strong>
+          <div id="tracking-speed-average-time"><span></span></div>
+        </section>
+
+        <section class="item">
           <strong><u>Alitude</u></strong>
           <div id="tracking-altitude"></div>
         </section>
       </div>
-
+      <!--GPX-->
       <div class="panel menu-box" id="gpx-file-info" name="GPX File-Info">
         <section>
           <div id="gpx-name"></div>
@@ -482,16 +489,16 @@
       </div>
       <!--ROUTING-->
       <div class="panel menu-box" id="routing" name="Routing">
-        <strong><u>Distance</u></strong>
+        <strong class="item"><u>Distance</u></strong>
         <div id="routing-distance"></div>
 
-        <strong><u>Duration</u></strong>
+        <strong class="item"><u>Duration</u></strong>
         <div id="routing-duration"><span></span></div>
 
-        <strong><u>Start</u></strong>
+        <strong class="item"><u>Start</u></strong>
         <div id="routing-start-point"></div>
 
-        <strong><u>End</u></strong>
+        <strong class="item"><u>End</u></strong>
         <div id="routing-end-point"></div>
 
         <button class="item" tabindex="0" data-map="saverouting">

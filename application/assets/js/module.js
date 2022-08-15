@@ -395,6 +395,16 @@ const module = (() => {
     return minutes + ":" + seconds;
   };
 
+  let format_s = function (seconds) {
+    let nhours = Math.floor(seconds / 3600);
+    let nminutes = Math.floor((seconds % 3600) / 60);
+    let nseconds = Math.floor(seconds % 60);
+    if (nhours == 0) {
+      return nminutes + ":" + nseconds;
+    }
+    return nhours + ":" + nminutes + ":" + nseconds;
+  };
+
   //calc distance between markers
   let calc_distance = function (from_lat, from_lng, to_lat, to_lng, unit) {
     if (to_lat == undefined || to_lng == undefined) return false;
@@ -552,6 +562,7 @@ const module = (() => {
       document.querySelector("div#tracking-evo-up span").innerText = "";
       document.querySelector("div#tracking-evo-down span").innerText = "";
       document.querySelector("div#tracking-moving-time span").innerText = "";
+      document.querySelector("tracking-speed-average-time").innerText = "";
 
       clearInterval(tracking_interval);
       setTimeout(function () {
@@ -680,6 +691,11 @@ const module = (() => {
 
                 document.getElementById("tracking-altitude").innerText =
                   mainmarker.device_alt;
+
+                let d = e.target.get_moving_speed();
+                document.querySelector(
+                  "#tracking-speed-average-time"
+                ).innerText = d.toFixed(2);
               }
               //miles
               if (general.measurement_unit == "mil") {
@@ -697,6 +713,11 @@ const module = (() => {
 
                 document.getElementById("tracking-altitude").innerText =
                   mainmarker.device_alt * 3.280839895;
+
+                let d = e.target.get_moving_speed_imp();
+                document.querySelector(
+                  "#tracking-speed-average-time"
+                ).innerText = d.toFixed(2);
               }
 
               let d = e.target.get_duration_string(
@@ -804,7 +825,7 @@ const module = (() => {
     if (unit == "kilometer" && setting.measurement == false) {
       value * 0.6213711922;
     }
-    return a;
+    return a.toFixed(2);
   };
 
   return {
@@ -824,6 +845,8 @@ const module = (() => {
     loadGPX_data,
     user_input,
     format_ms,
+    format_s,
+
     get_closest_point,
   };
 })();

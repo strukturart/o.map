@@ -913,7 +913,6 @@ document.addEventListener("DOMContentLoaded", function () {
     let options = {
       enableHighAccuracy: true,
       timeout: 15000,
-      maximumAge: 0,
     };
 
     function success(pos) {
@@ -1130,7 +1129,6 @@ document.addEventListener("DOMContentLoaded", function () {
     let options = {
       enableHighAccuracy: true,
       timeout: 35000,
-      maximumAge: 100,
     };
     watchID = geoLoc.watchPosition(showLocation, errorHandler, options);
   }
@@ -1639,7 +1637,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (setting.openweather_api == "") {
       finder_panels = finder_panels.filter((e) => e.id != "weather");
     }
-    console.log(gpx_selection_info.name);
 
     if (gpx_selection_info.name === undefined) {
       finder_panels = finder_panels.filter((e) => e.id != "gpx-file-info");
@@ -1647,6 +1644,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (status.tracking_running == false) {
       finder_panels = finder_panels.filter((e) => e.id != "tracking");
+    }
+
+    if (routing.active == false) {
+      finder_panels = finder_panels.filter((e) => e.id != "routing");
     }
     tabIndex = 0;
 

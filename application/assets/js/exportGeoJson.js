@@ -66,7 +66,7 @@ const geojson = ((_) => {
     let requestAdd = sdcard.addNamed(geojson_file, file_path_name);
 
     requestAdd.onsuccess = function () {
-      status.windowOpen = "map";
+      status.windowOpen = "finder";
       helper.side_toaster("<img src='./assets/image/E25C.svg'>", 5000);
       bottom_bar("", "", "");
 
@@ -90,7 +90,7 @@ const geojson = ((_) => {
         "Unable to write the file, the file name may already be used",
         10000
       );
-      status.windowOpen = "map";
+      status.windowOpen = "finder";
     };
   };
 
