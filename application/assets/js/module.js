@@ -356,6 +356,16 @@ const module = (() => {
     return minutes + ":" + seconds;
   };
 
+  let format_s = function (seconds) {
+    let nhours = Math.floor(seconds / 3600);
+    let nminutes = Math.floor((seconds % 3600) / 60);
+    let nseconds = Math.floor(seconds % 60);
+    if (nhours == 0) {
+        return nminutes+":"+nseconds;
+    } 
+    return nhours+":"+nminutes+":"+nseconds;
+  };
+
   //calc distance between markers
   let calc_distance = function (from_lat, from_lng, to_lat, to_lng, unit) {
     let d = map.distance([from_lat, from_lng], [to_lat, to_lng]);
@@ -623,6 +633,9 @@ const module = (() => {
 
             //get tracking data to display in view
             new L.GPX(toGPX(), { async: true }).on("loaded", function (e) {
+              // Get elapsed time
+              let elapsed_time_ms = e.target.get_total_time();
+              let elapsed_time_s = elapsed_time_ms / 1000;
               //meter
               if (general.measurement_unit == "km") {
                 let a = e.target.get_distance() / 1000;
@@ -639,6 +652,10 @@ const module = (() => {
 
                 document.getElementById("tracking-altitude").innerText =
                   mainmarker.device_alt;
+
+                let d = a * 3600 / elapsed_time_s;
+                document.querySelector("#tracking-avg-speed span").innerText = 
+                  d.toFixed(2) + " km/h";
               }
               //miles
               if (general.measurement_unit == "mil") {
@@ -656,14 +673,18 @@ const module = (() => {
 
                 document.getElementById("tracking-altitude").innerText =
                   mainmarker.device_alt * 3.280839895;
+
+                let d = a * 3600 / elapsed_time_s;
+                document.querySelector("#tracking-avg-speed span").innerText =
+                  d.toFixed(2) + " mph"
               }
 
-              let d = e.target.get_duration_string(
-                e.target.get_total_time(),
+              let t = e.target.get_duration_string(
+                elapsed_time_ms,
                 false
               );
               document.querySelector("#tracking-moving-time span").innerText =
-                d;
+                t;
             });
 
             let k = JSON.stringify(tracking_cache);
@@ -757,5 +778,6 @@ const module = (() => {
     loadGPX_data,
     user_input,
     format_ms,
+    format_s,
   };
 })();

@@ -133,11 +133,12 @@ document.addEventListener("DOMContentLoaded", function () {
           p = feature.geometry.coordinates[0];
           routing.coordinates = feature.geometry.coordinates;
 
+          let d_kms = feature.properties.summary.distance / 1000;
           document.getElementById("routing-distance").innerText =
-            feature.properties.summary.distance / 1000;
+            d_kms.toFixed(2);
 
           document.getElementById("routing-duration").innerText =
-            module.format_ms(feature.properties.summary.duration);
+            module.format_s(feature.properties.summary.duration);
 
           i = feature.properties.segments[0].steps;
           //if the file is a routing file
@@ -1097,10 +1098,11 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
+    // Removed maximumAge because it was making the load of the
+    // position marker 
     let options = {
       enableHighAccuracy: true,
       timeout: 35000,
-      maximumAge: 100,
     };
     watchID = geoLoc.watchPosition(showLocation, errorHandler, options);
   }
@@ -1262,10 +1264,6 @@ document.addEventListener("DOMContentLoaded", function () {
     ) {
       top_bar("", "", "");
       bottom_bar("", "", "");
-
-      if (document.activeElement.getAttribute("data-map") == "gpx") {
-        module.loadGPX(document.activeElement.innerText);
-      }
 
       //custom maps and layers from json file
       if (document.activeElement.hasAttribute("data-url")) {
@@ -1893,6 +1891,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (status.windowOpen == "user-input") {
           module.user_input("close");
+          status.windowOpen = "finder";
           save_mode = "";
           break;
         }
