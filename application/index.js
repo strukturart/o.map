@@ -135,6 +135,7 @@ document.addEventListener("DOMContentLoaded", function () {
           //fly to start
           p = feature.geometry.coordinates[0];
 
+            // FIXME: here the reverse seems to induce an inversion of the coordinates for the write
           reverse_2D_array = feature.geometry.coordinates.map((row) =>
             row.reverse()
           );
