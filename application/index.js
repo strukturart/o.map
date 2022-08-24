@@ -163,10 +163,10 @@ document.addEventListener("DOMContentLoaded", function () {
             mm[0] + "," + mm[1];
 
           i = feature.properties.segments[0].steps;
-            // Reverse back
-            reverse_2D_array = feature.geometry.coordinates.map((row) =>
-                row.reverse()
-            );
+          // Reverse back
+          reverse_2D_array = feature.geometry.coordinates.map((row) =>
+              row.reverse()
+          );
           //if the file is a routing file
           if (file_loaded) {
             try {
