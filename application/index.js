@@ -135,7 +135,6 @@ document.addEventListener("DOMContentLoaded", function () {
           //fly to start
           p = feature.geometry.coordinates[0];
 
-            // FIXME: here the reverse seems to induce an inversion of the coordinates for the write
           reverse_2D_array = feature.geometry.coordinates.map((row) =>
             row.reverse()
           );
@@ -164,6 +163,10 @@ document.addEventListener("DOMContentLoaded", function () {
             mm[0] + "," + mm[1];
 
           i = feature.properties.segments[0].steps;
+            // Reverse back
+            reverse_2D_array = feature.geometry.coordinates.map((row) =>
+                row.reverse()
+            );
           //if the file is a routing file
           if (file_loaded) {
             try {
@@ -179,8 +182,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 feature.geometry.coordinates.length - 1
               ];
 
-            routing.start = [m[0], m[1]];
-            routing.end = [mm[0], mm[1]];
+            // Reverse from file
+            routing.start = [m[1], m[0]];
+            routing.end = [mm[1], mm[0]];
 
             //add marker
             let s = L.marker(routing.start).addTo(markers_group);
