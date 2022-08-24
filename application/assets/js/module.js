@@ -562,7 +562,7 @@ const module = (() => {
       document.querySelector("div#tracking-evo-up span").innerText = "";
       document.querySelector("div#tracking-evo-down span").innerText = "";
       document.querySelector("div#tracking-moving-time span").innerText = "";
-      document.querySelector("tracking-speed-average-time").innerText = "";
+      document.querySelector("div#tracking-speed-average-time").innerText = "";
 
       clearInterval(tracking_interval);
       setTimeout(function () {
