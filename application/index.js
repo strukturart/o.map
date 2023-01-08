@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", function () {
           i = feature.properties.segments[0].steps;
           // Reverse back
           reverse_2D_array = feature.geometry.coordinates.map((row) =>
-              row.reverse()
+            row.reverse()
           );
           //if the file is a routing file
           if (file_loaded) {

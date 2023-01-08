@@ -5,6 +5,10 @@ rm ../build/o.map.zip
 zip -r ../build/o.map.zip ./*
 
 
+zip -r ../build/o.map-kaios3.zip ./*
+
+
+
 #create bHaCkers zip
 rm ../build/o.map-omnisd.zip
 zip -r ../build/application.zip ./*
