@@ -195,64 +195,127 @@ const settings = ((_) => {
 
   let load_settings_from_file = function () {
     helper.toaster("search setting file", 2000);
-    //search gpx
-    let load_file = new Applait.Finder({
-      type: "sdcard",
-      debugMode: true,
-    });
+    try {
+      //search gpx
+      let load_file = new Applait.Finder({
+        type: "sdcard",
+        debugMode: true,
+      });
 
-    load_file.search("omap_settings.json");
-    load_file.on("searchComplete", function (needle, filematchcount) {});
-    load_file.on("error", function (message, err) {
-      helper.toaster("file not found", 2000);
-    });
+      load_file.search("omap_settings.json");
+      load_file.on("searchComplete", function (needle, filematchcount) {});
+      load_file.on("error", function (message, err) {
+        helper.toaster("file not found", 2000);
+      });
 
-    load_file.on("fileFound", function (file, fileinfo, storageName) {
-      let reader = new FileReader();
+      load_file.on("fileFound", function (file, fileinfo, storageName) {
+        let reader = new FileReader();
 
-      reader.readAsText(file);
+        reader.readAsText(file);
 
-      reader.onload = function () {
-        let data = JSON.parse(reader.result);
+        reader.onload = function () {
+          let data = JSON.parse(reader.result);
 
-        setting = data[0];
+          setting = data[0];
 
-        load_settings();
+          load_settings();
 
-        helper.toaster(
-          "the settings were loaded from the file, if you want to use them permanently don't forget to save.",
-          3000
-        );
-      };
+          helper.toaster(
+            "the settings were loaded from the file, if you want to use them permanently don't forget to save.",
+            3000
+          );
+        };
 
-      reader.onerror = function () {
-        console.log(reader.error);
-      };
-    });
+        reader.onerror = function () {
+          console.log(reader.error);
+        };
+      });
+    } catch (e) {}
+
+    if ("b2g" in navigator) {
+      try {
+        var sdcard = navigator.b2g.getDeviceStorage("sdcard");
+        var iterable = sdcard.enumerate();
+        async function printAllFiles() {
+          for await (let file of iterable) {
+            if (file.name == "omap_settings.json") {
+              let reader = new FileReader();
+
+              reader.readAsText(file);
+
+              reader.onload = function () {
+                let data = JSON.parse(reader.result);
+
+                setting = data[0];
+
+                load_settings();
+
+                helper.toaster(
+                  "the settings were loaded from the file, if you want to use them permanently don't forget to save.",
+                  3000
+                );
+              };
+
+              reader.onerror = function () {
+                console.log(reader.error);
+              };
+            }
+          }
+        }
+        printAllFiles();
+      } catch (e) {
+        console.log(e);
+      }
+    }
   };
 
   let export_settings = function () {
-    var sdcard = navigator.getDeviceStorage("sdcard");
+    try {
+      var sdcard = navigator.getDeviceStorage("sdcard");
+      var request_del = sdcard.delete("omap_settings.json");
+      request_del.onsuccess = function () {
+        let data = JSON.stringify(setting);
+        var file = new Blob(["[" + data + "]"], {
+          type: "application/json",
+        });
 
-    var request_del = sdcard.delete("omap_settings.json");
-    request_del.onsuccess = function () {};
-    setTimeout(function () {
-      let data = JSON.stringify(setting);
-      var file = new Blob(["[" + data + "]"], {
-        type: "application/json",
-      });
+        var request = sdcard.addNamed(file, "omap_settings.json");
 
-      var request = sdcard.addNamed(file, "omap_settings.json");
+        request.onsuccess = function () {
+          helper.toaster("settings exported, omap_settings.json", 5000);
+        };
 
-      request.onsuccess = function () {
-        var name = this.result;
-        helper.toaster("settings exported, omap_settings.json", 5000);
+        request.onerror = function () {
+          helper.toaster("Unable to write the file", 2000);
+        };
       };
+    } catch (e) {}
 
-      request.onerror = function () {
-        helper.toaster("Unable to write the file", 2000);
+    try {
+      var sdcard = navigator.b2g.getDeviceStorage("sdcard");
+      var request_del = sdcard.delete("omap_settings.json");
+      request_del.onsuccess = function () {
+        let data = JSON.stringify(setting);
+        var file = new Blob(["[" + data + "]"], {
+          type: "application/json",
+        });
+
+        var request = sdcard.addNamed(file, "omap_settings.json");
+
+        request.onsuccess = function () {
+          helper.toaster("settings exported, omap_settings.json", 5000);
+        };
+
+        request.onerror = function () {
+          toaster("Unable to write the file", 2000);
+        };
       };
-    }, 2000);
+      request_del.onerror = function () {
+        toaster("Unable to write the file", 2000);
+      };
+    } catch (e) {
+      alert(e);
+    }
   };
 
   return {
