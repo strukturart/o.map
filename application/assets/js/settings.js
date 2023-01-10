@@ -238,27 +238,45 @@ const settings = ((_) => {
         var iterable = sdcard.enumerate();
         async function printAllFiles() {
           for await (let file of iterable) {
-            if (file.name == "omap_settings.json") {
+            if (file.name.includes("omap_settings.json")) {
               let reader = new FileReader();
-
-              reader.readAsText(file);
 
               reader.onload = function () {
                 let data = JSON.parse(reader.result);
 
                 setting = data[0];
 
-                load_settings();
 
-                helper.toaster(
-                  "the settings were loaded from the file, if you want to use them permanently don't forget to save.",
-                  3000
-                );
+                setTimeout(() => {
+
+                  document.getElementById("owm-key").value =
+                    setting.openweather_api;
+                  document.getElementById("ipbase-key").value =
+                    setting.ipbase_api;
+                  document.getElementById("ors-key").value = setting.ors_api;
+                  document.getElementById("routing-profil").value =
+                    setting.routing_profil;
+
+                  document.getElementById("cache-time").value =
+                    setting.cache_time;
+                  document.getElementById("cache-zoom").value =
+                    setting.cache_zoom;
+                  document.getElementById("export-path").value =
+                    setting.export_path;
+                  document.getElementById("osm-tag").value = setting.osm_tag;
+
+                  helper.toaster(
+                    "the settings were loaded from the file, if you want to use them permanently don't forget to save.",
+                    3000
+                  );
+                }, 1500);
               };
 
               reader.onerror = function () {
                 console.log(reader.error);
               };
+
+              reader.readAsText(file);
             }
           }
         }

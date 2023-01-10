@@ -36,9 +36,7 @@ const module = (() => {
   ///////////////////////
   function loadGPX(filename, url) {
     if (url) {
-      var gpx = url;
-
-      new L.GPX(gpx, {
+      new L.GPX(url, {
         async: true,
       })
         .on("loaded", function (e) {
@@ -49,16 +47,27 @@ const module = (() => {
       document.querySelector("div#finder").style.display = "none";
       status.windowOpen = "map";
     }
+
     if (filename) {
-      let finder = new Applait.Finder({
-        type: "sdcard",
-        debugMode: false,
-      });
-      finder.search(filename);
+      try {
+        let sdcard = navigator.getDeviceStorage("sdcard");
+        let request = sdcard.get(filename);
+        request.onsuccess = function () {
+          m(this.result);
+        };
+        request.onerror = function () {};
+      } catch (e) {}
 
-      finder.on("fileFound", function (file, fileinfo, storageName) {
-        //file reader
+      try {
+        let sdcard = navigator.b2g.getDeviceStorage("sdcard");
+        let request = sdcard.get(filename);
+        request.onsuccess = function () {
+          m(this.result);
+        };
+        request.onerror = function () {};
+      } catch (e) {}
 
+      let m = (r) => {
         let reader = new FileReader();
 
         reader.onerror = function (event) {
@@ -67,7 +76,7 @@ const module = (() => {
         };
 
         reader.onloadend = function (event) {
-          var gpx = event.target.result; // URL to your GPX file or the GPX itself
+          var gpx = reader.result; // URL to your GPX file or the GPX itself
 
           new L.GPX(gpx, {
             async: true,
@@ -76,14 +85,13 @@ const module = (() => {
               map.fitBounds(e.target.getBounds());
             })
             .addTo(gpx_group);
-          //.addTo(map);
 
           document.querySelector("div#finder").style.display = "none";
           status.windowOpen = "map";
         };
 
-        reader.readAsText(file);
-      });
+        reader.readAsText(r);
+      };
     }
   }
 
@@ -118,15 +126,26 @@ const module = (() => {
   /////Load GeoJSON///////////
   ///////////////////////
   let loadGeoJSON = function (filename, callback) {
-    let finder = new Applait.Finder({
-      type: "sdcard",
-      debugMode: false,
-    });
-    finder.search(filename);
+    //file reader
+    try {
+      let sdcard = navigator.getDeviceStorage("sdcard");
+      let request = sdcard.get(filename);
+      request.onsuccess = function () {
+        m(this.result);
+      };
+      request.onerror = function () {};
+    } catch (e) {}
 
-    finder.on("fileFound", function (file, fileinfo, storageName) {
-      //file reader
+    try {
+      let sdcard = navigator.b2g.getDeviceStorage("sdcard");
+      let request = sdcard.get(filename);
+      request.onsuccess = function () {
+        m(this.result);
+      };
+      request.onerror = function () {};
+    } catch (e) {}
 
+    let m = (r) => {
       let geojson_data = "";
       let reader = new FileReader();
 
@@ -134,12 +153,12 @@ const module = (() => {
         reader.abort();
       };
 
-      reader.onloadend = function (event) {
+      reader.onloadend = function () {
         //check if json valid
         try {
-          geojson_data = JSON.parse(event.target.result);
+          geojson_data = JSON.parse(reader.result);
         } catch (e) {
-          helper.toaster("Json is not valid", 2000);
+          helper.toaster("JSON is not valid", 2000);
           return false;
         }
 
@@ -181,8 +200,8 @@ const module = (() => {
         status.windowOpen = "map";
       };
 
-      reader.readAsText(file);
-    });
+      reader.readAsText(r);
+    };
   };
 
   ///////////////////

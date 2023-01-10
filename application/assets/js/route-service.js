@@ -30,7 +30,6 @@ const rs = ((_) => {
       if (xhr.status == 403) {
         console.log("access forbidden");
       }
-      // analyze HTTP status of the response
       if (xhr.status != 200) {
         helper.side_toaster("the route could not be loaded.", 2000);
       }

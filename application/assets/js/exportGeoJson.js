@@ -61,7 +61,15 @@ const geojson = ((_) => {
       type: "application/json",
     });
 
-    let sdcard = navigator.getDeviceStorage("sdcard");
+    let sdcard;
+
+    try {
+      sdcard = navigator.getDeviceStorage("sdcard");
+    } catch (e) {}
+
+    try {
+      sdcard = navigator.b2g.getDeviceStorage("sdcard");
+    } catch (e) {}
 
     let requestAdd = sdcard.addNamed(geojson_file, file_path_name);
 
@@ -114,13 +122,20 @@ const geojson = ((_) => {
       type: "application/gpx+xm",
     });
 
-    let sdcard = navigator.getDeviceStorage("sdcard");
+    let sdcard;
+
+    try {
+      sdcard = navigator.getDeviceStorage("sdcard");
+    } catch (e) {}
+
+    try {
+      sdcard = navigator.b2g.getDeviceStorage("sdcard");
+    } catch (e) {}
 
     let requestAdd = sdcard.addNamed(geojson_file, file_path_name);
 
     requestAdd.onsuccess = function () {
       status.windowOpen = "map";
-      helper.side_toaster("<img src='./assets/image/E25C.svg'>", 3000);
       bottom_bar("", "", "");
 
       if (type == "tracking") {
@@ -130,8 +145,7 @@ const geojson = ((_) => {
       }
 
       setTimeout(function () {
-        build_menu();
-        helper.side_toaster("the file was saved", 1000);
+        helper.side_toaster("<img src='./assets/image/E25C.svg'>", 3000);
       }, 2000);
     };
 

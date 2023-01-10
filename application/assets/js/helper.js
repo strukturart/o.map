@@ -157,7 +157,15 @@ const helper = (() => {
 
   //delete file
   let deleteFile = function (filename) {
-    let sdcard = navigator.getDeviceStorage("sdcard");
+    let sdcard;
+
+    try {
+      sdcard = navigator.getDeviceStorage("sdcard");
+    } catch (e) {}
+
+    try {
+      sdcard = navigator.b2g.getDeviceStorage("sdcard");
+    } catch (e) {}
     let requestDel = sdcard.delete(filename);
 
     requestDel.onsuccess = function () {
@@ -172,9 +180,68 @@ const helper = (() => {
     };
   };
 
+  //search file
+  let search_file = (name, callback) => {
+    try {
+      let finder = new Applait.Finder({
+        type: "sdcard",
+        debugMode: false,
+      });
+      finder.search(name);
+
+      finder.on("searchComplete", function (needle, filematchcount) {});
+      finder.on("fileFound", function (file, fileinfo, storageName) {
+        callback(file);
+      });
+    } catch (e) {}
+
+    try {
+      var sdcard = navigator.b2g.getDeviceStorage("sdcard");
+      var iterable = sdcard.enumerate();
+      async function printAllFiles() {
+        for await (let file of iterable) {
+          if (file.name.includes(name)) {
+            callback(file);
+          }
+        }
+      }
+      printAllFiles();
+    } catch (e) {
+      console.log(e);
+    }
+  };
+  let list_files = (filetype, callback) => {
+    try {
+      var sdcard = navigator.b2g.getDeviceStorage("sdcard");
+      var iterable = sdcard.enumerate();
+      async function printAllFiles() {
+        for await (let file of iterable) {
+          let n = file.name.split(".");
+          let file_type = n[n.length - 1];
+
+          if (file_type == filetype) {
+            callback(file.name);
+            t = true;
+          }
+        }
+      }
+      printAllFiles();
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   //delete file
   let renameFile = function (filename, new_filename) {
-    let sdcard = navigator.getDeviceStorage("sdcard");
+    let sdcard;
+
+    try {
+      sdcard = navigator.getDeviceStorage("sdcard");
+    } catch (e) {}
+
+    try {
+      sdcard = navigator.b2g.getDeviceStorage("sdcard");
+    } catch (e) {}
     let request = sdcard.get(filename);
     // let new_filename = prompt("new filename");
 
@@ -219,7 +286,15 @@ const helper = (() => {
   };
 
   let downloadFile = function (filename, data, callback) {
-    var sdcard = navigator.getDeviceStorage("sdcard");
+    let sdcard;
+
+    try {
+      sdcard = navigator.getDeviceStorage("sdcard");
+    } catch (e) {}
+
+    try {
+      sdcard = navigator.b2g.getDeviceStorage("sdcard");
+    } catch (e) {}
     var filedata = new Blob([data]);
 
     var request = sdcard.addNamed(filedata, filename);
@@ -243,6 +318,8 @@ const helper = (() => {
     side_toaster,
     renameFile,
     downloadFile,
+    search_file,
+    list_files,
   };
 })();
 
