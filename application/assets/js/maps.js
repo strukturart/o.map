@@ -66,7 +66,7 @@ const maps = (() => {
   });
 
   //caching settings from settings panel
-  let caching_time;
+  let caching_time = "";
 
   if (localStorage.getItem("cache-time") != null) {
     caching_time = Number(localStorage.getItem("cache-time")) * 86400000;

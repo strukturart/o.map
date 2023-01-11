@@ -10,56 +10,110 @@ const mozactivity = (() => {
       "/" +
       mainmarker.current_lng +
       "&layers=T";
-    let activity = new MozActivity({
-      name: "share",
-      data: {
-        type: "url",
-        url: a,
-      },
-    });
+    try {
+      let activity = new MozActivity({
+        name: "share",
+        data: {
+          type: "url",
+          url: a,
+        },
+      });
 
-    activity.onsuccess = function () {
-      console.log("successfully shared");
-    };
+      activity.onsuccess = function () {
+        console.log("successfully shared");
+      };
 
-    activity.onerror = function () {
-      console.log("The activity encounter en error: " + this.error);
-    };
+      activity.onerror = function () {
+        console.log("The activity encounter en error: " + this.error);
+      };
+    } catch (e) {}
+
+    try {
+      let activity = new WebActivity("share", { type: "url", url: a });
+      activity.start().then(
+        (rv) => {
+          console.log("Results passed back from activity handler:");
+          console.log(rv);
+        },
+        (err) => {
+          console.log(err);
+        }
+      );
+    } catch (e) {}
   };
 
   const photo = function () {
-    let activity = new MozActivity({
-      name: "record",
-      data: {
-        type: ["photos", "videos"],
-      },
-    });
+    try {
+      let activity = new MozActivity({
+        name: "record",
+        data: {
+          type: ["photos", "videos"],
+        },
+      });
 
-    activity.onsuccess = function () {
-      console.log("successfully");
-    };
+      activity.onsuccess = function () {
+        console.log("successfully");
+      };
 
-    activity.onerror = function () {
-      console.log("The activity encounter en error: " + this.error);
-    };
+      activity.onerror = function () {
+        console.log("The activity encounter en error: " + this.error);
+      };
+    } catch (e) {}
+
+    try {
+      let activity = new WebActivity("record", {
+        data: {
+          type: ["photos", "videos"],
+        },
+      });
+      activity.start().then(
+        (rv) => {
+          console.log("Results passed back from activity handler:");
+          console.log(rv);
+        },
+        (err) => {
+          console.log(err);
+        }
+      );
+    } catch (e) {}
   };
 
   const openSettings = function () {
-    let activity = new MozActivity({
-      name: "configure",
-      data: {
-        target: "device",
-        section: "connectivity-settings",
-      },
-    });
+    try {
+      let activity = new MozActivity({
+        name: "configure",
+        data: {
+          target: "device",
+          section: "connectivity-settings",
+        },
+      });
 
-    activity.onsuccess = function () {
-      console.log("successfully");
-    };
+      activity.onsuccess = function () {
+        console.log("successfully");
+      };
 
-    activity.onerror = function () {
-      console.log("The activity encounter en error: " + this.error);
-    };
+      activity.onerror = function () {
+        console.log("The activity encounter en error: " + this.error);
+      };
+    } catch (e) {}
+
+    try {
+      let activity = new WebActivity("configure", {
+        data: {
+          target: "device",
+          section: "connectivity-settings",
+        },
+      });
+      activity.start().then(
+        (rv) => {
+          console.log("Results passed back from activity handler:");
+          console.log(rv);
+        },
+        (err) => {
+          console.log(err);
+        }
+      );
+    } catch (e) {}
   };
 
   return {

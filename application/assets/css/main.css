@@ -19,6 +19,7 @@
   padding: 0px;
   margin: 0px;
   box-sizing: border-box;
+  font-family: "Lato-Regular";
 }
 
 :focus {
@@ -44,6 +45,14 @@ body {
   scroll-behavior: smooth;
   height: 100%;
   margin: 0;
+}
+
+form {
+  font-family: "Lato-Regular";
+}
+
+input {
+  font-family: "Lato-Regular";
 }
 
 p {
@@ -120,6 +129,26 @@ div.toogle-button {
   margin-top: -8px;
   z-index: 3;
 }
+
+select {
+  width: 99%;
+  padding: 5px;
+
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: none;
+  color: rgb(54, 54, 54);
+
+  outline: 0;
+  border: 0;
+  border-bottom: 2px solid rgb(63, 63, 63);
+  margin: 0 0% 0 0%;
+  text-align: center;
+  position: relative;
+  background: #fafafa url("image/E264.svg") no-repeat 99% 80%;
+}
+
 input[type="checkbox"]:checked ~ div.ckb-icon {
   background: rgb(255, 255, 255);
   opacity: 1;
@@ -767,6 +796,7 @@ div#markers-option {
   display: none;
   overflow: hidden;
   height: 99vh;
+  padding: 0 0 100px 0;
 }
 
 div#markers-option ul {

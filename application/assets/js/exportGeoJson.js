@@ -14,9 +14,9 @@ const geojson = ((_) => {
     if (type == "single") {
       let single = mainmarker.selected_marker.toGeoJSON();
       // store popup content
-      let a = document.querySelector("textarea#popup").value;
+      let a = document.querySelector("input#popup").value;
       if (a != "") {
-        let a = document.querySelector("textarea#popup").value;
+        let a = document.querySelector("input#popup").value;
         single.properties.popup = a;
       }
 
@@ -61,7 +61,15 @@ const geojson = ((_) => {
       type: "application/json",
     });
 
-    let sdcard = navigator.getDeviceStorage("sdcard");
+    let sdcard;
+
+    try {
+      sdcard = navigator.getDeviceStorage("sdcard");
+    } catch (e) {}
+
+    try {
+      sdcard = navigator.b2g.getDeviceStorage("sdcard");
+    } catch (e) {}
 
     let requestAdd = sdcard.addNamed(geojson_file, file_path_name);
 
@@ -79,10 +87,6 @@ const geojson = ((_) => {
       if (type == "path") {
         module.measure_distance("destroy");
       }
-
-      setTimeout(function () {
-        build_menu();
-      }, 2000);
     };
 
     requestAdd.onerror = function () {
@@ -114,13 +118,20 @@ const geojson = ((_) => {
       type: "application/gpx+xm",
     });
 
-    let sdcard = navigator.getDeviceStorage("sdcard");
+    let sdcard;
+
+    try {
+      sdcard = navigator.getDeviceStorage("sdcard");
+    } catch (e) {}
+
+    try {
+      sdcard = navigator.b2g.getDeviceStorage("sdcard");
+    } catch (e) {}
 
     let requestAdd = sdcard.addNamed(geojson_file, file_path_name);
 
     requestAdd.onsuccess = function () {
       status.windowOpen = "map";
-      helper.side_toaster("<img src='./assets/image/E25C.svg'>", 3000);
       bottom_bar("", "", "");
 
       if (type == "tracking") {
@@ -130,8 +141,7 @@ const geojson = ((_) => {
       }
 
       setTimeout(function () {
-        build_menu();
-        helper.side_toaster("the file was saved", 1000);
+        helper.side_toaster("<img src='./assets/image/E25C.svg'>", 3000);
       }, 2000);
     };
 

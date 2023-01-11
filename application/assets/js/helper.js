@@ -125,39 +125,20 @@ const helper = (() => {
     };
   };
 
-  //goodbye
-
-  let goodbye = function () {
-    document.getElementById("goodbye").style.display = "block";
-
-    if (localStorage.clickcount) {
-      localStorage.clickcount = Number(localStorage.clickcount) + 1;
-    } else {
-      localStorage.clickcount = 1;
-    }
-
-    if (localStorage.clickcount == 300000) {
-      message();
-    } else {
-      document.getElementById("ciao").style.display = "block";
-      setTimeout(function () {
-        window.close();
-      }, 4000);
-    }
-
-    function message() {
-      document.getElementById("donation").style.display = "block";
-      setTimeout(function () {
-        localStorage.clickcount = 1;
-
-        window.close();
-      }, 6000);
-    }
-  };
-
   //delete file
   let deleteFile = function (filename) {
-    let sdcard = navigator.getDeviceStorage("sdcard");
+    let sdcard = "";
+
+    try {
+      sdcard = navigator.getDeviceStorage("sdcard");
+    } catch (e) {}
+
+    if ("b2g" in navigator) {
+      try {
+        sdcard = navigator.b2g.getDeviceStorage("sdcard");
+      } catch (e) {}
+    }
+
     let requestDel = sdcard.delete(filename);
 
     requestDel.onsuccess = function () {
@@ -172,9 +153,93 @@ const helper = (() => {
     };
   };
 
+  //search file
+  let search_file = (name, callback) => {
+    try {
+      let finder = new Applait.Finder({
+        type: "sdcard",
+        debugMode: false,
+      });
+      finder.search(name);
+
+      finder.on("searchComplete", function (needle, filematchcount) {});
+      finder.on("fileFound", function (file, fileinfo, storageName) {
+        callback(file);
+      });
+    } catch (e) {}
+
+    if ("b2g" in navigator) {
+      try {
+        var sdcard = navigator.b2g.getDeviceStorage("sdcard");
+        var iterable = sdcard.enumerate();
+        var iterFiles = iterable.values();
+        function next(_files) {
+          _files
+            .next()
+            .then((file) => {
+              if (!file.done) {
+                if (file.value.name.includes(name)) {
+                  callback(e);
+                }
+                next(_files);
+              }
+            })
+            .catch(() => {
+              next(_files);
+            });
+        }
+        next(iterFiles);
+      } catch (e) {
+        console.log(e);
+      }
+    }
+  };
+  let list_files = (filetype, callback) => {
+    if ("b2g" in navigator) {
+      try {
+        var sdcard = navigator.b2g.getDeviceStorage("sdcard");
+
+        var iterable = sdcard.enumerate();
+        var iterFiles = iterable.values();
+        function next(_files) {
+          _files
+            .next()
+            .then((file) => {
+              if (!file.done) {
+                let n = file.value.name.split(".");
+                let file_type = n[n.length - 1];
+
+                if (file_type == filetype) {
+                  callback(file.value.name);
+                }
+                next(_files);
+              }
+            })
+            .catch(() => {
+              next(_files);
+            });
+        }
+        next(iterFiles);
+      } catch (e) {
+        console.log(e);
+      }
+    }
+  };
+
   //delete file
   let renameFile = function (filename, new_filename) {
-    let sdcard = navigator.getDeviceStorage("sdcard");
+    let sdcard = "";
+
+    try {
+      sdcard = navigator.getDeviceStorage("sdcard");
+    } catch (e) {}
+
+    if ("b2g" in navigator) {
+      try {
+        sdcard = navigator.b2g.getDeviceStorage("sdcard");
+      } catch (e) {}
+    }
+
     let request = sdcard.get(filename);
     // let new_filename = prompt("new filename");
 
@@ -219,7 +284,18 @@ const helper = (() => {
   };
 
   let downloadFile = function (filename, data, callback) {
-    var sdcard = navigator.getDeviceStorage("sdcard");
+    let sdcard = "";
+
+    try {
+      sdcard = navigator.getDeviceStorage("sdcard");
+    } catch (e) {}
+
+    if ("b2g" in navigator) {
+      try {
+        sdcard = navigator.b2g.getDeviceStorage("sdcard");
+      } catch (e) {}
+    }
+
     var filedata = new Blob([data]);
 
     var request = sdcard.addNamed(filedata, filename);
@@ -237,12 +313,13 @@ const helper = (() => {
     toaster,
     add_script,
     deleteFile,
-    goodbye,
     isOnline,
     geoip,
     side_toaster,
     renameFile,
     downloadFile,
+    search_file,
+    list_files,
   };
 })();
 

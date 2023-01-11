@@ -36,10 +36,12 @@ const module = (() => {
   ///////////////////////
   function loadGPX(filename, url) {
     if (url) {
-      var gpx = url;
-
-      new L.GPX(gpx, {
+      new L.GPX(url, {
         async: true,
+        marker_options: {
+          startIconUrl: "assets/css/images/start.png",
+          endIconUrl: "assets/css/images/end.png",
+        },
       })
         .on("loaded", function (e) {
           map.fitBounds(e.target.getBounds());
@@ -49,16 +51,29 @@ const module = (() => {
       document.querySelector("div#finder").style.display = "none";
       status.windowOpen = "map";
     }
+
     if (filename) {
-      let finder = new Applait.Finder({
-        type: "sdcard",
-        debugMode: false,
-      });
-      finder.search(filename);
+      try {
+        let sdcard = navigator.getDeviceStorage("sdcard");
+        let request = sdcard.get(filename);
+        request.onsuccess = function () {
+          m(this.result);
+        };
+        request.onerror = function () {};
+      } catch (e) {}
 
-      finder.on("fileFound", function (file, fileinfo, storageName) {
-        //file reader
+      if ("b2g" in navigator) {
+        try {
+          let sdcard = navigator.b2g.getDeviceStorage("sdcard");
+          let request = sdcard.get(filename);
+          request.onsuccess = function () {
+            m(this.result);
+          };
+          request.onerror = function () {};
+        } catch (e) {}
+      }
 
+      let m = (r) => {
         let reader = new FileReader();
 
         reader.onerror = function (event) {
@@ -67,50 +82,79 @@ const module = (() => {
         };
 
         reader.onloadend = function (event) {
-          var gpx = event.target.result; // URL to your GPX file or the GPX itself
+          var gpx = reader.result; // URL to your GPX file or the GPX itself
 
           new L.GPX(gpx, {
             async: true,
+            marker_options: {
+              startIconUrl: "assets/css/images/start.png",
+              endIconUrl: "assets/css/images/end.png",
+            },
           })
             .on("loaded", function (e) {
               map.fitBounds(e.target.getBounds());
             })
             .addTo(gpx_group);
-          //.addTo(map);
 
           document.querySelector("div#finder").style.display = "none";
           status.windowOpen = "map";
         };
 
-        reader.readAsText(file);
-      });
+        reader.readAsText(r);
+      };
     }
   }
 
   function loadGPX_data(filename, callback) {
     if (filename) {
-      let finder = new Applait.Finder({
-        type: "sdcard",
-        debugMode: false,
-      });
-      finder.search(filename);
+      try {
+        let finder = new Applait.Finder({
+          type: "sdcard",
+          debugMode: false,
+        });
+        finder.search(filename);
 
-      finder.on("fileFound", function (file, fileinfo, storageName) {
-        //file reader
+        finder.on("fileFound", function (file, fileinfo, storageName) {
+          //file reader
 
-        let reader = new FileReader();
+          let reader = new FileReader();
 
-        reader.onerror = function (event) {
-          helper.toaster("can't read file", 3000);
-          reader.abort();
-        };
+          reader.onerror = function (event) {
+            helper.toaster("can't read file", 3000);
+            reader.abort();
+          };
 
-        reader.onloadend = function (event) {
-          callback(filename, event.target.result);
-        };
+          reader.onloadend = function (event) {
+            callback(filename, event.target.result);
+          };
 
-        reader.readAsText(file);
-      });
+          reader.readAsText(file);
+        });
+      } catch (e) {}
+
+      try {
+        if ("b2g" in navigator) {
+          try {
+            let sdcard = navigator.b2g.getDeviceStorage("sdcard");
+            let request = sdcard.get(filename);
+            request.onsuccess = function () {
+              let reader = new FileReader();
+
+              reader.onerror = function (event) {
+                helper.toaster("can't read file", 3000);
+                reader.abort();
+              };
+
+              reader.onloadend = function (event) {
+                callback(filename, event.target.result);
+              };
+
+              reader.readAsText(this.result);
+            };
+            request.onerror = function () {};
+          } catch (e) {}
+        }
+      } catch (e) {}
     }
   }
 
@@ -118,15 +162,28 @@ const module = (() => {
   /////Load GeoJSON///////////
   ///////////////////////
   let loadGeoJSON = function (filename, callback) {
-    let finder = new Applait.Finder({
-      type: "sdcard",
-      debugMode: false,
-    });
-    finder.search(filename);
+    //file reader
+    try {
+      let sdcard = navigator.getDeviceStorage("sdcard");
+      let request = sdcard.get(filename);
+      request.onsuccess = function () {
+        m(this.result);
+      };
+      request.onerror = function () {};
+    } catch (e) {}
 
-    finder.on("fileFound", function (file, fileinfo, storageName) {
-      //file reader
+    if ("b2g" in window.navigator) {
+      try {
+        let sdcard = navigator.b2g.getDeviceStorage("sdcard");
+        let request = sdcard.get(filename);
+        request.onsuccess = function () {
+          m(this.result);
+        };
+        request.onerror = function () {};
+      } catch (e) {}
+    }
 
+    let m = (r) => {
       let geojson_data = "";
       let reader = new FileReader();
 
@@ -134,12 +191,12 @@ const module = (() => {
         reader.abort();
       };
 
-      reader.onloadend = function (event) {
+      reader.onloadend = function () {
         //check if json valid
         try {
-          geojson_data = JSON.parse(event.target.result);
+          geojson_data = JSON.parse(reader.result);
         } catch (e) {
-          helper.toaster("Json is not valid", 2000);
+          helper.toaster("JSON is not valid", 2000);
           return false;
         }
 
@@ -181,8 +238,8 @@ const module = (() => {
         status.windowOpen = "map";
       };
 
-      reader.readAsText(file);
-    });
+      reader.readAsText(r);
+    };
   };
 
   ///////////////////
@@ -265,12 +322,12 @@ const module = (() => {
     }
 
     //popup
-    document.querySelector("textarea#popup").value = "";
+    document.querySelector("input#popup").value = "";
     let pu = markers_collection[index].getPopup();
 
     if (pu != undefined && pu._content != undefined) {
       //get popup content
-      document.querySelector("textarea#popup").value = pu._content;
+      document.querySelector("input#popup").value = pu._content;
       //show popup
       markers_collection[index]
         .bindPopup(pu._content, popup_option)
@@ -338,6 +395,7 @@ const module = (() => {
     n = n.toFixed(2);
     document.getElementById("gpx-distance").innerText = n;
   };
+
   let closest_average = [];
   //closest point in route/track
   let get_closest_point = function (route) {
@@ -345,9 +403,7 @@ const module = (() => {
 
     if (latlng == "") return false;
     let k = L.GeometryUtil.closest(map, route, latlng, true);
-    console.log(latlng);
-    console.log(route);
-    console.log(k);
+    console.log("dis" + JSON.stringify(k));
     //notification
 
     closest_average.push(k.distance);
@@ -369,7 +425,7 @@ const module = (() => {
       if (setting.routing_notification == false) return false;
       if (result > 20) {
         navigator.vibrate([1000, 500, 1000]);
-        console.log("to far");
+        helper.toaster("to far" + result, 3000);
       } else {
         console.log("okay");
       }
