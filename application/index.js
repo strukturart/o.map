@@ -92,6 +92,23 @@ if (!navigator.geolocation) {
   helper.toaster("Your device does't support geolocation!", 2000);
 }
 
+try {
+  navigator.serviceWorker
+    .register("sw.js", {
+      scope: "/",
+    })
+    .then((registration) => {
+      registration.systemMessageManager.subscribe("activity").then(
+        (rv) => {
+          alert("yeah");
+        },
+        (error) => {}
+      );
+    });
+} catch (e) {
+  console.log(e);
+}
+
 //leaflet add basic map
 map = L.map("map-container", {
   zoomControl: false,
@@ -2482,6 +2499,19 @@ document.addEventListener("DOMContentLoaded", function () {
     setTimeout(function () {
       status.visible = document.visibilityState;
     }, 1000);
+  });
+
+  //callback from sw, osm oauth
+  const channel = new BroadcastChannel("sw-messages");
+  channel.addEventListener("message", (event) => {
+    //callback from osm OAuth
+    const l = event.data.oauth_success;
+    if (event.data.oauth_success) {
+      setTimeout(() => {
+        localStorage.setItem("openstreetmap_token", event.data.oauth_success);
+        osm_server_list_gpx();
+      }, 3000);
+    }
   });
 
   window.onerror = function (msg, url, linenumber) {

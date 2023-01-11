@@ -31,6 +31,32 @@ getToken().then((result) => {
   document.getElementById("success").innerText =
     "you are now successfully connected to the osm service";
 
+  if (result.access_token != null) {
+    try {
+      let activity = new WebActivity("omap-oauth", {
+        type: "code",
+        "code": code,
+      });
+      activity.start().then(
+        (rv) => {
+          // console.log("Results passed back from activity handler:");
+          setTimeout(() => {
+            window.close();
+          }, 4000);
+        },
+        (err) => {
+          alert(err);
+
+          if (err === "NO_PROVIDER") {
+            //window.close();
+          }
+        }
+      );
+    } catch (e) {
+      alert(e);
+    }
+  }
+
   window.dispatchEvent(
     new CustomEvent("tokens", {
       detail: result,
