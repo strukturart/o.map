@@ -1,6 +1,5 @@
 "use strict";
 
-
 let save_mode = "";
 let scale;
 
@@ -15,6 +14,8 @@ let measure_group = new L.FeatureGroup();
 let tracking_group = new L.FeatureGroup();
 let gpx_group = new L.FeatureGroup();
 let geoJSON_group = new L.FeatureGroup();
+
+
 
 var jsonLayer = L.geoJSON("", { color: "red" });
 let map;
@@ -31,6 +32,7 @@ let routing = {
   data: "",
   active: false,
   closest: "",
+  loaded: false,
 };
 
 let mainmarker = {
@@ -145,6 +147,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let instructions = [];
     let p;
     let reverse_2D_array;
+    console.log(e);
 
     //fly to start point
     let m = L.geoJSON(e, {
@@ -157,9 +160,10 @@ document.addEventListener("DOMContentLoaded", function () {
             row.reverse()
           );
 
-          routing.coordinates = feature.geometry.coordinates;
+          // routing.coordinates = feature.geometry.coordinates;
 
-          //routing.coordinates = reverse_2D_array;
+          routing.coordinates = reverse_2D_array;
+
           document.getElementById("routing-distance").innerText =
             module.convert_units(
               "kilometer",
@@ -181,12 +185,9 @@ document.addEventListener("DOMContentLoaded", function () {
             mm[0] + "," + mm[1];
 
           i = feature.properties.segments[0].steps;
-          // Reverse back
-          reverse_2D_array = feature.geometry.coordinates.map((row) =>
-            row.reverse()
-          );
+
           //if the file is a routing file
-          if (file_loaded) {
+          if (i.length > 0) {
             try {
               geoJSON_group.clearLayers();
               markers_group.removeLayer(routing.end_marker_id);
@@ -200,8 +201,8 @@ document.addEventListener("DOMContentLoaded", function () {
               ];
 
             // Reverse from file
-            routing.start = [m[1], m[0]];
-            routing.end = [mm[1], mm[0]];
+            routing.start = [m[0], m[1]];
+            routing.end = [mm[0], mm[1]];
 
             //add marker
             let s = L.marker(routing.start).addTo(markers_group);
@@ -225,7 +226,10 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     routing_instructions(instructions);
-    routing.active = true;
+    // routing.active = true;
+    routing.loaded = true;
+    document.querySelector("#routing-profile-status").innerText =
+      setting.routing_profil;
 
     helper.side_toaster(
       "the track has been loaded, to see information about it open the menu with enter",
@@ -1204,6 +1208,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
       //distances
       distance_to_target();
+
+      if (routing.active) {
+        module.get_closest_point(routing.coordinates);
+      }
     }
 
     function errorHandler(err) {
@@ -1463,6 +1471,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (item_value == "startrouting") {
           auto_update_view();
+
+          switch (routing.active) {
+            case true:
+              routing.active = false;
+              helper.side_toaster("Routing paused", 2000);
+              document.activeElement.innerText = "start";
+              break;
+            case false:
+              routing.active = true;
+              helper.side_toaster("Routing started", 2000);
+              document.activeElement.innerText = "stop";
+
+              break;
+
+            default:
+              console.log("Not Zero, One or Two");
+          }
         }
 
         if (item_value == "export") {
@@ -1520,6 +1545,8 @@ document.addEventListener("DOMContentLoaded", function () {
             document.activeElement.innerText,
             routing_service_callback
           );
+
+          //;
         }
 
         //add gpx data from osm
@@ -1740,7 +1767,7 @@ document.addEventListener("DOMContentLoaded", function () {
       finder_panels = finder_panels.filter((e) => e.id != "tracking");
     }
 
-    if (routing.active == false) {
+    if (routing.loaded == false) {
       finder_panels = finder_panels.filter((e) => e.id != "routing");
     }
     tabIndex = 0;
@@ -2532,12 +2559,4 @@ document.addEventListener("DOMContentLoaded", function () {
       }, 3000);
     }
   });
-  /*
-  window.onerror = function (msg, url, linenumber) {
-    alert(
-      "Error message: " + msg + "\nURL: " + url + "\nLine Number: " + linenumber
-    );
-    return true;
-  };
-  */
 });

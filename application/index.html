@@ -480,12 +480,25 @@
 
         <strong class="item"><u>End</u></strong>
         <div id="routing-end-point"></div>
+        <strong class="item"><u>Type</u></strong>
+        <div id="routing-profile-status"></div>
 
         <button class="item" tabindex="0" data-map="saverouting">
           save route
         </button>
-        <button class="item" tabindex="1" data-map="startrouting">start</button>
+        <button
+          class="item"
+          tabindex="1"
+          id="routing-profile"
+          data-map="startrouting"
+        >
+          start
+        </button>
 
+        <strong class="item"><u>Distance to track</u></strong>
+        <div id="distance-to-track"></div>
+
+        <h2>Instructions</h2>
         <div id="routing-container"></div>
 
         <script id="template-routing" type="x-tmpl-mustache">

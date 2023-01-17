@@ -1,7 +1,7 @@
 {
   "name": "o.map",
   "id": "o.map",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "o.map is an openstreetmap app for KaiOS, it is a good companion for your next outdoor adventure",
   "lang": "en-US",
   "start_url": "/index.html",

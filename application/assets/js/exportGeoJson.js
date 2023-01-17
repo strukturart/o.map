@@ -24,8 +24,10 @@ const geojson = ((_) => {
     }
 
     if (type == "path") {
-      let single = tracking_group.toGeoJSON();
-      extData = JSON.stringify(single);
+    
+      let p = geoJSON_group.toGeoJSON();
+      extData = JSON.stringify(p);
+      console.log(p);
     }
 
     if (type == "tracking") {
@@ -67,14 +69,16 @@ const geojson = ((_) => {
       sdcard = navigator.getDeviceStorage("sdcard");
     } catch (e) {}
 
-    try {
-      sdcard = navigator.b2g.getDeviceStorage("sdcard");
-    } catch (e) {}
+    if ("b2g" in navigator) {
+      try {
+        sdcard = navigator.b2g.getDeviceStorage("sdcard");
+      } catch (e) {}
+    }
 
     let requestAdd = sdcard.addNamed(geojson_file, file_path_name);
 
     requestAdd.onsuccess = function () {
-      status.windowOpen = "finder";
+      status.windowOpen = "map";
       helper.side_toaster("<img src='./assets/image/E25C.svg'>", 5000);
       bottom_bar("", "", "");
 
@@ -94,12 +98,12 @@ const geojson = ((_) => {
         "Unable to write the file, the file name may already be used",
         10000
       );
-      status.windowOpen = "finder";
+      status.windowOpen = "map";
     };
   };
 
   ///////////
-  //save geoJson file
+  //save gpx file
   /////////////////
   const save_gpx = function (file_path_name, type) {
     let extData = "";

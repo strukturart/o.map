@@ -26,8 +26,9 @@ self.onsystemmessage = (evt) => {
         if (activityName == "omap-oauth") {
           let code = activityData.code;
 
+          const url = "/oauth.html?code=" + code;
           channel.postMessage({
-            oauth_success: code,
+            oauth_success: url,
           });
         }
 

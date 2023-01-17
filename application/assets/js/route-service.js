@@ -66,11 +66,7 @@ const rs = ((_) => {
     });
   };
 
-  let instructions = function () {
-    if (routing.active) {
-      module.get_closest_point(routing.coordinates);
-    }
-  };
+  let instructions = function () {};
 
   return {
     instructions,

@@ -726,6 +726,7 @@ div#finder div#question {
 
 #routing-container {
   display: block;
+  margin: 20px 0 0 0;
 }
 
 div.panel {

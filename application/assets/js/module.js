@@ -205,13 +205,15 @@ const module = (() => {
         //https://blog.codecentric.de/2018/06/leaflet-geojson-daten/
         L.geoJSON(geojson_data, {
           onEachFeature: function (feature, layer) {
-            if (feature.geometry != "") {
+            if (feature.geometry != null) {
               let p = feature.geometry.coordinates[0];
               map.flyTo([p[1], p[0]]);
             }
             //routing data
-            if (feature.properties.segments[0].steps) {
-              callback(geojson_data, true);
+            if (feature.properties.segments != undefined) {
+              if (feature.properties.segments[0].steps) {
+                callback(geojson_data, true);
+              }
             }
           },
           // Marker Icon
@@ -399,14 +401,30 @@ const module = (() => {
   let closest_average = [];
   //closest point in route/track
   let get_closest_point = function (route) {
+    if (mainmarker.device_lat == "" || mainmarker.device_lat == null)
+      return false;
+
+    console.log("route" + route);
+    //let r = route.map((row) => row.reverse());
+    let m = L.polyline(route);
+
     let latlng = [mainmarker.device_lat, mainmarker.device_lng];
 
-    if (latlng == "") return false;
-    let k = L.GeometryUtil.closest(map, route, latlng, true);
-    console.log("dis" + JSON.stringify(k));
-    //notification
+    let k = L.GeometryUtil.closest(map, m, latlng, true);
 
-    closest_average.push(k.distance);
+    L.marker(k).addTo(map);
+
+    let f = calc_distance(
+      mainmarker.device_lat,
+      mainmarker.device_lng,
+      k.lat,
+      k.lng,
+      "km"
+    );
+
+    document.querySelector("#distance-to-track").innerText = f / 1000;
+    //notification
+    if (mainmarker.accuracy < 22) closest_average.push(f);
 
     let result = 0;
     let sum = 0;
@@ -423,7 +441,7 @@ const module = (() => {
 
       result = sum / 40;
       if (setting.routing_notification == false) return false;
-      if (result > 20) {
+      if (result > 0.5) {
         navigator.vibrate([1000, 500, 1000]);
         helper.toaster("to far" + result, 3000);
       } else {
@@ -594,7 +612,7 @@ const module = (() => {
   let tracking_cache = [];
   let gps_lock;
   let tracking_altitude = [];
-
+  let calc = 0;
   let tracking_distance;
 
   let polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
@@ -607,7 +625,11 @@ const module = (() => {
       status.path_selection = false;
       measure_group_path.clearLayers();
       measure_group.clearLayers();
+      geoJSON_group.clearLayers();
+      distances = [];
+
       polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
+      calc = 0;
       return true;
     }
 
@@ -619,7 +641,7 @@ const module = (() => {
       document.querySelector("div#tracking-evo-down span").innerText = "";
       document.querySelector("div#tracking-moving-time span").innerText = "";
       document.querySelector("div#tracking-speed-average-time").innerText = "";
-
+      distances = [];
       clearInterval(tracking_interval);
       setTimeout(function () {
         localStorage.removeItem("tracking_cache");
@@ -668,8 +690,6 @@ const module = (() => {
       }
       if (setting.tracking_screenlock) screenWakeLock("lock", "screen");
 
-      let calc = 0;
-
       tracking_interval = setInterval(function () {
         //only write data if accuracy
         let n = 0;
@@ -713,22 +733,6 @@ const module = (() => {
           }
 
           if (tracking_cache.length > 2) {
-            /*
-            tracking_distance = calc_distance(
-              Number(tracking_cache[tracking_cache.length - 1].lat),
-              Number(tracking_cache[tracking_cache.length - 1].lng),
-              Number(tracking_cache[tracking_cache.length - 2].lat),
-              Number(tracking_cache[tracking_cache.length - 2].lng)
-            );
-
-            tracking_distance = tracking_distance / 1000;
-
-            calc += Number(tracking_distance);
-
-            document.querySelector("div#tracking-distance").innerText =
-              calc.toFixed(2) + general.measurement_unit;
-*/
-
             //get tracking data to display in view
             new L.GPX(toGPX(), { async: true }).on("loaded", function (e) {
               //meter
@@ -806,6 +810,11 @@ const module = (() => {
 
       polyline.addLatLng([mainmarker.current_lat, mainmarker.current_lng]);
 
+      geoJSON_group.addLayer(measure_group);
+      geoJSON_group.addLayer(polyline);
+
+      //console.log(geoJSON_group.toGeoJSON());
+
       if (l.length < 2) return false;
       let dis = calc_distance(
         l[l.length - 1]._latlng.lat,
@@ -875,11 +884,11 @@ const module = (() => {
     //imperial
 
     if (unit == "meter" && setting.measurement == false) {
-      value * 3.280839895;
+      a = value * 3.280839895;
     }
 
     if (unit == "kilometer" && setting.measurement == false) {
-      value * 0.6213711922;
+      a = value * 0.6213711922;
     }
     return a.toFixed(2);
   };

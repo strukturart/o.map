@@ -3,21 +3,24 @@
 O.Map is an openstreetmap app for KaiOs, it is a good companion for your next outdoor adventure.
 
 ![badge-release](https://img.shields.io/github/v/release/strukturart/o.map?include_prereleases&style=plastic)
-[![badge-bhackers](https://img.shields.io/badge/bHackers-bHackerStore-orange)](https://store.bananahackers.net/#omap)
 ![badge-downloads](https://img.shields.io/github/downloads/strukturart/o.map/total)
+[![badge-bhackers](https://img.shields.io/badge/bHackers-bHackerStore-orange)](https://store.bananahackers.net/#omap)
 
 ### Features
 
 - Map online/offline
 - share your position
 - Import Tracks (geoJson / gpx)
-- Export markers (geoJson)
+- Export marker/path (geoJson)
 - Save your position
 - open .gpx files
 - open geoJSON files
 - search locations
 - rainradar
+- weather
 - open openstreetmap link
+- tracking
+- draw track
 
 ![image-1](/images/image-1.png)
 ![image-2](/images/image-2.png)
