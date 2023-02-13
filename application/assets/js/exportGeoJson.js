@@ -24,7 +24,6 @@ const geojson = ((_) => {
     }
 
     if (type == "path") {
-    
       let p = geoJSON_group.toGeoJSON();
       extData = JSON.stringify(p);
       console.log(p);
@@ -52,15 +51,15 @@ const geojson = ((_) => {
           bounds.getSouthWest().lng,
           bounds.getSouthWest().lat,
           bounds.getNorthEast().lng,
-          bounds.getNorthEast().lat,
-        ],
+          bounds.getNorthEast().lat
+        ]
       ];
 
       extData = JSON.stringify(collection);
     }
 
     let geojson_file = new Blob([extData], {
-      type: "application/json",
+      type: "application/json"
     });
 
     let sdcard;
@@ -79,17 +78,18 @@ const geojson = ((_) => {
 
     requestAdd.onsuccess = function () {
       status.windowOpen = "map";
-      helper.side_toaster("<img src='./assets/image/E25C.svg'>", 5000);
       bottom_bar("", "", "");
 
       if (type == "tracking") {
         module.measure_distance("destroy_tracking");
         mainmarker.tracking = false;
         localStorage.removeItem("tracking_cache");
+        helper.side_toaster("tracking saved", 5000);
       }
 
       if (type == "path") {
         module.measure_distance("destroy");
+        helper.side_toaster("tracking saved", 5000);
       }
     };
 
@@ -105,7 +105,7 @@ const geojson = ((_) => {
   ///////////
   //save gpx file
   /////////////////
-  const save_gpx = function (file_path_name, type) {
+  const save_gpx = function (file_path_name, type, callback) {
     let extData = "";
 
     if (type == "tracking") {
@@ -119,7 +119,7 @@ const geojson = ((_) => {
     }
 
     let geojson_file = new Blob([extData], {
-      type: "application/gpx+xm",
+      type: "application/gpx+xm"
     });
 
     let sdcard;
@@ -138,19 +138,17 @@ const geojson = ((_) => {
       status.windowOpen = "map";
       bottom_bar("", "", "");
 
+      callback(file_path_name);
+
       if (type == "tracking") {
         module.measure_distance("destroy_tracking");
         mainmarker.tracking = false;
         localStorage.removeItem("tracking_cache");
       }
-
-      setTimeout(function () {
-        helper.side_toaster("<img src='./assets/image/E25C.svg'>", 3000);
-      }, 2000);
     };
 
     requestAdd.onerror = function () {
-      helper.toaster(
+      helper.side_toaster(
         "Unable to write the file, the file name may already be used",
         10000
       );
@@ -160,6 +158,6 @@ const geojson = ((_) => {
 
   return {
     save_geojson,
-    save_gpx,
+    save_gpx
   };
 })();

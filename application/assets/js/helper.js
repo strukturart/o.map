@@ -1,7 +1,7 @@
 const helper = (() => {
   let isOnline = function () {
     var xhttp = new XMLHttpRequest({
-      mozSystem: true,
+      mozSystem: true
     });
 
     xhttp.open("GET", "https://google.com?" + new Date().getTime(), true);
@@ -116,10 +116,9 @@ const helper = (() => {
     xhr.onload = function () {
       let responseObj = xhr.response;
       console.log(responseObj);
-      toaster(xhr.response.message, 5000);
       let latlng = [
         responseObj.data.location.latitude,
-        responseObj.data.location.longitude,
+        responseObj.data.location.longitude
       ];
       callback(latlng);
     };
@@ -158,7 +157,7 @@ const helper = (() => {
     try {
       let finder = new Applait.Finder({
         type: "sdcard",
-        debugMode: false,
+        debugMode: false
       });
       finder.search(name);
 
@@ -308,6 +307,20 @@ const helper = (() => {
     };
   };
 
+  let date_now = function () {
+    let current_datetime = new Date();
+    let now =
+      current_datetime.getFullYear() +
+      "-" +
+      current_datetime.getMonth() +
+      "-" +
+      current_datetime.getDate() +
+      "-" +
+      current_datetime.getHours() +
+      current_datetime.getMinutes();
+    return now;
+  };
+
   return {
     getManifest,
     toaster,
@@ -320,51 +333,12 @@ const helper = (() => {
     downloadFile,
     search_file,
     list_files,
+    date_now
   };
 })();
 
 if (window.NodeList && !NodeList.prototype.forEach) {
   NodeList.prototype.forEach = Array.prototype.forEach;
-}
-
-function notify(param_title, param_text, param_silent) {
-  var options = {
-    body: param_text,
-    silent: true,
-  };
-  // Let's check if the browser supports notifications
-  if (!("Notification" in window)) {
-    alert("This browser does not support desktop notification");
-  }
-
-  // Let's check whether notification permissions have already been granted
-  else if (Notification.permission === "granted") {
-    // If it's okay let's create a notification
-    var notification = new Notification(param_title, options);
-  }
-
-  // Otherwise, we need to ask the user for permission
-  else if (Notification.permission !== "denied") {
-    Notification.requestPermission().then(function (permission) {
-      // If the user accepts, let's create a notification
-      if (permission === "granted") {
-        var notification = new Notification(param_title, options);
-      }
-    });
-  }
-}
-
-function localStorageWriteRead(item, value) {
-  if (
-    item != "" &&
-    value != "" &&
-    value != "undefined" &&
-    item != "undefined"
-  ) {
-    localStorage.setItem(item, value);
-  }
-
-  return localStorage.getItem(item);
 }
 
 //delete file
@@ -452,7 +426,7 @@ let update_file = function (filepath, storage) {
 let add_file = function () {
   var sdcard = navigator.getDeviceStorage("sdcard");
   var file = new Blob(['[{"markers":[]}]'], {
-    type: "application/json",
+    type: "application/json"
   });
 
   var request = sdcard.addNamed(file, "omap.json");
@@ -466,17 +440,4 @@ let add_file = function () {
   request.onerror = function () {
     alert("Unable to write the file: " + this.error);
   };
-};
-
-let now = function () {
-  let current_datetime = new Date();
-  let now =
-    current_datetime.getFullYear() +
-    "-" +
-    (current_datetime.getMonth() + 1) +
-    "-" +
-    current_datetime.getDate() +
-    "_" +
-    current_datetime.getHours();
-  return now;
 };

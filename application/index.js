@@ -15,8 +15,6 @@ let tracking_group = new L.FeatureGroup();
 let gpx_group = new L.FeatureGroup();
 let geoJSON_group = new L.FeatureGroup();
 
-
-
 var jsonLayer = L.geoJSON("", { color: "red" });
 let map;
 let tracking_timestamp = [];
@@ -32,7 +30,7 @@ let routing = {
   data: "",
   active: false,
   closest: "",
-  loaded: false,
+  loaded: false
 };
 
 let mainmarker = {
@@ -58,7 +56,7 @@ let mainmarker = {
   last_location:
     localStorage.getItem("last_location") != null
       ? JSON.parse(localStorage.getItem("last_location"))
-      : [0, 0],
+      : [0, 0]
 };
 
 let setting = {};
@@ -76,7 +74,7 @@ let general = {
   last_map:
     localStorage.getItem("last_map") != null
       ? localStorage.getItem("last_map")
-      : "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      : "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 };
 
 let status = {
@@ -88,7 +86,7 @@ let status = {
   path_selection: false,
   windowOpen: "map",
   sub_status: "",
-  selected_marker: "",
+  selected_marker: ""
 };
 
 if (!navigator.geolocation) {
@@ -99,7 +97,7 @@ if ("serviceWorker" in navigator) {
   try {
     navigator.serviceWorker
       .register("sw.js", {
-        scope: "/",
+        scope: "/"
       })
       .then((registration) => {
         registration.systemMessageManager.subscribe("activity").then(
@@ -116,7 +114,7 @@ if ("serviceWorker" in navigator) {
 map = L.map("map-container", {
   zoomControl: false,
   dragging: false,
-  keyboard: true,
+  keyboard: true
 });
 
 map.on("load", function () {
@@ -215,13 +213,13 @@ document.addEventListener("DOMContentLoaded", function () {
             f.setIcon(maps.end_icon);
           }
         }
-      },
+      }
     });
 
     i.forEach(function (value, index) {
       instructions.push({
         instruction: value.instruction,
-        index: index + 2,
+        index: index + 2
       });
     });
 
@@ -270,9 +268,9 @@ document.addEventListener("DOMContentLoaded", function () {
           // calling 'display' will display the ad
           ad.call("display", {
             navClass: "item",
-            display: "block",
+            display: "block"
           });
-        },
+        }
       });
     };
     document.head.appendChild(js);
@@ -385,7 +383,7 @@ document.addEventListener("DOMContentLoaded", function () {
       //search gpx
       let finder_gpx = new Applait.Finder({
         type: "sdcard",
-        debugMode: false,
+        debugMode: false
       });
 
       finder_gpx.search(".gpx");
@@ -452,38 +450,40 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("tracks-title").style.display = "none";
 
   let find_geojson = function () {
-    //search geojson
-    let finder = new Applait.Finder({
-      type: "sdcard",
-      debugMode: false,
-    });
-    finder.search(".geojson");
+    try {
+      //search geojson
+      let finder = new Applait.Finder({
+        type: "sdcard",
+        debugMode: false
+      });
+      finder.search(".geojson");
 
-    finder.on("searchComplete", function (needle, filematchcount) {});
-    finder.on("fileFound", function (file, fileinfo, storageName) {
-      document.getElementById("tracks-title").style.display = "block";
+      finder.on("searchComplete", function (needle, filematchcount) {});
+      finder.on("fileFound", function (file, fileinfo, storageName) {
+        document.getElementById("tracks-title").style.display = "block";
 
-      document
-        .querySelector("div#tracksmarkers")
-        .insertAdjacentHTML(
-          "afterend",
-          '<div class="item" data-map="geojson" data-filename="' +
-            fileinfo.name +
-            '" data-filepath="' +
-            fileinfo.path +
-            "/" +
-            fileinfo.name +
-            '">' +
-            fileinfo.name +
-            "</div>"
-        );
+        document
+          .querySelector("div#tracksmarkers")
+          .insertAdjacentHTML(
+            "afterend",
+            '<div class="item" data-map="geojson" data-filename="' +
+              fileinfo.name +
+              '" data-filepath="' +
+              fileinfo.path +
+              "/" +
+              fileinfo.name +
+              '">' +
+              fileinfo.name +
+              "</div>"
+          );
 
-      //load startup item
+        //load startup item
 
-      if (fileinfo.name.substring(0, 1) == "_") {
-        module.loadGeoJSON(fileinfo.name, false);
-      }
-    });
+        if (fileinfo.name.substring(0, 1) == "_") {
+          module.loadGeoJSON(fileinfo.path + "/" + fileinfo.name, false);
+        }
+      });
+    } catch (e) {}
 
     //KaiOS 3.x
 
@@ -616,12 +616,12 @@ document.addEventListener("DOMContentLoaded", function () {
     let n = "Bearer " + localStorage.getItem("openstreetmap_token");
 
     const myHeaders = new Headers({
-      Authorization: n,
+      Authorization: n
     });
 
     return fetch("https://api.openstreetmap.org/api/0.6/user/gpx_files", {
       method: "GET",
-      headers: myHeaders,
+      headers: myHeaders
     })
       .then((response) => response.text())
       .then((data) => {
@@ -634,7 +634,7 @@ document.addEventListener("DOMContentLoaded", function () {
           if (setting.osm_tag == null || setting.osm_tag == "") {
             let m = {
               name: s[i].getAttribute("name"),
-              id: s[i].getAttribute("id"),
+              id: s[i].getAttribute("id")
             };
 
             document
@@ -653,7 +653,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (s[i].childNodes[n].textContent == setting.osm_tag) {
                   let m = {
                     name: s[i].getAttribute("name"),
-                    id: s[i].getAttribute("id"),
+                    id: s[i].getAttribute("id")
                   };
 
                   document
@@ -683,12 +683,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const myHeaders = new Headers({
       Authorization: n,
-      Accept: "application/gpx+xml",
+      Accept: "application/gpx+xml"
     });
 
     return fetch("https://api.openstreetmap.org/api/0.6/gpx/" + id + "/data", {
       method: "GET",
-      headers: myHeaders,
+      headers: myHeaders
     })
       .then((response) => response.text())
       .then((data) => {
@@ -699,7 +699,7 @@ document.addEventListener("DOMContentLoaded", function () {
           helper.downloadFile(filename, data, callback_download);
         } else {
           new L.GPX(gpx, {
-            async: true,
+            async: true
           })
             .on("loaded", function (e) {
               map.fitBounds(e.target.getBounds());
@@ -724,32 +724,40 @@ document.addEventListener("DOMContentLoaded", function () {
       );
       return false;
     }
+
     let n = "Bearer " + general.osm_token;
     const myHeaders = new Headers({
-      Authorization: n,
+      Authorization: n
     });
 
     var blob = new Blob([gpx_data], {
-      type: "application/gpx",
+      type: "application/gpx"
     });
+
+    helper.side_toaster("try uploading file", 2000);
 
     let formData = new FormData();
     formData.append("description", "uploaded from o.map");
     formData.append("visibility", "private");
     formData.append("file", blob, filename);
 
-    return fetch("https://api.openstreetmap.org/api/0.6/gpx/create", {
+    fetch("https://api.openstreetmap.org/api/0.6/gpx/create", {
       method: "POST",
       body: formData,
-      headers: myHeaders,
+      headers: myHeaders
     })
-      .then((response) => response.text())
+      //.then((response) => response.text())
       .then((data) => {
-        helper.side_toaster("file uploaded", 4000);
+        console.log(data.status);
+        if (data.status == 200) {
+          setTimeout(() => {
+            helper.side_toaster("file uploaded", 4000);
+          }, 2000);
+        }
       })
 
       .catch((error) => {
-        helper.side_toaster(error, 4000);
+        helper.side_toaster("error: " + error, 4000);
       });
   };
 
@@ -796,6 +804,23 @@ document.addEventListener("DOMContentLoaded", function () {
       );
 
     finder_tabindex();
+  };
+
+  let gpx_callback = function (filename) {
+    helper.side_toaster(filename + " saved", 3000);
+
+    document
+      .querySelector("div#gpx")
+      .nextSibling.insertAdjacentHTML(
+        "afterend",
+        "<div class='item' data-map='gpx' data-filename='" +
+          filename +
+          "' data-filepath='" +
+          filename +
+          "'>" +
+          filename +
+          "</div>"
+      );
   };
 
   /////openweather callback
@@ -968,6 +993,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelector("div#finder").style.display = "block";
     finder_navigation("start");
     status.windowOpen = "finder";
+
     activelayer();
     mapcenter_position();
 
@@ -1011,7 +1037,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let options = {
       enableHighAccuracy: true,
-      timeout: 15000,
+      timeout: 15000
     };
 
     function success(pos) {
@@ -1046,7 +1072,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function error(err) {
-      if (setting.ipbase_api != "" || setting.ipbase_api != undefined) {
+      console.log(setting.ipbase_api);
+      if (setting.ipbase_api != "") {
         var z = confirm(
           "do you want to find out your position by your ip address ?"
         );
@@ -1055,7 +1082,10 @@ document.addEventListener("DOMContentLoaded", function () {
       if (z == true) {
         helper.geoip(geoip_callback, setting.ipbase_api);
       } else {
-        helper.toaster("Position not found, load last known position", 4000);
+        helper.side_toaster(
+          "Position not found, load last known position",
+          4000
+        );
         mainmarker.current_lat = mainmarker.last_location[0];
         mainmarker.current_lng = mainmarker.last_location[1];
         mainmarker.current_alt = 0;
@@ -1231,7 +1261,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let options = {
       enableHighAccuracy: true,
-      timeout: 35000,
+      timeout: 35000
     };
     watchID = geoLoc.watchPosition(showLocation, errorHandler, options);
   }
@@ -1368,7 +1398,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (item_value == "upload-file-to-osm") {
         document.querySelector("div#files-option").style.display = "none";
-        helper.side_toaster("try uploading file", 2000);
+        open_finder();
+        general.active_item.focus();
         module.loadGPX_data(
           general.active_item.getAttribute("data-filepath"),
           osm_server_upload_gpx
@@ -1393,11 +1424,6 @@ document.addEventListener("DOMContentLoaded", function () {
     ) {
       top_bar("", "", "");
       bottom_bar("", "", "");
-      /*
-      if (document.activeElement.getAttribute("data-map") == "gpx") {
-        module.loadGPX(document.activeElement.getAttribute("data-filepath"));
-      }
-      */
 
       //custom maps and layers from json file
       if (document.activeElement.hasAttribute("data-url")) {
@@ -1421,6 +1447,8 @@ document.addEventListener("DOMContentLoaded", function () {
         //add gpx data
         if (item_value == "gpx") {
           module.loadGPX(document.activeElement.getAttribute("data-filepath"));
+          document.querySelector("div#finder").style.display = "none";
+          status.windowOpen = "map";
         }
 
         if (item_value == "weather") {
@@ -1542,9 +1570,12 @@ document.addEventListener("DOMContentLoaded", function () {
         //add geoJson data
         if (item_value == "geojson") {
           module.loadGeoJSON(
-            document.activeElement.innerText,
+            document.activeElement.getAttribute("data-filepath"),
             routing_service_callback
           );
+
+          document.querySelector("div#finder").style.display = "none";
+          status.windowOpen = "map";
 
           //;
         }
@@ -1614,8 +1645,6 @@ document.addEventListener("DOMContentLoaded", function () {
       if (e.style.display == "block") {
         e.classList.add("item");
         e.setAttribute("tabindex", p++);
-
-        console.log(e);
       } else {
         e.classList.remove("item");
       }
@@ -1743,7 +1772,7 @@ document.addEventListener("DOMContentLoaded", function () {
     panels.forEach(function (e) {
       finder_panels.push({
         name: e.getAttribute("name"),
-        id: e.getAttribute("id"),
+        id: e.getAttribute("id")
       });
     });
     //remove finder pages
@@ -1879,7 +1908,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.activeElement.parentNode.scrollBy({
         left: 0,
         top: elY - window.innerHeight / 2,
-        behavior: "smooth",
+        behavior: "smooth"
       });
     }
   }
@@ -2023,6 +2052,9 @@ document.addEventListener("DOMContentLoaded", function () {
           document.getElementById("files-option").style.display = "none";
 
           open_finder();
+          windowOpen = "finder";
+
+          general.active_item.focus();
 
           break;
         }
@@ -2177,9 +2209,17 @@ document.addEventListener("DOMContentLoaded", function () {
           status.windowOpen == "user-input" &&
           save_mode == "geojson-tracking"
         ) {
+          let w;
+          if (module.user_input("return") == "") {
+            w = helper.date_now();
+          } else {
+            w = module.user_input("return");
+          }
+
           geojson.save_gpx(
-            setting.export_path + module.user_input("return") + ".gpx",
-            "tracking"
+            setting.export_path + w + ".gpx",
+            "tracking",
+            gpx_callback
           );
           save_mode = "";
           break;

@@ -26,7 +26,7 @@ const module = (() => {
 
     let result = {
       sunrise: sunrise,
-      sunset: sunset,
+      sunset: sunset
     };
     return result;
   };
@@ -40,8 +40,8 @@ const module = (() => {
         async: true,
         marker_options: {
           startIconUrl: "assets/css/images/start.png",
-          endIconUrl: "assets/css/images/end.png",
-        },
+          endIconUrl: "assets/css/images/end.png"
+        }
       })
         .on("loaded", function (e) {
           map.fitBounds(e.target.getBounds());
@@ -88,8 +88,8 @@ const module = (() => {
             async: true,
             marker_options: {
               startIconUrl: "assets/css/images/start.png",
-              endIconUrl: "assets/css/images/end.png",
-            },
+              endIconUrl: "assets/css/images/end.png"
+            }
           })
             .on("loaded", function (e) {
               map.fitBounds(e.target.getBounds());
@@ -108,14 +108,10 @@ const module = (() => {
   function loadGPX_data(filename, callback) {
     if (filename) {
       try {
-        let finder = new Applait.Finder({
-          type: "sdcard",
-          debugMode: false,
-        });
-        finder.search(filename);
-
-        finder.on("fileFound", function (file, fileinfo, storageName) {
-          //file reader
+        let sdcard = navigator.getDeviceStorage("sdcard");
+        let request = sdcard.get(filename);
+        request.onsuccess = function () {
+          console.log(filename);
 
           let reader = new FileReader();
 
@@ -128,8 +124,9 @@ const module = (() => {
             callback(filename, event.target.result);
           };
 
-          reader.readAsText(file);
-        });
+          reader.readAsText(this.result);
+        };
+        request.onerror = function () {};
       } catch (e) {}
 
       try {
@@ -162,14 +159,16 @@ const module = (() => {
   /////Load GeoJSON///////////
   ///////////////////////
   let loadGeoJSON = function (filename, callback) {
-    //file reader
+      //file reader
     try {
       let sdcard = navigator.getDeviceStorage("sdcard");
       let request = sdcard.get(filename);
       request.onsuccess = function () {
         m(this.result);
       };
-      request.onerror = function () {};
+      request.onerror = function () {
+        alert("error");
+      };
     } catch (e) {}
 
     if ("b2g" in window.navigator) {
@@ -179,7 +178,9 @@ const module = (() => {
         request.onsuccess = function () {
           m(this.result);
         };
-        request.onerror = function () {};
+        request.onerror = function (e) {
+          alert(e + "error");
+        };
       } catch (e) {}
     }
 
@@ -230,13 +231,12 @@ const module = (() => {
 
             t.addTo(markers_group);
             map.flyTo(latlng);
-          },
+          }
 
           // Popup
         }).addTo(geoJSON_group);
 
         document.querySelector("div#finder").style.display = "none";
-
         status.windowOpen = "map";
       };
 
@@ -597,12 +597,12 @@ const module = (() => {
   let popup_option = {
     closeButton: false,
     maxWidth: 200,
-    maxHeight: 200,
+    maxHeight: 200
   };
 
   let path_option = {
     color: "red",
-    step: 0,
+    step: 0
   };
 
   let distances = [];
@@ -678,7 +678,7 @@ const module = (() => {
             polyline_tracking.addLatLng([
               tracking_cache[i].lat,
               tracking_cache[i].lng,
-              tracking_cache[i].timestamp,
+              tracking_cache[i].timestamp
             ]);
 
             tracking_timestamp.push(tracking_cache[i].timestamp);
@@ -711,7 +711,7 @@ const module = (() => {
           polyline_tracking.addLatLng([
             mainmarker.device_lat,
             mainmarker.device_lng,
-            mainmarker.device_alt,
+            mainmarker.device_alt
           ]);
 
           tracking_cache.push({
@@ -719,7 +719,7 @@ const module = (() => {
             lng: mainmarker.device_lng,
             alt: mainmarker.device_alt,
             timestamp: ts.toISOString(),
-            tracking_altitude: mainmarker.device_alt,
+            tracking_altitude: mainmarker.device_alt
           });
           tracking_altitude = [];
           tracking_cache.forEach(function (e) {
@@ -912,6 +912,6 @@ const module = (() => {
     format_ms,
     format_s,
 
-    get_closest_point,
+    get_closest_point
   };
 })();
