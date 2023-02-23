@@ -76,7 +76,7 @@ For this you have to create a JSON file with the following structure:
     "type": "overlayer",
     "url": "http://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png",
     "attribution": "hiking.waymarkedtrails.org",
-    "maxzoom": 18,
+    "maxzoom": 18
   },
 
   {
@@ -84,7 +84,7 @@ For this you have to create a JSON file with the following structure:
     "type": "map",
     "url": "http://mt0.google.com/vt/lyrs=r&hl=en&x={x}&y={y}&z={z}",
     "attribution": "Google",
-    "maxzoom": 18,
+    "maxzoom": 18
   },
 
   {
@@ -92,7 +92,7 @@ For this you have to create a JSON file with the following structure:
     "type": "overpass",
     "url": "sport=climbing",
     "attribution": "Overpass",
-    "maxzoom": 18,
+    "maxzoom": 18
   },
 
   {
@@ -100,9 +100,9 @@ For this you have to create a JSON file with the following structure:
     "type": "overpass",
     "url": "amenity=drinking_water",
     "attribution": "Overpass",
-    "maxzoom": 18,
-  },
-];
+    "maxzoom": 18
+  }
+]
 ```
 
 you can also add an overpass layer, https://taginfo.openstreetmap.org/ you add the tags in the key url.
