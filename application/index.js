@@ -21,6 +21,7 @@ let tracking_timestamp = [];
 let myMarker;
 let gpx_selection_info = {};
 let tilesLayer = "";
+let n;
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -30,7 +31,7 @@ let routing = {
   data: "",
   active: false,
   closest: "",
-  loaded: false
+  loaded: false,
 };
 
 let mainmarker = {
@@ -56,7 +57,7 @@ let mainmarker = {
   last_location:
     localStorage.getItem("last_location") != null
       ? JSON.parse(localStorage.getItem("last_location"))
-      : [0, 0]
+      : [0, 0],
 };
 
 let setting = {};
@@ -74,7 +75,7 @@ let general = {
   last_map:
     localStorage.getItem("last_map") != null
       ? localStorage.getItem("last_map")
-      : "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+      : "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
 };
 
 let status = {
@@ -86,7 +87,7 @@ let status = {
   path_selection: false,
   windowOpen: "map",
   sub_status: "",
-  selected_marker: ""
+  selected_marker: "",
 };
 
 if (!navigator.geolocation) {
@@ -97,7 +98,7 @@ if ("serviceWorker" in navigator) {
   try {
     navigator.serviceWorker
       .register("sw.js", {
-        scope: "/"
+        scope: "/",
       })
       .then((registration) => {
         registration.systemMessageManager.subscribe("activity").then(
@@ -114,7 +115,7 @@ if ("serviceWorker" in navigator) {
 map = L.map("map-container", {
   zoomControl: false,
   dragging: false,
-  keyboard: true
+  keyboard: true,
 });
 
 map.on("load", function () {
@@ -136,8 +137,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("routing-container").innerHTML = rendered;
   }
 
-  let routing_service_callback = function (e, file_loaded) {
-    routing.data = e;
+  let routing_service_callback = function (e) {
     //clean layer
     jsonLayer.clearLayers();
     jsonLayer.addData(e);
@@ -148,7 +148,7 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log(e);
 
     //fly to start point
-    let m = L.geoJSON(e, {
+    L.geoJSON(e, {
       onEachFeature: function (feature) {
         if (feature.geometry != "") {
           //fly to start
@@ -157,8 +157,6 @@ document.addEventListener("DOMContentLoaded", function () {
           reverse_2D_array = feature.geometry.coordinates.map((row) =>
             row.reverse()
           );
-
-          // routing.coordinates = feature.geometry.coordinates;
 
           routing.coordinates = reverse_2D_array;
 
@@ -213,13 +211,28 @@ document.addEventListener("DOMContentLoaded", function () {
             f.setIcon(maps.end_icon);
           }
         }
-      }
+      },
     });
+
+    //reverse
+    n = L.geoJSON(e, {
+      onEachFeature: function (feature) {
+        if (feature.geometry != "") {
+          reverse_2D_array = feature.geometry.coordinates.map((row) =>
+            row.reverse()
+          );
+
+          routing.coordinates = reverse_2D_array;
+        }
+      },
+    });
+
+    routing.data = e;
 
     i.forEach(function (value, index) {
       instructions.push({
         instruction: value.instruction,
-        index: index + 2
+        index: index + 2,
       });
     });
 
@@ -268,9 +281,9 @@ document.addEventListener("DOMContentLoaded", function () {
           // calling 'display' will display the ad
           ad.call("display", {
             navClass: "item",
-            display: "block"
+            display: "block",
           });
-        }
+        },
       });
     };
     document.head.appendChild(js);
@@ -383,7 +396,7 @@ document.addEventListener("DOMContentLoaded", function () {
       //search gpx
       let finder_gpx = new Applait.Finder({
         type: "sdcard",
-        debugMode: false
+        debugMode: false,
       });
 
       finder_gpx.search(".gpx");
@@ -454,7 +467,7 @@ document.addEventListener("DOMContentLoaded", function () {
       //search geojson
       let finder = new Applait.Finder({
         type: "sdcard",
-        debugMode: false
+        debugMode: false,
       });
       finder.search(".geojson");
 
@@ -616,12 +629,12 @@ document.addEventListener("DOMContentLoaded", function () {
     let n = "Bearer " + localStorage.getItem("openstreetmap_token");
 
     const myHeaders = new Headers({
-      Authorization: n
+      Authorization: n,
     });
 
     return fetch("https://api.openstreetmap.org/api/0.6/user/gpx_files", {
       method: "GET",
-      headers: myHeaders
+      headers: myHeaders,
     })
       .then((response) => response.text())
       .then((data) => {
@@ -634,7 +647,7 @@ document.addEventListener("DOMContentLoaded", function () {
           if (setting.osm_tag == null || setting.osm_tag == "") {
             let m = {
               name: s[i].getAttribute("name"),
-              id: s[i].getAttribute("id")
+              id: s[i].getAttribute("id"),
             };
 
             document
@@ -653,7 +666,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (s[i].childNodes[n].textContent == setting.osm_tag) {
                   let m = {
                     name: s[i].getAttribute("name"),
-                    id: s[i].getAttribute("id")
+                    id: s[i].getAttribute("id"),
                   };
 
                   document
@@ -683,12 +696,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const myHeaders = new Headers({
       Authorization: n,
-      Accept: "application/gpx+xml"
+      Accept: "application/gpx+xml",
     });
 
     return fetch("https://api.openstreetmap.org/api/0.6/gpx/" + id + "/data", {
       method: "GET",
-      headers: myHeaders
+      headers: myHeaders,
     })
       .then((response) => response.text())
       .then((data) => {
@@ -699,7 +712,7 @@ document.addEventListener("DOMContentLoaded", function () {
           helper.downloadFile(filename, data, callback_download);
         } else {
           new L.GPX(gpx, {
-            async: true
+            async: true,
           })
             .on("loaded", function (e) {
               map.fitBounds(e.target.getBounds());
@@ -727,11 +740,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let n = "Bearer " + general.osm_token;
     const myHeaders = new Headers({
-      Authorization: n
+      Authorization: n,
     });
 
     var blob = new Blob([gpx_data], {
-      type: "application/gpx"
+      type: "application/gpx",
     });
 
     helper.side_toaster("try uploading file", 2000);
@@ -744,7 +757,7 @@ document.addEventListener("DOMContentLoaded", function () {
     fetch("https://api.openstreetmap.org/api/0.6/gpx/create", {
       method: "POST",
       body: formData,
-      headers: myHeaders
+      headers: myHeaders,
     })
       //.then((response) => response.text())
       .then((data) => {
@@ -1037,7 +1050,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let options = {
       enableHighAccuracy: true,
-      timeout: 15000
+      timeout: 15000,
     };
 
     function success(pos) {
@@ -1261,7 +1274,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let options = {
       enableHighAccuracy: true,
-      timeout: 35000
+      timeout: 35000,
     };
     watchID = geoLoc.watchPosition(showLocation, errorHandler, options);
   }
@@ -1772,7 +1785,7 @@ document.addEventListener("DOMContentLoaded", function () {
     panels.forEach(function (e) {
       finder_panels.push({
         name: e.getAttribute("name"),
-        id: e.getAttribute("id")
+        id: e.getAttribute("id"),
       });
     });
     //remove finder pages
@@ -1908,7 +1921,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.activeElement.parentNode.scrollBy({
         left: 0,
         top: elY - window.innerHeight / 2,
-        behavior: "smooth"
+        behavior: "smooth",
       });
     }
   }

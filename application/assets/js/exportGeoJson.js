@@ -38,8 +38,7 @@ const geojson = ((_) => {
     }
 
     if (type == "routing") {
-      let e = routing.data;
-      extData = JSON.stringify(e);
+      extData = JSON.stringify(routing.data);
     }
 
     if (type == "collection") {
@@ -51,15 +50,15 @@ const geojson = ((_) => {
           bounds.getSouthWest().lng,
           bounds.getSouthWest().lat,
           bounds.getNorthEast().lng,
-          bounds.getNorthEast().lat
-        ]
+          bounds.getNorthEast().lat,
+        ],
       ];
 
       extData = JSON.stringify(collection);
     }
 
     let geojson_file = new Blob([extData], {
-      type: "application/json"
+      type: "application/json",
     });
 
     let sdcard;
@@ -119,7 +118,7 @@ const geojson = ((_) => {
     }
 
     let geojson_file = new Blob([extData], {
-      type: "application/gpx+xm"
+      type: "application/gpx+xm",
     });
 
     let sdcard;
@@ -158,6 +157,6 @@ const geojson = ((_) => {
 
   return {
     save_geojson,
-    save_gpx
+    save_gpx,
   };
 })();
