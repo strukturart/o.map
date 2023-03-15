@@ -145,7 +145,6 @@ document.addEventListener("DOMContentLoaded", function () {
     let instructions = [];
     let p;
     let reverse_2D_array;
-    console.log(e);
 
     //fly to start point
     L.geoJSON(e, {
@@ -197,12 +196,15 @@ document.addEventListener("DOMContentLoaded", function () {
               ];
 
             // Reverse from file
-            routing.start = [m[0], m[1]];
-            routing.end = [mm[0], mm[1]];
+            let routing_start = [m[0], m[1]];
+            let routing_end = [mm[0], mm[1]];
+
+            //routing.start = [m[0], m[1]];
+            //routing.end = [mm[0], mm[1]];
 
             //add marker
-            let s = L.marker(routing.start).addTo(markers_group);
-            let f = L.marker(routing.end).addTo(markers_group);
+            let s = L.marker(routing_start).addTo(markers_group);
+            let f = L.marker(routing_end).addTo(markers_group);
             //set routing object
             routing.start_marker_id = s._leaflet_id;
             routing.end_marker_id = f._leaflet_id;
@@ -239,8 +241,9 @@ document.addEventListener("DOMContentLoaded", function () {
     routing_instructions(instructions);
     // routing.active = true;
     routing.loaded = true;
-    document.querySelector("#routing-profile-status").innerText =
-      setting.routing_profil;
+    document.querySelectorAll(".routing-profile-status").forEach((e) => {
+      e.innerText = setting.routing_profil;
+    });
 
     helper.side_toaster(
       "the track has been loaded, to see information about it open the menu with enter",
@@ -1320,6 +1323,17 @@ document.addEventListener("DOMContentLoaded", function () {
         module.startup_marker(mainmarker.selected_marker, "set");
         status.windowOpen = "map";
         bottom_bar("", "", "");
+      }
+
+      if (item_value == "change-profile") {
+        rs.change_type();
+        rs.request(
+          routing.start,
+          routing.end,
+          setting.ors_api,
+          setting.routing_profil,
+          routing_service_callback
+        );
       }
 
       if (item_value == "set_marker_route_start") {

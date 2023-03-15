@@ -68,7 +68,18 @@ const rs = ((_) => {
 
   let instructions = function () {};
 
+  let routing_profile = ["cycling-road", "foot-hiking", "driving-car"];
+  let m = routing_profile.indexOf(settings.profile);
+
+  let change_type = function () {
+    m < 2 ? m++ : (m = 0);
+
+    setting.routing_profil = routing_profile[m];
+    document.activeElement.innerText = setting.routing_profil;
+  };
+
   return {
+    change_type,
     instructions,
     request,
     addPoint,
