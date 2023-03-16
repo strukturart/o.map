@@ -26,7 +26,7 @@ const module = (() => {
 
     let result = {
       sunrise: sunrise,
-      sunset: sunset,
+      sunset: sunset
     };
     return result;
   };
@@ -36,29 +36,44 @@ const module = (() => {
   ///////////////////////
   function loadGPX(filename, url) {
     if (url) {
-      var gpx = url;
-
-      new L.GPX(gpx, {
+      new L.GPX(url, {
         async: true,
+        marker_options: {
+          startIconUrl: "assets/css/images/start.png",
+          endIconUrl: "assets/css/images/end.png"
+        }
       })
         .on("loaded", function (e) {
           map.fitBounds(e.target.getBounds());
         })
-        .addTo(map);
+        .addTo(gpx_group);
 
       document.querySelector("div#finder").style.display = "none";
       status.windowOpen = "map";
     }
+
     if (filename) {
-      let finder = new Applait.Finder({
-        type: "sdcard",
-        debugMode: false,
-      });
-      finder.search(filename);
+      try {
+        let sdcard = navigator.getDeviceStorage("sdcard");
+        let request = sdcard.get(filename);
+        request.onsuccess = function () {
+          m(this.result);
+        };
+        request.onerror = function () {};
+      } catch (e) {}
 
-      finder.on("fileFound", function (file, fileinfo, storageName) {
-        //file reader
+      if ("b2g" in navigator) {
+        try {
+          let sdcard = navigator.b2g.getDeviceStorage("sdcard");
+          let request = sdcard.get(filename);
+          request.onsuccess = function () {
+            m(this.result);
+          };
+          request.onerror = function () {};
+        } catch (e) {}
+      }
 
+      let m = (r) => {
         let reader = new FileReader();
 
         reader.onerror = function (event) {
@@ -67,38 +82,109 @@ const module = (() => {
         };
 
         reader.onloadend = function (event) {
-          var gpx = event.target.result; // URL to your GPX file or the GPX itself
+          var gpx = reader.result; // URL to your GPX file or the GPX itself
 
           new L.GPX(gpx, {
             async: true,
+            marker_options: {
+              startIconUrl: "assets/css/images/start.png",
+              endIconUrl: "assets/css/images/end.png"
+            }
           })
             .on("loaded", function (e) {
               map.fitBounds(e.target.getBounds());
             })
-            .addTo(map);
+            .addTo(gpx_group);
 
           document.querySelector("div#finder").style.display = "none";
           status.windowOpen = "map";
         };
 
-        reader.readAsText(file);
-      });
+        reader.readAsText(r);
+      };
+    }
+  }
+
+  function loadGPX_data(filename, callback) {
+    if (filename) {
+      try {
+        let sdcard = navigator.getDeviceStorage("sdcard");
+        let request = sdcard.get(filename);
+        request.onsuccess = function () {
+          console.log(filename);
+
+          let reader = new FileReader();
+
+          reader.onerror = function (event) {
+            helper.toaster("can't read file", 3000);
+            reader.abort();
+          };
+
+          reader.onloadend = function (event) {
+            callback(filename, event.target.result);
+          };
+
+          reader.readAsText(this.result);
+        };
+        request.onerror = function () {};
+      } catch (e) {}
+
+      try {
+        if ("b2g" in navigator) {
+          try {
+            let sdcard = navigator.b2g.getDeviceStorage("sdcard");
+            let request = sdcard.get(filename);
+            request.onsuccess = function () {
+              let reader = new FileReader();
+
+              reader.onerror = function (event) {
+                helper.toaster("can't read file", 3000);
+                reader.abort();
+              };
+
+              reader.onloadend = function (event) {
+                callback(filename, event.target.result);
+              };
+
+              reader.readAsText(this.result);
+            };
+            request.onerror = function () {};
+          } catch (e) {}
+        }
+      } catch (e) {}
     }
   }
 
   /////////////////////////
   /////Load GeoJSON///////////
   ///////////////////////
-  let loadGeoJSON = function (filename) {
-    let finder = new Applait.Finder({
-      type: "sdcard",
-      debugMode: false,
-    });
-    finder.search(filename);
-
-    finder.on("fileFound", function (file, fileinfo, storageName) {
+  let loadGeoJSON = function (filename, callback) {
       //file reader
+    try {
+      let sdcard = navigator.getDeviceStorage("sdcard");
+      let request = sdcard.get(filename);
+      request.onsuccess = function () {
+        m(this.result);
+      };
+      request.onerror = function () {
+        alert("error");
+      };
+    } catch (e) {}
 
+    if ("b2g" in window.navigator) {
+      try {
+        let sdcard = navigator.b2g.getDeviceStorage("sdcard");
+        let request = sdcard.get(filename);
+        request.onsuccess = function () {
+          m(this.result);
+        };
+        request.onerror = function (e) {
+          alert(e + "error");
+        };
+      } catch (e) {}
+    }
+
+    let m = (r) => {
       let geojson_data = "";
       let reader = new FileReader();
 
@@ -106,12 +192,12 @@ const module = (() => {
         reader.abort();
       };
 
-      reader.onloadend = function (event) {
+      reader.onloadend = function () {
         //check if json valid
         try {
-          geojson_data = JSON.parse(event.target.result);
+          geojson_data = JSON.parse(reader.result);
         } catch (e) {
-          helper.toaster("Json is not valid", 2000);
+          helper.toaster("JSON is not valid", 2000);
           return false;
         }
 
@@ -120,10 +206,15 @@ const module = (() => {
         //https://blog.codecentric.de/2018/06/leaflet-geojson-daten/
         L.geoJSON(geojson_data, {
           onEachFeature: function (feature, layer) {
-            if (feature.geometry != "") {
+            if (feature.geometry != null) {
               let p = feature.geometry.coordinates[0];
-              p.reverse();
-              map.flyTo(p);
+              map.flyTo([p[1], p[0]]);
+            }
+            //routing data
+            if (feature.properties.segments != undefined) {
+              if (feature.properties.segments[0].steps) {
+                callback(geojson_data, true);
+              }
             }
           },
           // Marker Icon
@@ -140,102 +231,261 @@ const module = (() => {
 
             t.addTo(markers_group);
             map.flyTo(latlng);
-          },
+          }
 
           // Popup
-        }).addTo(map);
-        document.querySelector("div#finder").style.display = "none";
+        }).addTo(geoJSON_group);
 
+        document.querySelector("div#finder").style.display = "none";
         status.windowOpen = "map";
       };
 
-      reader.readAsText(file);
-    });
+      reader.readAsText(r);
+    };
   };
 
   ///////////////////
   //select marker
   ////////////////////
+  // Flag to keep track of the need
+  // of generating the new marker list
+  var f_upd_markers_list = true;
+  let set_f_upd_markers = function () {
+    f_upd_markers_list = true;
+  };
 
+  let markers_collection = []; //makers in map boundingbox
+  let l = [];
   let index = -1;
   let select_marker = function () {
+    if (f_upd_markers_list) {
+      // Reset contained list
+      markers_collection = [];
+
+      //merge markers in viewport
+      if (overpass_group != "") {
+        overpass_group.eachLayer(function (l) {
+          markers_collection.push(l);
+          if (
+            l instanceof L.Marker &&
+            map.getBounds().contains(l.getLatLng())
+          ) {
+          }
+          //markers_collection.push(l);
+        });
+      }
+
+      markers_group.eachLayer(function (l) {
+        markers_collection.push(l);
+        if (l instanceof L.Marker && map.getBounds().contains(l.getLatLng())) {
+        }
+        // markers_collection.push(l);
+      });
+
+      // Clear flag
+      f_upd_markers_list = false;
+    }
+
+    //l = contained;
+
     status.marker_selection = true;
     status.windowOpen = "marker";
 
-    let l = markers_group.getLayers();
-    console.log(overpass_group.getLayers());
+    index++;
 
-    if (index >= l.length) index = 0;
+    if (index >= markers_collection.length) index = 0;
     bottom_bar("cancel", "option", "");
 
     //reset icons and close popus
-    for (let t = 0; t < l.length; t++) {
-      let p = l[t].getIcon();
+    for (let t = 0; t < markers_collection.length; t++) {
+      let p = markers_collection[t].getIcon();
 
       if (
         p.options.className != "follow-marker" &&
-        p.options.className != "goal-marker"
+        p.options.className != "goal-marker" &&
+        p.options.className != "start-marker" &&
+        p.options.className != "end-marker"
       ) {
-        //l[t].setIcon(maps.default_icon);
+        markers_collection[t].setIcon(maps.default_icon);
       }
-
-      setTimeout(function () {
-        l[index].closePopup();
-      }, 3000);
+      markers_collection[index].closePopup();
     }
 
-    let p = l[index].getIcon();
+    //show selected marker
+
+    let p = markers_collection[index].getIcon();
     if (
       p.options.className != "follow-marker" &&
-      p.options.className != "goal-marker"
+      p.options.className != "goal-marker" &&
+      p.options.className != "start-marker" &&
+      p.options.className != "end-marker"
     ) {
-      //l[index].setIcon(maps.select_icon);
+      markers_collection[index].setIcon(maps.select_icon);
     }
 
     //popup
-    document.querySelector("textarea#popup").value = "";
-    let pu = l[index].getPopup();
+    document.querySelector("input#popup").value = "";
+    let pu = markers_collection[index].getPopup();
 
     if (pu != undefined && pu._content != undefined) {
       //get popup content
-      document.querySelector("textarea#popup").value = pu._content;
+      document.querySelector("input#popup").value = pu._content;
       //show popup
-      l[index].bindPopup(pu._content, popup_option).openPopup();
+      markers_collection[index]
+        .bindPopup(pu._content, popup_option)
+        .openPopup();
       //close popup
       setTimeout(function () {
-        l[index].closePopup();
+        markers_collection[index].closePopup();
       }, 3000);
     }
 
-    //check if marker set as startup marker
+    map.setView(markers_collection[index]._latlng, map.getZoom());
+    status.selected_marker = markers_collection[index];
+    return markers_collection[index];
+  };
 
-    for (let i = 0; i < mainmarker.startup_markers.length; i++) {
-      if (
-        l[index]._latlng.lng == mainmarker.startup_markers[i].latlng.lng &&
-        l[index]._latlng.lat == mainmarker.startup_markers[i].latlng.lat
-      ) {
-        mainmarker.startup_marker_toggle = true;
-        document.querySelector(
-          "div#markers-option div[data-action='set_startup_marker']"
-        ).innerText = "unset startup marker";
-        i = mainmarker.startup_markers.length;
+  //SELECT GPX
+
+  let gpx_selection_count = 0;
+  let gpx_selection = [];
+  let select_gpx = function () {
+    gpx_selection = [];
+
+    gpx_selection_count++;
+
+    gpx_group.eachLayer(function (l) {
+      if (l.getBounds()) gpx_selection.push(l);
+    });
+
+    if (gpx_selection_count > gpx_selection.length - 1) gpx_selection_count = 0;
+    map.fitBounds(gpx_selection[gpx_selection_count].getBounds());
+
+    //store info in object
+    gpx_selection_info.duration =
+      gpx_selection[gpx_selection_count]._info.duration.total;
+    gpx_selection_info.elevation_gain =
+      gpx_selection[gpx_selection_count]._info.elevation.gain;
+
+    gpx_selection_info.elevation_loss =
+      gpx_selection[gpx_selection_count]._info.elevation.loss;
+
+    gpx_selection_info.elevation_loss =
+      gpx_selection[gpx_selection_count]._info.elevation.loss;
+
+    gpx_selection_info.distance =
+      gpx_selection[gpx_selection_count]._info.length;
+
+    gpx_selection_info.name = gpx_selection[gpx_selection_count]._info.name;
+    update_gpx_info();
+
+    console.log(gpx_selection[gpx_selection_count]._info);
+  };
+
+  let update_gpx_info = function () {
+    document.getElementById("gpx-name").innerText = gpx_selection_info.name;
+    document.getElementById("gpx-time").innerText = format_ms(
+      gpx_selection_info.duration
+    );
+    document.querySelector("#gpx-evo-up span").innerText =
+      gpx_selection_info.elevation_gain.toFixed(2);
+
+    document.querySelector("#gpx-evo-down span").innerText =
+      gpx_selection_info.elevation_loss.toFixed(2);
+
+    let n = gpx_selection_info.distance / 1000;
+    n = n.toFixed(2);
+    document.getElementById("gpx-distance").innerText = n;
+  };
+
+  let closest_average = [];
+  //closest point in route/track
+  let get_closest_point = function (route) {
+    if (mainmarker.device_lat == "" || mainmarker.device_lat == null)
+      return false;
+
+    console.log("route" + route);
+    //let r = route.map((row) => row.reverse());
+    let m = L.polyline(route);
+
+    let latlng = [mainmarker.device_lat, mainmarker.device_lng];
+
+    let k = L.GeometryUtil.closest(map, m, latlng, true);
+
+    L.marker(k).addTo(map);
+
+    let f = calc_distance(
+      mainmarker.device_lat,
+      mainmarker.device_lng,
+      k.lat,
+      k.lng,
+      "km"
+    );
+
+    document.querySelector("#distance-to-track").innerText = f / 1000;
+    //notification
+    if (mainmarker.accuracy < 22) closest_average.push(f);
+
+    let result = 0;
+    let sum = 0;
+    if (closest_average.length > 48) {
+      closest_average.forEach(function (e) {
+        sum = sum + e;
+      });
+
+      if (closest_average.length > 50) {
+        closest_average.length = 0;
+        sum = 0;
+        result = 0;
+      }
+
+      result = sum / 40;
+      if (setting.routing_notification == false) return false;
+      if (result > 0.5) {
+        navigator.vibrate([1000, 500, 1000]);
+        helper.toaster("to far" + result, 3000);
       } else {
-        document.querySelector(
-          "div#markers-option div[data-action='set_startup_marker']"
-        ).innerText = "set startup marker";
-        mainmarker.startup_marker_toggle = false;
+        console.log("okay");
       }
     }
+  };
 
-    map.setView(l[index]._latlng, map.getZoom());
-    return l[index];
+  let format_ms = function (millisec) {
+    var seconds = (millisec / 1000).toFixed(0);
+    var minutes = Math.floor(seconds / 60);
+    var hours = "";
+    if (minutes > 59) {
+      hours = Math.floor(minutes / 60);
+      hours = hours >= 10 ? hours : "0" + hours;
+      minutes = minutes - hours * 60;
+      minutes = minutes >= 10 ? minutes : "0" + minutes;
+    }
+
+    seconds = Math.floor(seconds % 60);
+    seconds = seconds >= 10 ? seconds : "0" + seconds;
+    if (hours != "") {
+      return hours + ":" + minutes + ":" + seconds;
+    }
+    return minutes + ":" + seconds;
+  };
+
+  let format_s = function (seconds) {
+    let nhours = Math.floor(seconds / 3600);
+    let nminutes = Math.floor((seconds % 3600) / 60);
+    let nseconds = Math.floor(seconds % 60);
+    if (nhours == 0) {
+      return nminutes + ":" + nseconds;
+    }
+    return nhours + ":" + nminutes + ":" + nseconds;
   };
 
   //calc distance between markers
   let calc_distance = function (from_lat, from_lng, to_lat, to_lng, unit) {
+    if (to_lat == undefined || to_lng == undefined) return false;
+
     let d = map.distance([from_lat, from_lng], [to_lat, to_lng]);
-    if (unit == "miles") {
-      d = d * 0.00062137119;
+    if (unit == "mil") {
+      d = d * 3.28084;
     }
 
     d = Math.ceil(d);
@@ -300,7 +550,7 @@ const module = (() => {
 
   //calculation of altitude ascents and descents
 
-  let evolution = function (t) {
+  let elevation = function (t) {
     let up_e = 0;
     let down_e = 0;
     let evo = {};
@@ -330,17 +580,29 @@ const module = (() => {
       evo.down.toFixed(2);
   };
 
+  //json to gpx
+  let toGPX = function () {
+    let e = tracking_group.toGeoJSON();
+    e.features[0].properties.software = "o.map";
+    e.features[0].properties.timestamp = tracking_timestamp;
+
+    let option = { featureCoordTimes: "timestamp", creator: "o.map" };
+
+    extData = togpx(e, option);
+    return togpx(e, option);
+  };
+
   //tool to measure distance
 
   let popup_option = {
     closeButton: false,
     maxWidth: 200,
-    maxHeight: 200,
+    maxHeight: 200
   };
 
   let path_option = {
     color: "red",
-    step: 0,
+    step: 0
   };
 
   let distances = [];
@@ -350,7 +612,7 @@ const module = (() => {
   let tracking_cache = [];
   let gps_lock;
   let tracking_altitude = [];
-
+  let calc = 0;
   let tracking_distance;
 
   let polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
@@ -363,7 +625,11 @@ const module = (() => {
       status.path_selection = false;
       measure_group_path.clearLayers();
       measure_group.clearLayers();
+      geoJSON_group.clearLayers();
+      distances = [];
+
       polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
+      calc = 0;
       return true;
     }
 
@@ -371,8 +637,11 @@ const module = (() => {
       tracking_altitude = [];
       document.getElementById("tracking-altitude").innerText = "";
       document.querySelector("div#tracking-distance").innerText = "";
-      document.querySelector("div#tracking-evo-up").innerText = "";
-      document.querySelector("div#tracking-evo-down").innerText = "";
+      document.querySelector("div#tracking-evo-up span").innerText = "";
+      document.querySelector("div#tracking-evo-down span").innerText = "";
+      document.querySelector("div#tracking-moving-time span").innerText = "";
+      document.querySelector("div#tracking-speed-average-time").innerText = "";
+      distances = [];
       clearInterval(tracking_interval);
       setTimeout(function () {
         localStorage.removeItem("tracking_cache");
@@ -389,7 +658,8 @@ const module = (() => {
     }
 
     if (action == "tracking") {
-      gps_lock = window.navigator.requestWakeLock("gps");
+      if (typeof window.navigator.requestWakeLock !== "undefined")
+        gps_lock = window.navigator.requestWakeLock("gps");
       status.tracking_running = true;
 
       if (localStorage.getItem("tracking_cache") != null) {
@@ -408,7 +678,7 @@ const module = (() => {
             polyline_tracking.addLatLng([
               tracking_cache[i].lat,
               tracking_cache[i].lng,
-              tracking_cache[i].timestamp,
+              tracking_cache[i].timestamp
             ]);
 
             tracking_timestamp.push(tracking_cache[i].timestamp);
@@ -420,67 +690,114 @@ const module = (() => {
       }
       if (setting.tracking_screenlock) screenWakeLock("lock", "screen");
 
-      let calc = 0;
-
       tracking_interval = setInterval(function () {
         //only write data if accuracy
-        if (mainmarker.accuracy > 10000) {
-          console.log("the gps is very inaccurate right now");
-          return false;
-        }
-        let ts = new Date();
-        tracking_timestamp.push(ts.toISOString());
-
-        polyline_tracking.addLatLng([
-          mainmarker.device_lat,
-          mainmarker.device_lng,
-          mainmarker.device_alt,
-        ]);
-
-        tracking_cache.push({
-          lat: mainmarker.device_lat,
-          lng: mainmarker.device_lng,
-          alt: mainmarker.device_alt,
-          timestamp: ts.toISOString(),
-          tracking_altitude: mainmarker.device_alt,
-        });
-        tracking_altitude = [];
-        tracking_cache.forEach(function (e) {
-          if (e.tracking_altitude != null)
-            tracking_altitude.push(e.tracking_altitude);
-        });
-
-        document.getElementById("tracking-altitude").innerText =
-          mainmarker.device_alt.toFixed(2);
-
-        evolution(tracking_altitude);
-
+        let n = 0;
         if (tracking_cache.length > 2) {
-          tracking_distance = calc_distance(
+          n = calc_distance(
             Number(tracking_cache[tracking_cache.length - 1].lat),
             Number(tracking_cache[tracking_cache.length - 1].lng),
             Number(tracking_cache[tracking_cache.length - 2].lat),
             Number(tracking_cache[tracking_cache.length - 2].lng)
           );
-
-          tracking_distance = tracking_distance / 1000;
-
-          calc += Number(tracking_distance);
-
-          document.querySelector("div#tracking-distance").innerText =
-            calc.toFixed(2) + general.measurement_unit;
-
-          //check if old tracking
-          let k = JSON.stringify(tracking_cache);
-
-          localStorage.setItem("tracking_cache", k);
         }
+        if (mainmarker.accuracy > 10000) {
+          console.log("the gps is very inaccurate right now");
+          return false;
+        } else {
+          let ts = new Date();
+          tracking_timestamp.push(ts.toISOString());
 
-        if (mainmarker.tracking == false) {
-          clearInterval(tracking_interval);
-          if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
+          polyline_tracking.addLatLng([
+            mainmarker.device_lat,
+            mainmarker.device_lng,
+            mainmarker.device_alt
+          ]);
+
+          tracking_cache.push({
+            lat: mainmarker.device_lat,
+            lng: mainmarker.device_lng,
+            alt: mainmarker.device_alt,
+            timestamp: ts.toISOString(),
+            tracking_altitude: mainmarker.device_alt
+          });
+          tracking_altitude = [];
+          tracking_cache.forEach(function (e) {
+            if (e.tracking_altitude != null)
+              tracking_altitude.push(e.tracking_altitude);
+          });
+
+          //only record the altitude if the accuracy of the measurement is less than 1000.
+          if (mainmarker.accuracy < 1000) {
+            //elevation(tracking_altitude);
+          }
+
+          if (tracking_cache.length > 2) {
+            //get tracking data to display in view
+            new L.GPX(toGPX(), { async: true }).on("loaded", function (e) {
+              //meter
+              if (general.measurement_unit == "km") {
+                let a = e.target.get_distance() / 1000;
+                document.querySelector("div#tracking-distance").innerText =
+                  a.toFixed(2) + general.measurement_unit;
+
+                let b = e.target._info.elevation.gain;
+                document.querySelector("#tracking-evo-up span").innerText =
+                  b.toFixed(2);
+
+                let c = e.target._info.elevation.loss;
+                document.querySelector("#tracking-evo-down span").innerText =
+                  c.toFixed(2);
+
+                document.getElementById("tracking-altitude").innerText =
+                  mainmarker.device_alt;
+
+                let d = e.target.get_moving_speed();
+                document.querySelector(
+                  "#tracking-speed-average-time"
+                ).innerText = d.toFixed(2);
+              }
+              //miles
+              if (general.measurement_unit == "mil") {
+                let a = e.target.get_distance_imp();
+                document.querySelector("div#tracking-distance").innerText =
+                  a.toFixed(2) + general.measurement_unit;
+
+                let b = e.target.get_elevation_gain_imp();
+                document.querySelector("#tracking-evo-up span").innerText =
+                  b.toFixed(2);
+
+                let c = e.target.get_elevation_loss_imp();
+                document.querySelector("#tracking-evo-down span").innerText =
+                  c.toFixed(2);
+
+                document.getElementById("tracking-altitude").innerText =
+                  mainmarker.device_alt * 3.280839895;
+
+                let d = e.target.get_moving_speed_imp();
+                document.querySelector(
+                  "#tracking-speed-average-time"
+                ).innerText = d.toFixed(2);
+              }
+
+              let d = e.target.get_duration_string(
+                e.target.get_total_time(),
+                false
+              );
+              document.querySelector("#tracking-moving-time span").innerText =
+                d;
+            });
+
+            let k = JSON.stringify(tracking_cache);
+            localStorage.setItem("tracking_cache", k);
+          }
+
+          if (mainmarker.tracking == false) {
+            clearInterval(tracking_interval);
+            if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
+          }
         }
-      }, 8000);
+      }, 5000);
     }
 
     if (action == "addMarker") {
@@ -492,6 +809,11 @@ const module = (() => {
       let l = measure_group.getLayers();
 
       polyline.addLatLng([mainmarker.current_lat, mainmarker.current_lng]);
+
+      geoJSON_group.addLayer(measure_group);
+      geoJSON_group.addLayer(polyline);
+
+      //console.log(geoJSON_group.toGeoJSON());
 
       if (l.length < 2) return false;
       let dis = calc_distance(
@@ -520,8 +842,62 @@ const module = (() => {
     }
   };
 
+  let user_input = function (param, file_name, label) {
+    if (param == "open") {
+      document.getElementById("user-input-description").innerText = label;
+
+      document.querySelector("div#user-input").style.bottom = "25px";
+      document.querySelector("div#user-input input").focus();
+      document.querySelector("div#user-input input").value = file_name;
+      status.windowOpen = "user-input";
+    }
+    if (param == "close") {
+      document.querySelector("div#user-input").style.bottom = "-1000px";
+      document.querySelector("div#user-input input").blur();
+      status.windowOpen = "map";
+      bottom_bar("", "", "");
+    }
+
+    if (param == "return") {
+      let input_value = document.querySelector("div#user-input input").value;
+      document.querySelector("div#user-input").style.bottom = "-1000px";
+      document.querySelector("div#user-input input").blur();
+      bottom_bar("", "", "");
+
+      return input_value;
+    }
+  };
+
+  //when the default value is always meter
+  //setting.measurement == true = metric
+  let convert_units = function (unit, value) {
+    //metric
+    let a;
+    if (unit == "kilometer" && setting.measurement == true) {
+      a = value / 1000;
+    }
+
+    if (unit == "meter" && setting.measurement == true) {
+      a = value;
+    }
+
+    //imperial
+
+    if (unit == "meter" && setting.measurement == false) {
+      a = value * 3.280839895;
+    }
+
+    if (unit == "kilometer" && setting.measurement == false) {
+      a = value * 0.6213711922;
+    }
+    return a.toFixed(2);
+  };
+
   return {
+    convert_units,
+    set_f_upd_markers,
     select_marker,
+    select_gpx,
     calc_distance,
     compass,
     measure_distance,
@@ -531,5 +907,11 @@ const module = (() => {
     loadGeoJSON,
     loadGPX,
     sunrise,
+    loadGPX_data,
+    user_input,
+    format_ms,
+    format_s,
+
+    get_closest_point
   };
 })();

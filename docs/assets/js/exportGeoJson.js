@@ -14,9 +14,9 @@ const geojson = ((_) => {
     if (type == "single") {
       let single = mainmarker.selected_marker.toGeoJSON();
       // store popup content
-      let a = document.querySelector("textarea#popup").value;
+      let a = document.querySelector("input#popup").value;
       if (a != "") {
-        let a = document.querySelector("textarea#popup").value;
+        let a = document.querySelector("input#popup").value;
         single.properties.popup = a;
       }
 
@@ -24,8 +24,9 @@ const geojson = ((_) => {
     }
 
     if (type == "path") {
-      let single = tracking_group.toGeoJSON();
-      extData = JSON.stringify(single);
+      let p = geoJSON_group.toGeoJSON();
+      extData = JSON.stringify(p);
+      console.log(p);
     }
 
     if (type == "tracking") {
@@ -34,6 +35,10 @@ const geojson = ((_) => {
       e.features[0].properties.timestamp = tracking_timestamp;
 
       extData = JSON.stringify(e);
+    }
+
+    if (type == "routing") {
+      extData = JSON.stringify(routing.data);
     }
 
     if (type == "collection") {
@@ -56,28 +61,35 @@ const geojson = ((_) => {
       type: "application/json",
     });
 
-    let sdcard = navigator.getDeviceStorage("sdcard");
+    let sdcard;
+
+    try {
+      sdcard = navigator.getDeviceStorage("sdcard");
+    } catch (e) {}
+
+    if ("b2g" in navigator) {
+      try {
+        sdcard = navigator.b2g.getDeviceStorage("sdcard");
+      } catch (e) {}
+    }
 
     let requestAdd = sdcard.addNamed(geojson_file, file_path_name);
 
     requestAdd.onsuccess = function () {
       status.windowOpen = "map";
-      helper.side_toaster("<img src='./assets/image/E25C.svg'>", 5000);
       bottom_bar("", "", "");
 
       if (type == "tracking") {
         module.measure_distance("destroy_tracking");
         mainmarker.tracking = false;
         localStorage.removeItem("tracking_cache");
+        helper.side_toaster("tracking saved", 5000);
       }
 
       if (type == "path") {
         module.measure_distance("destroy");
+        helper.side_toaster("tracking saved", 5000);
       }
-
-      setTimeout(function () {
-        build_menu();
-      }, 2000);
     };
 
     requestAdd.onerror = function () {
@@ -90,9 +102,9 @@ const geojson = ((_) => {
   };
 
   ///////////
-  //save geoJson file
+  //save gpx file
   /////////////////
-  const save_gpx = function (file_path_name, type) {
+  const save_gpx = function (file_path_name, type, callback) {
     let extData = "";
 
     if (type == "tracking") {
@@ -109,28 +121,33 @@ const geojson = ((_) => {
       type: "application/gpx+xm",
     });
 
-    let sdcard = navigator.getDeviceStorage("sdcard");
+    let sdcard;
+
+    try {
+      sdcard = navigator.getDeviceStorage("sdcard");
+    } catch (e) {}
+
+    try {
+      sdcard = navigator.b2g.getDeviceStorage("sdcard");
+    } catch (e) {}
 
     let requestAdd = sdcard.addNamed(geojson_file, file_path_name);
 
     requestAdd.onsuccess = function () {
       status.windowOpen = "map";
-      helper.side_toaster("<img src='./assets/image/E25C.svg'>", 3000);
       bottom_bar("", "", "");
+
+      callback(file_path_name);
 
       if (type == "tracking") {
         module.measure_distance("destroy_tracking");
         mainmarker.tracking = false;
         localStorage.removeItem("tracking_cache");
       }
-
-      setTimeout(function () {
-        build_menu();
-      }, 2000);
     };
 
     requestAdd.onerror = function () {
-      helper.toaster(
+      helper.side_toaster(
         "Unable to write the file, the file name may already be used",
         10000
       );

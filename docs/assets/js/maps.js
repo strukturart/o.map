@@ -51,8 +51,22 @@ const maps = (() => {
     html: '<div></div><div class="water"></div>',
   });
 
+  const start_icon = L.icon({
+    iconUrl: "assets/css/images/start.png",
+    iconSize: [35, 40],
+    iconAnchor: [15, 40],
+    className: "start-marker",
+  });
+
+  const end_icon = L.icon({
+    iconUrl: "assets/css/images/end.png",
+    iconSize: [35, 40],
+    iconAnchor: [15, 40],
+    className: "end-marker",
+  });
+
   //caching settings from settings panel
-  let caching_time;
+  let caching_time = "";
 
   if (localStorage.getItem("cache-time") != null) {
     caching_time = Number(localStorage.getItem("cache-time")) * 86400000;
@@ -138,6 +152,24 @@ const maps = (() => {
   let overlayer = "";
 
   let addMap = function (url, attribution, max_zoom, type) {
+    let useOnlyCache = false;
+    if (localStorage.getItem("useOnlyCache") != null) {
+      if (localStorage.getItem("useOnlyCache") == "true") {
+        useOnlyCache = true;
+      } else {
+        useOnlyCache = false;
+      }
+    }
+
+    localStorage.setItem("last_map_type", type);
+    general.last_map_type = type;
+
+    localStorage.setItem("last_map_max_zoom", max_zoom);
+    general.last_map_max_zoom = max_zoom;
+
+    localStorage.setItem("last_map_attribution", attribution);
+    general.last_map_attribution = attribution;
+
     //map
     if (type == "map") {
       if (map.hasLayer(tilesLayer)) {
@@ -149,7 +181,7 @@ const maps = (() => {
         saveToCache: true,
         crossOrigin: true,
         cacheMaxAge: caching_time,
-        useOnlyCache: false,
+        useOnlyCache: useOnlyCache,
         maxZoom: max_zoom,
         attribution: attribution,
         format: "image/png",
@@ -179,20 +211,47 @@ const maps = (() => {
       }
     }
     //overlayer
-    /*
+
     if (type == "overlayer") {
       if (map.hasLayer(overlayer)) {
+        general.active_layer.splice(general.active_layer.indexOf(url), 1);
         map.removeLayer(overlayer);
-        general.active_layer = "";
         return false;
       }
-      general.active_layer = url;
+      general.active_layer.push(url);
 
       overlayer = L.tileLayer(url);
       map.addLayer(overlayer);
       caching_events();
     }
-    */
+
+    if (type == "layer") {
+      if (map.hasLayer(overlayer)) {
+        general.active_layer.splice(general.active_layer.indexOf(url), 1);
+        map.removeLayer(overlayer);
+        return false;
+      } else {
+        general.active_layer.push(url);
+
+        overlayer = L.tileLayer(url);
+        map.addLayer(overlayer);
+        caching_events();
+      }
+    }
+    //overpass
+
+    if (type == "overpass") {
+      if (overpass_query == url) {
+        overpass.call(map, url, "climbing_icon");
+        general.active_layer.splice(general.active_layer.indexOf(url), 1);
+        return false;
+      }
+
+      map.setZoom(14);
+      setTimeout(function () {
+        overpass.call(map, url, "climbing_icon");
+      }, 1000);
+    }
   };
 
   map.on("layeradd", function (event) {
@@ -224,10 +283,10 @@ const maps = (() => {
     weather_layer3;
 
   function weather_map() {
-    console.log("status: " + general.active_layer);
     let weather_url;
-    if (general.active_layer == "weather") {
-      general.active_layer = "";
+    if (general.active_layer.includes("weather")) {
+      general.active_layer.splice(general.active_layer.indexOf("weather"), 1);
+
       top_bar("", "", "");
       map.removeLayer(weather_layer);
       map.removeLayer(weather_layer0);
@@ -236,11 +295,12 @@ const maps = (() => {
       map.removeLayer(weather_layer3);
       clearInterval(k);
       map.attributionControl.setPrefix("");
+      helper.side_toaster("layer removed", 2000);
       return false;
     } else {
       fetch("https://api.rainviewer.com/public/maps.json")
         .then(function (response) {
-          general.active_layer = "weather";
+          general.active_layer.push("weather");
           map.attributionControl.setPrefix(
             "<a href='https://www.rainviewer.com/terms.html'>waether data collected by rainviewer.com</a>"
           );
@@ -418,6 +478,8 @@ const maps = (() => {
     water_icon,
     select_icon,
     tracking_icon,
+    start_icon,
+    end_icon,
     weather_map,
     caching_tiles,
     delete_cache,

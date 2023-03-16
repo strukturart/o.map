@@ -19,6 +19,7 @@
   padding: 0px;
   margin: 0px;
   box-sizing: border-box;
+  font-family: "Lato-Regular";
 }
 
 :focus {
@@ -44,6 +45,14 @@ body {
   scroll-behavior: smooth;
   height: 100%;
   margin: 0;
+}
+
+form {
+  font-family: "Lato-Regular";
+}
+
+input {
+  font-family: "Lato-Regular";
 }
 
 p {
@@ -120,6 +129,26 @@ div.toogle-button {
   margin-top: -8px;
   z-index: 3;
 }
+
+select {
+  width: 99%;
+  padding: 5px;
+
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: none;
+  color: rgb(54, 54, 54);
+
+  outline: 0;
+  border: 0;
+  border-bottom: 2px solid rgb(63, 63, 63);
+  margin: 0 0% 0 0%;
+  text-align: center;
+  position: relative;
+  background: #fafafa url("image/E264.svg") no-repeat 99% 80%;
+}
+
 input[type="checkbox"]:checked ~ div.ckb-icon {
   background: rgb(255, 255, 255);
   opacity: 1;
@@ -357,21 +386,29 @@ USER INPUT////////////////*/
 
 div#user-input {
   position: fixed;
-  height: 80px;
-  bottom: -80px;
+
   background: gray;
   color: white;
-  z-index: 5;
+  z-index: 50000000;
   padding: 5px;
+  bottom: -1000px;
 }
 
 div#user-input input {
   margin: 5px 0 5px 0;
   padding: 3px;
-  height: 20px;
+  height: 22px;
   width: 90%;
   font-size: 1.1rem;
   background: white !important;
+  position: relative;
+}
+
+div#user-input-description {
+  position: relative;
+  color: white;
+  margin: 10px 0 10px 0;
+  min-width: 11%;
 }
 
 /*///////////////////////////
@@ -445,6 +482,15 @@ div#cross div:nth-child(4) {
   outline: 2px solid white;
   transform: rotate(90deg);
 }
+
+div.unavailable div:nth-child(4) {
+  outline: 2px solid yellow !important;
+}
+
+div.unavailable div:nth-child(3) {
+  outline: 2px solid yellow !important;
+}
+
 /*
  top bar
  */
@@ -649,6 +695,10 @@ div#finder section {
   margin: 0 0 10px 0;
 }
 
+div#finder div.active {
+  background: #fcfff4;
+}
+
 div#finder div.temp {
   margin: 0 0 8px 0;
   width: 60px;
@@ -672,6 +722,11 @@ div#finder div#question {
   left: 0;
   z-index: 3000;
   opacity: 0;
+}
+
+#routing-container {
+  display: block;
+  margin: 20px 0 0 0;
 }
 
 div.panel {
@@ -740,6 +795,9 @@ div#markers-option {
   position: fixed;
   z-index: 5;
   display: none;
+  overflow: hidden;
+  height: 99vh;
+  padding: 0 0 100px 0;
 }
 
 div#markers-option ul {
@@ -754,7 +812,42 @@ div#markers-option div {
   background: gray;
 }
 
+div#markers-option div:last-child {
+  margin: 0 0 100px 0;
+}
+
+div#markers-option div:last-child {
+  margin: 0 0 100px 0;
+}
+
+div#markers-option div input {
+  margin: 0 0 100px 0;
+  min-width: 100%;
+  padding: 10px;
+}
+
 div#markers-option div:focus {
+  background: var(--color-eight);
+  color: black;
+}
+
+div#files-option {
+  background: rgba(0, 0, 0, 1);
+  position: fixed;
+  z-index: 15;
+  display: none;
+  overflow: hidden;
+}
+
+div#files-option div {
+  color: white;
+  margin: 0 0 10px 0;
+  padding: 5px;
+  background: gray;
+  display: block;
+}
+
+div#files-option div:focus {
   background: var(--color-eight);
   color: black;
 }
@@ -784,4 +877,14 @@ li.items {
 li.items:focus {
   background: black !important;
   color: white;
+}
+
+div#osm-upload-panel {
+  min-width: 100vw;
+  min-height: 100vh;
+  background: black;
+  position: fixed;
+  z-index: 100;
+  display: none;
+  padding: 10px;
 }

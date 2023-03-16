@@ -1,0 +1,70 @@
+{
+  "name": "o.map",
+  "id": "o.map",
+  "version": "1.5.2",
+  "description": "o.map is an openstreetmap app for KaiOS, it is a good companion for your next outdoor adventure",
+  "lang": "en-US",
+  "start_url": "/index.html",
+  "icons": [
+    {
+      "src": "/assets/icons/icon-56-56.png",
+      "type": "image/png",
+      "sizes": "56x56"
+    },
+    {
+      "src": "/assets/icons/icon-112-112.png",
+      "type": "image/png",
+      "sizes": "112x112"
+    }
+  ],
+
+  "b2g_features": {
+    "version": "1.5.2",
+    "id": "o.map",
+    "core": true,
+    "categories": ["utilities"],
+    "type": "privileged",
+    "display": "fullscreen",
+    "theme_color": "#ffffff",
+
+    "developer": {
+      "name": "strukturart",
+      "url": "https://github.com/strukturart/o.map"
+    },
+
+    "dependencies": {
+      "ads-sdk": "1.5.8"
+    },
+
+    "activities": {
+      "omap-oauth": {}
+    },
+
+    "serviceworker": {
+      "script_url": "sw.js"
+    },
+
+    "permissions": {
+      "desktop-notification": {
+        "description": "Needed to fire system notifications"
+      },
+
+      "mobiledata": {},
+      "wifidata": {},
+      "calllog": {},
+      "device-storage:sdcard": {
+        "description": "Read/Write from/to sd-card",
+        "access": "readwrite"
+      },
+      "video-capture": {
+        "description": "Reading Codes using the Camera"
+      },
+      "spatialnavigation-app-manage": {
+        "navigator.spatialNavigationEnabled": false
+      },
+      "systemXHR": {
+        "description": "Required to load remote content"
+      }
+    }
+  }
+}

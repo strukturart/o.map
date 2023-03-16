@@ -27,42 +27,15 @@ function getToken() {
 }
 
 getToken().then((result) => {
-  if (result.access_token != null) {
-    localStorage.setItem("openstreetmap_token", result.access_token);
-    document.getElementById("success").innerText =
-      "you are now successfully connected to the osm service";
+  console.log(result);
+  localStorage.setItem("openstreetmap_token", result.access_token);
+  document.getElementById("success").innerText =
+    "you are now successfully connected to the osm service";
 
-    try {
-      let activity = new WebActivity("omap-oauth", {
-        type: "code",
-        "code": result.access_token,
-      });
-      activity.start().then(
-        (rv) => {
-          // console.log("Results passed back from activity handler:");
-          setTimeout(() => {
-            window.close();
-          }, 4000);
-        },
-        (err) => {
-          alert(err);
-
-          if (err === "NO_PROVIDER") {
-            //window.close();
-          }
-        }
-      );
-    } catch (e) {
-      alert(e);
-    }
-  }
-
-  setTimeout(() => {
-    window.dispatchEvent(
-      new CustomEvent("tokens", {
-        detail: result,
-      })
-    );
-    window.close();
-  });
-}, 5000);
+  window.dispatchEvent(
+    new CustomEvent("tokens", {
+      detail: result,
+    })
+  );
+  window.close();
+});

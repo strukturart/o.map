@@ -27,6 +27,10 @@ rm -fr ../o.map-omnisd
 cd ../
 rm ./application.zip
 
+#website
+cd ..
+cp -r application/* docs/
+
 
 
 

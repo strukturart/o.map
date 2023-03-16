@@ -812,6 +812,20 @@ div#markers-option div {
   background: gray;
 }
 
+div#markers-option div:last-child {
+  margin: 0 0 100px 0;
+}
+
+div#markers-option div:last-child {
+  margin: 0 0 100px 0;
+}
+
+div#markers-option div input {
+  margin: 0 0 100px 0;
+  min-width: 100%;
+  padding: 10px;
+}
+
 div#markers-option div:focus {
   background: var(--color-eight);
   color: black;
