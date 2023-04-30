@@ -1005,7 +1005,6 @@ document.addEventListener("DOMContentLoaded", function () {
   let open_finder = function () {
     settings.load_settings();
     finder_tabindex();
-    if (setting.wikipedia_view) wikilocation.load();
     document.querySelector("div#finder").style.display = "block";
     finder_navigation("start");
     status.windowOpen = "finder";
@@ -1803,9 +1802,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
     //remove finder pages
-    if (setting.wikipedia_view == false) {
-      finder_panels = finder_panels.filter((e) => e.id != "wikilocation");
-    }
 
     if (setting.tips_view == false) {
       finder_panels = finder_panels.filter((e) => e.id != "tips");

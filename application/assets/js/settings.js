@@ -103,11 +103,6 @@ const settings = ((_) => {
           ? JSON.parse(localStorage.getItem("measurement"))
           : true,
 
-      wikipedia_view:
-        localStorage.getItem("wikipedia_view") != null
-          ? JSON.parse(localStorage.getItem("wikipedia_view"))
-          : true,
-
       tips_view:
         localStorage.getItem("tips_view") != null
           ? JSON.parse(localStorage.getItem("tips_view"))
@@ -140,10 +135,6 @@ const settings = ((_) => {
     setting.tips_view
       ? (document.getElementById("tips-ckb").checked = true)
       : (document.getElementById("tips-ckb").checked = false);
-
-    setting.wikipedia_view
-      ? (document.getElementById("wikipedia-ckb").checked = true)
-      : (document.getElementById("wikipedia-ckb").checked = false);
 
     //show / hidde crosshair
     setting.crosshair

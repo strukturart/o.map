@@ -28,7 +28,7 @@ const rs = ((_) => {
         callback(JSON.parse(xhr.responseText), false);
       }
       if (xhr.status == 403) {
-        console.log("access forbidden");
+        helper.side_toaster("The API key is invalid", 2000);
       }
       if (xhr.status != 200) {
         helper.side_toaster("the route could not be loaded.", 2000);
