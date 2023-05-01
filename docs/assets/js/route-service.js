@@ -2,43 +2,48 @@ const rs = ((_) => {
   let request = function (from, to, apikey, profile, callback) {
     let xhr = new XMLHttpRequest({
       mozSystem: true,
-      "Content-Type": "application/json",
     });
 
     xhr.open(
-      "GET",
-      "https://api.openrouteservice.org/v2/directions/" +
-        profile +
-        "?api_key=" +
-        apikey +
-        "&" +
-        "start=" +
-        from +
-        "&" +
-        "end=" +
-        to
+      "POST",
+      "https://api.openrouteservice.org/v2/directions/" + profile + "/geojson"
+    );
+    xhr.setRequestHeader("Authorization", apikey);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader(
+      "Accept",
+      "application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8"
     );
 
     xhr.timeout = 4000;
 
     xhr.ontimeout = function (e) {};
 
+    //https://openrouteservice.org/dev/#/api-docs/v2/directions/{profile}/geojson/post
     xhr.onload = function () {
       if (xhr.status == 200) {
         callback(JSON.parse(xhr.responseText), false);
       }
       if (xhr.status == 403) {
-        console.log("access forbidden");
+        helper.side_toaster("The API key is invalid", 5000);
       }
       if (xhr.status != 200) {
-        helper.side_toaster("the route could not be loaded.", 2000);
+        helper.side_toaster("the route could not be loaded.", 5000);
       }
     };
 
     xhr.onerror = function (err) {
       console.log(err);
     };
-    xhr.send(null);
+
+    let a = from.split(",");
+    let b = to.split(",");
+
+    const body = {
+      coordinates: [a, b],
+      elevation: "true",
+    };
+    xhr.send(JSON.stringify(body));
   };
 
   let addPoint = function (type, action, latlng) {

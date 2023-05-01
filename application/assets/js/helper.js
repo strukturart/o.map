@@ -1,7 +1,7 @@
 const helper = (() => {
   let isOnline = function () {
     var xhttp = new XMLHttpRequest({
-      mozSystem: true
+      mozSystem: true,
     });
 
     xhttp.open("GET", "https://google.com?" + new Date().getTime(), true);
@@ -110,15 +110,14 @@ const helper = (() => {
     xhr.responseType = "json";
     xhr.send();
     xhr.error = function (err) {
-      console.log(err);
+      helper.side_toaster(err, 3000);
     };
 
     xhr.onload = function () {
       let responseObj = xhr.response;
-      console.log(responseObj);
       let latlng = [
         responseObj.data.location.latitude,
-        responseObj.data.location.longitude
+        responseObj.data.location.longitude,
       ];
       callback(latlng);
     };
@@ -157,7 +156,7 @@ const helper = (() => {
     try {
       let finder = new Applait.Finder({
         type: "sdcard",
-        debugMode: false
+        debugMode: false,
       });
       finder.search(name);
 
@@ -333,7 +332,7 @@ const helper = (() => {
     downloadFile,
     search_file,
     list_files,
-    date_now
+    date_now,
   };
 })();
 
@@ -426,7 +425,7 @@ let update_file = function (filepath, storage) {
 let add_file = function () {
   var sdcard = navigator.getDeviceStorage("sdcard");
   var file = new Blob(['[{"markers":[]}]'], {
-    type: "application/json"
+    type: "application/json",
   });
 
   var request = sdcard.addNamed(file, "omap.json");

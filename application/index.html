@@ -114,10 +114,7 @@
       <div class="item" data-action="set_marker_route_end" tabindex="3">
         set as end point
       </div>
-      <h2>change routing profile</h2>
-      <div  class="item" data-action="change-profile" class="routing-profile-status">---</div>
-
-
+      
       <div class="item input-parent" tabindex="4">
         <label for="popup">Popup</label>
         <input type="text"  id="popup" />
@@ -283,15 +280,27 @@
         <h2>Offline maps</h2>
         <div class="item input-parent" tabindex="1">
           <label for="cache-time"
-            >After how many days should the maps be re-downloaded?</label
+            >After how many month should the maps be re-downloaded?</label
           >
-          <input type="tel" pattern="^[0-9]*$" id="cache-time" />
+          <select class="select-box" id="cache-time">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">11</option>
+            <option value="12">12</option>
+          </select>
         </div>
 
         <h2>Cache</h2>
         <div class="item input-parent" tabindex="7">
           <label for="cache-zoom">How much zoom level should be saved ?</label>
-          <select id="cache-zoom">
+          <select id="cache-zoom" class="select-box">
             <option value="0">0</option>
             <option value="1">1</option>
             <option value="2">2</option>
@@ -471,24 +480,18 @@
       <div class="panel menu-box" id="routing" name="Routing">
         <strong class="item"><u>Distance</u></strong>
         <div id="routing-distance"></div>
-
+        <strong class="item"><u>Ascent</u></strong>
+        <div id="routing-ascent"></div>
+        <strong class="item"><u>Descent</u></strong>
+        <div id="routing-descent"></div>
         <strong class="item"><u>Duration</u></strong>
         <div id="routing-duration"><span></span></div>
-
-        <strong class="item"><u>Start</u></strong>
-        <div id="routing-start-point"></div>
-
-        <strong class="item"><u>End</u></strong>
-        <div id="routing-end-point"></div>
-        <strong class="item"><u>Type</u></strong>
-        <div class="routing-profile-status"></div>
-
+        <button data-map="change-profile" class="item routing-profile-status"></button>
         <button class="item" tabindex="0" data-map="saverouting">
           save route
         </button>
         <button
           class="item"
-          tabindex="1"
           id="routing-profile"
           data-map="startrouting"
         >
@@ -749,7 +752,8 @@
     <script defer src="assets/js/leaflet.js"></script>
     <script defer src="assets/js/GeometryUtil.js"></script>
 
-    <script defer src="assets/js/pouchdb.min.js"></script>
+    <script defer src="assets/js/pouchdb-7.2.1.min.js"></script>
+
 
     <script defer src="assets/js/mustache.js"></script>
     <script defer src="assets/js/L.TileLayer.PouchDBCached.js"></script>

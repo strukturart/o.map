@@ -165,6 +165,12 @@ document.addEventListener("DOMContentLoaded", function () {
               feature.properties.summary.distance
             );
 
+          document.getElementById("routing-ascent").innerText =
+            module.convert_units("meter", feature.properties.ascent);
+
+          document.getElementById("routing-descent").innerText =
+            module.convert_units("meter", feature.properties.descent);
+
           document.getElementById("routing-duration").innerText =
             module.format_ms(feature.properties.summary.duration * 1000);
 
@@ -173,11 +179,6 @@ document.addEventListener("DOMContentLoaded", function () {
             feature.geometry.coordinates[
               feature.geometry.coordinates.length - 1
             ];
-
-          document.getElementById("routing-start-point").innerText =
-            m[0] + "," + m[1];
-          document.getElementById("routing-end-point").innerText =
-            mm[0] + "," + mm[1];
 
           i = feature.properties.segments[0].steps;
 
@@ -198,9 +199,6 @@ document.addEventListener("DOMContentLoaded", function () {
             // Reverse from file
             let routing_start = [m[0], m[1]];
             let routing_end = [mm[0], mm[1]];
-
-            //routing.start = [m[0], m[1]];
-            //routing.end = [mm[0], mm[1]];
 
             //add marker
             let s = L.marker(routing_start).addTo(markers_group);
@@ -239,7 +237,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     routing_instructions(instructions);
-    // routing.active = true;
     routing.loaded = true;
     document.querySelectorAll(".routing-profile-status").forEach((e) => {
       e.innerText = setting.routing_profil;
@@ -975,7 +972,7 @@ document.addEventListener("DOMContentLoaded", function () {
         e.style.color = "black";
       }
 
-      if (overpass_query == e.getAttribute("data-url")) {
+      if (callback_query == e.getAttribute("data-url")) {
         e.style.background = "white";
         e.style.color = "black";
       }
@@ -1005,7 +1002,6 @@ document.addEventListener("DOMContentLoaded", function () {
   let open_finder = function () {
     settings.load_settings();
     finder_tabindex();
-    if (setting.wikipedia_view) wikilocation.load();
     document.querySelector("div#finder").style.display = "block";
     finder_navigation("start");
     status.windowOpen = "finder";
@@ -1040,7 +1036,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function getLocation(option) {
     if (option == "init") {
-      helper.toaster("try to determine your position", 3000);
       document.querySelector("#cross").classList.add("unavailable");
       myMarker = L.marker([0, 0]).addTo(markers_group);
       myMarker.setIcon(maps.default_icon);
@@ -1049,6 +1044,8 @@ document.addEventListener("DOMContentLoaded", function () {
         mainmarker.current_lat = mainmarker.device_lat;
         mainmarker.current_lng = mainmarker.device_lng;
       }, 5000);
+
+      helper.side_toaster("try to determine your position", 3000);
     }
 
     let options = {
@@ -1088,7 +1085,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function error(err) {
-      console.log(setting.ipbase_api);
+      console.log("not found");
       if (setting.ipbase_api != "") {
         var z = confirm(
           "do you want to find out your position by your ip address ?"
@@ -1446,7 +1443,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function addMapLayers() {
     if (
-      document.activeElement.classList == "item" &&
+      document.activeElement.classList.contains("item") &&
       status.windowOpen == "finder"
     ) {
       top_bar("", "", "");
@@ -1522,6 +1519,17 @@ document.addEventListener("DOMContentLoaded", function () {
           setTimeout(function () {
             bottom_bar("cancel", "", "save");
           }, 1000);
+        }
+
+        if (item_value == "change-profile") {
+          rs.change_type();
+          rs.request(
+            routing.start,
+            routing.end,
+            setting.ors_api,
+            setting.routing_profil,
+            routing_service_callback
+          );
         }
 
         if (item_value == "startrouting") {
@@ -1803,9 +1811,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
     //remove finder pages
-    if (setting.wikipedia_view == false) {
-      finder_panels = finder_panels.filter((e) => e.id != "wikilocation");
-    }
 
     if (setting.tips_view == false) {
       finder_panels = finder_panels.filter((e) => e.id != "tips");
@@ -1870,8 +1875,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (finder_panels[count].id == "routing") {
+      console.log("hey. " + setting.routing_profil);
       document.querySelectorAll(".item")[0].focus();
       bottom_bar("", "", "");
+      document.querySelector("button.routing-profile-status").innerText =
+        setting.routing_profil;
     }
     focus_after_selection();
   };
