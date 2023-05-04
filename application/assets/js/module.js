@@ -26,7 +26,7 @@ const module = (() => {
 
     let result = {
       sunrise: sunrise,
-      sunset: sunset
+      sunset: sunset,
     };
     return result;
   };
@@ -40,8 +40,8 @@ const module = (() => {
         async: true,
         marker_options: {
           startIconUrl: "assets/css/images/start.png",
-          endIconUrl: "assets/css/images/end.png"
-        }
+          endIconUrl: "assets/css/images/end.png",
+        },
       })
         .on("loaded", function (e) {
           map.fitBounds(e.target.getBounds());
@@ -88,8 +88,8 @@ const module = (() => {
             async: true,
             marker_options: {
               startIconUrl: "assets/css/images/start.png",
-              endIconUrl: "assets/css/images/end.png"
-            }
+              endIconUrl: "assets/css/images/end.png",
+            },
           })
             .on("loaded", function (e) {
               map.fitBounds(e.target.getBounds());
@@ -159,7 +159,7 @@ const module = (() => {
   /////Load GeoJSON///////////
   ///////////////////////
   let loadGeoJSON = function (filename, callback) {
-      //file reader
+    //file reader
     try {
       let sdcard = navigator.getDeviceStorage("sdcard");
       let request = sdcard.get(filename);
@@ -231,7 +231,7 @@ const module = (() => {
 
             t.addTo(markers_group);
             map.flyTo(latlng);
-          }
+          },
 
           // Popup
         }).addTo(geoJSON_group);
@@ -401,10 +401,8 @@ const module = (() => {
   let closest_average = [];
   //closest point in route/track
   let get_closest_point = function (route) {
-    if (mainmarker.device_lat == "" || mainmarker.device_lat == null)
-      return false;
+    if (!mainmarker.device_lat) return false;
 
-    console.log("route" + route);
     //let r = route.map((row) => row.reverse());
     let m = L.polyline(route);
 
@@ -424,28 +422,38 @@ const module = (() => {
 
     document.querySelector("#distance-to-track").innerText = f / 1000;
     //notification
-    if (mainmarker.accuracy < 22) closest_average.push(f);
+    // Check if the main marker's accuracy is below 22
+    if (mainmarker.accuracy < 22) {
+      // Add the current value of f to the closest_average array
+      closest_average.push(f);
+    }
 
-    let result = 0;
-    let sum = 0;
+    // Log the main marker's accuracy to the console
+    console.log(mainmarker.accuracy);
+
+    // Calculate the average of the closest_average array if it has more than 48 elements
     if (closest_average.length > 48) {
-      closest_average.forEach(function (e) {
-        sum = sum + e;
-      });
+      let sum = closest_average.reduce((acc, cur) => acc + cur);
+      let result = sum / 40;
 
+      // Reset the closest_average array and sum if it has more than 50 elements
       if (closest_average.length > 50) {
         closest_average.length = 0;
         sum = 0;
         result = 0;
       }
 
-      result = sum / 40;
-      if (setting.routing_notification == false) return false;
+      // If the routing_notification setting is off, exit early
+      if (!setting.routing_notification) {
+        return false;
+      }
+
+      // If the average is above 0.5, trigger a vibration and show a toaster message
       if (result > 0.5) {
-        navigator.vibrate([1000, 500, 1000]);
-        helper.toaster("to far" + result, 3000);
-      } else {
-        console.log("okay");
+        try {
+          navigator.vibrate([1000, 500, 1000]);
+        } catch (e) {}
+        helper.toaster("Too far " + result, 3000);
       }
     }
   };
@@ -550,35 +558,29 @@ const module = (() => {
 
   //calculation of altitude ascents and descents
 
-  let elevation = function (t) {
+  function elevation(t) {
     let up_e = 0;
     let down_e = 0;
-    let evo = {};
-    //the gps is too inaccurate, a boundary mark so help to spot errors
-    let limit = 15;
 
-    t.forEach(function (item, index) {
-      if (index > 0) {
-        if (item > t[index - 1]) {
-          let c = item - t[index - 1];
-          if (c > limit) return false;
-          up_e += c;
-        }
-        if (item < t[index - 1]) {
-          let cc = t[index - 1] - item;
-          if (cc > limit) return false;
-          down_e += cc;
-        }
-
-        evo.up = up_e;
-        evo.down = down_e;
+    for (let i = 1; i < t.length; i++) {
+      const diff = t[i] - t[i - 1];
+      if (Math.abs(diff) > 15) {
+        // The GPS data is too inaccurate; skip this point
+        continue;
       }
-    });
+      if (diff > 0) {
+        up_e += diff;
+      } else if (diff < 0) {
+        down_e -= diff;
+      }
+    }
+
+    const evo = { up: up_e, down: down_e };
     document.querySelector("#tracking-evo-up span").innerText =
       evo.up.toFixed(2);
     document.querySelector("#tracking-evo-down span").innerText =
       evo.down.toFixed(2);
-  };
+  }
 
   //json to gpx
   let toGPX = function () {
@@ -597,12 +599,12 @@ const module = (() => {
   let popup_option = {
     closeButton: false,
     maxWidth: 200,
-    maxHeight: 200
+    maxHeight: 200,
   };
 
   let path_option = {
     color: "red",
-    step: 0
+    step: 0,
   };
 
   let distances = [];
@@ -662,7 +664,7 @@ const module = (() => {
         gps_lock = window.navigator.requestWakeLock("gps");
       status.tracking_running = true;
 
-      if (localStorage.getItem("tracking_cache") != null) {
+      if (localStorage.getItem("tracking_cache") !== null) {
         if (
           window.confirm(
             "looks like a tracking was aborted without saving it, would you like to continue?"
@@ -678,7 +680,7 @@ const module = (() => {
             polyline_tracking.addLatLng([
               tracking_cache[i].lat,
               tracking_cache[i].lng,
-              tracking_cache[i].timestamp
+              tracking_cache[i].timestamp,
             ]);
 
             tracking_timestamp.push(tracking_cache[i].timestamp);
@@ -691,10 +693,9 @@ const module = (() => {
       if (setting.tracking_screenlock) screenWakeLock("lock", "screen");
 
       tracking_interval = setInterval(function () {
-        //only write data if accuracy
-        let n = 0;
+        // Only record data if accuracy is high enough
         if (tracking_cache.length > 2) {
-          n = calc_distance(
+          calc_distance(
             Number(tracking_cache[tracking_cache.length - 1].lat),
             Number(tracking_cache[tracking_cache.length - 1].lng),
             Number(tracking_cache[tracking_cache.length - 2].lat),
@@ -711,7 +712,7 @@ const module = (() => {
           polyline_tracking.addLatLng([
             mainmarker.device_lat,
             mainmarker.device_lng,
-            mainmarker.device_alt
+            mainmarker.device_alt,
           ]);
 
           tracking_cache.push({
@@ -719,7 +720,7 @@ const module = (() => {
             lng: mainmarker.device_lng,
             alt: mainmarker.device_alt,
             timestamp: ts.toISOString(),
-            tracking_altitude: mainmarker.device_alt
+            tracking_altitude: mainmarker.device_alt,
           });
           tracking_altitude = [];
           tracking_cache.forEach(function (e) {
@@ -727,10 +728,11 @@ const module = (() => {
               tracking_altitude.push(e.tracking_altitude);
           });
 
-          //only record the altitude if the accuracy of the measurement is less than 1000.
+          // Record the altitude if the accuracy is less than 1000
           if (mainmarker.accuracy < 1000) {
             //elevation(tracking_altitude);
           }
+          // Update the view with tracking data
 
           if (tracking_cache.length > 2) {
             //get tracking data to display in view
@@ -787,11 +789,11 @@ const module = (() => {
               document.querySelector("#tracking-moving-time span").innerText =
                 d;
             });
-
+            // Save tracking data to local storage
             let k = JSON.stringify(tracking_cache);
             localStorage.setItem("tracking_cache", k);
           }
-
+          // Stop tracking if mainmarker.tracking is false
           if (mainmarker.tracking == false) {
             clearInterval(tracking_interval);
             if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
@@ -912,6 +914,6 @@ const module = (() => {
     format_ms,
     format_s,
 
-    get_closest_point
+    get_closest_point,
   };
 })();

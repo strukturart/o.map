@@ -1,10 +1,12 @@
 {
   "name": "o.map",
   "id": "o.map",
-  "version": "1.5.3",
+  "version": "1.5.9",
   "description": "o.map is an openstreetmap app for KaiOS, it is a good companion for your next outdoor adventure",
   "lang": "en-US",
   "start_url": "/index.html",
+      "priority": "high",
+
   "icons": [
     {
       "src": "/assets/icons/icon-56-56.png",
@@ -19,7 +21,7 @@
   ],
 
   "b2g_features": {
-    "version": "1.5.2",
+    "version": "1.5.9",
     "id": "o.map",
     "core": true,
     "categories": ["utilities"],

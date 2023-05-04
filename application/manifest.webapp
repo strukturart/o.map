@@ -1,11 +1,13 @@
   {
-  "version": "1.5.3",
+  "version": "1.5.9",
   "version_name": "together we are strong",
   "name": "o.map",
   "description": "o.map is an openstreetmap app for KaiOs, it is a good companion for your next outdoor adventure",
   "launch_path": "/index.html",
   "type": "privileged",
   "fullscreen": "true",
+  "priority": "high",
+
 
   "icons": {
     "56": "/assets/icons/icon-56-56.png",

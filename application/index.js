@@ -971,11 +971,12 @@ document.addEventListener("DOMContentLoaded", function () {
         e.style.background = "white";
         e.style.color = "black";
       }
-
+      /*
       if (callback_query == e.getAttribute("data-url")) {
         e.style.background = "white";
         e.style.color = "black";
       }
+      */
       if (general.active_layer.includes(e.getAttribute("data-url"))) {
         e.style.background = "white";
         e.style.color = "black";
@@ -1253,6 +1254,7 @@ document.addEventListener("DOMContentLoaded", function () {
       distance_to_target();
 
       if (routing.active) {
+        console.log("active");
         module.get_closest_point(routing.coordinates);
       }
     }
@@ -1499,11 +1501,6 @@ document.addEventListener("DOMContentLoaded", function () {
           search.showSearch();
         }
 
-        if (item_value == "coordinations") {
-          document.querySelector("div#finder").style.display = "none";
-          coordinations();
-        }
-
         if (item_value == "savelocation") {
           document.querySelector("div#finder").style.display = "none";
           save_mode = "geojson-single";
@@ -1532,24 +1529,30 @@ document.addEventListener("DOMContentLoaded", function () {
           );
         }
 
-        if (item_value == "startrouting") {
+        // If item_value is "startrouting"
+        if (item_value === "startrouting") {
+          // Call the auto_update_view function
           auto_update_view();
 
+          // Check the value of routing.active and perform the appropriate action
           switch (routing.active) {
             case true:
+              console.log(routing.active);
               routing.active = false;
               helper.side_toaster("Routing paused", 2000);
               document.activeElement.innerText = "start";
               break;
+
             case false:
+              console.log(routing.active);
               routing.active = true;
               helper.side_toaster("Routing started", 2000);
               document.activeElement.innerText = "stop";
-
               break;
 
             default:
-              console.log("Not Zero, One or Two");
+              console.log("Invalid value of routing.active");
+              break;
           }
         }
 
@@ -1611,8 +1614,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
           document.querySelector("div#finder").style.display = "none";
           status.windowOpen = "map";
-
-          //;
         }
 
         //add gpx data from osm
@@ -1826,6 +1827,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (status.tracking_running == false) {
       finder_panels = finder_panels.filter((e) => e.id != "tracking");
+    }
+
+    if (status.geolocation == false) {
+      finder_panels = finder_panels.filter((e) => e.id != "coordinations");
     }
 
     if (routing.loaded == false) {
