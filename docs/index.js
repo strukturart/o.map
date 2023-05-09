@@ -88,6 +88,7 @@ let status = {
   windowOpen: "map",
   sub_status: "",
   selected_marker: "",
+  appOpendByUser: true,
 };
 
 if (!navigator.geolocation) {
@@ -1131,7 +1132,9 @@ document.addEventListener("DOMContentLoaded", function () {
     state_geoloc = true;
     function showLocation(position) {
       document.querySelector("#cross").classList.remove("unavailable");
+      status.gps_data_received = Math.round(Date.now() / 1000);
 
+      localStorage.setItem("status", JSON.stringify(status));
       let crd = position.coords;
 
       //store device location
@@ -2005,8 +2008,26 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   };
 
-  const checkbox = document.getElementById("measurement-ckb");
+  document.addEventListener("visibilitychange", function () {
+    localStorage.setItem("status", JSON.stringify(status));
 
+    setTimeout(function () {
+      status.visible = document.visibilityState;
+    }, 1000);
+  });
+
+  //callback from sw, osm oauth
+  const channel = new BroadcastChannel("sw-messages");
+  channel.addEventListener("message", (event) => {
+    //callback from osm OAuth
+    const l = event.data.oauth_success;
+    if (event.data.oauth_success) {
+      setTimeout(() => {
+        localStorage.setItem("openstreetmap_token", event.data.oauth_success);
+        osm_server_list_gpx();
+      }, 3000);
+    }
+  });
   //////////////////////////////
   ////KEYPAD HANDLER////////////
   //////////////////////////////
@@ -2054,17 +2075,13 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "Backspace":
+        status.closedByUser = true;
+        status.appOpendByUser=false;
+        status.tracking_running = false;
+        localStorage.setItem("status", status);
         window.close();
-
         break;
-
-      case "4":
-        if (status.windowOpen == "map") {
-          geolocationWatch();
-          screenWakeLock("lock", "gps");
-        }
-
-        break;
+   
     }
   }
 
@@ -2077,7 +2094,6 @@ document.addEventListener("DOMContentLoaded", function () {
       case "Backspace":
         if (status.windowOpen == "scan") {
           qr.stop_scan();
-
           open_finder();
           windowOpen = "finder";
         }
@@ -2114,16 +2130,24 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         }
 
+        if (status.windowOpen === "map") {
+          status.closedByUser = false;
+          localStorage.setItem("status", JSON.stringify(status));
+
+          break;
+        }
+
         break;
 
       case "EndCall":
+        localStorage.setItem("app_closed", "by_user");
+        status.closedByUser = true;
+        localStorage.setItem("status", status);
         window.close();
         break;
 
       case "SoftLeft":
       case "Control":
-        console.log(status.windowOpen);
-
         if (status.windowOpen == "user-input" && save_mode == "rename-file") {
           module.user_input("close");
           status.windowOpen = "finder";
@@ -2435,6 +2459,11 @@ document.addEventListener("DOMContentLoaded", function () {
             save_mode = "geojson-tracking";
             module.user_input("open", "", "Save as GPX file");
             bottom_bar("cancel", "don't save", "save");
+            status.tracking_running = false;
+
+            localStorage.setItem("status", JSON.stringify(status));
+            keepalive.remove_alarm();
+
             return true;
           } else {
             if (status.geolocation == false) {
@@ -2444,12 +2473,17 @@ document.addEventListener("DOMContentLoaded", function () {
               );
               return false;
             }
-            status.tracking_running = true;
             helper.side_toaster(
               "tracking started,\n stop tracking with key 1",
               4000
             );
             module.measure_distance("tracking");
+            status.tracking_running = true;
+            localStorage.setItem("status", JSON.stringify(status));
+
+            var d = new Date();
+            d.setMinutes(d.getMinutes() + 1);
+            keepalive.add_alarm(d, "keep alive");
           }
         }
         break;
@@ -2509,6 +2543,7 @@ document.addEventListener("DOMContentLoaded", function () {
             markers_group
           );
           module.set_f_upd_markers();
+         
         }
         break;
 
@@ -2602,7 +2637,7 @@ document.addEventListener("DOMContentLoaded", function () {
     evt.preventDefault();
 
     if (evt.key == "Backspace") evt.preventDefault();
-
+    //delete text
     if (
       evt.key == "Backspace" &&
       status.windowOpen != "map" &&
@@ -2620,23 +2655,4 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.addEventListener("keydown", handleKeyDown);
   document.addEventListener("keyup", handleKeyUp);
-
-  document.addEventListener("visibilitychange", function () {
-    setTimeout(function () {
-      status.visible = document.visibilityState;
-    }, 1000);
-  });
-
-  //callback from sw, osm oauth
-  const channel = new BroadcastChannel("sw-messages");
-  channel.addEventListener("message", (event) => {
-    //callback from osm OAuth
-    const l = event.data.oauth_success;
-    if (event.data.oauth_success) {
-      setTimeout(() => {
-        localStorage.setItem("openstreetmap_token", event.data.oauth_success);
-        osm_server_list_gpx();
-      }, 3000);
-    }
-  });
 });

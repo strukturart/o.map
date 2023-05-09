@@ -33,6 +33,12 @@
       "name": "strukturart",
       "url": "https://github.com/strukturart/o.map"
     },
+    
+      "messages": [
+      { "serviceworker-notification": "index.html" },
+      "alarm",
+      "activity"
+    ],
 
     "dependencies": {
       "ads-sdk": "1.5.8"
@@ -47,10 +53,13 @@
     },
 
     "permissions": {
-      "desktop-notification": {
+      
+  "desktop-notification": {
         "description": "Needed to fire system notifications"
       },
-
+      "alarms": {
+        "description": "Required to schedule alarms"
+      },
       "mobiledata": {},
       "wifidata": {},
       "calllog": {},

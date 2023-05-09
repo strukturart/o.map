@@ -30,6 +30,17 @@
       "to": "/oauth.html"
     }
   ],
+  
+    "messages": [
+    {
+      "alarm": "/index.html"
+    },
+    {
+      "notification": "/index.html"
+    },
+    { "serviceworker-notification": "/index.html" },
+    { "activity": "/index.html" }
+  ],
 
   "locales": {
     "en-US": {
@@ -43,6 +54,12 @@
 
 
   "permissions": {
+  
+ 
+    "desktop-notification": {
+      "description": "Needed to fire system notifications"
+    },
+
     "mobiledata": {},
     "wifidata": {},
     "calllog": {},
@@ -67,6 +84,9 @@
 
     "systemXHR": {
       "description": "Required to load remote content"
+    },
+       "alarms": {
+      "description": "Required to schedule alarms"
     }
   }
 }

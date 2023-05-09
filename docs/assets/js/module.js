@@ -1,4 +1,39 @@
 const module = (() => {
+
+  let uniqueId =
+  Date.now().toString(36) + Math.random().toString(36).substring(2);
+
+
+let pushLocalNotification = function (title, body) {
+  window.Notification.requestPermission().then((result) => {
+    var notification = new window.Notification(title, {
+      body: body,
+      //requireInteraction: true,
+    });
+
+    notification.onerror = function (err) {
+      console.log(err);
+    };
+    notification.onclick = function (event) {
+      if (window.navigator.mozApps) {
+        var request = window.navigator.mozApps.getSelf();
+        request.onsuccess = function () {
+          if (request.result) {
+            notification.close();
+            request.result.launch();
+          }
+        };
+      } else {
+        window.open(document.location.origin, "_blank");
+      }
+    };
+    notification.onshow = function () {
+      // notification.close();
+    };
+  });
+};
+
+
   let link_to_marker = function (url) {
     let url_split = url.split("/");
     current_lat = url_split[url_split.length - 2];
@@ -915,5 +950,7 @@ const module = (() => {
     format_s,
 
     get_closest_point,
+    pushLocalNotification,
+    uniqueId
   };
 })();
