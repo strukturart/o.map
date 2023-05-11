@@ -1,38 +1,35 @@
 const module = (() => {
-
   let uniqueId =
-  Date.now().toString(36) + Math.random().toString(36).substring(2);
+    Date.now().toString(36) + Math.random().toString(36).substring(2);
 
+  let pushLocalNotification = function (title, body) {
+    window.Notification.requestPermission().then((result) => {
+      var notification = new window.Notification(title, {
+        body: body,
+        //requireInteraction: true,
+      });
 
-let pushLocalNotification = function (title, body) {
-  window.Notification.requestPermission().then((result) => {
-    var notification = new window.Notification(title, {
-      body: body,
-      //requireInteraction: true,
+      notification.onerror = function (err) {
+        console.log(err);
+      };
+      notification.onclick = function (event) {
+        if (window.navigator.mozApps) {
+          var request = window.navigator.mozApps.getSelf();
+          request.onsuccess = function () {
+            if (request.result) {
+              notification.close();
+              request.result.launch();
+            }
+          };
+        } else {
+          window.open(document.location.origin, "_blank");
+        }
+      };
+      notification.onshow = function () {
+        // notification.close();
+      };
     });
-
-    notification.onerror = function (err) {
-      console.log(err);
-    };
-    notification.onclick = function (event) {
-      if (window.navigator.mozApps) {
-        var request = window.navigator.mozApps.getSelf();
-        request.onsuccess = function () {
-          if (request.result) {
-            notification.close();
-            request.result.launch();
-          }
-        };
-      } else {
-        window.open(document.location.origin, "_blank");
-      }
-    };
-    notification.onshow = function () {
-      // notification.close();
-    };
-  });
-};
-
+  };
 
   let link_to_marker = function (url) {
     let url_split = url.split("/");
@@ -146,8 +143,6 @@ let pushLocalNotification = function (title, body) {
         let sdcard = navigator.getDeviceStorage("sdcard");
         let request = sdcard.get(filename);
         request.onsuccess = function () {
-          console.log(filename);
-
           let reader = new FileReader();
 
           reader.onerror = function (event) {
@@ -413,8 +408,6 @@ let pushLocalNotification = function (title, body) {
 
     gpx_selection_info.name = gpx_selection[gpx_selection_count]._info.name;
     update_gpx_info();
-
-    console.log(gpx_selection[gpx_selection_count]._info);
   };
 
   let update_gpx_info = function () {
@@ -524,7 +517,13 @@ let pushLocalNotification = function (title, body) {
 
   //calc distance between markers
   let calc_distance = function (from_lat, from_lng, to_lat, to_lng, unit) {
-    if (to_lat == undefined || to_lng == undefined) return false;
+    if (
+      to_lat == undefined ||
+      to_lng == undefined ||
+      from_lat == undefined ||
+      from_lng == undefined
+    )
+      return false;
 
     let d = map.distance([from_lat, from_lng], [to_lat, to_lng]);
     if (unit == "mil") {
@@ -532,7 +531,21 @@ let pushLocalNotification = function (title, body) {
     }
 
     d = Math.ceil(d);
+
     return d;
+  };
+
+  let calcDistance = function (polyline) {
+    let dis = L.GeometryUtil.length(polyline);
+
+    if (general.measurement_unit == "km") {
+      dis = dis / 1000;
+    }
+    if (general.measurement_unit == "mil") {
+      dis = dis / 1000;
+      let dis = dis / 1.60934;
+    }
+    return dis;
   };
 
   //convert degree to direction
@@ -609,12 +622,9 @@ let pushLocalNotification = function (title, body) {
         down_e -= diff;
       }
     }
+    let r = { up: up_e, down: down_e };
 
-    const evo = { up: up_e, down: down_e };
-    document.querySelector("#tracking-evo-up span").innerText =
-      evo.up.toFixed(2);
-    document.querySelector("#tracking-evo-down span").innerText =
-      evo.down.toFixed(2);
+    return r;
   }
 
   //json to gpx
@@ -695,9 +705,12 @@ let pushLocalNotification = function (title, body) {
     }
 
     if (action == "tracking") {
-      if (typeof window.navigator.requestWakeLock !== "undefined")
-        gps_lock = window.navigator.requestWakeLock("gps");
       status.tracking_running = true;
+
+      if ("requestWakeLock" in navigator) {
+        gps_lock = window.navigator.requestWakeLock("gps");
+        if (setting.tracking_screenlock) screenWakeLock("lock", "screen");
+      }
 
       if (localStorage.getItem("tracking_cache") !== null) {
         if (
@@ -705,12 +718,16 @@ let pushLocalNotification = function (title, body) {
             "looks like a tracking was aborted without saving it, would you like to continue?"
           )
         ) {
-          let d = localStorage.getItem("tracking_cache");
+          let f = JSON.parse(localStorage.getItem("tracking_cache"));
+          f.forEach((e) => {
+            tracking_cache.push(e);
+          });
 
-          d = JSON.parse(d);
-
-          tracking_cache = d;
           //restore path
+          tracking_altitude = [];
+          tracking_timestamp = [];
+          tracking_latlngs = [];
+
           for (let i = 0; i < tracking_cache.length; i++) {
             polyline_tracking.addLatLng([
               tracking_cache[i].lat,
@@ -719,120 +736,118 @@ let pushLocalNotification = function (title, body) {
             ]);
 
             tracking_timestamp.push(tracking_cache[i].timestamp);
+            tracking_altitude.push(tracking_cache[i].alt);
           }
         } else {
           localStorage.removeItem("tracking_cache");
           tracking_cache = [];
+          tracking_altitude = [];
+          tracking_timestamp = [];
         }
       }
-      if (setting.tracking_screenlock) screenWakeLock("lock", "screen");
 
       tracking_interval = setInterval(function () {
+        if (mainmarker.accuracy > 10000) return false;
         // Only record data if accuracy is high enough
-        if (tracking_cache.length > 2) {
-          calc_distance(
-            Number(tracking_cache[tracking_cache.length - 1].lat),
-            Number(tracking_cache[tracking_cache.length - 1].lng),
-            Number(tracking_cache[tracking_cache.length - 2].lat),
-            Number(tracking_cache[tracking_cache.length - 2].lng)
-          );
+
+        //store time
+        let ts = new Date();
+        tracking_timestamp.push(ts.toISOString());
+        //store altitude
+        let alt = 0;
+        if (!mainmarker.device_alt && mainmarker.device_alt != null) {
+          alt = mainmarker.device_alt;
         }
-        if (mainmarker.accuracy > 10000) {
-          console.log("the gps is very inaccurate right now");
-          return false;
-        } else {
-          let ts = new Date();
-          tracking_timestamp.push(ts.toISOString());
 
-          polyline_tracking.addLatLng([
-            mainmarker.device_lat,
-            mainmarker.device_lng,
-            mainmarker.device_alt,
-          ]);
+        tracking_altitude.push(alt);
 
-          tracking_cache.push({
-            lat: mainmarker.device_lat,
-            lng: mainmarker.device_lng,
-            alt: mainmarker.device_alt,
-            timestamp: ts.toISOString(),
-            tracking_altitude: mainmarker.device_alt,
-          });
-          tracking_altitude = [];
-          tracking_cache.forEach(function (e) {
-            if (e.tracking_altitude != null)
-              tracking_altitude.push(e.tracking_altitude);
-          });
+        polyline_tracking.addLatLng([
+          mainmarker.device_lat,
+          mainmarker.device_lng,
+          alt,
+        ]);
 
-          // Record the altitude if the accuracy is less than 1000
-          if (mainmarker.accuracy < 1000) {
-            //elevation(tracking_altitude);
-          }
-          // Update the view with tracking data
+        tracking_cache.push({
+          lat: mainmarker.device_lat,
+          lng: mainmarker.device_lng,
+          alt: alt,
+          timestamp: ts.toISOString(),
+        });
 
-          if (tracking_cache.length > 2) {
-            //get tracking data to display in view
-            new L.GPX(toGPX(), { async: true }).on("loaded", function (e) {
-              //meter
-              if (general.measurement_unit == "km") {
-                let a = e.target.get_distance() / 1000;
-                document.querySelector("div#tracking-distance").innerText =
-                  a.toFixed(2) + general.measurement_unit;
+        // Record the altitude if the accuracy is less than 1000
+        //elevation(tracking_altitude);
 
-                let b = e.target._info.elevation.gain;
-                document.querySelector("#tracking-evo-up span").innerText =
-                  b.toFixed(2);
+        // Update the view with tracking data
 
-                let c = e.target._info.elevation.loss;
-                document.querySelector("#tracking-evo-down span").innerText =
-                  c.toFixed(2);
+        if (tracking_cache.length > 2) {
+          // Save tracking data to local storage
 
-                document.getElementById("tracking-altitude").innerText =
-                  mainmarker.device_alt;
+          localStorage.setItem(
+            "tracking_cache",
+            JSON.stringify(tracking_cache)
+          );
 
-                let d = e.target.get_moving_speed();
-                document.querySelector(
-                  "#tracking-speed-average-time"
-                ).innerText = d.toFixed(2);
-              }
-              //miles
-              if (general.measurement_unit == "mil") {
-                let a = e.target.get_distance_imp();
-                document.querySelector("div#tracking-distance").innerText =
-                  a.toFixed(2) + general.measurement_unit;
+          console.log(elevation(tracking_altitude).up);
 
-                let b = e.target.get_elevation_gain_imp();
-                document.querySelector("#tracking-evo-up span").innerText =
-                  b.toFixed(2);
+          //get tracking data to display in view
+          new L.GPX(toGPX(), { async: true }).on("loaded", function (e) {
+            //meter
+            if (general.measurement_unit == "km") {
+              // Calculate the distance along the polyline
+              let a = calcDistance(polyline_tracking);
+              document.querySelector("div#tracking-distance").innerText =
+                a.toFixed(2) + general.measurement_unit;
 
-                let c = e.target.get_elevation_loss_imp();
-                document.querySelector("#tracking-evo-down span").innerText =
-                  c.toFixed(2);
+              let b = e.target._info.elevation.gain;
+              document.querySelector("#tracking-evo-up span").innerText =
+                elevation(tracking_altitude).up.toFixed(2);
 
-                document.getElementById("tracking-altitude").innerText =
-                  mainmarker.device_alt * 3.280839895;
+              let c = e.target._info.elevation.loss;
+              document.querySelector("#tracking-evo-down span").innerText =
+                elevation(tracking_altitude).down.toFixed(2);
 
-                let d = e.target.get_moving_speed_imp();
-                document.querySelector(
-                  "#tracking-speed-average-time"
-                ).innerText = d.toFixed(2);
-              }
+              document.getElementById("tracking-altitude").innerText =
+                mainmarker.device_alt;
 
-              let d = e.target.get_duration_string(
-                e.target.get_total_time(),
-                false
-              );
-              document.querySelector("#tracking-moving-time span").innerText =
+              let d = e.target.get_moving_speed();
+              document.querySelector("#tracking-speed-average-time").innerText =
+                d.toFixed(2);
+            }
+            //miles
+            if (general.measurement_unit == "mil") {
+              // Calculate the distance along the polyline
+              let a = calcDistance(polyline_tracking);
+              document.querySelector("div#tracking-distance").innerText =
+                a.toFixed(2) + general.measurement_unit;
+
+              let b = e.target.get_elevation_gain_imp();
+              document.querySelector("#tracking-evo-up span").innerText =
+                b.toFixed(2);
+
+              let c = e.target.get_elevation_loss_imp();
+              document.querySelector("#tracking-evo-down span").innerText =
+                c.toFixed(2);
+
+              document.getElementById("tracking-altitude").innerText =
+                mainmarker.device_alt * 3.280839895;
+
+              let d = e.target.get_moving_speed_imp();
+              d == "NaN" ? "-" : d.toFixed(2);
+              document.querySelector("#tracking-speed-average-time").innerText =
                 d;
-            });
-            // Save tracking data to local storage
-            let k = JSON.stringify(tracking_cache);
-            localStorage.setItem("tracking_cache", k);
-          }
-          // Stop tracking if mainmarker.tracking is false
-          if (mainmarker.tracking == false) {
-            clearInterval(tracking_interval);
-            if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
-          }
+            }
+
+            let d = e.target.get_duration_string(
+              e.target.get_total_time(),
+              false
+            );
+            document.querySelector("#tracking-moving-time span").innerText = d;
+          });
+        }
+        // Stop tracking if mainmarker.tracking is false
+        if (mainmarker.tracking == false) {
+          clearInterval(tracking_interval);
+          if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
         }
       }, 5000);
     }
@@ -849,8 +864,6 @@ let pushLocalNotification = function (title, body) {
 
       geoJSON_group.addLayer(measure_group);
       geoJSON_group.addLayer(polyline);
-
-      //console.log(geoJSON_group.toGeoJSON());
 
       if (l.length < 2) return false;
       let dis = calc_distance(
@@ -951,6 +964,6 @@ let pushLocalNotification = function (title, body) {
 
     get_closest_point,
     pushLocalNotification,
-    uniqueId
+    uniqueId,
   };
 })();
