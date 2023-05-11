@@ -1173,6 +1173,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       //alitude
       if (crd.altitude != undefined || crd.altitude != null) {
+        console.log(crd.altitude)
         mainmarker.device_alt = crd.altitude;
         if (general.measurement_unit == "km") {
           document.querySelector(
