@@ -1309,6 +1309,7 @@ document.addEventListener("DOMContentLoaded", function () {
       status.windowOpen == "files-option"
     ) {
       let item_value = document.activeElement.getAttribute("data-action");
+      if(item_value=='auto_update_route'){}
 
       if (item_value == "set_target_marker") {
         mainmarker.target_marker = mainmarker.selected_marker._latlng;
