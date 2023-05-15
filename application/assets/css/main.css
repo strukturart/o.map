@@ -239,6 +239,50 @@ a {
   outline: 1px solid red;
 }
 
+.loader {
+  width: 30px;
+  height: 10px;
+  background: #000000;
+  margin-top: 40px;
+  display: none;
+  position: fixed;
+  z-index: 60000;
+  left: 10%;
+  top: 1%;
+}
+.loader::after {
+  content: "";
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 0);
+  position: absolute;
+  border: 15px solid transparent;
+  border-top-color: #000000;
+  box-sizing: border-box;
+  animation: bump 0.4s ease-in-out infinite alternate;
+}
+.loader::before {
+  content: "";
+  left: 50%;
+  bottom: 25px;
+  transform: translate(-50%, 0);
+  position: absolute;
+  width: 15px;
+  height: 20px;
+  background: #000000;
+  box-sizing: border-box;
+  animation: bump 0.4s ease-in-out infinite alternate;
+}
+
+@keyframes bump {
+  0% {
+    transform: translate(-50%, 5px);
+  }
+  100% {
+    transform: translate(-50%, -5px);
+  }
+}
+
 /*///////////////////////////
 ///MARKERS////////////////*/
 

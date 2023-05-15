@@ -17,23 +17,44 @@ const rs = ((_) => {
 
     xhr.timeout = 4000;
 
-    xhr.ontimeout = function (e) {};
+    xhr.ontimeout = function (e) {
+      helper.side_toaster("Timeout error", 5000);
+    };
+
+    xhr.onprogress = function () {};
 
     //https://openrouteservice.org/dev/#/api-docs/v2/directions/{profile}/geojson/post
     xhr.onload = function () {
       if (xhr.status == 200) {
         callback(JSON.parse(xhr.responseText), false);
+        document.querySelector(".loader").style.display = "none";
       }
       if (xhr.status == 403) {
         helper.side_toaster("The API key is invalid", 5000);
+        document.querySelector(".loader").style.display = "none";
+      }
+
+      if (xhr.status == 503) {
+        document.querySelector(".loader").style.display = "none";
+
+        helper.side_toaster(
+          "The server is currently unavailable due to overload or maintenance.The API key is invalid",
+          5000
+        );
       }
       if (xhr.status != 200) {
+        document.querySelector(".loader").style.display = "none";
+
         helper.side_toaster("the route could not be loaded.", 5000);
+        routing.active = false;
       }
     };
 
     xhr.onerror = function (err) {
-      console.log(err);
+      document.querySelector(".loader").style.display = "none";
+
+      helper.side_toaster("Something going wrong" + err, 5000);
+      routing.active = false;
     };
 
     let a = from.split(",");

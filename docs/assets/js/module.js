@@ -296,27 +296,16 @@ const module = (() => {
       if (overpass_group != "") {
         overpass_group.eachLayer(function (l) {
           markers_collection.push(l);
-          if (
-            l instanceof L.Marker &&
-            map.getBounds().contains(l.getLatLng())
-          ) {
-          }
-          //markers_collection.push(l);
         });
       }
 
       markers_group.eachLayer(function (l) {
         markers_collection.push(l);
-        if (l instanceof L.Marker && map.getBounds().contains(l.getLatLng())) {
-        }
-        // markers_collection.push(l);
       });
 
       // Clear flag
       f_upd_markers_list = false;
     }
-
-    //l = contained;
 
     status.marker_selection = true;
     status.windowOpen = "marker";
@@ -622,12 +611,9 @@ const module = (() => {
         down_e -= diff;
       }
     }
+    let r = { up: up_e, down: down_e };
 
-    const evo = { up: up_e, down: down_e };
-    document.querySelector("#tracking-evo-up span").innerText =
-      evo.up.toFixed(2);
-    document.querySelector("#tracking-evo-down span").innerText =
-      evo.down.toFixed(2);
+    return r;
   }
 
   //json to gpx
@@ -751,26 +737,20 @@ const module = (() => {
 
       tracking_interval = setInterval(function () {
         if (mainmarker.accuracy > 10000) return false;
-        let distance;
         // Only record data if accuracy is high enough
-        if (tracking_cache.length > 2) {
-          distance = calc_distance(
-            Number(tracking_cache[tracking_cache.length - 1].lat),
-            Number(tracking_cache[tracking_cache.length - 1].lng),
-            Number(tracking_cache[tracking_cache.length - 2].lat),
-            Number(tracking_cache[tracking_cache.length - 2].lng)
-          );
-        }
+
         //store time
         let ts = new Date();
         tracking_timestamp.push(ts.toISOString());
         //store altitude
         let alt = 0;
-        if (!mainmarker.device_alt && mainmarker.device_alt != null) {
+
+        if (mainmarker.device_alt) {
           alt = mainmarker.device_alt;
         }
 
         tracking_altitude.push(alt);
+        console.log("ss" + alt);
 
         polyline_tracking.addLatLng([
           mainmarker.device_lat,
@@ -784,9 +764,6 @@ const module = (() => {
           alt: alt,
           timestamp: ts.toISOString(),
         });
-
-        // Record the altitude if the accuracy is less than 1000
-        //elevation(tracking_altitude);
 
         // Update the view with tracking data
 
@@ -809,11 +786,11 @@ const module = (() => {
 
               let b = e.target._info.elevation.gain;
               document.querySelector("#tracking-evo-up span").innerText =
-                b.toFixed(2);
+                elevation(tracking_altitude).up.toFixed(2);
 
               let c = e.target._info.elevation.loss;
               document.querySelector("#tracking-evo-down span").innerText =
-                c.toFixed(2);
+                elevation(tracking_altitude).down.toFixed(2);
 
               document.getElementById("tracking-altitude").innerText =
                 mainmarker.device_alt;
@@ -841,8 +818,9 @@ const module = (() => {
                 mainmarker.device_alt * 3.280839895;
 
               let d = e.target.get_moving_speed_imp();
+              d ? d.toFixed(2) : "-";
               document.querySelector("#tracking-speed-average-time").innerText =
-                d.toFixed(2);
+                d;
             }
 
             let d = e.target.get_duration_string(

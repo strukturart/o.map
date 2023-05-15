@@ -72,37 +72,37 @@ For this you have to create a JSON file with the following structure:
 ```javascript
 [
   {
-    "name": "Hiking",
-    "type": "overlayer",
-    "url": "http://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png",
-    "attribution": "hiking.waymarkedtrails.org",
-    "maxzoom": 18
+    name: "Hiking",
+    type: "overlayer",
+    url: "http://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png",
+    attribution: "hiking.waymarkedtrails.org",
+    maxzoom: 18,
   },
 
   {
-    "name": "Google Satelite",
-    "type": "map",
-    "url": "http://mt0.google.com/vt/lyrs=r&hl=en&x={x}&y={y}&z={z}",
-    "attribution": "Google",
-    "maxzoom": 18
+    name: "Google Satelite",
+    type: "map",
+    url: "http://mt0.google.com/vt/lyrs=r&hl=en&x={x}&y={y}&z={z}",
+    attribution: "Google",
+    maxzoom: 18,
   },
 
   {
-    "name": "climbing",
-    "type": "overpass",
-    "url": "sport=climbing",
-    "attribution": "Overpass",
-    "maxzoom": 18
+    name: "climbing",
+    type: "overpass",
+    url: "sport=climbing",
+    attribution: "Overpass",
+    maxzoom: 18,
   },
 
   {
-    "name": "water",
-    "type": "overpass",
-    "url": "amenity=drinking_water",
-    "attribution": "Overpass",
-    "maxzoom": 18
-  }
-]
+    name: "water",
+    type: "overpass",
+    url: "amenity=drinking_water",
+    attribution: "Overpass",
+    maxzoom: 18,
+  },
+];
 ```
 
 you can also add an overpass layer, https://taginfo.openstreetmap.org/ you add the tags in the key url.
@@ -130,9 +130,9 @@ https://strukturart.github.io/o.map/
 
 ### Thank you
 
-- wikipedia
 - Openstreetmap
 - OpenTopoMap
+- https://openrouteservice.org/
 - https://www.rainviewer.com/api.html
 - https://github.com/MazeMap/Leaflet.TileLayer.PouchDBCached
 - leaflet.js
@@ -147,7 +147,6 @@ OpenStreetMap is a trademark of the OpenStreetMap Foundation. o.map is not endor
 - o.map [UNLICENSE](UNLICENSE)
 - Leaflet - BSD-2-Clause License
 - leaflet.tilelayer.pouchdbcached MIT license
-- wikipedia CC BY-SA License.
 - OpenStreetMap®
 - Overpass [Affero GPL](https://github.com/drolbr/Overpass-API/blob/master/COPYING)
 

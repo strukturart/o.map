@@ -2,7 +2,7 @@
 
 let save_mode = "";
 let scale;
-
+const debug = false;
 let contained = []; //markers in viewport
 let overpass_query = ""; //to toggle overpass layer
 
@@ -53,7 +53,9 @@ let mainmarker = {
   current_alt: 0,
   current_heading: 0,
   accuracy: 0,
+  accuracyAlt: 0,
   map: "unknown",
+  positionHasChanged: false,
   last_location:
     localStorage.getItem("last_location") != null
       ? JSON.parse(localStorage.getItem("last_location"))
@@ -242,11 +244,11 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".routing-profile-status").forEach((e) => {
       e.innerText = setting.routing_profil;
     });
-
-    helper.side_toaster(
-      "the track has been loaded, to see information about it open the menu with enter",
-      10000
-    );
+    if (!routing.auto_update)
+      helper.side_toaster(
+        "the track has been loaded, to see information about it open the menu with enter",
+        10000
+      );
   };
 
   //load KaiOs ads or not
@@ -1067,7 +1069,6 @@ document.addEventListener("DOMContentLoaded", function () {
       mainmarker.device_lng = crd.longitude;
       mainmarker.device_alt = crd.altitude;
       mainmarker.accuracy = crd.accuracy;
-      mainmarker.accuracyAlt = crd.altitudeAccuracy;
 
       setTimeout(function () {
         map.setView([mainmarker.device_lat, mainmarker.device_lng], 12);
@@ -1079,15 +1080,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (option == "init") {
         geolocationWatch();
-
         document.getElementById("cross").style.opacity = 1;
-
         return true;
       }
     }
 
     function error(err) {
-      console.log("not found");
       if (setting.ipbase_api != "") {
         var z = confirm(
           "do you want to find out your position by your ip address ?"
@@ -1125,17 +1123,16 @@ document.addEventListener("DOMContentLoaded", function () {
   //////////
 
   let watchID;
-  let state_geoloc = false;
   let geoLoc = navigator.geolocation;
+  let crd;
 
-  function geolocationWatch() {
-    state_geoloc = true;
+  let geolocationWatch = function () {
     function showLocation(position) {
       document.querySelector("#cross").classList.remove("unavailable");
       status.gps_data_received = Math.round(Date.now() / 1000);
 
-      localStorage.setItem("status", JSON.stringify(status));
-      let crd = position.coords;
+      //localStorage.setItem("status", JSON.stringify(status));
+      crd = position.coords;
 
       //store device location
       mainmarker.device_lat = crd.latitude;
@@ -1147,7 +1144,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.querySelector("section#device-position div.lng span").innerText =
         crd.longitude.toFixed(2);
       //accuracy
-      if (crd.accuracy != undefined || crd.accuracy != null) {
+      if (crd.accuracy) {
         if (status.geolocation == false) {
           helper.side_toaster(
             "the position of your device could now be found.",
@@ -1172,8 +1169,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       //alitude
-      if (crd.altitude != undefined || crd.altitude != null) {
-        console.log(crd.altitude)
+      if (crd.altitude) {
         mainmarker.device_alt = crd.altitude;
         if (general.measurement_unit == "km") {
           document.querySelector(
@@ -1189,7 +1185,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
       //heading
-      if (crd.heading != undefined || crd.heading != null) {
+      if (crd.heading) {
         mainmarker.current_heading = crd.heading;
         mainmarker.device_heading = crd.heading;
         document.querySelector(
@@ -1197,7 +1193,7 @@ document.addEventListener("DOMContentLoaded", function () {
         ).innerText = crd.heading.toFixed(2);
       }
       //speed
-      if (crd.speed != undefined || crd.speed != null) {
+      if (crd.speed) {
         mainmarker.device_speed = crd.speed;
 
         if (general.measurement_unit == "km") {
@@ -1240,9 +1236,22 @@ document.addEventListener("DOMContentLoaded", function () {
         rs.instructions();
       }
 
+      let j = localStorage.getItem("last_location");
+
       //store location as fallout
-      let b = [crd.latitude, crd.longitude];
-      localStorage.setItem("last_location", JSON.stringify(b));
+      let b = JSON.stringify([crd.latitude, crd.longitude]);
+      //test if position has changed
+      if (j !== b) {
+        mainmarker.positionHasChanged = true;
+      } else {
+        mainmarker.positionHasChanged = false;
+      }
+
+      localStorage.setItem("last_location", b);
+
+      if (routing.active) {
+        routing_auto_update();
+      }
 
       //update main marker
 
@@ -1271,10 +1280,10 @@ document.addEventListener("DOMContentLoaded", function () {
         helper.toaster("Error: Access is denied!", 2000);
       }
       if (err.code == 2) {
-        // helper.toaster("Error: Position is unavailable!", 2000);
+        helper.side_toaster("Error: Position is unavailable!", 2000);
       }
       if (err.code == 3) {
-        // helper.toaster("Position is unavailable!", 2000);
+        helper.side_toaster("Position is unavailable!", 2000);
       }
     }
 
@@ -1283,7 +1292,7 @@ document.addEventListener("DOMContentLoaded", function () {
       timeout: 35000,
     };
     watchID = geoLoc.watchPosition(showLocation, errorHandler, options);
-  }
+  };
 
   let auto_update_view = function () {
     if (mainmarker.auto_view_center) {
@@ -1298,10 +1307,24 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 
+  ////routing auto update polyline
+  let routing_auto_update = () => {
+    if (routing.active == false && mainmarker.positionHasChanged == false)
+      return false;
+    let b = mainmarker.device_lng + "," + mainmarker.device_lat;
+    let a = routing.target;
+    rs.request(
+      b,
+      a,
+      setting.ors_api,
+      setting.routing_profil,
+      routing_service_callback
+    );
+  };
+
   /////////////////////////
   /////MENU///////////////
   ////////////////////////
-
   let markers_action = function () {
     if (
       (document.activeElement.className == "item" &&
@@ -1309,6 +1332,36 @@ document.addEventListener("DOMContentLoaded", function () {
       status.windowOpen == "files-option"
     ) {
       let item_value = document.activeElement.getAttribute("data-action");
+
+      if (item_value == "auto_update_route") {
+        routing.active = true;
+        routing.auto_update = true;
+        bottom_bar("", "", "");
+
+        document.querySelector(".loader").style.display = "block";
+        document.querySelector("div#markers-option").style.display = "none";
+        status.windowOpen = "map";
+
+        let a =
+          mainmarker.selected_marker._latlng.lng +
+          "," +
+          mainmarker.selected_marker._latlng.lat;
+
+        routing.target = a;
+        let b = mainmarker.device_lng + "," + mainmarker.device_lat;
+
+        rs.request(
+          b,
+          a,
+          setting.ors_api,
+          setting.routing_profil,
+          routing_service_callback
+        );
+
+        map.flyTo([mainmarker.device_lat, mainmarker.device_lng], 16);
+
+        auto_update_view();
+      }
 
       if (item_value == "set_target_marker") {
         mainmarker.target_marker = mainmarker.selected_marker._latlng;
@@ -1346,7 +1399,7 @@ document.addEventListener("DOMContentLoaded", function () {
         status.windowOpen = "map";
         bottom_bar("", "", "");
         setTimeout(function () {
-          if (routing.start != "" && routing.end != "") {
+          if (routing.start && routing.end) {
             status.routing = true;
             rs.request(
               routing.start,
@@ -1365,7 +1418,7 @@ document.addEventListener("DOMContentLoaded", function () {
         status.windowOpen = "map";
         bottom_bar("", "", "");
         setTimeout(function () {
-          if (routing.start != "" && routing.end != "") {
+          if (routing.start && routing.end) {
             status.routing = true;
             rs.request(
               routing.start,
@@ -1544,6 +1597,7 @@ document.addEventListener("DOMContentLoaded", function () {
               console.log(routing.active);
               routing.active = false;
               helper.side_toaster("Routing paused", 2000);
+
               document.activeElement.innerText = "start";
               break;
 
@@ -1980,7 +2034,6 @@ document.addEventListener("DOMContentLoaded", function () {
   qr_listener.forEach(function (e) {
     e.addEventListener("focus", () => {
       bottom_bar("qr-scan", "", "");
-      console.log("scn");
       qrscan = true;
     });
 
@@ -2077,12 +2130,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "Backspace":
         status.closedByUser = true;
-        status.appOpendByUser=false;
+        status.appOpendByUser = false;
         status.tracking_running = false;
         localStorage.setItem("status", status);
         window.close();
         break;
-   
     }
   }
 
@@ -2544,7 +2596,6 @@ document.addEventListener("DOMContentLoaded", function () {
             markers_group
           );
           module.set_f_upd_markers();
-         
         }
         break;
 
@@ -2657,3 +2708,12 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("keydown", handleKeyDown);
   document.addEventListener("keyup", handleKeyUp);
 });
+
+if (debug) {
+  window.onerror = function (msg, url, linenumber) {
+    alert(
+      "Error message: " + msg + "\nURL: " + url + "\nLine Number: " + linenumber
+    );
+    return true;
+  };
+}

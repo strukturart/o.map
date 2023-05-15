@@ -29,6 +29,8 @@
       <div id="intro-footer"></div>
     </div>
 
+    <span class="loader"></span>
+
     <script id="template-search" type="x-tmpl-mustache">
       {{#data}}
         <li class="items" tabindex={{index}} data-latlng="{{ lat }}, {{ lng }}"> {{ name }}</li>
@@ -392,6 +394,7 @@
           <div class="speed">Speed <span></span></div>
           <div class="compass"></div>
           <div class="accuracy">accuracy +- <span></span></div>
+
         </section>
 
         <section id="device-distance">
