@@ -32,6 +32,7 @@ let routing = {
   active: false,
   closest: "",
   loaded: false,
+  auto_routing: false,
 };
 
 let mainmarker = {
@@ -133,13 +134,6 @@ map.on("load", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-  //build html routing instructions
-  function routing_instructions(datalist) {
-    var template = document.getElementById("template-routing").innerHTML;
-    var rendered = Mustache.render(template, { data: datalist });
-    document.getElementById("routing-container").innerHTML = rendered;
-  }
-
   let routing_service_callback = function (e) {
     //clean layer
     jsonLayer.clearLayers();
@@ -239,7 +233,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
 
-    routing_instructions(instructions);
+    rs.routing_instructions(instructions);
     routing.loaded = true;
     document.querySelectorAll(".routing-profile-status").forEach((e) => {
       e.innerText = setting.routing_profil;
@@ -1233,7 +1227,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       //routing calc distance to closest point
       if (crd != null || crd != "") {
-        rs.instructions();
+        //rs.instructions();
       }
 
       let j = localStorage.getItem("last_location");
@@ -1268,7 +1262,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (routing.active) {
         console.log("active");
-        module.get_closest_point(routing.coordinates);
+        if (!routing.auto_routing)
+          module.get_closest_point(routing.coordinates);
       }
     }
 
@@ -1308,14 +1303,27 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   ////routing auto update polyline
+  let last_update = dayjs();
   let routing_auto_update = () => {
-    if (routing.active == false && mainmarker.positionHasChanged == false)
+    const date1 = dayjs();
+    let k = date1.diff(last_update, "second");
+    if (k < 4) {
+      return; // Break the function if the difference is smaller than 4 seconds
+    }
+    last_update = dayjs();
+
+    if (
+      !routing.active &&
+      !mainmarker.positionHasChanged &&
+      !routing.auto_routing
+    )
       return false;
-    let b = mainmarker.device_lng + "," + mainmarker.device_lat;
-    let a = routing.target;
+
+    routing.start = mainmarker.device_lng + "," + mainmarker.device_lat;
+
     rs.request(
-      b,
-      a,
+      routing.start,
+      routing.end,
       setting.ors_api,
       setting.routing_profil,
       routing_service_callback
@@ -1335,6 +1343,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (item_value == "auto_update_route") {
         routing.active = true;
+        routing.auto_routing = true;
         routing.auto_update = true;
         bottom_bar("", "", "");
 
@@ -1342,17 +1351,16 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelector("div#markers-option").style.display = "none";
         status.windowOpen = "map";
 
-        let a =
+        routing.end =
           mainmarker.selected_marker._latlng.lng +
           "," +
           mainmarker.selected_marker._latlng.lat;
 
-        routing.target = a;
-        let b = mainmarker.device_lng + "," + mainmarker.device_lat;
+        routing.start = mainmarker.device_lng + "," + mainmarker.device_lat;
 
         rs.request(
-          b,
-          a,
+          routing.start,
+          routing.end,
           setting.ors_api,
           setting.routing_profil,
           routing_service_callback
@@ -1586,8 +1594,12 @@ document.addEventListener("DOMContentLoaded", function () {
           );
         }
 
-        // If item_value is "startrouting"
+        if (item_value == "resetrouting") {
+          rs.reset_routing();
+        }
+
         if (item_value === "startrouting") {
+          // If item_value is "startrouting"
           // Call the auto_update_view function
           auto_update_view();
 

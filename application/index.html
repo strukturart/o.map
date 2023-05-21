@@ -33,7 +33,7 @@
 
     <script id="template-search" type="x-tmpl-mustache">
       {{#data}}
-        <li class="items" tabindex={{index}} data-latlng="{{ lat }}, {{ lng }}"> {{ name }}</li>
+        <li class="items" tabindex={{index}} data-lat="{{lat}}" data-lng="{{lng}}" data-latlng="{{ lat }}, {{ lng }}" data-name="{{name}}"> {{ name }}</li>
       {{/data}}
     </script>
 
@@ -53,10 +53,7 @@
         <ul></ul>
       </div>
       <div id="search-info">
-        <br />
-        you can search for locations, names or OLC. <br />
-        To search for OLC, start your search query with /<br />
-        To move the view to a new lat, lng start your search query with +<br />
+      
       </div>
     </div>
     <div id="olc"></div>
@@ -502,8 +499,15 @@
           id="routing-profile"
           data-map="startrouting"
         >
-          start
+        activates warning if you are too far off the path
         </button>
+        <button
+        class="item"
+        
+        data-map="resetrouting"
+      >
+        reset
+      </button>
 
         <strong class="item"><u>Distance to track</u></strong>
         <div id="distance-to-track"></div>

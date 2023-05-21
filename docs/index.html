@@ -33,7 +33,7 @@
 
     <script id="template-search" type="x-tmpl-mustache">
       {{#data}}
-        <li class="items" tabindex={{index}} data-latlng="{{ lat }}, {{ lng }}"> {{ name }}</li>
+        <li class="items" tabindex={{index}} data-lat="{{lat}}" data-lng="{{lng}}" data-latlng="{{ lat }}, {{ lng }}" data-name="{{name}}"> {{ name }}</li>
       {{/data}}
     </script>
 
@@ -504,6 +504,13 @@
         >
           start
         </button>
+        <button
+        class="item"
+        
+        data-map="resetrouting"
+      >
+        reset
+      </button>
 
         <strong class="item"><u>Distance to track</u></strong>
         <div id="distance-to-track"></div>

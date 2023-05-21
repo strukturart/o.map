@@ -134,13 +134,6 @@ map.on("load", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-  //build html routing instructions
-  function routing_instructions(datalist) {
-    var template = document.getElementById("template-routing").innerHTML;
-    var rendered = Mustache.render(template, { data: datalist });
-    document.getElementById("routing-container").innerHTML = rendered;
-  }
-
   let routing_service_callback = function (e) {
     //clean layer
     jsonLayer.clearLayers();
@@ -240,7 +233,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
 
-    routing_instructions(instructions);
+    rs.routing_instructions(instructions);
     routing.loaded = true;
     document.querySelectorAll(".routing-profile-status").forEach((e) => {
       e.innerText = setting.routing_profil;
@@ -1234,7 +1227,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       //routing calc distance to closest point
       if (crd != null || crd != "") {
-        rs.instructions();
+        //rs.instructions();
       }
 
       let j = localStorage.getItem("last_location");
@@ -1310,14 +1303,22 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   ////routing auto update polyline
+  let last_update = dayjs();
   let routing_auto_update = () => {
+    const date1 = dayjs();
+    let k = date1.diff(last_update, "second");
+    if (k < 4) {
+      return; // Break the function if the difference is smaller than 4 seconds
+    }
+    last_update = dayjs();
+
     if (
       !routing.active &&
       !mainmarker.positionHasChanged &&
       !routing.auto_routing
     )
       return false;
-    console.log("run");
+
     routing.start = mainmarker.device_lng + "," + mainmarker.device_lat;
 
     rs.request(
@@ -1593,8 +1594,12 @@ document.addEventListener("DOMContentLoaded", function () {
           );
         }
 
-        // If item_value is "startrouting"
+        if (item_value == "resetrouting") {
+          rs.reset_routing();
+        }
+
         if (item_value === "startrouting") {
+          // If item_value is "startrouting"
           // Call the auto_update_view function
           auto_update_view();
 

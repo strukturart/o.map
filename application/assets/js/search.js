@@ -6,6 +6,14 @@ let olc_lat_lng;
 ////SEARCH BOX////////////
 /////////////////////////
 const search = (() => {
+  let search_history = JSON.parse(
+    localStorage.getItem("search_history") || "[]"
+  );
+
+  const save_search_history = function () {
+    localStorage.setItem("search_history", JSON.stringify(search_history));
+  };
+
   let showSearch = function () {
     bottom_bar("close", "select", "search");
     document.querySelector("div#search-box").style.display = "block";
@@ -13,6 +21,18 @@ const search = (() => {
     document.querySelector("div#bottom-bar").style.display = "block";
 
     status.windowOpen = "search";
+
+    document.querySelector("#search-info").style.display = "none";
+    datalist = [];
+    search_history.forEach(function (item, index) {
+      datalist.push({
+        lat: item.lat,
+        lng: item.lon,
+        name: item.name,
+        index: index + 1,
+      });
+    });
+    create_html();
   };
 
   let hideSearch = function () {
@@ -69,6 +89,8 @@ const search = (() => {
     if (document.activeElement.id == "search") create_html();
   };
 
+  result_data(search_history);
+
   //SEARCH
 
   let start_search = function () {
@@ -84,9 +106,9 @@ const search = (() => {
       .then((response) => response.json())
       .then((result) => result_data(result))
       .catch((error) => {
-        console.error(
+        helper.side_toaster(
           "There has been a problem with your fetch operation:",
-          error
+          5000
         );
       });
   };
@@ -94,6 +116,19 @@ const search = (() => {
   let search_return_data = function () {
     search.hideSearch();
     let f = document.activeElement.getAttribute("data-latlng");
+    let g = document.activeElement.getAttribute("data-lat");
+    let h = document.activeElement.getAttribute("data-lng");
+    let i = document.activeElement.getAttribute("data-name");
+
+    search_history.unshift({
+      lat: g,
+      lng: h,
+      name: i,
+    });
+    if (search_history.length > 100) array.splice(30);
+
+    save_search_history();
+
     f = f.split(",");
 
     map.setView([f[0], f[1]], 13);
@@ -105,10 +140,6 @@ const search = (() => {
     datalist = [];
     status.windowOpen = "map";
   };
-
-  document.getElementById("search").addEventListener("keyup", function (e) {
-    //if (e.key != "ArrowDown") start_search();
-  });
 
   //////////////////////////
   ////OLC////////////
@@ -139,18 +170,6 @@ const search = (() => {
 
       helper.toaster("press 9 to add an marker", 3000);
 
-      return true;
-    }
-
-    if (input_val.startsWith("+")) {
-      let d = input_val.replace("+", "");
-      d = d.split(",");
-
-      mainmarker.current_lat = d[0];
-      mainmarker.current_lng = d[1];
-
-      map.setView([d[0], d[1]]);
-      document.getElementById("search-info").style.display = "none";
       return true;
     }
 

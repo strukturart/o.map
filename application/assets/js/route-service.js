@@ -92,8 +92,6 @@ const rs = ((_) => {
     });
   };
 
-  let instructions = function () {};
-
   let routing_profile = ["cycling-road", "foot-hiking", "driving-car"];
   let m = routing_profile.indexOf(settings.profile);
 
@@ -104,10 +102,29 @@ const rs = ((_) => {
     document.activeElement.innerText = setting.routing_profil;
   };
 
+  let reset_routing = () => {
+    instructions = [];
+    jsonLayer.clearLayers();
+    //jsonLayer = L.geoJSON("", { color: "red" });
+    routing.data = "";
+    routing.active = false;
+    routing.loaded = false;
+    rs.routing_instructions(instructions);
+    helper.side_toaster("Routing stopped", 5000);
+  };
+
+  //build html routing instructions
+  function routing_instructions(datalist) {
+    var template = document.getElementById("template-routing").innerHTML;
+    var rendered = Mustache.render(template, { data: datalist });
+    document.getElementById("routing-container").innerHTML = rendered;
+  }
+
   return {
     change_type,
-    instructions,
     request,
     addPoint,
+    reset_routing,
+    routing_instructions,
   };
 })();
