@@ -288,6 +288,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if ("b2g" in navigator) {
     load_ads();
+    let manifest = function (a) {
+      document.getElementById("intro-footer").innerText =
+        "O.MAP Version " + a.version;
+    };
+    helper.getManifest(manifest);
   } else {
     let manifest = function (a) {
       document.getElementById("intro-footer").innerText =
@@ -295,7 +300,6 @@ document.addEventListener("DOMContentLoaded", function () {
       if (a.installOrigin == "app://kaios-plus.kaiostech.com") {
         load_ads();
       } else {
-        //console.log("Ads free");
         let t = document.getElementById("kaios-ads").remove();
       }
     };

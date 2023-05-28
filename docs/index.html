@@ -33,7 +33,7 @@
 
     <script id="template-search" type="x-tmpl-mustache">
       {{#data}}
-        <li class="items" tabindex={{index}} data-lat="{{lat}}" data-lng="{{lng}}" data-latlng="{{ lat }}, {{ lng }}" data-name="{{name}}"> {{ name }}</li>
+        <li class="items" tabindex={{index}} data-lat="{{ lat }}" data-lng="{{ lng }}" data-latlng="{{ lat }}, {{ lng }}" data-name="{{name}}"> {{ name }}</li>
       {{/data}}
     </script>
 
@@ -53,10 +53,7 @@
         <ul></ul>
       </div>
       <div id="search-info">
-        <br />
-        you can search for locations, names or OLC. <br />
-        To search for OLC, start your search query with /<br />
-        To move the view to a new lat, lng start your search query with +<br />
+      
       </div>
     </div>
     <div id="olc"></div>
@@ -502,7 +499,7 @@
           id="routing-profile"
           data-map="startrouting"
         >
-          start
+        activates warning if you are too far off the path
         </button>
         <button
         class="item"
@@ -664,10 +661,10 @@
       </div>
 
       <div class="panel item menu-box" id="tips" name="Tips">
-        <h2>umap.openstreetmap.fr support</h2>
+        <h2>Routing</h2>
         <p>
-          To plan a tour I use the great umap.openstreetmap.fr tool. you can
-          export the created data as geoJson and use it in u.map.
+          In order to be able to use the routing service, you must store an apikey in the settings, 
+          you can get this here: https://openrouteservice.org/
         </p>
         <h2>autoload markers or paths</h2>
         <p>
@@ -686,7 +683,7 @@
           position from being found, so it is advisable to switch the data
           connection to 2G / 3G
         </p>
-        <h2>system performance</h2>
+        <h2>system performance (KaiOS 2 only)</h2>
         <p>
           Sometimes the app crashes during tracking, to prevent this please
           press the power button for a long time and perform a basic memory

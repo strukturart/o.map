@@ -196,45 +196,6 @@ a {
   color: white;
 }
 
-#goodbye {
-  position: fixed;
-  z-index: 20000;
-  left: 0;
-  top: 0;
-  background: black;
-  color: white;
-  font-size: 18px;
-  padding: 70px 5px 5px 5px;
-  display: none;
-}
-
-#ciao {
-  padding: 5px;
-  text-align: center;
-  display: none;
-}
-
-#ciao ul {
-  margin: 20px 0 0px 0;
-}
-
-#ciao ul li {
-  margin: 0 0 0px 0;
-  font-size: 14px;
-  list-style: none;
-}
-
-#ciao ul li:first-child {
-  color: yellow;
-  margin: 0 0 5px 0;
-}
-
-#donation {
-  padding: 5px;
-  text-align: center;
-  display: none;
-}
-
 .debug {
   outline: 1px solid red;
 }

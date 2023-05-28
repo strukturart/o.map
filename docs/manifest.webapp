@@ -1,8 +1,8 @@
   {
-  "version": "1.5.9",
+  "version": "1.7.0",
   "version_name": "together we are strong",
   "name": "o.map",
-  "description": "o.map is an openstreetmap app for KaiOs, it is a good companion for your next outdoor adventure",
+  "description": "O.map, your ultimate navigation companion for KaiOS-powered devices. O.map is a lightweight and feature-rich map application designed specifically for KaiOS, enabling you to explore and navigate the world with ease. Whether you're a local resident, a tourist, or an adventurer, O.map is here to enhance your journey and keep you on the right track.",
   "launch_path": "/index.html",
   "type": "privileged",
   "fullscreen": "true",
@@ -46,7 +46,8 @@
     "en-US": {
       "name": "o.map",
       "subtitle": "openstreetmap app",
-      "description": "o.map is an openstreetmap app for KaiOs, it is a good companion for your next outdoor adventure."
+      "description": "O.map, your ultimate navigation companion for KaiOS-powered devices. O.map is a lightweight and feature-rich map application designed specifically for KaiOS, enabling you to explore and navigate the world with ease. Whether you're a local resident, a tourist, or an adventurer, o.map is here to enhance your journey and keep you on the right track."
+
     }
   },
   "default_locale": "en-US",

@@ -30,16 +30,23 @@ const helper = (() => {
   };
 
   let getManifest = function (callback) {
-    if (!navigator.mozApps) {
-      let t = document.getElementById("kaios-ads");
-      t.remove();
-      return false;
+    if (navigator.mozApps) {
+      let self = navigator.mozApps.getSelf();
+      self.onsuccess = function () {
+        callback(self.result);
+      };
+      self.onerror = function () {
+        let t = document.getElementById("kaios-ads");
+        t.remove();
+        return false;
+      };
     }
-    let self = navigator.mozApps.getSelf();
-    self.onsuccess = function () {
-      callback(self.result);
-    };
-    self.onerror = function () {};
+
+    if ("b2g" in navigator) {
+      fetch("/manifest.webmanifest")
+        .then((r) => r.json())
+        .then((r) => callback(r));
+    }
   };
 
   let queue = [];

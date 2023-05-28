@@ -15,7 +15,7 @@ const search = (() => {
   };
 
   let showSearch = function () {
-    bottom_bar("close", "select", "search");
+    bottom_bar("close", "select", "");
     document.querySelector("div#search-box").style.display = "block";
     document.querySelector("div#search-box input").focus();
     document.querySelector("div#bottom-bar").style.display = "block";
@@ -27,7 +27,7 @@ const search = (() => {
     search_history.forEach(function (item, index) {
       datalist.push({
         lat: item.lat,
-        lng: item.lon,
+        lng: item.lng,
         name: item.name,
         index: index + 1,
       });
@@ -124,6 +124,7 @@ const search = (() => {
       lat: g,
       lng: h,
       name: i,
+      index: 0,
     });
     if (search_history.length > 100) array.splice(30);
 
@@ -153,7 +154,6 @@ const search = (() => {
       document.getElementById("search-info").style.display = "none";
 
       input_val = input_val.replace("/", "");
-      //$("#search").autocomplete().disable();
 
       document.querySelector("div#olc").style.display = "block";
       document.querySelector("#olc").innerText = OLC.decode(input_val);

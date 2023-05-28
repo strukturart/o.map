@@ -10,7 +10,7 @@ const overpass = (() => {
     //remove layer
     if (overpass_query == overpassQuery) {
       helper.side_toaster("layer removed", 2000);
-     
+
       overpass_group.clearLayers();
       contained = [];
       overpass_query = "";
@@ -42,7 +42,7 @@ const overpass = (() => {
     fetch(resultUrl)
       .then((response) => response.json())
       .then(function (data) {
-        if (data == "") {
+        if (!data) {
           return false;
         }
 
@@ -50,21 +50,24 @@ const overpass = (() => {
         data.elements.forEach((element) => {
           if (element.type == "node") {
             no_data = true;
-            L.marker([element.lat, element.lon])
+            let k = L.marker([element.lat, element.lon])
               .addTo(overpass_group)
-              .setIcon(maps[icon])
-              .bindPopup(element.tags.name);
+              .setIcon(maps[icon]);
+            try {
+            } catch (e) {
+              k.bindPopup(element.tags.name);
+            }
           }
         });
 
-        if (no_data == false) {
+        if (!no_data) {
           helper.side_toaster("no data", 4000);
         } else {
           helper.side_toaster("layer loaded", 2000);
         }
       })
       .catch(function (err) {
-        helper.side_toaster("something went wrong, try again", 6000);
+        helper.side_toaster("something went wrong, try again" + err, 6000);
       });
   }
 
