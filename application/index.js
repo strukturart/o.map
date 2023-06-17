@@ -187,6 +187,7 @@ document.addEventListener("DOMContentLoaded", function () {
               markers_group.removeLayer(routing.start_marker_id);
             } catch (err) {}
 
+            // Here, the coordinates are organised as [alt, lat, long]
             let m = feature.geometry.coordinates[0];
             let mm =
               feature.geometry.coordinates[
@@ -194,8 +195,8 @@ document.addEventListener("DOMContentLoaded", function () {
               ];
 
             // Reverse from file
-            let routing_start = [m[0], m[1]];
-            let routing_end = [mm[0], mm[1]];
+            let routing_start = [m[1], m[2]];
+            let routing_end = [mm[1], mm[2]];
 
             //add marker
             let s = L.marker(routing_start).addTo(markers_group);
