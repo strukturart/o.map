@@ -183,8 +183,14 @@ document.addEventListener("DOMContentLoaded", function () {
           if (i.length > 0) {
             try {
               geoJSON_group.clearLayers();
-              markers_group.removeLayer(routing.end_marker_id);
-              markers_group.removeLayer(routing.start_marker_id);
+              // Remove the layer, only if it is not myMarker
+              if (routing.end_marker_id != myMarker._leaflet_id) {
+                  markers_group.removeLayer(routing.end_marker_id);
+              }
+              // Remove the layer, only if it is not myMarker
+              if (routing.start_marker_id != myMarker._leaflet_id) {
+                  markers_group.removeLayer(routing.start_marker_id);
+              }
             } catch (err) {}
 
             // Here, the coordinates are organised as [alt, lat, long]
