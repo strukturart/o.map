@@ -1887,27 +1887,27 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     //remove finder pages
 
-    if (setting.tips_view == false) {
+    if (!setting.tips_view) {
       finder_panels = finder_panels.filter((e) => e.id != "tips");
     }
 
-    if (setting.openweather_api == "") {
+    if (!setting.openweather_api) {
       finder_panels = finder_panels.filter((e) => e.id != "weather");
     }
 
-    if (gpx_selection_info.name === undefined) {
+    if (!gpx_selection_info.name) {
       finder_panels = finder_panels.filter((e) => e.id != "gpx-file-info");
     }
 
-    if (status.tracking_running == false) {
+    if (!status.tracking_running) {
       finder_panels = finder_panels.filter((e) => e.id != "tracking");
     }
 
-    if (status.geolocation == false) {
+    if (!status.geolocation) {
       finder_panels = finder_panels.filter((e) => e.id != "coordinations");
     }
 
-    if (routing.loaded == false) {
+    if (!routing.loaded) {
       finder_panels = finder_panels.filter((e) => e.id != "routing");
     }
     tabIndex = 0;
