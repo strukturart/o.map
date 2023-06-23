@@ -2,7 +2,7 @@
 
 let save_mode = "";
 let scale;
-const debug = false;
+const debug = true;
 let contained = []; //markers in viewport
 let overpass_query = ""; //to toggle overpass layer
 
@@ -84,6 +84,7 @@ let general = {
 let status = {
   geolocation: false,
   tracking_running: false,
+  live_track: false,
   visible: "visible",
   caching_tiles_started: false,
   marker_selection: false,
@@ -185,11 +186,11 @@ document.addEventListener("DOMContentLoaded", function () {
               geoJSON_group.clearLayers();
               // Remove the layer, only if it is not myMarker
               if (routing.end_marker_id != myMarker._leaflet_id) {
-                  markers_group.removeLayer(routing.end_marker_id);
+                markers_group.removeLayer(routing.end_marker_id);
               }
               // Remove the layer, only if it is not myMarker
               if (routing.start_marker_id != myMarker._leaflet_id) {
-                  markers_group.removeLayer(routing.start_marker_id);
+                markers_group.removeLayer(routing.start_marker_id);
               }
             } catch (err) {}
 
@@ -767,7 +768,6 @@ document.addEventListener("DOMContentLoaded", function () {
       body: formData,
       headers: myHeaders,
     })
-      //.then((response) => response.text())
       .then((data) => {
         console.log(data.status);
         if (data.status == 200) {
@@ -794,7 +794,7 @@ document.addEventListener("DOMContentLoaded", function () {
       "redirect_uri",
       "https://strukturart.github.io/o.map/oauth.html"
     );
-    url.searchParams.append("scope", "write_gpx read_gpx");
+    url.searchParams.append("scope", "write_gpx read_gpx read_prefs");
 
     const windowRef = window.open(url.toString());
 
@@ -2157,6 +2157,47 @@ document.addEventListener("DOMContentLoaded", function () {
         status.tracking_running = false;
         localStorage.setItem("status", status);
         window.close();
+        break;
+
+      case "1":
+        if (!status.geolocation) {
+          helper.side_toaster(
+            "can't start tracking, the position of your device could not be determined.",
+            4000
+          );
+          return false;
+        } else {
+          module.user_input("open", "", "name");
+          bottom_bar("start", "", "cancel");
+          status.windowOpen = "user-input";
+        }
+
+        if (
+          status.windowOpen == "user-input" &&
+          save_mode == "geojson-tracking"
+        ) {
+          let w;
+          if (module.user_input("return") == "") {
+            w = helper.date_now();
+          } else {
+            w = module.user_input("return");
+          }
+
+          helper.side_toaster(
+            "tracking started,\n stop tracking with key 1",
+            4000
+          );
+          status.live_track = true;
+
+          module.measure_distance("tracking");
+          localStorage.setItem("status", JSON.stringify(status));
+
+          var d = new Date();
+          d.setMinutes(d.getMinutes() + 1);
+          keepalive.add_alarm(d, "keep alive");
+          status.windowOpen = "map";
+          break;
+        }
         break;
     }
   }

@@ -1,7 +1,7 @@
 {
   "name": "o.map",
   "id": "o.map",
-  "version": "1.7.5",
+  "version": "1.7.9",
   "description": "O.map, your ultimate navigation companion for KaiOS-powered devices. O.map is a lightweight and feature-rich map application designed specifically for KaiOS, enabling you to explore and navigate the world with ease. Whether you're a local resident, a tourist, or an adventurer, O.map is here to enhance your journey and keep you on the right track.",
 
   "lang": "en-US",
@@ -22,7 +22,7 @@
   ],
 
   "b2g_features": {
-    "version": "1.7.5",
+    "version": "1.7.9",
     "id": "o.map",
     "core": true,
     "categories": ["utilities"],
