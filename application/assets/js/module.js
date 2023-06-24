@@ -830,7 +830,6 @@ const module = (() => {
           });
         }
         if (status.live_track) {
-          alert("live");
           osm.osm_server_upload_gpx("live_track.gpx", toGPX());
         }
         // Stop tracking if mainmarker.tracking is false

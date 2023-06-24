@@ -37,5 +37,7 @@ getToken().then((result) => {
       detail: result,
     })
   );
-  window.close();
+  setTimeout(() => {
+    window.close();
+  }, 3000);
 });

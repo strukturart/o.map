@@ -31,7 +31,7 @@ const osm = (() => {
     })
       .then((data) => {
         if (data.status == 200) {
-          alert(data);
+          alert(JSON.stringify(data));
 
           setTimeout(() => {
             helper.side_toaster("file uploaded", 4000);

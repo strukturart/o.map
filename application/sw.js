@@ -31,9 +31,6 @@ self.onsystemmessage = (evt) => {
             oauth_success: url,
           });
         }
-
-        if (activityName == "record") {
-        }
       }
     };
     evt.waitUntil(serviceHandler());

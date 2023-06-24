@@ -66,10 +66,7 @@ let mainmarker = {
 let setting = {};
 
 let general = {
-  osm_token:
-    localStorage.getItem("openstreetmap_token") != null
-      ? localStorage.getItem("openstreetmap_token")
-      : "",
+  osm_token: localStorage.getItem("openstreetmap_token") ?? "",
   step: 0.001,
   zoomlevel: 12,
   measurement_unit: "km",
@@ -794,7 +791,7 @@ document.addEventListener("DOMContentLoaded", function () {
       "redirect_uri",
       "https://strukturart.github.io/o.map/oauth.html"
     );
-    url.searchParams.append("scope", "write_gpx read_gpx read_prefs");
+    url.searchParams.append("scope", "write_gpx read_gpx");
 
     const windowRef = window.open(url.toString());
 
@@ -2096,8 +2093,8 @@ document.addEventListener("DOMContentLoaded", function () {
   //callback from sw, osm oauth
   const channel = new BroadcastChannel("sw-messages");
   channel.addEventListener("message", (event) => {
+    alert(event);
     //callback from osm OAuth
-    const l = event.data.oauth_success;
     if (event.data.oauth_success) {
       setTimeout(() => {
         localStorage.setItem("openstreetmap_token", event.data.oauth_success);
@@ -2160,43 +2157,40 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "1":
-        if (!status.geolocation) {
-          helper.side_toaster(
-            "can't start tracking, the position of your device could not be determined.",
-            4000
-          );
-          return false;
-        } else {
-          module.user_input("open", "", "name");
-          bottom_bar("start", "", "cancel");
-          status.windowOpen = "user-input";
-        }
+        if (status.windowOpen == "map") {
+          if (status.tracking_running) {
+            helper.side_toaster("tracking paused", 5000);
+            save_mode = "geojson-tracking";
+            module.user_input("open", "", "Save as GPX file");
+            bottom_bar("cancel", "don't save", "save");
+            status.tracking_running = false;
 
-        if (
-          status.windowOpen == "user-input" &&
-          save_mode == "geojson-tracking"
-        ) {
-          let w;
-          if (module.user_input("return") == "") {
-            w = helper.date_now();
+            localStorage.setItem("status", JSON.stringify(status));
+            keepalive.remove_alarm();
+            status.live_track = false;
+
+            return true;
           } else {
-            w = module.user_input("return");
+            if (status.geolocation == false) {
+              helper.side_toaster(
+                "can't start tracking, the position of your device could not be determined.",
+                4000
+              );
+              return false;
+            }
+            helper.side_toaster(
+              "tracking started,\n stop tracking with key 1",
+              4000
+            );
+            status.live_track = true;
+            module.measure_distance("tracking");
+            status.tracking_running = true;
+            localStorage.setItem("status", JSON.stringify(status));
+
+            var d = new Date();
+            d.setMinutes(d.getMinutes() + 1);
+            keepalive.add_alarm(d, "keep alive");
           }
-
-          helper.side_toaster(
-            "tracking started,\n stop tracking with key 1",
-            4000
-          );
-          status.live_track = true;
-
-          module.measure_distance("tracking");
-          localStorage.setItem("status", JSON.stringify(status));
-
-          var d = new Date();
-          d.setMinutes(d.getMinutes() + 1);
-          keepalive.add_alarm(d, "keep alive");
-          status.windowOpen = "map";
-          break;
         }
         break;
     }
@@ -2412,7 +2406,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (status.windowOpen == "user-input" && save_mode != "geojson") {
-          filename = module.user_input("return");
+          let filename = module.user_input("return");
           break;
         }
 
