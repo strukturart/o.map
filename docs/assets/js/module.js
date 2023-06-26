@@ -656,6 +656,7 @@ const module = (() => {
     tracking_group
   );
 
+  let updated_at=new Date().getTime() / 1000;
   const measure_distance = function (action) {
     if (action == "destroy") {
       status.path_selection = false;
@@ -689,6 +690,8 @@ const module = (() => {
       );
       status.tracking_running = false;
       gps_lock.unlock();
+      status.running=false;
+      status.live_track=""
 
       return true;
     }
@@ -750,7 +753,6 @@ const module = (() => {
         }
 
         tracking_altitude.push(alt);
-        console.log("ss" + alt);
 
         polyline_tracking.addLatLng([
           mainmarker.device_lat,
@@ -830,12 +832,27 @@ const module = (() => {
             document.querySelector("#tracking-moving-time span").innerText = d;
           });
         }
+
+        if (status.live_track) {
+          
+          if (status.live_track_id!='') {
+            osm.osm_server_upload_gpx("live_track.gpx", toGPX());
+          } else {
+            let calc_dif=(new Date().getTime() / 1000)-updated_at;
+          if(calc_dif>20)
+          {osm.osm_update_gpx(status.live_track_id, toGPX())
+            updated_at=new Date().getTime() / 1000;
+          
+          }
+            
+          }
+        }
         // Stop tracking if mainmarker.tracking is false
         if (mainmarker.tracking == false) {
           clearInterval(tracking_interval);
           if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
         }
-      }, 5000);
+      }, 3000);
     }
 
     if (action == "addMarker") {

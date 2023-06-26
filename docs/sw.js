@@ -23,16 +23,13 @@ self.onsystemmessage = (evt) => {
       if (evt.name === "activity") {
         handler = evt.data.webActivityRequestHandler();
         const { name: activityName, data: activityData } = handler.source;
-        if (activityName == "omap-oauth") {
+        if (activityName == "oauth") {
           let code = activityData.code;
 
           const url = "/oauth.html?code=" + code;
           channel.postMessage({
             oauth_success: url,
           });
-        }
-
-        if (activityName == "record") {
         }
       }
     };
