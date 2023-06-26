@@ -66,7 +66,10 @@ let mainmarker = {
 let setting = {};
 
 let general = {
-  osm_token: localStorage.getItem("openstreetmap_token") ?? "",
+  osm_token:
+    localStorage.getItem("openstreetmap_token") != null
+      ? localStorage.getItem("openstreetmap_token")
+      : "",
   step: 0.001,
   zoomlevel: 12,
   measurement_unit: "km",
@@ -96,18 +99,28 @@ if (!navigator.geolocation) {
   helper.toaster("Your device does't support geolocation!", 2000);
 }
 
-if ("serviceWorker" in navigator) {
+if ("b2g" in Navigator) {
   try {
-    navigator.serviceWorker
-      .register("sw.js", {
-        scope: "/",
-      })
-      .then((registration) => {
-        registration.systemMessageManager.subscribe("activity").then(
-          (rv) => {},
-          (error) => {}
-        );
-      });
+    if ("serviceWorker" in navigator) {
+      try {
+        navigator.serviceWorker
+          .register("sw.js", {
+            scope: "/",
+          })
+          .then((registration) => {
+            registration.systemMessageManager.subscribe("activity").then(
+              (rv) => {
+                alert(rv);
+              },
+              (error) => {
+                alert(error);
+              }
+            );
+          });
+      } catch (e) {
+        console.log(e);
+      }
+    }
   } catch (e) {
     console.log(e);
   }
@@ -132,6 +145,8 @@ map.on("load", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
+  osm.get_user();
+
   let routing_service_callback = function (e) {
     //clean layer
     jsonLayer.clearLayers();
@@ -779,25 +794,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   };
 
-  let OAuth_osm = function () {
-    let n = window.location.href;
-    const url = new URL("https://www.openstreetmap.org/oauth2/authorize");
-    url.searchParams.append("response_type", "code");
-    url.searchParams.append(
-      "client_id",
-      "KEcqDV16BjfRr-kYuOyRGmiQcx6YCyRz8T21UjtQWy4"
-    );
-    url.searchParams.append(
-      "redirect_uri",
-      "https://strukturart.github.io/o.map/oauth.html"
-    );
-    url.searchParams.append("scope", "write_gpx read_gpx");
-
-    const windowRef = window.open(url.toString());
-
-    windowRef.addEventListener("tokens", (ev) => osm_server_list_gpx());
-  };
-
   if (localStorage.getItem("openstreetmap_token") == null) {
     document.getElementById("osm-server-gpx-title").style.display = "none";
   } else {
@@ -822,6 +818,11 @@ document.addEventListener("DOMContentLoaded", function () {
       );
 
     finder_tabindex();
+  };
+
+  const osm_oauth_callback = function () {
+    document.getElementById("osm-user").innerText =
+      "logged in as " + general.osm_user;
   };
 
   let gpx_callback = function (filename) {
@@ -1501,7 +1502,7 @@ document.addEventListener("DOMContentLoaded", function () {
         general.active_item.focus();
         module.loadGPX_data(
           general.active_item.getAttribute("data-filepath"),
-          osm_server_upload_gpx
+          osm.osm_server_upload_gpx
         );
       }
     }
@@ -1957,6 +1958,13 @@ document.addEventListener("DOMContentLoaded", function () {
       bottom_bar("", "", "");
     }
 
+    if (finder_panels[count].id == "settings") {
+      if (general.osm_user) {
+        document.getElementById("osm-user").innerText =
+          "logged in as " + general.osm_user;
+      }
+    }
+
     if (finder_panels[count].id == "routing") {
       console.log("hey. " + setting.routing_profil);
       document.querySelectorAll(".item")[0].focus();
@@ -2093,15 +2101,16 @@ document.addEventListener("DOMContentLoaded", function () {
   //callback from sw, osm oauth
   const channel = new BroadcastChannel("sw-messages");
   channel.addEventListener("message", (event) => {
-    alert(event);
+    alert(JSON.stringify(event));
     //callback from osm OAuth
     if (event.data.oauth_success) {
       setTimeout(() => {
         localStorage.setItem("openstreetmap_token", event.data.oauth_success);
-        osm_server_list_gpx();
+        //osm_server_list_gpx();
       }, 3000);
     }
   });
+
   //////////////////////////////
   ////KEYPAD HANDLER////////////
   //////////////////////////////
@@ -2496,7 +2505,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (document.activeElement == document.getElementById("oauth")) {
-          OAuth_osm();
+          osm.OAuth_osm(osm_oauth_callback);
 
           break;
         }

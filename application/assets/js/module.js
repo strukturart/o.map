@@ -689,6 +689,8 @@ const module = (() => {
       );
       status.tracking_running = false;
       gps_lock.unlock();
+      status.running=false;
+      status.live_track=""
 
       return true;
     }
@@ -830,7 +832,12 @@ const module = (() => {
           });
         }
         if (status.live_track) {
-          osm.osm_server_upload_gpx("live_track.gpx", toGPX());
+          
+          if (!status.live_track_id) {
+            osm.osm_server_upload_gpx("live_track.gpx", toGPX());
+          } else {
+            osm.osm_update_gpx(status.live_track_id, toGPX());
+          }
         }
         // Stop tracking if mainmarker.tracking is false
         if (mainmarker.tracking == false) {

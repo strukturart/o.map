@@ -29,14 +29,13 @@ const osm = (() => {
       body: formData,
       headers: myHeaders,
     })
+      .then((response) => response.text())
       .then((data) => {
-        if (data.status == 200) {
-          alert(JSON.stringify(data));
+        status.live_track_id = data;
 
-          setTimeout(() => {
-            helper.side_toaster("file uploaded", 4000);
-          }, 2000);
-        }
+        setTimeout(() => {
+          helper.side_toaster("file uploaded", 4000);
+        }, 2000);
       })
 
       .catch((error) => {
@@ -67,19 +66,16 @@ const osm = (() => {
     let formData = new FormData();
     formData.append("description", "uploaded from o.map");
     formData.append("visibility", "private");
-    formData.append("file", blob, filename);
+    formData.append("file", blob);
 
-    fetch("https://api.openstreetmap.org/api//api/0.6/gpx/#" + id, {
-      method: "POST",
+    fetch("https://api.openstreetmap.org/api/0.6/gpx/#" + id, {
+      method: "PUT",
       body: formData,
       headers: myHeaders,
     })
+      .then((response) => response.text())
       .then((data) => {
-        console.log(data.status);
         if (data.status == 200) {
-          setTimeout(() => {
-            helper.side_toaster("file uploaded", 4000);
-          }, 2000);
         }
       })
 
@@ -102,16 +98,16 @@ const osm = (() => {
       Authorization: n,
     });
 
-    fetch("https://api.openstreetmap.org/api/0.6/user/details.json", {
+    fetch("https://api.openstreetmap.org/api/0.6/user/details", {
       method: "GET",
       headers: myHeaders,
     })
-      .then((data) => {
-        if (data.status == 200) {
-          setTimeout(() => {
-            alert(JSON.stringify(data));
-          }, 2000);
-        }
+      .then((response) => response.text())
+      .then(function (data) {
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(data, "application/xml");
+        let s = xml.getElementsByTagName("user");
+        general.osm_user = s[0].getAttribute("display_name");
       })
 
       .catch((error) => {
@@ -119,7 +115,27 @@ const osm = (() => {
       });
   };
 
+  let OAuth_osm = function (callback) {
+    let n = window.location.href;
+    const url = new URL("https://www.openstreetmap.org/oauth2/authorize");
+    url.searchParams.append("response_type", "code");
+    url.searchParams.append(
+      "client_id",
+      "KEcqDV16BjfRr-kYuOyRGmiQcx6YCyRz8T21UjtQWy4"
+    );
+    url.searchParams.append(
+      "redirect_uri",
+      "https://strukturart.github.io/o.map/oauth.html"
+    );
+    url.searchParams.append("scope", "write_gpx read_gpx read_prefs");
+
+    const windowRef = window.open(url.toString());
+
+    windowRef.addEventListener("tokens", (ev) => callback());
+  };
+
   return {
+    OAuth_osm,
     osm_server_upload_gpx,
     get_user,
     osm_update_gpx,
