@@ -9,7 +9,7 @@ function getToken() {
   urlencoded.append("grant_type", "authorization_code");
   urlencoded.append(
     "redirect_uri",
-    "https://strukturart.github.io/o.map/oauth.html"
+    "https://omap.strukturart.com/redirect.html"
   );
   urlencoded.append("client_id", "KEcqDV16BjfRr-kYuOyRGmiQcx6YCyRz8T21UjtQWy4");
 
@@ -37,5 +37,7 @@ getToken().then((result) => {
       detail: result,
     })
   );
-  window.close();
+  setTimeout(() => {
+    window.close();
+  }, 3000);
 });

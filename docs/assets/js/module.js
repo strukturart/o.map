@@ -689,6 +689,8 @@ const module = (() => {
       );
       status.tracking_running = false;
       gps_lock.unlock();
+      status.running=false;
+      status.live_track=""
 
       return true;
     }
@@ -750,7 +752,6 @@ const module = (() => {
         }
 
         tracking_altitude.push(alt);
-        console.log("ss" + alt);
 
         polyline_tracking.addLatLng([
           mainmarker.device_lat,
@@ -830,12 +831,20 @@ const module = (() => {
             document.querySelector("#tracking-moving-time span").innerText = d;
           });
         }
+        if (status.live_track) {
+          
+          if (!status.live_track_id) {
+            osm.osm_server_upload_gpx("live_track.gpx", toGPX());
+          } else {
+            osm.osm_update_gpx(status.live_track_id, toGPX());
+          }
+        }
         // Stop tracking if mainmarker.tracking is false
         if (mainmarker.tracking == false) {
           clearInterval(tracking_interval);
           if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
         }
-      }, 5000);
+      }, 3000);
     }
 
     if (action == "addMarker") {

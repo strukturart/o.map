@@ -2,7 +2,7 @@
 
 let save_mode = "";
 let scale;
-const debug = false;
+const debug = true;
 let contained = []; //markers in viewport
 let overpass_query = ""; //to toggle overpass layer
 
@@ -84,6 +84,7 @@ let general = {
 let status = {
   geolocation: false,
   tracking_running: false,
+  live_track: false,
   visible: "visible",
   caching_tiles_started: false,
   marker_selection: false,
@@ -98,18 +99,28 @@ if (!navigator.geolocation) {
   helper.toaster("Your device does't support geolocation!", 2000);
 }
 
-if ("serviceWorker" in navigator) {
+if ("b2g" in Navigator) {
   try {
-    navigator.serviceWorker
-      .register("sw.js", {
-        scope: "/",
-      })
-      .then((registration) => {
-        registration.systemMessageManager.subscribe("activity").then(
-          (rv) => {},
-          (error) => {}
-        );
-      });
+    if ("serviceWorker" in navigator) {
+      try {
+        navigator.serviceWorker
+          .register("sw.js", {
+            scope: "/",
+          })
+          .then((registration) => {
+            registration.systemMessageManager.subscribe("activity").then(
+              (rv) => {
+                alert(rv);
+              },
+              (error) => {
+                alert(error);
+              }
+            );
+          });
+      } catch (e) {
+        console.log(e);
+      }
+    }
   } catch (e) {
     console.log(e);
   }
@@ -134,6 +145,8 @@ map.on("load", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
+  osm.get_user();
+
   let routing_service_callback = function (e) {
     //clean layer
     jsonLayer.clearLayers();
@@ -185,11 +198,11 @@ document.addEventListener("DOMContentLoaded", function () {
               geoJSON_group.clearLayers();
               // Remove the layer, only if it is not myMarker
               if (routing.end_marker_id != myMarker._leaflet_id) {
-                  markers_group.removeLayer(routing.end_marker_id);
+                markers_group.removeLayer(routing.end_marker_id);
               }
               // Remove the layer, only if it is not myMarker
               if (routing.start_marker_id != myMarker._leaflet_id) {
-                  markers_group.removeLayer(routing.start_marker_id);
+                markers_group.removeLayer(routing.start_marker_id);
               }
             } catch (err) {}
 
@@ -767,7 +780,6 @@ document.addEventListener("DOMContentLoaded", function () {
       body: formData,
       headers: myHeaders,
     })
-      //.then((response) => response.text())
       .then((data) => {
         console.log(data.status);
         if (data.status == 200) {
@@ -780,25 +792,6 @@ document.addEventListener("DOMContentLoaded", function () {
       .catch((error) => {
         helper.side_toaster("error: " + error, 4000);
       });
-  };
-
-  let OAuth_osm = function () {
-    let n = window.location.href;
-    const url = new URL("https://www.openstreetmap.org/oauth2/authorize");
-    url.searchParams.append("response_type", "code");
-    url.searchParams.append(
-      "client_id",
-      "KEcqDV16BjfRr-kYuOyRGmiQcx6YCyRz8T21UjtQWy4"
-    );
-    url.searchParams.append(
-      "redirect_uri",
-      "https://strukturart.github.io/o.map/oauth.html"
-    );
-    url.searchParams.append("scope", "write_gpx read_gpx");
-
-    const windowRef = window.open(url.toString());
-
-    windowRef.addEventListener("tokens", (ev) => osm_server_list_gpx());
   };
 
   if (localStorage.getItem("openstreetmap_token") == null) {
@@ -825,6 +818,11 @@ document.addEventListener("DOMContentLoaded", function () {
       );
 
     finder_tabindex();
+  };
+
+  const osm_oauth_callback = function () {
+    document.getElementById("osm-user").innerText =
+      "logged in as " + general.osm_user;
   };
 
   let gpx_callback = function (filename) {
@@ -1504,7 +1502,7 @@ document.addEventListener("DOMContentLoaded", function () {
         general.active_item.focus();
         module.loadGPX_data(
           general.active_item.getAttribute("data-filepath"),
-          osm_server_upload_gpx
+          osm.osm_server_upload_gpx
         );
       }
     }
@@ -1960,6 +1958,13 @@ document.addEventListener("DOMContentLoaded", function () {
       bottom_bar("", "", "");
     }
 
+    if (finder_panels[count].id == "settings") {
+      if (general.osm_user) {
+        document.getElementById("osm-user").innerText =
+          "logged in as " + general.osm_user;
+      }
+    }
+
     if (finder_panels[count].id == "routing") {
       console.log("hey. " + setting.routing_profil);
       document.querySelectorAll(".item")[0].focus();
@@ -2096,15 +2101,16 @@ document.addEventListener("DOMContentLoaded", function () {
   //callback from sw, osm oauth
   const channel = new BroadcastChannel("sw-messages");
   channel.addEventListener("message", (event) => {
+    alert(JSON.stringify(event));
     //callback from osm OAuth
-    const l = event.data.oauth_success;
     if (event.data.oauth_success) {
       setTimeout(() => {
         localStorage.setItem("openstreetmap_token", event.data.oauth_success);
-        osm_server_list_gpx();
+        //osm_server_list_gpx();
       }, 3000);
     }
   });
+
   //////////////////////////////
   ////KEYPAD HANDLER////////////
   //////////////////////////////
@@ -2157,6 +2163,44 @@ document.addEventListener("DOMContentLoaded", function () {
         status.tracking_running = false;
         localStorage.setItem("status", status);
         window.close();
+        break;
+
+      case "1":
+        if (status.windowOpen == "map") {
+          if (status.tracking_running) {
+            helper.side_toaster("tracking paused", 5000);
+            save_mode = "geojson-tracking";
+            module.user_input("open", "", "Save as GPX file");
+            bottom_bar("cancel", "don't save", "save");
+            status.tracking_running = false;
+
+            localStorage.setItem("status", JSON.stringify(status));
+            keepalive.remove_alarm();
+            status.live_track = false;
+
+            return true;
+          } else {
+            if (status.geolocation == false) {
+              helper.side_toaster(
+                "can't start tracking, the position of your device could not be determined.",
+                4000
+              );
+              return false;
+            }
+            helper.side_toaster(
+              "tracking started,\n stop tracking with key 1",
+              4000
+            );
+            status.live_track = true;
+            module.measure_distance("tracking");
+            status.tracking_running = true;
+            localStorage.setItem("status", JSON.stringify(status));
+
+            var d = new Date();
+            d.setMinutes(d.getMinutes() + 1);
+            keepalive.add_alarm(d, "keep alive");
+          }
+        }
         break;
     }
   }
@@ -2371,7 +2415,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (status.windowOpen == "user-input" && save_mode != "geojson") {
-          filename = module.user_input("return");
+          let filename = module.user_input("return");
           break;
         }
 
@@ -2461,7 +2505,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (document.activeElement == document.getElementById("oauth")) {
-          OAuth_osm();
+          osm.OAuth_osm(osm_oauth_callback);
 
           break;
         }

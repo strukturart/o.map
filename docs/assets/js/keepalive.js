@@ -47,7 +47,7 @@ const keepalive = (() => {
       request.onsuccess = function () {
         this.result.forEach(function (alarm) {
           let r = navigator.mozAlarms.remove(alarm.id);
-
+          /*
           r.onsuccess = function () {
             console.log("removed");
           };
@@ -55,6 +55,7 @@ const keepalive = (() => {
           r.onerror = function () {
             console.log("An error occurred: " + this.error.name);
           };
+          */
         });
       };
 
