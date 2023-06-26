@@ -45,7 +45,7 @@
     },
 
     "activities": {
-      "oauth": {}
+      "omap-oauth": {}
     },
 
     "serviceworker": {

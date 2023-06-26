@@ -38,7 +38,7 @@
     {
       "notification": "/index.html"
     },
-    { "serviceworker-notification": "/index.html" },
+
     { "activity": "/index.html" }
   ],
 

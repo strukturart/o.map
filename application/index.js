@@ -2,7 +2,7 @@
 
 let save_mode = "";
 let scale;
-const debug = true;
+const debug = false;
 let contained = []; //markers in viewport
 let overpass_query = ""; //to toggle overpass layer
 
@@ -93,6 +93,7 @@ let status = {
   sub_status: "",
   selected_marker: "",
   appOpendByUser: true,
+  live_track_file_created: false,
 };
 
 if (!navigator.geolocation) {
@@ -109,12 +110,8 @@ if ("b2g" in Navigator) {
           })
           .then((registration) => {
             registration.systemMessageManager.subscribe("activity").then(
-              (rv) => {
-                alert(rv);
-              },
-              (error) => {
-                alert(error);
-              }
+              (rv) => {},
+              (error) => {}
             );
           });
       } catch (e) {
@@ -474,7 +471,7 @@ document.addEventListener("DOMContentLoaded", function () {
     try {
       helper.list_files("gpx", list_files_callback);
     } catch (e) {
-      alert(e);
+      console.log(e);
     }
   };
 
@@ -639,7 +636,7 @@ document.addEventListener("DOMContentLoaded", function () {
     try {
       helper.search_file("omap_maps.json", search_callback);
     } catch (e) {
-      alert(e);
+      console.log(e);
     }
   };
   ///////////////
@@ -747,50 +744,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       .catch((error) => {
         helper.side_toaster(error, 2000);
-      });
-  };
-
-  let osm_server_upload_gpx = function (filename, gpx_data) {
-    if (!general.osm_token) {
-      helper.side_toaster(
-        "looks like you are not connected to openstreetmap",
-        5000
-      );
-      return false;
-    }
-
-    let n = "Bearer " + general.osm_token;
-    const myHeaders = new Headers({
-      Authorization: n,
-    });
-
-    var blob = new Blob([gpx_data], {
-      type: "application/gpx",
-    });
-
-    helper.side_toaster("try uploading file", 2000);
-
-    let formData = new FormData();
-    formData.append("description", "uploaded from o.map");
-    formData.append("visibility", "private");
-    formData.append("file", blob, filename);
-
-    fetch("https://api.openstreetmap.org/api/0.6/gpx/create", {
-      method: "POST",
-      body: formData,
-      headers: myHeaders,
-    })
-      .then((data) => {
-        console.log(data.status);
-        if (data.status == 200) {
-          setTimeout(() => {
-            helper.side_toaster("file uploaded", 4000);
-          }, 2000);
-        }
-      })
-
-      .catch((error) => {
-        helper.side_toaster("error: " + error, 4000);
       });
   };
 
@@ -2101,12 +2054,11 @@ document.addEventListener("DOMContentLoaded", function () {
   //callback from sw, osm oauth
   const channel = new BroadcastChannel("sw-messages");
   channel.addEventListener("message", (event) => {
-    alert(JSON.stringify(event));
     //callback from osm OAuth
     if (event.data.oauth_success) {
       setTimeout(() => {
         localStorage.setItem("openstreetmap_token", event.data.oauth_success);
-        //osm_server_list_gpx();
+        osm_server_list_gpx();
       }, 3000);
     }
   });

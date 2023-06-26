@@ -23,7 +23,7 @@ self.onsystemmessage = (evt) => {
       if (evt.name === "activity") {
         handler = evt.data.webActivityRequestHandler();
         const { name: activityName, data: activityData } = handler.source;
-        if (activityName == "oauth") {
+        if (activityName == "omap-oauth") {
           let code = activityData.code;
 
           const url = "/oauth.html?code=" + code;
