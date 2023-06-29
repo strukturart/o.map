@@ -656,7 +656,6 @@ const module = (() => {
     tracking_group
   );
 
-  let updated_at = new Date().getTime() / 1000;
   const measure_distance = function (action) {
     if (action == "destroy") {
       status.path_selection = false;
@@ -833,27 +832,28 @@ const module = (() => {
           });
         }
 
+        //Upload gpx file every 5min, unfortunately the update function doesn't work, so I have to combine create/delete
         if (status.live_track) {
-          if (
-            status.live_track_id != "" &&
-            status.live_track_file_created == false
-          ) {
+          if (status.live_track_file_created == false) {
             osm.osm_server_upload_gpx("live_track.gpx", toGPX());
             status.live_track_file_created = true;
           } else {
-            let calc_dif = new Date().getTime() / 1000 - updated_at;
-            if (calc_dif > 240) {
-              osm.osm_delete_gpx(status.live_track_id, false);
-              // osm.osm_update_gpx(status.live_track_id, toGPX());
+            let calc_dif =
+              new Date().getTime() / 1000 - status.tracking_backupup_at;
+            //backup every 5min
+            if (calc_dif > 30) {
+              status.live_track_id.forEach((e, i) => {
+                if (i != status.live_track_id.length)
+                  osm.osm_delete_gpx(e, true);
+              });
 
               osm.osm_server_upload_gpx("live_track.gpx", toGPX(), false);
-
-              updated_at = new Date().getTime() / 1000;
+              status.tracking_backupup_at = new Date().getTime() / 1000;
             }
           }
         }
         // Stop tracking if mainmarker.tracking is false
-        if (mainmarker.tracking == false) {
+        if (status.tracking_running == false) {
           clearInterval(tracking_interval);
           if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
         }
