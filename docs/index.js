@@ -85,6 +85,7 @@ let status = {
   geolocation: false,
   tracking_running: false,
   live_track: false,
+  live_track_id: [],
   visible: "visible",
   caching_tiles_started: false,
   marker_selection: false,
@@ -94,6 +95,8 @@ let status = {
   selected_marker: "",
   appOpendByUser: true,
   live_track_file_created: false,
+  tracking_backupup_at: new Date().getTime() / 1000,
+  tracking_paused: false,
 };
 
 if (!navigator.geolocation) {
@@ -2120,17 +2123,7 @@ document.addEventListener("DOMContentLoaded", function () {
       case "1":
         if (status.windowOpen == "map") {
           if (status.tracking_running) {
-            helper.side_toaster("tracking paused", 5000);
-            save_mode = "geojson-tracking";
-            module.user_input("open", "", "Save as GPX file");
-            bottom_bar("cancel", "don't save", "save");
-            status.tracking_running = false;
-
-            localStorage.setItem("status", JSON.stringify(status));
-            keepalive.remove_alarm();
-            status.live_track = false;
-
-            return true;
+            return false;
           } else {
             if (status.geolocation == false) {
               helper.side_toaster(
@@ -2229,6 +2222,10 @@ document.addEventListener("DOMContentLoaded", function () {
         if (status.windowOpen == "user-input") {
           module.user_input("close");
           save_mode = "";
+          if (status.tracking_paused) {
+            status.tracking_running = true;
+            status.tracking_paused = false;
+          }
           break;
         }
         if (status.windowOpen == "search") {
@@ -2358,6 +2355,13 @@ document.addEventListener("DOMContentLoaded", function () {
             gpx_callback
           );
           save_mode = "";
+          status.live_track = false;
+          status.live_track_id = [];
+
+          if (status.tracking_paused) {
+            status.tracking_running = false;
+            status.tracking_paused = false;
+          }
           break;
         }
 
@@ -2391,7 +2395,8 @@ document.addEventListener("DOMContentLoaded", function () {
         ) {
           module.user_input("close");
           module.measure_distance("destroy_tracking");
-
+          status.live_track = false;
+          status.live_track_id = [];
           save_mode = "";
           break;
         }
@@ -2531,7 +2536,16 @@ document.addEventListener("DOMContentLoaded", function () {
             save_mode = "geojson-tracking";
             module.user_input("open", "", "Save as GPX file");
             bottom_bar("cancel", "don't save", "save");
+
+            localStorage.setItem("status", JSON.stringify(status));
+            keepalive.remove_alarm();
             status.tracking_running = false;
+            status.tracking_paused = true;
+            //live tracking
+            //upload track, before save local
+            let t = new Date().getTime() / 1000;
+            t = t + 320;
+            status.tracking_backupup_at = t;
 
             localStorage.setItem("status", JSON.stringify(status));
             keepalive.remove_alarm();

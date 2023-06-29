@@ -31,9 +31,10 @@ const osm = (() => {
     })
       .then((response) => response.text())
       .then((data) => {
-        status.live_track_id = data;
+        status.live_track_id.push(data);
         setTimeout(() => {
-          if (notify) helper.side_toaster("file uploaded", 4000);
+          if (notify)
+            helper.side_toaster("file uploaded" + status.live_track_id, 4000);
         }, 2000);
       })
 
@@ -63,8 +64,15 @@ const osm = (() => {
     })
       .then((response) => response.text())
       .then((data) => {
+        //clean array after deleting, while live track mode
+        try {
+          status.live_track_id = status.live_track_id.filter(
+            (item) => item !== id
+          );
+        } catch (e) {}
+
         setTimeout(() => {
-          if (notify) helper.side_toaster("file deleted ", 4000);
+          if (notify) helper.side_toaster("file deleted " + id, 4000);
         }, 2000);
       })
 
