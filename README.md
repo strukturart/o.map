@@ -47,6 +47,7 @@ O.Map is an openstreetmap app for KaiOs, it is a good companion for your next ou
 - **key 0** share position
 - **key 0 longpress** show weather map
 - **key 1** start/stop tracking
+- **key 1 longpress** start tracking uploading /5min file to your osm account
 - **key 2** search
 - **key 3** open menu
 - **key 4** auto center map
