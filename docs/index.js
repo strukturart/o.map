@@ -2123,7 +2123,26 @@ document.addEventListener("DOMContentLoaded", function () {
       case "1":
         if (status.windowOpen == "map") {
           if (status.tracking_running) {
+<<<<<<< HEAD
             return false;
+=======
+            helper.side_toaster("tracking paused", 5000);
+            save_mode = "geojson-tracking";
+            module.user_input("open", "", "Save as GPX file");
+            bottom_bar("cancel", "don't save", "save");
+            status.tracking_running = false;
+            status.tracking_paused = true;
+
+            //upload track, before save local
+            let t = new Date().getTime() / 1000;
+            t = t + 320;
+            status.tracking_backupup_at = t;
+
+            localStorage.setItem("status", JSON.stringify(status));
+            keepalive.remove_alarm();
+
+            return true;
+>>>>>>> master
           } else {
             if (status.geolocation == false) {
               helper.side_toaster(
@@ -2355,8 +2374,11 @@ document.addEventListener("DOMContentLoaded", function () {
             gpx_callback
           );
           save_mode = "";
+<<<<<<< HEAD
           status.live_track = false;
           status.live_track_id = [];
+=======
+>>>>>>> master
 
           if (status.tracking_paused) {
             status.tracking_running = false;
