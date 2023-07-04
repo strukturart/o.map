@@ -841,7 +841,6 @@ const module = (() => {
             let calc_dif =
               new Date().getTime() / 1000 - status.tracking_backupup_at;
             //backup every 5min
-<<<<<<< HEAD
             if (calc_dif > 300) {
               status.live_track_id.forEach((e, i) => {
                 if (i != status.live_track_id.length)
@@ -849,16 +848,6 @@ const module = (() => {
               });
 
               osm.osm_server_upload_gpx("live_track.gpx", toGPX(), false);
-=======
-            if (calc_dif > 30) {
-              status.live_track_id.forEach((e, i) => {
-                if (i != status.live_track_id.length)
-                  osm.osm_delete_gpx(e, true);
-              });
-
-              osm.osm_server_upload_gpx("live_track.gpx", toGPX(), true);
-
->>>>>>> master
               status.tracking_backupup_at = new Date().getTime() / 1000;
             }
           }

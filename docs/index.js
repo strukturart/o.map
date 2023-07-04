@@ -113,7 +113,9 @@ if ("b2g" in Navigator) {
           })
           .then((registration) => {
             registration.systemMessageManager.subscribe("activity").then(
-              (rv) => {},
+              (rv) => {
+                alert("installed");
+              },
               (error) => {}
             );
           });
@@ -2058,7 +2060,18 @@ document.addEventListener("DOMContentLoaded", function () {
   const channel = new BroadcastChannel("sw-messages");
   channel.addEventListener("message", (event) => {
     //callback from osm OAuth
+    alert(JSON.stringify(event.data));
+
     if (event.data.oauth_success) {
+      //callback from  OAuth
+      //ugly method to open a new window, because a window from sw clients.open can no longer be closed
+      const l = event.data.oauth_success;
+      if (event.data.oauth_success) {
+        setTimeout(() => {
+          window.open(l);
+        }, 5000);
+      }
+
       setTimeout(() => {
         localStorage.setItem("openstreetmap_token", event.data.oauth_success);
         osm_server_list_gpx();
@@ -2123,26 +2136,7 @@ document.addEventListener("DOMContentLoaded", function () {
       case "1":
         if (status.windowOpen == "map") {
           if (status.tracking_running) {
-<<<<<<< HEAD
             return false;
-=======
-            helper.side_toaster("tracking paused", 5000);
-            save_mode = "geojson-tracking";
-            module.user_input("open", "", "Save as GPX file");
-            bottom_bar("cancel", "don't save", "save");
-            status.tracking_running = false;
-            status.tracking_paused = true;
-
-            //upload track, before save local
-            let t = new Date().getTime() / 1000;
-            t = t + 320;
-            status.tracking_backupup_at = t;
-
-            localStorage.setItem("status", JSON.stringify(status));
-            keepalive.remove_alarm();
-
-            return true;
->>>>>>> master
           } else {
             if (status.geolocation == false) {
               helper.side_toaster(
@@ -2374,11 +2368,8 @@ document.addEventListener("DOMContentLoaded", function () {
             gpx_callback
           );
           save_mode = "";
-<<<<<<< HEAD
           status.live_track = false;
           status.live_track_id = [];
-=======
->>>>>>> master
 
           if (status.tracking_paused) {
             status.tracking_running = false;

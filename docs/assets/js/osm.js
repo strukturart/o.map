@@ -128,25 +128,6 @@ const osm = (() => {
       };
 
       xhr.send(formData);
-
-      /*
-      fetch("https://api.openstreetmap.org/api/0.6/gpx/" + id, {
-        method: "PUT",
-        body: formData,
-        headers: myHeaders,
-      })
-        .then((response) => response.text())
-        .then((data) => {
-          alert(data);
-          if (data.status == 200) {
-            alert(data);
-            helper.side_toaster("file updated", 2000);
-          }
-        })
-
-        .catch((error) => {
-          helper.side_toaster("error: " + error, 4000);
-        });*/
     } catch (e) {
       alert(e);
     }
@@ -172,10 +153,12 @@ const osm = (() => {
     })
       .then((response) => response.text())
       .then(function (data) {
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(data, "application/xml");
-        let s = xml.getElementsByTagName("user");
-        general.osm_user = s[0].getAttribute("display_name");
+        try {
+          const parser = new DOMParser();
+          const xml = parser.parseFromString(data, "application/xml");
+          let s = xml.getElementsByTagName("user");
+          general.osm_user = s[0].getAttribute("display_name");
+        } catch (e) {}
       })
 
       .catch((error) => {

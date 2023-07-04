@@ -45,7 +45,7 @@ const helper = (() => {
     if ("b2g" in navigator) {
       fetch("/manifest.webmanifest")
         .then((r) => r.json())
-        .then((r) => callback(r));
+        .then((r) => callback(r.b2g_features));
     }
   };
 

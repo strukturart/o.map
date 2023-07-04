@@ -113,7 +113,9 @@ if ("b2g" in Navigator) {
           })
           .then((registration) => {
             registration.systemMessageManager.subscribe("activity").then(
-              (rv) => {},
+              (rv) => {
+                alert("installed");
+              },
               (error) => {}
             );
           });
@@ -2012,6 +2014,14 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  const input = document.getElementById("export-path");
+  const regex = new RegExp("^[a-zA-Z0-9_.-]*$");
+
+  input.addEventListener("beforeinput", (event) => {
+    if (event.target.value != null && !regex.test(event.target.value))
+      helper.toaster("I recommend you not to use the sign", 2000);
+  });
+
   //qr scan listener
   const qr_listener = document.querySelectorAll("input.qr");
   let qrscan = false;
@@ -2058,7 +2068,17 @@ document.addEventListener("DOMContentLoaded", function () {
   const channel = new BroadcastChannel("sw-messages");
   channel.addEventListener("message", (event) => {
     //callback from osm OAuth
+
     if (event.data.oauth_success) {
+      //callback from  OAuth
+      //ugly method to open a new window, because a window from sw clients.open can no longer be closed
+      const l = event.data.oauth_success;
+      if (event.data.oauth_success) {
+        setTimeout(() => {
+          window.open(l);
+        }, 5000);
+      }
+
       setTimeout(() => {
         localStorage.setItem("openstreetmap_token", event.data.oauth_success);
         osm_server_list_gpx();
@@ -2286,7 +2306,10 @@ document.addEventListener("DOMContentLoaded", function () {
           save_mode == "geojson-single-direct"
         ) {
           geojson.save_geojson(
-            setting.export_path + module.user_input("return") + ".geojson",
+            setting.export_path +
+              "/" +
+              module.user_input("return") +
+              ".geojson",
             "single-direct"
           );
 
@@ -2299,7 +2322,10 @@ document.addEventListener("DOMContentLoaded", function () {
           save_mode == "geojson-single"
         ) {
           geojson.save_geojson(
-            setting.export_path + module.user_input("return") + ".geojson",
+            setting.export_path +
+              "/" +
+              module.user_input("return") +
+              ".geojson",
             "single"
           );
 
@@ -2309,7 +2335,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (status.windowOpen == "user-input" && save_mode == "geojson-path") {
           geojson.save_geojson(
-            setting.export_path + module.user_input("return") + ".geojson",
+            setting.export_path +
+              "/" +
+              module.user_input("return") +
+              ".geojson",
             "path"
           );
 
@@ -2350,7 +2379,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
 
           geojson.save_gpx(
-            setting.export_path + w + ".gpx",
+            setting.export_path + "/" + w + ".gpx",
             "tracking",
             gpx_callback
           );
