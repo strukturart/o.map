@@ -197,7 +197,7 @@ const module = (() => {
         m(this.result);
       };
       request.onerror = function () {
-        alert("error");
+        side_toaster("file not found", 3000);
       };
     } catch (e) {}
 
@@ -209,7 +209,7 @@ const module = (() => {
           m(this.result);
         };
         request.onerror = function (e) {
-          alert(e + "error");
+          side_toaster(e + "error", 3000);
         };
       } catch (e) {}
     }

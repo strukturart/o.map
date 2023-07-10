@@ -33,7 +33,7 @@ const keepalive = (() => {
           (err) => console.log("add err: " + err)
         );
       } catch (e) {
-        alert(e);
+        //alert(e);
       }
     }
   };

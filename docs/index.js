@@ -82,6 +82,7 @@ let general = {
 };
 
 let status = {
+  intro: true,
   geolocation: false,
   tracking_running: false,
   live_track: false,
@@ -352,6 +353,7 @@ document.addEventListener("DOMContentLoaded", function () {
     module.startup_marker("", "add");
     getLocation("init");
     status.windowOpen = "map";
+    status.intro = false;
   }, 5000);
 
   //add group layers
@@ -442,7 +444,7 @@ document.addEventListener("DOMContentLoaded", function () {
           );
         //load gpx file on start
         if (fileinfo.name.substring(0, 1) == "_") {
-          module.loadGPX(fileinfo.name);
+          module.loadGPX(fileinfo.path + "/" + fileinfo.name);
         }
       });
     } catch (e) {}
@@ -928,19 +930,16 @@ document.addEventListener("DOMContentLoaded", function () {
     n.forEach(function (e) {
       e.style.background = "black";
       e.style.color = "white";
+      e.classList.remove("active-layer");
     });
 
     n.forEach(function (e) {
       if (e.getAttribute("data-url") == general.last_map) {
         e.style.background = "white";
         e.style.color = "black";
+        e.classList.add("active-layer");
       }
-      /*
-      if (callback_query == e.getAttribute("data-url")) {
-        e.style.background = "white";
-        e.style.color = "black";
-      }
-      */
+
       if (general.active_layer.includes(e.getAttribute("data-url"))) {
         e.style.background = "white";
         e.style.color = "black";
@@ -1270,6 +1269,7 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   ////routing auto update polyline
+
   let last_update = dayjs();
   let routing_auto_update = () => {
     const date1 = dayjs();
@@ -1484,6 +1484,11 @@ document.addEventListener("DOMContentLoaded", function () {
       bottom_bar("", "", "");
 
       //custom maps and layers from json file
+      if (document.activeElement.classList.contains("active-layer")) {
+        maps.addMap("");
+
+        return false;
+      }
       if (document.activeElement.hasAttribute("data-url")) {
         let item_url = document.activeElement.getAttribute("data-url");
         let item_type = document.activeElement.getAttribute("data-type");
@@ -2014,6 +2019,14 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  const input = document.getElementById("export-path");
+  const regex = new RegExp("^[a-zA-Z0-9_.-]*$");
+
+  input.addEventListener("beforeinput", (event) => {
+    if (event.target.value != null && !regex.test(event.target.value))
+      helper.toaster("I recommend you not to use the sign", 2000);
+  });
+
   //qr scan listener
   const qr_listener = document.querySelectorAll("input.qr");
   let qrscan = false;
@@ -2060,7 +2073,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const channel = new BroadcastChannel("sw-messages");
   channel.addEventListener("message", (event) => {
     //callback from osm OAuth
-    alert(JSON.stringify(event.data));
 
     if (event.data.oauth_success) {
       //callback from  OAuth
@@ -2299,7 +2311,10 @@ document.addEventListener("DOMContentLoaded", function () {
           save_mode == "geojson-single-direct"
         ) {
           geojson.save_geojson(
-            setting.export_path + module.user_input("return") + ".geojson",
+            setting.export_path +
+              "/" +
+              module.user_input("return") +
+              ".geojson",
             "single-direct"
           );
 
@@ -2312,7 +2327,10 @@ document.addEventListener("DOMContentLoaded", function () {
           save_mode == "geojson-single"
         ) {
           geojson.save_geojson(
-            setting.export_path + module.user_input("return") + ".geojson",
+            setting.export_path +
+              "/" +
+              module.user_input("return") +
+              ".geojson",
             "single"
           );
 
@@ -2322,7 +2340,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (status.windowOpen == "user-input" && save_mode == "geojson-path") {
           geojson.save_geojson(
-            setting.export_path + module.user_input("return") + ".geojson",
+            setting.export_path +
+              "/" +
+              module.user_input("return") +
+              ".geojson",
             "path"
           );
 
@@ -2357,13 +2378,13 @@ document.addEventListener("DOMContentLoaded", function () {
         ) {
           let w;
           if (module.user_input("return") == "") {
-            w = helper.date_now();
+            w = dayjs().format("YYYY-MM-DD-HH-mm");
           } else {
             w = module.user_input("return");
           }
 
           geojson.save_gpx(
-            setting.export_path + w + ".gpx",
+            setting.export_path + "/" + w + ".gpx",
             "tracking",
             gpx_callback
           );
@@ -2402,6 +2423,7 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "Enter":
+        if (status.intro) return false;
         if (
           status.windowOpen == "user-input" &&
           save_mode == "geojson-tracking"
@@ -2652,7 +2674,9 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "*":
-        mainmarker.selected_marker = module.select_marker();
+        if (status.intro) return false;
+        if (status.windowOpen == "map")
+          mainmarker.selected_marker = module.select_marker();
 
         break;
 

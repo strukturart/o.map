@@ -601,7 +601,7 @@ div#bottom-bar div#button-right {
 div#intro {
   max-width: 100vw;
   position: fixed;
-  z-index: 5;
+  z-index: 15;
   left: 0;
   top: 0;
   background: black;

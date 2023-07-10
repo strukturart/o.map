@@ -125,7 +125,6 @@ const maps = (() => {
     });
 
     tilesLayer.on("error", function (seedData) {
-      //console.log(eror);
       status.caching_tiles_started = false;
 
       document.querySelector("div#top-bar div.button-center").innerText =
@@ -152,6 +151,19 @@ const maps = (() => {
   let overlayer = "";
 
   let addMap = function (url, attribution, max_zoom, type) {
+    //remove layer
+    if (url == "") {
+      if (map.hasLayer(tilesLayer)) {
+        map.removeLayer(tilesLayer);
+        document.activeElement.classList.remove("active-layer");
+
+        document.activeElement.style.background = "black";
+        document.activeElement.style.color = "white";
+        general.last_map = "";
+        helper.side_toaster("layer removed", 3000);
+      }
+      return false;
+    }
     let useOnlyCache = false;
     if (localStorage.getItem("useOnlyCache") != null) {
       if (localStorage.getItem("useOnlyCache") == "true") {

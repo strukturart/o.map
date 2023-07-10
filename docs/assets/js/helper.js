@@ -246,7 +246,6 @@ const helper = (() => {
     }
 
     let request = sdcard.get(filename);
-    // let new_filename = prompt("new filename");
 
     request.onsuccess = function () {
       let data = this.result;
@@ -270,7 +269,9 @@ const helper = (() => {
             "[data-filepath='" + filename + "']"
           ).innerText = new_filename + "." + file_extension;
 
-          side_toaster("successfully renamed", 3000);
+          document.querySelector("[data-filepath='" + filename + "']").focus();
+
+          helper.side_toaster("successfully renamed", 3000);
         };
 
         request_del.onerror = function () {
@@ -309,22 +310,8 @@ const helper = (() => {
     };
 
     request.onerror = function () {
-      side_toaster("Unable to download the file", 2000);
+      helper.side_toaster("Unable to download the file", 2000);
     };
-  };
-
-  let date_now = function () {
-    let current_datetime = new Date();
-    let now =
-      current_datetime.getFullYear() +
-      "-" +
-      current_datetime.getMonth() +
-      "-" +
-      current_datetime.getDate() +
-      "-" +
-      current_datetime.getHours() +
-      current_datetime.getMinutes();
-    return now;
   };
 
   return {
@@ -339,15 +326,12 @@ const helper = (() => {
     downloadFile,
     search_file,
     list_files,
-    date_now,
   };
 })();
 
 if (window.NodeList && !NodeList.prototype.forEach) {
   NodeList.prototype.forEach = Array.prototype.forEach;
 }
-
-//delete file
 
 //bottom bar
 function bottom_bar(left, center, right) {
@@ -390,60 +374,3 @@ function screenWakeLock(param, lock_type) {
     }
   }
 }
-
-let update_file = function (filepath, storage) {
-  let sdcard = navigator.getDeviceStorages("sdcard");
-  let request = sdcard[storage].get(filepath);
-
-  request.onsuccess = function () {
-    //read file
-    let fileget = this.result;
-    //get file extension
-    let file_extension = fileget.name.split(".");
-    file_extension = file_extension[file_extension.length - 1];
-
-    //mode content
-    //to do
-
-    //delete file
-    var request_del = sdcard[storage].delete(filepath);
-
-    request_del.onsuccess = function () {
-      //add file
-      let requestAdd = sdcard[storage].addNamed(
-        fileget,
-        filepath + "." + file_extension
-      );
-      requestAdd.onsuccess = function () {};
-      requestAdd.onerror = function () {};
-    };
-
-    request_del.onerror = function () {
-      // success copy not delete
-      alert("Unable to remove the file: " + this.error);
-    };
-  };
-
-  request.onerror = function () {
-    alert(this.error);
-  };
-};
-
-let add_file = function () {
-  var sdcard = navigator.getDeviceStorage("sdcard");
-  var file = new Blob(['[{"markers":[]}]'], {
-    type: "application/json",
-  });
-
-  var request = sdcard.addNamed(file, "omap.json");
-
-  request.onsuccess = function () {
-    var name = this.result;
-    toaster("Please repeat the last action again.", 2000);
-  };
-
-  // An error typically occur if a file with the same name already exist
-  request.onerror = function () {
-    alert("Unable to write the file: " + this.error);
-  };
-};
