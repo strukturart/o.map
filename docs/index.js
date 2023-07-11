@@ -98,6 +98,7 @@ let status = {
   live_track_file_created: false,
   tracking_backupup_at: new Date().getTime() / 1000,
   tracking_paused: false,
+  keylock: false,
 };
 
 if (!navigator.geolocation) {
@@ -1090,8 +1091,6 @@ document.addEventListener("DOMContentLoaded", function () {
     function showLocation(position) {
       document.querySelector("#cross").classList.remove("unavailable");
       status.gps_data_received = Math.round(Date.now() / 1000);
-
-      //localStorage.setItem("status", JSON.stringify(status));
       crd = position.coords;
 
       //store device location
@@ -1130,20 +1129,37 @@ document.addEventListener("DOMContentLoaded", function () {
 
       //alitude
       if (crd.altitude) {
-        mainmarker.device_alt = crd.altitude;
+        mainmarker.device_alt = parseInt(crd.altitude);
         if (general.measurement_unit == "km") {
           document.querySelector(
             "section#device-position div.altitude span"
-          ).innerText = crd.altitude.toFixed(2);
+          ).innerText = mainmarker.device_alt;
         }
 
         if (general.measurement_unit == "mil") {
           let n = crd.altitude * 3.280839895;
           document.querySelector(
             "section#device-position div.altitude span"
-          ).innerText = n.toFixed(2);
+          ).innerText = mainmarker.device_alt;
         }
+      } else {
+        document.querySelector(
+          "section#device-position div.altitude span"
+        ).innerText = "unknow";
       }
+
+      if (crd.altitudeAccuracy) {
+        mainmarker.accuracyAlt = crd.altitudeAccuracy;
+
+        document.querySelector(
+          "section#device-position div.alt-accuracy span"
+        ).innerText = crd.altitudeAccuracy;
+      } else {
+        document.querySelector(
+          "section#device-position div.alt-accuracy span"
+        ).innerText = "unknow";
+      }
+
       //heading
       if (crd.heading) {
         mainmarker.current_heading = crd.heading;
@@ -1151,6 +1167,10 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelector(
           "section#device-position div.heading span"
         ).innerText = crd.heading.toFixed(2);
+      } else {
+        document.querySelector(
+          "section#device-position div.heading span"
+        ).innerText = "unknow";
       }
       //speed
       if (crd.speed) {
@@ -1173,6 +1193,10 @@ document.addEventListener("DOMContentLoaded", function () {
             "section#device-position div.speed span"
           ).innerText = n + " mph";
         }
+      } else {
+        document.querySelector(
+          "section#device-position div.speed span"
+        ).innerText = "unknow";
       }
 
       //sun
@@ -2125,6 +2149,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function longpress_action(param) {
     switch (param.key) {
+      case "*":
+        if (status.keylock) {
+          status.keylock = false;
+          helper.side_toaster("key unlocked", 3000);
+        } else {
+          status.keylock = true;
+
+          helper.side_toaster("key locked", 3000);
+        }
+
+        break;
       case "0":
         if (status.windowOpen == "finder") {
           addMapLayers("delete-marker");
@@ -2180,6 +2215,9 @@ document.addEventListener("DOMContentLoaded", function () {
   //////////////
 
   function shortpress_action(param) {
+    if (status.keylock) {
+      return false;
+    }
     switch (param.key) {
       case "Backspace":
         if (status.windowOpen == "scan") {

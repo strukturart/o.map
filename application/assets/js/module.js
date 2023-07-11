@@ -445,9 +445,6 @@ const module = (() => {
       closest_average.push(f);
     }
 
-    // Log the main marker's accuracy to the console
-    console.log(mainmarker.accuracy);
-
     // Calculate the average of the closest_average array if it has more than 48 elements
     if (closest_average.length > 48) {
       let sum = closest_average.reduce((acc, cur) => acc + cur);
@@ -594,12 +591,16 @@ const module = (() => {
   ///////////////////
 
   //calculation of altitude ascents and descents
-
-  function elevation(t) {
+  let elevation = function (t) {
     let up_e = 0;
     let down_e = 0;
 
     for (let i = 1; i < t.length; i++) {
+      if (t[i] === null || t[i - 1] === null) {
+        // Skip null values
+        continue;
+      }
+
       const diff = t[i] - t[i - 1];
       if (Math.abs(diff) > 15) {
         // The GPS data is too inaccurate; skip this point
@@ -614,8 +615,7 @@ const module = (() => {
     let r = { up: up_e, down: down_e };
 
     return r;
-  }
-
+  };
   //json to gpx
   let toGPX = function () {
     let e = tracking_group.toGeoJSON();
@@ -624,7 +624,6 @@ const module = (() => {
 
     let option = { featureCoordTimes: "timestamp", creator: "o.map" };
 
-    extData = togpx(e, option);
     return togpx(e, option);
   };
 
@@ -649,7 +648,6 @@ const module = (() => {
   let gps_lock;
   let tracking_altitude = [];
   let calc = 0;
-  let tracking_distance;
 
   let polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
   let polyline_tracking = L.polyline(tracking_latlngs, path_option).addTo(
@@ -753,6 +751,8 @@ const module = (() => {
 
         tracking_altitude.push(alt);
 
+        console.log(elevation(tracking_altitude));
+
         polyline_tracking.addLatLng([
           mainmarker.device_lat,
           mainmarker.device_lng,
@@ -765,6 +765,8 @@ const module = (() => {
           alt: alt,
           timestamp: ts.toISOString(),
         });
+
+        //console.log(tracking_cache);
 
         // Update the view with tracking data
 
@@ -787,11 +789,11 @@ const module = (() => {
 
               let b = e.target._info.elevation.gain;
               document.querySelector("#tracking-evo-up span").innerText =
-                elevation(tracking_altitude).up.toFixed(2);
+                parseInt(elevation(tracking_altitude).up);
 
               let c = e.target._info.elevation.loss;
               document.querySelector("#tracking-evo-down span").innerText =
-                elevation(tracking_altitude).down.toFixed(2);
+                parseInt(elevation(tracking_altitude).down);
 
               document.getElementById("tracking-altitude").innerText =
                 mainmarker.device_alt;
@@ -857,7 +859,7 @@ const module = (() => {
           clearInterval(tracking_interval);
           if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
         }
-      }, 3000);
+      }, 10000);
     }
 
     if (action == "addMarker") {
