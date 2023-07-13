@@ -63,7 +63,9 @@ let mainmarker = {
       : [0, 0],
 };
 
-let setting = {};
+let setting = {
+  export_path: "",
+};
 
 let general = {
   osm_token:
@@ -144,12 +146,11 @@ map.on("load", function () {
     18,
     "map"
   );
-
-  settings.load_settings();
 });
 
 document.addEventListener("DOMContentLoaded", function () {
   osm.get_user();
+  settings.load_settings();
 
   let routing_service_callback = function (e) {
     //clean layer
@@ -1262,7 +1263,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.querySelector("#cross").classList.add("unavailable");
 
       if (err.code == 1) {
-        helper.toaster("Error: Access is denied!", 2000);
+        helper.side_toaster("Error: Access is denied!", 2000);
       }
       if (err.code == 2) {
         helper.side_toaster("Error: Position is unavailable!", 2000);
@@ -1365,7 +1366,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (item_value == "set_target_marker") {
         mainmarker.target_marker = mainmarker.selected_marker._latlng;
         mainmarker.selected_marker.setIcon(maps.goal_icon);
-        helper.toaster(
+        helper.side_toaster(
           "target marker set, press enter to be informed about the current distance.",
           4000
         );
@@ -1433,7 +1434,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (item_value == "remove_marker") {
         map.removeLayer(mainmarker.selected_marker);
         mainmarker.selected_marker.removeFrom(markers_group);
-        helper.toaster("marker removed", 4000);
+        helper.side_toaster("marker removed", 4000);
         document.querySelector("div#markers-option").style.display = "none";
         status.windowOpen = "map";
         bottom_bar("", "", "");
@@ -1643,21 +1644,21 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (item_value == "tracking") {
-          helper.toaster(
+          helper.side_toaster(
             "please close the menu and press key 1 to start tracking.",
             3000
           );
         }
 
         if (item_value == "draw-path") {
-          helper.toaster(
+          helper.side_toaster(
             "please close the menu and press key 7 to draw a path.",
             3000
           );
         }
 
         if (item_value == "add-marker-icon") {
-          helper.toaster(
+          helper.side_toaster(
             "please close the menu and press key 9 to set a marker.",
             3000
           );
@@ -2084,7 +2085,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
   };
-
+  /*
   document.addEventListener("visibilitychange", function () {
     localStorage.setItem("status", JSON.stringify(status));
 
@@ -2092,6 +2093,7 @@ document.addEventListener("DOMContentLoaded", function () {
       status.visible = document.visibilityState;
     }, 1000);
   });
+  */
 
   //callback from sw, osm oauth
   const channel = new BroadcastChannel("sw-messages");
@@ -2346,16 +2348,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (
           status.windowOpen == "user-input" &&
-          save_mode == "geojson-single-direct"
+          save_mode == "geojson-single"
         ) {
+          let w;
+          if (module.user_input("return") == "") {
+            w = dayjs().format("YYYY-MM-DD-HH-mm");
+          } else {
+            w = module.user_input("return");
+          }
+
           geojson.save_geojson(
-            setting.export_path +
-              "/" +
-              module.user_input("return") +
-              ".geojson",
+            setting.export_path + w + ".geojson",
             "single-direct"
           );
-
           save_mode = "";
           break;
         }
@@ -2364,27 +2369,27 @@ document.addEventListener("DOMContentLoaded", function () {
           status.windowOpen == "user-input" &&
           save_mode == "geojson-single"
         ) {
-          geojson.save_geojson(
-            setting.export_path +
-              "/" +
-              module.user_input("return") +
-              ".geojson",
-            "single"
-          );
+          let w;
+          if (module.user_input("return") == "") {
+            w = dayjs().format("YYYY-MM-DD-HH-mm");
+          } else {
+            w = module.user_input("return");
+          }
 
+          geojson.save_geojson(setting.export_path + w + ".geojson", "single");
           save_mode = "";
           break;
         }
 
         if (status.windowOpen == "user-input" && save_mode == "geojson-path") {
-          geojson.save_geojson(
-            setting.export_path +
-              "/" +
-              module.user_input("return") +
-              ".geojson",
-            "path"
-          );
+          let w;
+          if (module.user_input("return") == "") {
+            w = dayjs().format("YYYY-MM-DD-HH-mm");
+          } else {
+            w = module.user_input("return");
+          }
 
+          geojson.save_geojson(setting.export_path + w + ".geojson", "path");
           save_mode = "";
           break;
         }
@@ -2393,19 +2398,31 @@ document.addEventListener("DOMContentLoaded", function () {
           status.windowOpen == "user-input" &&
           save_mode == "geojson-collection"
         ) {
+          let w;
+          if (module.user_input("return") == "") {
+            w = dayjs().format("YYYY-MM-DD-HH-mm");
+          } else {
+            w = module.user_input("return");
+          }
+
           geojson.save_geojson(
-            module.user_input("return") + ".geojson",
+            setting.export_path + w + ".geojson",
             "collection"
           );
+
           save_mode = "";
           break;
         }
 
         if (status.windowOpen == "user-input" && save_mode == "routing") {
-          geojson.save_geojson(
-            module.user_input("return") + ".geojson",
-            "routing"
-          );
+          let w;
+          if (module.user_input("return") == "") {
+            w = dayjs().format("YYYY-MM-DD-HH-mm");
+          } else {
+            w = module.user_input("return");
+          }
+
+          geojson.save_geojson(setting.export_path + w + ".geojson", "routing");
           save_mode = "";
           break;
         }
@@ -2422,7 +2439,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
 
           geojson.save_gpx(
-            setting.export_path + "/" + w + ".gpx",
+            setting.export_path + w + ".gpx",
             "tracking",
             gpx_callback
           );
@@ -2518,7 +2535,7 @@ document.addEventListener("DOMContentLoaded", function () {
           search.hideSearch();
           mainmarker.current_lat = Number(olc_lat_lng[0]);
           mainmarker.current_lng = Number(olc_lat_lng[1]);
-          helper.toaster("press 5 to save the marker", 2000);
+          helper.side_toaster("press 5 to save the marker", 2000);
           break;
         }
 
@@ -2664,16 +2681,6 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "5":
-        if (status.windowOpen == "map") {
-          L.marker([mainmarker.current_lat, mainmarker.current_lng]).addTo(
-            markers_group
-          );
-          save_mode = "geojson-single-direct";
-          module.user_input("open", "", "save this marker as geojson file");
-          bottom_bar("cancel", "", "save");
-          break;
-        }
-
         break;
 
       case "6":
@@ -2713,8 +2720,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "*":
         if (status.intro) return false;
-        if (status.windowOpen == "map")
-          mainmarker.selected_marker = module.select_marker();
+        mainmarker.selected_marker = module.select_marker();
 
         break;
 

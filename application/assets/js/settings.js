@@ -58,10 +58,9 @@ const settings = ((_) => {
 
   let load_settings = function () {
     setting = {
-      export_path:
-        localStorage.getItem("export-path") != null
-          ? localStorage.getItem("export-path")
-          : "",
+      export_path: !localStorage.getItem("export-path")
+        ? ""
+        : localStorage.getItem("export-path") + "/",
       osm_tag: localStorage.getItem("osm-tag"),
 
       cache_time: localStorage["cache-time"] || "10",

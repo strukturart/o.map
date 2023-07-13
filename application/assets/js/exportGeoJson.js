@@ -83,18 +83,18 @@ const geojson = ((_) => {
         module.measure_distance("destroy_tracking");
         mainmarker.tracking = false;
         localStorage.removeItem("tracking_cache");
-        helper.side_toaster("tracking saved", 5000);
       }
 
       if (type == "path") {
         module.measure_distance("destroy");
-        helper.side_toaster("tracking saved", 5000);
       }
+      helper.side_toaster("saved", 5000);
     };
 
     requestAdd.onerror = function () {
       helper.toaster(
-        "Unable to write the file, the file name may already be used",
+        file_path_name +
+          " Unable to write the file, the file name may already be used",
         10000
       );
       status.windowOpen = "map";

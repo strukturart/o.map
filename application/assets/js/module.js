@@ -313,6 +313,8 @@ const module = (() => {
     index++;
 
     if (index >= markers_collection.length) index = 0;
+    map.setView(markers_collection[index]._latlng, map.getZoom());
+    status.selected_marker = markers_collection[index];
     bottom_bar("cancel", "option", "");
 
     //reset icons and close popus
@@ -358,9 +360,6 @@ const module = (() => {
         markers_collection[index].closePopup();
       }, 3000);
     }
-
-    map.setView(markers_collection[index]._latlng, map.getZoom());
-    status.selected_marker = markers_collection[index];
     return markers_collection[index];
   };
 

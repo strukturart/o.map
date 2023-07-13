@@ -47,6 +47,12 @@ body {
   margin: 0;
 }
 
+kbd {
+  border-radius: 3px;
+  padding: 1px 2px 0;
+  border: 1px solid black;
+}
+
 form {
   font-family: "Lato-Regular";
 }
