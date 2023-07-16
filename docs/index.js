@@ -33,11 +33,13 @@ let routing = {
   closest: "",
   loaded: false,
   auto_routing: false,
+  auto_update: false,
 };
 
 let mainmarker = {
   target_marker: "",
   selected_marker: "",
+  gpx_selection_latlng: [],
   startup_markers:
     localStorage.getItem("startup_markers") != null
       ? JSON.parse(localStorage.getItem("startup_markers"))
@@ -102,6 +104,7 @@ let status = {
   tracking_paused: false,
   keylock: false,
   screenOff: false,
+  follow_path: false,
 };
 
 if (!navigator.geolocation) {
@@ -316,7 +319,7 @@ document.addEventListener("DOMContentLoaded", function () {
     load_ads();
     let manifest = function (a) {
       document.getElementById("intro-footer").innerText =
-        "O.MAP Version " + a.version;
+        "Version " + a.version;
     };
     helper.getManifest(manifest);
   } else {
@@ -340,7 +343,6 @@ document.addEventListener("DOMContentLoaded", function () {
     );
     mainmarker.current_lat = data[0];
     mainmarker.current_lng = data[1];
-
     mainmarker.device_lat = data[0];
     mainmarker.device_lng = data[1];
     myMarker.setLatLng([mainmarker.device_lat, mainmarker.device_lng]).update();
@@ -1235,7 +1237,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       localStorage.setItem("last_location", b);
 
-      if (routing.active) {
+      if (routing.active && routing.auto_update) {
         routing_auto_update();
       }
 
@@ -1250,13 +1252,17 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       //distances
-      distance_to_target();
 
-      if (routing.active) {
-        console.log("active");
-        if (!routing.auto_routing)
-          module.get_closest_point(routing.coordinates);
+      if (routing.active && routing.auto_routing == false) {
+        alert("calc");
+        module.get_closest_point(routing.coordinates);
       }
+
+      if (status.follow_path == true) {
+        module.get_closest_point(gpx_selection_latlng);
+      }
+
+      distance_to_target();
     }
 
     function errorHandler(err) {
@@ -1305,12 +1311,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     last_update = dayjs();
 
-    if (
-      !routing.active &&
-      !mainmarker.positionHasChanged &&
-      !routing.auto_routing
-    )
-      return false;
+    if (routing.auto_routing == false) return false;
 
     routing.start = mainmarker.device_lng + "," + mainmarker.device_lat;
 
@@ -1595,16 +1596,32 @@ document.addEventListener("DOMContentLoaded", function () {
         if (item_value == "resetrouting") {
           rs.reset_routing();
         }
+        if (item_value == "follow-path") {
+          if (setting.routing_notification == false) {
+            helper.side_toaster(
+              "You have to activate the notification in the settings of the app",
+              3000
+            );
+            return false;
+          }
+          status.follow_path = true;
+          document.querySelector("div#finder").style.display = "none";
+          status.windowOpen = "map";
+          helper.side_toaster(
+            "you will get a warning if you are too far off the path",
+            3000
+          );
+        }
 
         if (item_value === "startrouting") {
           // If item_value is "startrouting"
           // Call the auto_update_view function
           auto_update_view();
+          status.auto_routing = false;
 
           // Check the value of routing.active and perform the appropriate action
           switch (routing.active) {
             case true:
-              console.log(routing.active);
               routing.active = false;
               helper.side_toaster("Routing paused", 2000);
 
@@ -1612,7 +1629,6 @@ document.addEventListener("DOMContentLoaded", function () {
               break;
 
             case false:
-              console.log(routing.active);
               routing.active = true;
               helper.side_toaster("Routing started", 2000);
               document.activeElement.innerText = "stop";
@@ -1889,7 +1905,7 @@ document.addEventListener("DOMContentLoaded", function () {
       finder_panels = finder_panels.filter((e) => e.id != "weather");
     }
 
-    if (!gpx_selection_info.name) {
+    if (gpx_group.length == 0) {
       finder_panels = finder_panels.filter((e) => e.id != "gpx-file-info");
     }
 
@@ -1942,6 +1958,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (finder_panels[count].id == "gpx-file-info") {
       bottom_bar("", "", "");
+      console.log(document.querySelectorAll("#gpx-file-info > .item").length);
+      document.querySelectorAll("#gpx-file-info  > .item")[0].focus();
     }
     if (finder_panels[count].id == "tracking") {
       bottom_bar("", "", "");

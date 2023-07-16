@@ -21,10 +21,10 @@ const settings = ((_) => {
       "cache-zoom",
       document.getElementById("cache-zoom").value
     );
-    localStorage.setItem(
-      "export-path",
-      document.getElementById("export-path").value
-    );
+    //add a slash to the path
+    let f = document.getElementById("export-path").value;
+    if (f.substr(f.length - 1) != "/") f = f + "/";
+    localStorage.setItem("export-path", f);
 
     localStorage.setItem("osm-tag", document.getElementById("osm-tag").value);
 
@@ -60,7 +60,7 @@ const settings = ((_) => {
     setting = {
       export_path: !localStorage.getItem("export-path")
         ? ""
-        : localStorage.getItem("export-path") + "/",
+        : localStorage.getItem("export-path"),
       osm_tag: localStorage.getItem("osm-tag"),
 
       cache_time: localStorage["cache-time"] || "10",
@@ -186,7 +186,7 @@ const settings = ((_) => {
   };
 
   let load_settings_from_file = function () {
-    helper.toaster("search setting file", 2000);
+    helper.side_toaster("search setting file", 2000);
     try {
       //search gpx
       let load_file = new Applait.Finder({
@@ -197,7 +197,7 @@ const settings = ((_) => {
       load_file.search("omap_settings.json");
       load_file.on("searchComplete", function (needle, filematchcount) {});
       load_file.on("error", function (message, err) {
-        helper.toaster("file not found", 2000);
+        helper.side_toaster("file not found!", 2000);
       });
 
       load_file.on("fileFound", function (file, fileinfo, storageName) {
@@ -222,9 +222,9 @@ const settings = ((_) => {
             document.getElementById("export-path").value = setting.export_path;
             document.getElementById("osm-tag").value = setting.osm_tag;
 
-            helper.toaster(
+            helper.side_toaster(
               "the settings were loaded from the file, if you want to use them permanently don't forget to save.",
-              3000
+              5000
             );
           }, 1500);
         };
@@ -273,7 +273,7 @@ const settings = ((_) => {
                       document.getElementById("osm-tag").value =
                         setting.osm_tag;
 
-                      helper.toaster(
+                      helper.side_toaster(
                         "the settings were loaded from the file, if you want to use them permanently don't forget to save.",
                         3000
                       );
@@ -313,11 +313,11 @@ const settings = ((_) => {
         var request = sdcard.addNamed(file, "omap_settings.json");
 
         request.onsuccess = function () {
-          helper.toaster("settings exported, omap_settings.json", 5000);
+          helper.side_toaster("settings exported, omap_settings.json", 5000);
         };
 
         request.onerror = function () {
-          helper.toaster("Unable to write the file", 2000);
+          helper.side_toaster("Unable to write the file", 2000);
         };
       };
     } catch (e) {}

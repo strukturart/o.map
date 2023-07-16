@@ -92,7 +92,12 @@ const rs = ((_) => {
     });
   };
 
-  let routing_profile = ["cycling-road", "foot-hiking", "driving-car"];
+  let routing_profile = [
+    "cycling-mountain",
+    "cycling-road",
+    "foot-hiking",
+    "driving-car",
+  ];
   let m = routing_profile.indexOf(settings.profile);
 
   let change_type = function () {

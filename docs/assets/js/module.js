@@ -378,6 +378,10 @@ const module = (() => {
 
     if (gpx_selection_count > gpx_selection.length - 1) gpx_selection_count = 0;
     map.fitBounds(gpx_selection[gpx_selection_count].getBounds());
+    let m = gpx_selection[gpx_selection_count].getLayers();
+    const keys = Object.keys(m[0]._layers);
+    const firstKey = keys[0];
+    general.gpx_selection_latlng = m[0]._layers[firstKey]._latlngs;
 
     //store info in object
     gpx_selection_info.duration =
@@ -403,6 +407,7 @@ const module = (() => {
     document.getElementById("gpx-time").innerText = format_ms(
       gpx_selection_info.duration
     );
+
     document.querySelector("#gpx-evo-up span").innerText =
       gpx_selection_info.elevation_gain.toFixed(2);
 
@@ -419,14 +424,13 @@ const module = (() => {
   let get_closest_point = function (route) {
     if (!mainmarker.device_lat) return false;
 
-    //let r = route.map((row) => row.reverse());
     let m = L.polyline(route);
 
     let latlng = [mainmarker.device_lat, mainmarker.device_lng];
 
     let k = L.GeometryUtil.closest(map, m, latlng, true);
 
-    L.marker(k).addTo(map);
+    //  L.marker(k).addTo(map);
 
     let f = calc_distance(
       mainmarker.device_lat,
@@ -442,6 +446,7 @@ const module = (() => {
     if (mainmarker.accuracy < 22) {
       // Add the current value of f to the closest_average array
       closest_average.push(f);
+      console.log(closest_average);
     }
 
     // Calculate the average of the closest_average array if it has more than 48 elements
@@ -457,16 +462,17 @@ const module = (() => {
       }
 
       // If the routing_notification setting is off, exit early
-      if (!setting.routing_notification) {
+      if (setting.routing_notification == false) {
         return false;
       }
 
       // If the average is above 0.5, trigger a vibration and show a toaster message
       if (result > 0.5) {
+        helper.side_toaster("Too far " + result, 3000);
+
         try {
           navigator.vibrate([1000, 500, 1000]);
         } catch (e) {}
-        helper.toaster("Too far " + result, 3000);
       }
     }
   };
@@ -765,8 +771,6 @@ const module = (() => {
           timestamp: ts.toISOString(),
         });
 
-        //console.log(tracking_cache);
-
         // Update the view with tracking data
 
         if (tracking_cache.length > 2) {
@@ -780,6 +784,7 @@ const module = (() => {
           //get tracking data to display in view
           new L.GPX(toGPX(), { async: true }).on("loaded", function (e) {
             //meter
+
             if (general.measurement_unit == "km") {
               // Calculate the distance along the polyline
               let a = calcDistance(polyline_tracking);
@@ -824,12 +829,14 @@ const module = (() => {
               document.querySelector("#tracking-speed-average-time").innerText =
                 d;
             }
-
+            /*
             let d = e.target.get_duration_string(
               e.target.get_total_time(),
               false
             );
-            document.querySelector("#tracking-moving-time span").innerText = d;
+            */
+            document.querySelector("#tracking-moving-time span").innerText =
+              format_ms(e.target.get_total_time());
           });
         }
 
