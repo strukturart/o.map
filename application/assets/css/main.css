@@ -47,6 +47,10 @@ body {
   margin: 0;
 }
 
+body.screenOff {
+  filter: brightness(0);
+}
+
 kbd {
   border-radius: 3px;
   padding: 1px 2px 0;

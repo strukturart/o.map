@@ -101,6 +101,7 @@ let status = {
   tracking_backupup_at: new Date().getTime() / 1000,
   tracking_paused: false,
   keylock: false,
+  screenOff: false,
 };
 
 if (!navigator.geolocation) {
@@ -2085,15 +2086,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
   };
-  /*
-  document.addEventListener("visibilitychange", function () {
-    localStorage.setItem("status", JSON.stringify(status));
-
-    setTimeout(function () {
-      status.visible = document.visibilityState;
-    }, 1000);
-  });
-  */
 
   //callback from sw, osm oauth
   const channel = new BroadcastChannel("sw-messages");
@@ -2218,6 +2210,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function shortpress_action(param) {
     if (status.keylock) {
+      switch (param.key) {
+        case "Backspace":
+          preventDefault();
+          break;
+        case "EndCall":
+          preventDefault();
+          break;
+        case "Enter":
+          document.querySelector("body").classList.contains("screenOff")
+            ? document.querySelector("body").classList.remove("screenOff")
+            : document.querySelector("body").classList.add("screenOff");
+          break;
+      }
       return false;
     }
     switch (param.key) {
