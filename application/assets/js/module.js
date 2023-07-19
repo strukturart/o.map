@@ -375,6 +375,10 @@ const module = (() => {
     gpx_group.eachLayer(function (l) {
       if (l.getBounds()) gpx_selection.push(l);
     });
+    if (gpx_selection.length == 0) {
+      helper.side_toaster("no gpx file to select", 2000);
+      return false;
+    }
 
     if (gpx_selection_count > gpx_selection.length - 1) gpx_selection_count = 0;
     map.fitBounds(gpx_selection[gpx_selection_count].getBounds());
@@ -400,6 +404,7 @@ const module = (() => {
 
     gpx_selection_info.name = gpx_selection[gpx_selection_count]._info.name;
     update_gpx_info();
+    status.select_gpx = true;
   };
 
   let update_gpx_info = function () {
@@ -430,8 +435,6 @@ const module = (() => {
 
     let k = L.GeometryUtil.closest(map, m, latlng, true);
 
-    //  L.marker(k).addTo(map);
-
     let f = calc_distance(
       mainmarker.device_lat,
       mainmarker.device_lng,
@@ -446,7 +449,6 @@ const module = (() => {
     if (mainmarker.accuracy < 22) {
       // Add the current value of f to the closest_average array
       closest_average.push(f);
-      console.log(closest_average);
     }
 
     // Calculate the average of the closest_average array if it has more than 48 elements
@@ -468,10 +470,11 @@ const module = (() => {
 
       // If the average is above 0.5, trigger a vibration and show a toaster message
       if (result > 0.5) {
-        helper.side_toaster("Too far " + result, 3000);
-
         try {
-          navigator.vibrate([1000, 500, 1000]);
+          module.pushLocalNotification(
+            "O.map",
+            "Attention you have left the path"
+          );
         } catch (e) {}
       }
     }
@@ -650,7 +653,7 @@ const module = (() => {
   let tracking_latlngs = [];
   let tracking_interval;
   let tracking_cache = [];
-  let gps_lock;
+  //let gps_lock;
   let tracking_altitude = [];
   let calc = 0;
 
@@ -702,7 +705,7 @@ const module = (() => {
       status.tracking_running = true;
 
       if ("requestWakeLock" in navigator) {
-        gps_lock = window.navigator.requestWakeLock("gps");
+        // gps_lock = window.navigator.requestWakeLock("gps");
         if (setting.tracking_screenlock) screenWakeLock("lock", "screen");
       }
 

@@ -115,16 +115,16 @@ const keepalive = (() => {
 
       //reset alarm or stop loop
       navigator.mozSetMessageHandler("alarm", function (message) {
+        let k = JSON.parse(localStorage.getItem("status"));
+
         remove_alarm();
         //stop alarm when tracking is not active
-        let k = JSON.parse(localStorage.getItem("status"));
         if (k.tracking_running === false) return false;
 
-        let f = Math.round(Date.now() / 1000) - k.gps_data_received;
-        //module.pushLocalNotification("O.map", String(f));
-        if (k.tracking_running && k.closedByUser === false) {
-          m();
-        } else if (k.tracking_running && f > 360) {
+        m();
+        //let f = Math.round(Date.now() / 1000) - k.gps_data_received;
+        //something is wrong
+        if (k.tracking_running && k.closedByUser == false) {
           module.pushLocalNotification(
             "O.map",
             "Attention the tracking was aborted unexpectedly"

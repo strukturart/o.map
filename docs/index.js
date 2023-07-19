@@ -23,6 +23,8 @@ let gpx_selection_info = {};
 let tilesLayer = "";
 let n;
 
+let gps_lock;
+
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 let routing = {
@@ -96,9 +98,9 @@ let status = {
   marker_selection: false,
   path_selection: false,
   windowOpen: "map",
-  sub_status: "",
   selected_marker: "",
   appOpendByUser: true,
+  closedByUser: false,
   live_track_file_created: false,
   tracking_backupup_at: new Date().getTime() / 1000,
   tracking_paused: false,
@@ -109,6 +111,10 @@ let status = {
 
 if (!navigator.geolocation) {
   helper.toaster("Your device does't support geolocation!", 2000);
+}
+
+if ("requestWakeLock" in navigator) {
+  gps_lock = window.navigator.requestWakeLock("gps");
 }
 
 if ("b2g" in Navigator) {
@@ -1219,11 +1225,6 @@ document.addEventListener("DOMContentLoaded", function () {
         myMarker.setIcon(maps.follow_icon);
       }
 
-      //routing calc distance to closest point
-      if (crd != null || crd != "") {
-        //rs.instructions();
-      }
-
       let j = localStorage.getItem("last_location");
 
       //store location as fallout
@@ -1254,12 +1255,11 @@ document.addEventListener("DOMContentLoaded", function () {
       //distances
 
       if (routing.active && routing.auto_routing == false) {
-        alert("calc");
         module.get_closest_point(routing.coordinates);
       }
 
       if (status.follow_path == true) {
-        module.get_closest_point(gpx_selection_latlng);
+        module.get_closest_point(general.gpx_selection_latlng);
       }
 
       distance_to_target();
@@ -1604,13 +1604,19 @@ document.addEventListener("DOMContentLoaded", function () {
             );
             return false;
           }
-          status.follow_path = true;
-          document.querySelector("div#finder").style.display = "none";
-          status.windowOpen = "map";
-          helper.side_toaster(
-            "you will get a warning if you are too far off the path",
-            3000
-          );
+
+          if (status.follow_path == false) {
+            status.follow_path = true;
+            document.querySelector("div#finder").style.display = "none";
+            status.windowOpen = "map";
+            helper.side_toaster(
+              "you will get a warning if you are too far off the path",
+              3000
+            );
+          } else {
+            status.follow_path = false;
+            helper.side_toaster("off", 3000);
+          }
         }
 
         if (item_value === "startrouting") {
@@ -1905,7 +1911,7 @@ document.addEventListener("DOMContentLoaded", function () {
       finder_panels = finder_panels.filter((e) => e.id != "weather");
     }
 
-    if (gpx_group.length == 0) {
+    if (status.select_gpx == true) {
       finder_panels = finder_panels.filter((e) => e.id != "gpx-file-info");
     }
 
@@ -2188,7 +2194,6 @@ document.addEventListener("DOMContentLoaded", function () {
         status.closedByUser = true;
         status.appOpendByUser = false;
         status.tracking_running = false;
-        localStorage.setItem("status", status);
         window.close();
         break;
 
@@ -2211,7 +2216,6 @@ document.addEventListener("DOMContentLoaded", function () {
             status.live_track = true;
             module.measure_distance("tracking");
             status.tracking_running = true;
-            localStorage.setItem("status", JSON.stringify(status));
 
             var d = new Date();
             d.setMinutes(d.getMinutes() + 1);
@@ -2295,7 +2299,6 @@ document.addEventListener("DOMContentLoaded", function () {
       case "EndCall":
         localStorage.setItem("app_closed", "by_user");
         status.closedByUser = true;
-        localStorage.setItem("status", status);
         window.close();
         break;
 
@@ -2650,7 +2653,6 @@ document.addEventListener("DOMContentLoaded", function () {
             module.user_input("open", "", "Save as GPX file");
             bottom_bar("cancel", "don't save", "save");
 
-            localStorage.setItem("status", JSON.stringify(status));
             keepalive.remove_alarm();
             status.tracking_running = false;
             status.tracking_paused = true;
@@ -2659,8 +2661,6 @@ document.addEventListener("DOMContentLoaded", function () {
             let t = new Date().getTime() / 1000;
             t = t + 320;
             status.tracking_backupup_at = t;
-
-            localStorage.setItem("status", JSON.stringify(status));
             keepalive.remove_alarm();
 
             return true;
@@ -2678,7 +2678,6 @@ document.addEventListener("DOMContentLoaded", function () {
             );
             module.measure_distance("tracking");
             status.tracking_running = true;
-            localStorage.setItem("status", JSON.stringify(status));
 
             var d = new Date();
             d.setMinutes(d.getMinutes() + 1);
@@ -2744,7 +2743,6 @@ document.addEventListener("DOMContentLoaded", function () {
       case "*":
         if (status.intro) return false;
         mainmarker.selected_marker = module.select_marker();
-
         break;
 
       case "#":
@@ -2796,6 +2794,8 @@ document.addEventListener("DOMContentLoaded", function () {
   ////////////////////////////////
 
   function handleKeyDown(evt) {
+    localStorage.setItem("status", JSON.stringify(status));
+
     if (status.visible === "hidden") return false;
     if (evt.key === "Backspace" && status.windowOpen !== "map") {
       evt.preventDefault();
