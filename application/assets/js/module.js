@@ -363,6 +363,19 @@ const module = (() => {
     return markers_collection[index];
   };
 
+  let remove_gpx = function () {
+    let i = 0;
+    gpx_group.eachLayer(function (l) {
+      i++;
+      if (i == gpx_selection_count + 1) {
+        gpx_group.removeLayer(l);
+        helper.side_toaster("path removed", 2000);
+        status.windowOpen = "map";
+        document.querySelector("div#finder").style.display = "none";
+      }
+    });
+  };
+
   //SELECT GPX
 
   let gpx_selection_count = 0;
@@ -375,6 +388,7 @@ const module = (() => {
     gpx_group.eachLayer(function (l) {
       if (l.getBounds()) gpx_selection.push(l);
     });
+
     if (gpx_selection.length == 0) {
       helper.side_toaster("no gpx file to select", 2000);
       return false;
@@ -980,7 +994,7 @@ const module = (() => {
     user_input,
     format_ms,
     format_s,
-
+    remove_gpx,
     get_closest_point,
     pushLocalNotification,
     uniqueId,

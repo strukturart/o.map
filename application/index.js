@@ -107,6 +107,7 @@ let status = {
   keylock: false,
   screenOff: false,
   follow_path: false,
+  select_gpx: false,
 };
 
 if (!navigator.geolocation) {
@@ -1596,6 +1597,10 @@ document.addEventListener("DOMContentLoaded", function () {
         if (item_value == "resetrouting") {
           rs.reset_routing();
         }
+        if (item_value == "remove-path") {
+          module.remove_gpx();
+        }
+
         if (item_value == "follow-path") {
           if (setting.routing_notification == false) {
             helper.side_toaster(
@@ -1911,7 +1916,8 @@ document.addEventListener("DOMContentLoaded", function () {
       finder_panels = finder_panels.filter((e) => e.id != "weather");
     }
 
-    if (status.select_gpx == true) {
+    let f = gpx_group.getLayers();
+    if (f.length == 0) {
       finder_panels = finder_panels.filter((e) => e.id != "gpx-file-info");
     }
 
