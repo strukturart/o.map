@@ -125,6 +125,7 @@ const module = (() => {
           })
             .on("loaded", function (e) {
               map.fitBounds(e.target.getBounds());
+              helper.side_toaster("select GPX path with key 6", 4000);
             })
             .addTo(gpx_group);
 
@@ -362,6 +363,19 @@ const module = (() => {
     }
     return markers_collection[index];
   };
+  //remove GPX
+  let remove_gpx = function () {
+    let i = 0;
+    gpx_group.eachLayer(function (l) {
+      i++;
+      if (i == gpx_selection_count + 1) {
+        gpx_group.removeLayer(l);
+        helper.side_toaster("path removed", 2000);
+        status.windowOpen = "map";
+        document.querySelector("div#finder").style.display = "none";
+      }
+    });
+  };
 
   //SELECT GPX
 
@@ -375,6 +389,7 @@ const module = (() => {
     gpx_group.eachLayer(function (l) {
       if (l.getBounds()) gpx_selection.push(l);
     });
+
     if (gpx_selection.length == 0) {
       helper.side_toaster("no gpx file to select", 2000);
       return false;
@@ -697,7 +712,7 @@ const module = (() => {
       gps_lock.unlock();
       status.running = false;
       status.live_track = false;
-
+      helper.side_toaster("tracking stopped", 2000);
       return true;
     }
 
@@ -758,8 +773,6 @@ const module = (() => {
         }
 
         tracking_altitude.push(alt);
-
-        console.log(elevation(tracking_altitude));
 
         polyline_tracking.addLatLng([
           mainmarker.device_lat,
@@ -980,7 +993,7 @@ const module = (() => {
     user_input,
     format_ms,
     format_s,
-
+    remove_gpx,
     get_closest_point,
     pushLocalNotification,
     uniqueId,

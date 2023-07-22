@@ -385,7 +385,7 @@
       </div>
 
       <div class="panel menu-box" name="Device position" id="coordinations">
-        <section id="device-position">
+        <section class="item" id="device-position">
           <div class="lat">Lat <span></span></div>
           <div class="lng">Lng <span></span></div>
           <div class="altitude">Alt <span></span></div>
@@ -398,13 +398,13 @@
 
         </section>
 
-        <section id="device-distance">
+        <section class="item" id="device-distance">
           <strong><u>Distances</u></strong>
           <div class="distance">to map center <span></span></div>
           <div class="target">to the goal marker <span></span></div>
         </section>
 
-        <section id="device-sun">
+        <section class="item" id="device-sun">
           <strong><u>Sun</u></strong>
           <div>
             <span>⬆</span>
@@ -416,18 +416,18 @@
       </div>
 
       <div class="panel menu-box" name="Map center" id="mapcenter">
-        <section id="mapcenter-position">
+        <section class="item" id="mapcenter-position">
           <div class="lat">Lat <span></span></div>
           <div class="lng">Lng <span></span></div>
         </section>
 
-        <section id="mapcenter-distance">
+        <section class="item" id="mapcenter-distance">
           <strong><u>Distances</u></strong>
           <div class="distance">to device <span></span></div>
           <div class="target">to the goal marker <span></span></div>
         </section>
 
-        <section id="mapcenter-sun">
+        <section class="item" id="mapcenter-sun">
           <strong><u>Sun</u></strong>
           <div>
             <span>⬆</span>
@@ -476,14 +476,16 @@
         </section>
         <section class="item">
           <strong><u>Evolution</u></strong>
-          <div class="item" id="gpx-evo-up">⬆<span></span></div>
-          <div class="item" id="gpx-evo-down">⬇<span></span></div>
+          <div  id="gpx-evo-up">⬆<span></span></div>
+          <div  id="gpx-evo-down">⬇<span></span></div>
         </section>
         <section class="item">
           <strong><u>Time</u></strong>
-          <div class="item" id="gpx-time">duration <span></span></div>
+          <div  id="gpx-time">duration <span></span></div>
         </section>
-        <button class="item" data-map="follow-path">Follow path</button>
+        <button id="follow-gpx-path" class="item" data-map="follow-path">Follow path</button>
+        <button class="item" data-map="remove-path">Remove path</button>
+
       </div>
       <!--ROUTING-->
       <div class="panel menu-box" id="routing" name="Routing">

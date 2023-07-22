@@ -122,13 +122,13 @@ const keepalive = (() => {
         if (k.tracking_running === false) return false;
 
         m();
-        //let f = Math.round(Date.now() / 1000) - k.gps_data_received;
         //something is wrong
         if (k.tracking_running && k.closedByUser == false) {
           module.pushLocalNotification(
             "O.map",
             "Attention the tracking was aborted unexpectedly"
           );
+          remove_alarm();
         }
       });
     }

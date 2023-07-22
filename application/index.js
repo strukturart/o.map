@@ -107,6 +107,7 @@ let status = {
   keylock: false,
   screenOff: false,
   follow_path: false,
+  select_gpx: false,
 };
 
 if (!navigator.geolocation) {
@@ -331,7 +332,7 @@ document.addEventListener("DOMContentLoaded", function () {
   } else {
     let manifest = function (a) {
       document.getElementById("intro-footer").innerText =
-        "O.MAP Version " + a.manifest.version;
+        "Version " + a.manifest.version;
       if (a.installOrigin == "app://kaios-plus.kaiostech.com") {
         load_ads();
       } else {
@@ -1259,6 +1260,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       if (status.follow_path == true) {
+        document.querySelector("#follow-gpx-path").innerText == "Unfollow path";
         module.get_closest_point(general.gpx_selection_latlng);
       }
 
@@ -1596,6 +1598,10 @@ document.addEventListener("DOMContentLoaded", function () {
         if (item_value == "resetrouting") {
           rs.reset_routing();
         }
+        if (item_value == "remove-path") {
+          module.remove_gpx();
+        }
+
         if (item_value == "follow-path") {
           if (setting.routing_notification == false) {
             helper.side_toaster(
@@ -1629,8 +1635,6 @@ document.addEventListener("DOMContentLoaded", function () {
           switch (routing.active) {
             case true:
               routing.active = false;
-              helper.side_toaster("Routing paused", 2000);
-
               document.activeElement.innerText = "start";
               break;
 
@@ -1911,7 +1915,8 @@ document.addEventListener("DOMContentLoaded", function () {
       finder_panels = finder_panels.filter((e) => e.id != "weather");
     }
 
-    if (status.select_gpx == true) {
+    let f = gpx_group.getLayers();
+    if (f.length == 0) {
       finder_panels = finder_panels.filter((e) => e.id != "gpx-file-info");
     }
 
@@ -2263,12 +2268,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (status.windowOpen == "files-option") {
           document.getElementById("files-option").style.display = "none";
-
           open_finder();
           windowOpen = "finder";
-
           general.active_item.focus();
-
           break;
         }
 
@@ -2283,22 +2285,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
           top_bar("", "", "");
           bottom_bar("", "", "");
-
           break;
         }
 
         if (status.windowOpen === "map") {
-          status.closedByUser = false;
+          status.closedByUser = true;
           localStorage.setItem("status", JSON.stringify(status));
-
           break;
         }
 
         break;
 
       case "EndCall":
-        localStorage.setItem("app_closed", "by_user");
         status.closedByUser = true;
+        localStorage.setItem("status", JSON.stringify(status));
         window.close();
         break;
 
@@ -2693,9 +2693,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         break;
 
-      case "3":
-        break;
-
       case "4":
         if (status.windowOpen == "map") {
           auto_update_view();
@@ -2794,8 +2791,6 @@ document.addEventListener("DOMContentLoaded", function () {
   ////////////////////////////////
 
   function handleKeyDown(evt) {
-    localStorage.setItem("status", JSON.stringify(status));
-
     if (status.visible === "hidden") return false;
     if (evt.key === "Backspace" && status.windowOpen !== "map") {
       evt.preventDefault();
