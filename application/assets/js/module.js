@@ -377,19 +377,6 @@ const module = (() => {
     });
   };
 
-  let remove_gpx = function () {
-    let i = 0;
-    gpx_group.eachLayer(function (l) {
-      i++;
-      if (i == gpx_selection_count + 1) {
-        gpx_group.removeLayer(l);
-        helper.side_toaster("path removed", 2000);
-        status.windowOpen = "map";
-        document.querySelector("div#finder").style.display = "none";
-      }
-    });
-  };
-
   //SELECT GPX
 
   let gpx_selection_count = 0;

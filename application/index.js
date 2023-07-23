@@ -159,6 +159,11 @@ map.on("load", function () {
   );
 });
 
+map.on("tileerror", function (event) {
+  console.log("Tile load error:", event.tile.src, 2000);
+  helper.side_toaster("Tile load error:", 2000);
+});
+
 document.addEventListener("DOMContentLoaded", function () {
   osm.get_user();
   settings.load_settings();
@@ -395,12 +400,12 @@ document.addEventListener("DOMContentLoaded", function () {
     );
     el.insertAdjacentHTML(
       "afterend",
-      '<div class="item" data-type="map" data-url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" data-maxzoom="18" data-attribution="Map data &copy; OpenStreetMap contributors, CC-BY-SA">Openstreetmap</div>'
+      '<div class="item" data-type="map" data-url="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png" data-maxzoom="18" data-attribution="Map data &copy; OpenStreetMap contributors, CC-BY-SA">Openstreetmap</div>'
     );
 
     el.insertAdjacentHTML(
       "afterend",
-      '<div class="item" data-type="map" data-url="https://tile.opentopomap.org/{z}/{x}/{y}.png" data-maxzoom="18" data-attribution="Kartendaten: © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap</a>(CC-BY-SA)">OpenTopoMap</div>'
+      '<div class="item" data-type="map" data-url="https://a.tile.opentopomap.org/{z}/{x}/{y}.png" data-maxzoom="18" data-attribution="Kartendaten: © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap</a>(CC-BY-SA)">OpenTopoMap</div>'
     );
 
     document

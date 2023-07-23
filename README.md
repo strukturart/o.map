@@ -15,6 +15,7 @@ O.Map is an openstreetmap app for KaiOs, it is a good companion for your next ou
 - Save your position
 - open .gpx files
 - open geoJSON files
+- follow path
 - search locations
 - rainradar
 - weather
@@ -22,11 +23,11 @@ O.Map is an openstreetmap app for KaiOs, it is a good companion for your next ou
 - tracking
 - draw track
 
+![image-1](/images/image-1.png)
 ![image-2](/images/image-2.png)
 ![image-2](/images/image-3.png)
 ![image-4](/images/image-4.png)
 ![image-5](/images/image-5.png)
-![image-6](/images/image-6.png)
 
 ## Maps
 
@@ -46,9 +47,8 @@ O.Map is an openstreetmap app for KaiOs, it is a good companion for your next ou
 - **key 1** start/stop tracking
 - **key 1 longpress** start tracking uploading /5min file to your osm account
 - **key 2** search
-- **key 3** open menu
+- **key enter** open menu
 - **key 4** auto center map
-- **key 5** save position or search result as marker on sd-card <br>
   to delete the marker open with 3 the menu select the marker and press long enter (+- 5sec)
 - **key 6** jump between loaded gpx tracks
 - **key 7** measure distance
