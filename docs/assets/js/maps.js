@@ -79,19 +79,6 @@ const maps = (() => {
     zoom_depth = 12;
   }
 
-  let caching_events = function () {
-    // Listen to cache hits and misses and spam the console
-    tilesLayer.on("tilecachehit", function (ev) {
-      // console.log("Cache hit: ", ev.url);
-    });
-    tilesLayer.on("tilecachemiss", function (ev) {
-      //console.log("Cache miss: ", ev.url);
-    });
-    tilesLayer.on("tilecacheerror", function (ev) {
-      // console.log("Cache error: ", ev.tile, ev.error);
-    });
-  };
-
   let caching_tiles = function () {
     // if (status.caching_tiles_started) return false;
     let swLat = map.getBounds()._southWest.lat;
@@ -159,7 +146,7 @@ const maps = (() => {
 
         document.activeElement.style.background = "black";
         document.activeElement.style.color = "white";
-        general.last_map = "";
+        general.last_map_url = "";
         helper.side_toaster("layer removed", 3000);
       }
       return false;
@@ -167,6 +154,9 @@ const maps = (() => {
     let useOnlyCache = false;
     if (localStorage.getItem("useOnlyCache") != null) {
       if (localStorage.getItem("useOnlyCache") == "true") {
+        setTimeout(() => {
+          helper.side_toaster("load only cached map data", 5000);
+        }, 10000);
         useOnlyCache = true;
       } else {
         useOnlyCache = false;
@@ -201,17 +191,19 @@ const maps = (() => {
       });
 
       map.addLayer(tilesLayer);
-      caching_events();
-      localStorage.setItem("last_map", url);
-      general.last_map = url;
+      localStorage.setItem("last_map_url", url);
+      general.last_map_url = url;
 
-      if (helper.isOnline == true) {
-        tilesLayer.on("tileerror", function (error, tile) {
+      tilesLayer.on("tileerror", function (error, tile) {
+        helper.side_toaster("error at loading map", 3000);
+        try {
           url = url.replace("{z}", "1");
           url = url.replace("{y}", "1");
           url = url.replace("{x}", "1");
-        });
-      }
+        } catch (e) {}
+      });
+
+      tilesLayer.on("tileloadstart", function (event) {});
 
       document.querySelector(".leaflet-control-attribution").style.display =
         "block";
@@ -219,7 +211,7 @@ const maps = (() => {
         setTimeout(function () {
           document.querySelector(".leaflet-control-attribution").style.display =
             "none";
-        }, 8000);
+        }, 10000);
       }
     }
     //overlayer
@@ -234,7 +226,6 @@ const maps = (() => {
 
       overlayer = L.tileLayer(url);
       map.addLayer(overlayer);
-      caching_events();
     }
 
     if (type == "layer") {
@@ -247,7 +238,6 @@ const maps = (() => {
 
         overlayer = L.tileLayer(url);
         map.addLayer(overlayer);
-        caching_events();
       }
     }
     //overpass

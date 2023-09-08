@@ -6,7 +6,8 @@
   "lang": "en-US",
   "start_url": "/index.html",
       "priority": "high",
-
+        "userAgentInfo": "o.map written by strukturart@gmail.com",
+      "origin": "app://o.map",
   "icons": [
     {
       "src": "/assets/icons/icon-56-56.png",
@@ -21,7 +22,7 @@
   ],
 
   "b2g_features": {
-    "version": "2.0.1",
+    "version": "2.0.2",
     "id": "o.map",
     "core": true,
     "categories": ["utilities"],

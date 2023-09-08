@@ -29,12 +29,6 @@ const settings = ((_) => {
     localStorage.setItem("osm-tag", document.getElementById("osm-tag").value);
 
     helper.side_toaster("saved successfully", 2000);
-    maps.addMap(
-      localStorage.getItem("last_map"),
-      localStorage.getItem("last_map_attribution"),
-      localStorage.getItem("last_map_max_zoom"),
-      localStorage.getItem("last_map_type")
-    );
 
     load_settings();
   };
@@ -107,6 +101,12 @@ const settings = ((_) => {
           ? JSON.parse(localStorage.getItem("tips_view"))
           : true,
     };
+    if (localStorage.getItem("useOnlyCache") == null) {
+      setting.useOnlyCache = false;
+    } else {
+      setting.useOnlyCache = localStorage.getItem("useOnlyCache");
+    }
+    console.log(setting);
 
     setting.tracking_screenlock
       ? (document.getElementById("screenlock-ckb").checked = true)

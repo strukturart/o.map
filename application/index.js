@@ -81,9 +81,18 @@ let general = {
   measurement_unit: "km",
   active_item: "",
   active_layer: [],
-  last_map:
-    localStorage.getItem("last_map") != null
-      ? localStorage.getItem("last_map")
+  last_map_max_zoom:
+    localStorage.getItem("last_map_max_zoom") != null
+      ? localStorage.getItem("last_map_max_zoom")
+      : 18,
+  last_map_type: "map",
+  last_map_attribution:
+    localStorage.getItem("last_map_attribution") != null
+      ? localStorage.getItem("last_map_attribution")
+      : "test",
+  last_map_url:
+    localStorage.getItem("last_map_url") != null
+      ? localStorage.getItem("last_map_url")
       : "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
 };
 
@@ -144,24 +153,10 @@ if ("b2g" in Navigator) {
 }
 
 //leaflet add basic map
-map = L.map("map-container", {
+map = new L.map("map-container", {
   zoomControl: false,
   dragging: false,
   keyboard: true,
-});
-
-map.on("load", function () {
-  maps.addMap(
-    general.last_map,
-    "Map data &copy; OpenStreetMap contributors, CC-BY-SA",
-    18,
-    "map"
-  );
-});
-
-map.on("tileerror", function (event) {
-  console.log("Tile load error:", event.tile.src, 2000);
-  helper.side_toaster("Tile load error:", 2000);
 });
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -384,6 +379,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
   jsonLayer.addTo(map);
 
+  maps.addMap(
+    general.last_map_url,
+    general.last_map_attribution,
+    general.last_map_max_zoom,
+    general.last_map_type
+  );
+
   //build menu
   let build_menu = function () {
     document.querySelector("div#tracksmarkers").innerHTML = "";
@@ -400,12 +402,7 @@ document.addEventListener("DOMContentLoaded", function () {
     );
     el.insertAdjacentHTML(
       "afterend",
-      '<div class="item" data-type="map" data-url="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png" data-maxzoom="18" data-attribution="Map data &copy; OpenStreetMap contributors, CC-BY-SA">Openstreetmap</div>'
-    );
-
-    el.insertAdjacentHTML(
-      "afterend",
-      '<div class="item" data-type="map" data-url="https://a.tile.opentopomap.org/{z}/{x}/{y}.png" data-maxzoom="18" data-attribution="Kartendaten: © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap</a>(CC-BY-SA)">OpenTopoMap</div>'
+      '<div class="item" data-type="map" data-url="https://a.tile.openstreetmap.de/{z}/{x}/{y}.png" data-maxzoom="18" data-attribution="Map data &copy; OpenStreetMap contributors, CC-BY-SA">Openstreetmap</div>'
     );
 
     document
@@ -435,6 +432,8 @@ document.addEventListener("DOMContentLoaded", function () {
   let find_gpx = function () {
     //KaiOS 2.x
     try {
+      let files = [];
+
       //search gpx
       let finder_gpx = new Applait.Finder({
         type: "sdcard",
@@ -442,27 +441,37 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       finder_gpx.search(".gpx");
-      finder_gpx.on("fileFound", function (file, fileinfo, storageName) {
-        document.getElementById("gpx-title").style.display = "block";
+      finder_gpx.on("searchComplete", function (needle, filematchcount) {
+        files.forEach((e) => {
+          console.log(e);
 
-        document
-          .querySelector("div#gpx")
-          .insertAdjacentHTML(
-            "afterend",
-            '<div class="item" data-map="gpx" data-filename="' +
-              fileinfo.name +
-              '" data-filepath="' +
-              fileinfo.path +
-              "/" +
-              fileinfo.name +
-              '">' +
-              fileinfo.name +
-              "</div>"
-          );
-        //load gpx file on start
-        if (fileinfo.name.substring(0, 1) == "_") {
-          module.loadGPX(fileinfo.path + "/" + fileinfo.name);
-        }
+          document
+            .querySelector("div#gpx")
+            .insertAdjacentHTML(
+              "afterend",
+              '<div class="item" data-map="gpx" data-filename="' +
+                e.name +
+                '" data-filepath="' +
+                e.path +
+                "/" +
+                e.name +
+                '">' +
+                e.name +
+                "</div>"
+            );
+          //load gpx file on start
+          if (e.name.substring(0, 1) == "_") {
+            module.loadGPX(fileinfo.path + "/" + fileinfo.name);
+          }
+        });
+      });
+
+      finder_gpx.on("fileFound", function (file, fileinfo, storageName) {
+        files.push({ name: fileinfo.name, path: fileinfo.path });
+        files.sort((a, b) => {
+          return b.name.localeCompare(a.name);
+        });
+        document.getElementById("gpx-title").style.display = "block";
       });
     } catch (e) {}
 
@@ -506,6 +515,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let find_geojson = function () {
     try {
+      let files = [];
       //search geojson
       let finder = new Applait.Finder({
         type: "sdcard",
@@ -513,30 +523,36 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       finder.search(".geojson");
 
-      finder.on("searchComplete", function (needle, filematchcount) {});
-      finder.on("fileFound", function (file, fileinfo, storageName) {
-        document.getElementById("tracks-title").style.display = "block";
+      finder.on("searchComplete", function (needle, filematchcount) {
+        files.forEach((e) => {
+          document
+            .querySelector("div#tracksmarkers")
+            .insertAdjacentHTML(
+              "afterend",
+              '<div class="item" data-map="geojson" data-filename="' +
+                e.name +
+                '" data-filepath="' +
+                e.path +
+                "/" +
+                e.name +
+                '">' +
+                e.name +
+                "</div>"
+            );
 
-        document
-          .querySelector("div#tracksmarkers")
-          .insertAdjacentHTML(
-            "afterend",
-            '<div class="item" data-map="geojson" data-filename="' +
-              fileinfo.name +
-              '" data-filepath="' +
-              fileinfo.path +
-              "/" +
-              fileinfo.name +
-              '">' +
-              fileinfo.name +
-              "</div>"
-          );
+          if (e.name.substring(0, 1) == "_") {
+            module.loadGeoJSON(e.path + "/" + e.name, false);
+          }
+          document.getElementById("tracks-title").style.display = "block";
+        });
+      });
+      finder.on("fileFound", function (file, fileinfo, storageName) {
+        files.push({ name: fileinfo.name, path: fileinfo.path });
+        files.sort((a, b) => {
+          return b.name.localeCompare(a.name);
+        });
 
         //load startup item
-
-        if (fileinfo.name.substring(0, 1) == "_") {
-          module.loadGeoJSON(fileinfo.path + "/" + fileinfo.name, false);
-        }
       });
     } catch (e) {}
 
@@ -951,7 +967,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     n.forEach(function (e) {
-      if (e.getAttribute("data-url") == general.last_map) {
+      if (e.getAttribute("data-url") == general.last_map_url) {
         e.style.background = "white";
         e.style.color = "black";
         e.classList.add("active-layer");
@@ -1845,10 +1861,10 @@ document.addEventListener("DOMContentLoaded", function () {
       general.step = 0.01;
     }
     if (zoom_level > 13) {
-      general.step = 0.005;
+      general.step = 0.004;
     }
     if (zoom_level > 14) {
-      general.step = 0.0025;
+      general.step = 0.002;
     }
     if (zoom_level > 15) {
       general.step = 0.001;
