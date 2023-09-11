@@ -339,7 +339,7 @@
         </div>
         <br />
         <button class="item" id="clear-cache" tabindex="8">
-          clear offline cache
+          clear <em></em> MB cached map data
         </button>
 
         <h2>connect with openstreetmap.org</h2>
@@ -382,6 +382,9 @@
         <button tabindex="12" class="item" id="load_settings_from_file">
           load settings
         </button>
+        <!--<button tabindex="12" class="item" id="load_map_data">
+          import map data
+        </button>-->
       </div>
 
       <div class="panel menu-box" name="Device position" id="coordinations">
@@ -719,7 +722,7 @@ Follow path        </button>
             </a>
           </li>
           <li><a href="https://opentopomap.org">opentopomap</a></li>
-          <li><a href="openweathermap.org">openweathermap.org</a></li>
+          <li><a href="https://openweathermap.org">openweathermap.org</a></li>
           <li>
             <a href="https://www.rainviewer.com/terms.html"
               >waether layer data collected by rainviewer.com</a
@@ -780,7 +783,7 @@ Follow path        </button>
     <script defer src="assets/js/leaflet.js"></script>
     <script defer src="assets/js/GeometryUtil.js"></script>
 
-    <script defer src="assets/js/pouchdb-7.2.1.min.js"></script>
+    <script src="assets/js/pouchdb_7.3.0_pouchdb.min.js"></script>
 
 
     <script defer src="assets/js/mustache.js"></script>

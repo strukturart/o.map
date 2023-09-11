@@ -314,7 +314,40 @@ const helper = (() => {
     };
   };
 
+  function calculateDatabaseSizeInMB(db) {
+    return db
+      .allDocs({ include_docs: true })
+      .then(function (result) {
+        var totalSizeBytes = 0;
+
+        result.rows.forEach(function (row) {
+          var doc = row.doc;
+
+          // Check if the document has attachments
+          if (doc._attachments) {
+            for (var attachmentName in doc._attachments) {
+              if (doc._attachments.hasOwnProperty(attachmentName)) {
+                var attachment = doc._attachments[attachmentName];
+                totalSizeBytes += attachment.length;
+              }
+            }
+          }
+        });
+
+        // Convert total size to megabytes
+        var totalSizeMB = totalSizeBytes / (1024 * 1024);
+        return totalSizeMB;
+      })
+      .catch(function (error) {
+        console.error("Error calculating database size:", error);
+        throw error;
+      });
+  }
+
+  // Usage:
+
   return {
+    calculateDatabaseSizeInMB,
     getManifest,
     toaster,
     add_script,

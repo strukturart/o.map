@@ -7,7 +7,7 @@
   "start_url": "/index.html",
       "priority": "high",
         "userAgentInfo": "o.map written by strukturart@gmail.com",
-      "origin": "app://o.map",
+
   "icons": [
     {
       "src": "/assets/icons/icon-56-56.png",

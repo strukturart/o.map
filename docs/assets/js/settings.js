@@ -101,6 +101,11 @@ const settings = ((_) => {
           ? JSON.parse(localStorage.getItem("tips_view"))
           : true,
     };
+    if (localStorage.getItem("useOnlyCache") == null) {
+      setting.useOnlyCache = false;
+    } else {
+      setting.useOnlyCache = localStorage.getItem("useOnlyCache");
+    }
     console.log(setting);
 
     setting.tracking_screenlock

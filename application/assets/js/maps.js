@@ -128,11 +128,85 @@ const maps = (() => {
     tilesLayer._db
       .destroy()
       .then(function (response) {
-        toaster("map cache deleted", 3000);
+        helper.side_toaster("map cache deleted", 3000);
       })
       .catch(function (err) {
         console.log(err);
       });
+  };
+
+  let export_db_callback = (f, a) => {
+    alert(f, a);
+  };
+
+  let export_db = function () {
+    let db = tilesLayer._db;
+
+    // Fetch all documents in the database
+    db.allDocs({ include_docs: true, attachments: true }, (error, doc) => {
+      if (error) console.error(error);
+      else {
+        let data = JSON.stringify(doc.rows.map(({ doc }) => doc));
+        helper.downloadFile("omap_map_export.json", data, export_db_callback);
+      }
+    });
+  };
+
+  let import_db = () => {
+    let file_reader = (r) => {
+      let reader = new FileReader();
+
+      reader.onerror = function (event) {
+        console.log("can't read file");
+        reader.abort();
+      };
+
+      reader.onloadend = function (event) {
+        let k = JSON.parse(reader.result);
+        let db = tilesLayer._db;
+
+        db.bulkDocs(
+          k,
+          { include_docs: true, attachments: true, conflicts: true },
+          (...args) => console.log("DONE", args)
+        )
+          .then((responses) => {
+            console.log("Documents inserted:", responses);
+          })
+          .catch((error) => {
+            console.error("Error inserting documents:", error);
+          });
+      };
+
+      reader.readAsText(r);
+    };
+
+    let cb = (r) => {
+      let sdcard = "";
+
+      try {
+        sdcard = navigator.getDeviceStorage("sdcard");
+      } catch (e) {}
+
+      if ("b2g" in navigator) {
+        try {
+          sdcard = navigator.b2g.getDeviceStorage("sdcard");
+        } catch (e) {}
+      }
+
+      let request = sdcard.get(r.name);
+
+      request.onsuccess = function () {
+        let data = this.result;
+
+        file_reader(data);
+      };
+
+      request.onerror = function (error) {
+        console.log(error);
+      };
+    };
+    helper.search_file("omap_map_export.json", cb);
   };
 
   let overlayer = "";
@@ -467,7 +541,7 @@ const maps = (() => {
             helper.allow_unsecure(
               "https://api.rainviewer.com/public/maps.json"
             );
-            toaster("Can't load weather data" + err, 3000);
+            helper.side_toaster("Can't load weather data" + err, 3000);
           }
         });
     }
@@ -486,5 +560,7 @@ const maps = (() => {
     caching_tiles,
     delete_cache,
     addMap,
+    export_db,
+    import_db,
   };
 })();

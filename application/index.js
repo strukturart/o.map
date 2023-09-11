@@ -357,35 +357,6 @@ document.addEventListener("DOMContentLoaded", function () {
       map.setView([mainmarker.device_lat, mainmarker.device_lng], 12);
     }, 1000);
   };
-  setTimeout(function () {
-    //get location if not an activity open url
-    document.querySelector("div#intro").style.display = "none";
-
-    build_menu();
-    module.startup_marker("", "add");
-    getLocation("init");
-    status.windowOpen = "map";
-    status.intro = false;
-  }, 5000);
-
-  //add group layers
-  map.addLayer(markers_group);
-  map.addLayer(overpass_group);
-  map.addLayer(measure_group);
-  map.addLayer(measure_group_path);
-  map.addLayer(tracking_group);
-  map.addLayer(gpx_group);
-  map.addLayer(geoJSON_group);
-
-  jsonLayer.addTo(map);
-
-  maps.addMap(
-    general.last_map_url,
-    general.last_map_attribution,
-    general.last_map_max_zoom,
-    general.last_map_type
-  );
-
   //build menu
   let build_menu = function () {
     document.querySelector("div#tracksmarkers").innerHTML = "";
@@ -423,6 +394,34 @@ document.addEventListener("DOMContentLoaded", function () {
     find_geojson();
     load_maps();
   };
+  setTimeout(function () {
+    //get location if not an activity open url
+    document.querySelector("div#intro").style.display = "none";
+
+    build_menu();
+    module.startup_marker("", "add");
+    getLocation("init");
+    status.windowOpen = "map";
+    status.intro = false;
+  }, 5000);
+
+  //add group layers
+  map.addLayer(markers_group);
+  map.addLayer(overpass_group);
+  map.addLayer(measure_group);
+  map.addLayer(measure_group_path);
+  map.addLayer(tracking_group);
+  map.addLayer(gpx_group);
+  map.addLayer(geoJSON_group);
+
+  jsonLayer.addTo(map);
+
+  maps.addMap(
+    general.last_map_url,
+    general.last_map_attribution,
+    general.last_map_max_zoom,
+    general.last_map_type
+  );
 
   //////////////////////////////////
   //READ GPX////////////////////////
@@ -443,8 +442,6 @@ document.addEventListener("DOMContentLoaded", function () {
       finder_gpx.search(".gpx");
       finder_gpx.on("searchComplete", function (needle, filematchcount) {
         files.forEach((e) => {
-          console.log(e);
-
           document
             .querySelector("div#gpx")
             .insertAdjacentHTML(
@@ -608,7 +605,7 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
           data = JSON.parse(reader.result);
         } catch (e) {
-          helper.toaster("JSON is not valid", 2000);
+          helper.side_toaster("JSON is not valid", 2000);
           return false;
         }
         data.forEach(function (key) {
@@ -997,6 +994,9 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   let open_finder = function () {
+    helper.calculateDatabaseSizeInMB(tilesLayer._db).then(function (sizeInMB) {
+      document.querySelector("#clear-cache em").innerText = sizeInMB.toFixed(2);
+    });
     settings.load_settings();
     finder_tabindex();
     document.querySelector("div#finder").style.display = "block";
@@ -2588,6 +2588,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (document.activeElement == document.getElementById("clear-cache")) {
           maps.delete_cache();
+          helper
+            .calculateDatabaseSizeInMB(tilesLayer._db)
+            .then(function (sizeInMB) {
+              document.querySelector("#clear-cache em").innerText =
+                sizeInMB.toFixed(2);
+            });
           break;
         }
 
@@ -2616,6 +2622,14 @@ document.addEventListener("DOMContentLoaded", function () {
           document.getElementById("load_settings_from_file")
         ) {
           settings.load_settings_from_file();
+
+          break;
+        }
+
+        if (
+          document.activeElement == document.getElementById("load_map_data")
+        ) {
+          maps.import_db();
 
           break;
         }
@@ -2721,6 +2735,9 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "5":
+        // maps.export_db();
+        //maps.import_db();
+
         break;
 
       case "6":
