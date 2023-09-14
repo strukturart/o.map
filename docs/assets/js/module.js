@@ -2,12 +2,16 @@ const module = (() => {
   let uniqueId =
     Date.now().toString(36) + Math.random().toString(36).substring(2);
 
-  let pushLocalNotification = function (title, body) {
+  let pushLocalNotification = function (title, text) {
     window.Notification.requestPermission().then((result) => {
-      var notification = new window.Notification(title, {
-        body: body,
-        //requireInteraction: true,
-      });
+      const options = {
+        body: text,
+        mozbehavior: {
+          vibrationPattern: [30, 200, 30],
+        },
+      };
+
+      var notification = new window.Notification(title, options);
 
       notification.onerror = function (err) {
         console.log(err);
@@ -650,6 +654,12 @@ const module = (() => {
     return togpx(e, option);
   };
 
+  function isDivisible(number, divisor) {
+    console.log(number, divisor);
+    console.log(number % divisor);
+    return number % divisor === 0;
+  }
+
   //tool to measure distance
 
   let popup_option = {
@@ -757,7 +767,8 @@ const module = (() => {
           tracking_timestamp = [];
         }
       }
-
+      let lastIntegerPart = 0;
+      k = 0.8;
       tracking_interval = setInterval(function () {
         if (mainmarker.accuracy > 10000) return false;
         // Only record data if accuracy is high enough
@@ -845,14 +856,48 @@ const module = (() => {
               document.querySelector("#tracking-speed-average-time").innerText =
                 d;
             }
-            /*
-            let d = e.target.get_duration_string(
-              e.target.get_total_time(),
-              false
-            );
-            */
+
             document.querySelector("#tracking-moving-time span").innerText =
               format_ms(e.target.get_total_time());
+
+            //tracking notification
+
+            //distance
+
+            if (setting.tracking_notification_distance > 0) {
+              // if (calcDistance(polyline_tracking) < 1) return false;
+
+              const distance = Math.floor(calcDistance(polyline_tracking));
+              // Check if the integer part has changed or if the interval missed an integer
+              //let distance = k++;
+              //distance = Math.floor(distance);
+              if (
+                isDivisible(
+                  distance,
+                  Number(setting.tracking_notification_distance)
+                ) &&
+                distance !== lastIntegerPart
+              ) {
+                // If the integer part has changed or the interval missed an integer
+                // Trigger the notification
+                module.pushLocalNotification("o.map", "o.map distance");
+                // Update the last seen integer part
+                lastIntegerPart = distance;
+              }
+            }
+
+            //time
+            if (setting.tracking_notification_time > 0) {
+              return;
+              if (
+                isDivisible(
+                  Math.round(e.target.get_total_time() / 1000),
+                  setting.tracking_notification_time * 60
+                )
+              ) {
+                module.pushLocalNotification("o.map", "o.map duration");
+              }
+            }
           });
         }
 

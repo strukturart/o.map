@@ -2735,6 +2735,7 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "5":
+        module.pushLocalNotification("test", "test");
         // maps.export_db();
         //maps.import_db();
 

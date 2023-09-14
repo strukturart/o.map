@@ -21,6 +21,17 @@ const settings = ((_) => {
       "cache-zoom",
       document.getElementById("cache-zoom").value
     );
+
+    localStorage.setItem(
+      "tracking-notification-time",
+      document.getElementById("tracking-notification-time").value
+    );
+
+    localStorage.setItem(
+      "tracking-notification-distance",
+      document.getElementById("tracking-notification-distance").value
+    );
+
     //add a slash to the path
     let f = document.getElementById("export-path").value;
     if (f.substr(f.length - 1) != "/") f = f + "/";
@@ -59,6 +70,13 @@ const settings = ((_) => {
 
       cache_time: localStorage["cache-time"] || "10",
       cache_zoom: localStorage["cache-zoom"] || "12",
+
+      tracking_notification_distance:
+        localStorage["tracking-notification-distance"] || 0,
+
+      tracking_notification_time:
+        localStorage["tracking-notification-time"] || 0,
+
       openweather_api: localStorage.getItem("owm-key"),
       ipbase_api: localStorage.getItem("ipbase-key")
         ? localStorage.getItem("ipbase-key")
@@ -101,12 +119,6 @@ const settings = ((_) => {
           ? JSON.parse(localStorage.getItem("tips_view"))
           : true,
     };
-    if (localStorage.getItem("useOnlyCache") == null) {
-      setting.useOnlyCache = false;
-    } else {
-      setting.useOnlyCache = localStorage.getItem("useOnlyCache");
-    }
-    console.log(setting);
 
     setting.tracking_screenlock
       ? (document.getElementById("screenlock-ckb").checked = true)
@@ -164,6 +176,11 @@ const settings = ((_) => {
     document.getElementById("export-path").value = setting.export_path;
     document.getElementById("osm-tag").value = setting.osm_tag;
 
+    document.getElementById("tracking-notification-time").value =
+      setting.tracking_notification_time;
+    document.getElementById("tracking-notification-distance").value =
+      setting.tracking_notification_distance;
+
     ///show / hidde scale
 
     if (scale != undefined) scale.remove();
@@ -183,6 +200,12 @@ const settings = ((_) => {
     }
 
     setting.scale ? scale.addTo(map) : scale.remove();
+
+    document
+      .querySelectorAll("#tracking-notification-distance option")
+      .forEach((e, i) => {
+        e.innerText = i + general.measurement_unit;
+      });
   };
 
   let load_settings_from_file = function () {
@@ -221,6 +244,10 @@ const settings = ((_) => {
             document.getElementById("cache-zoom").value = setting.cache_zoom;
             document.getElementById("export-path").value = setting.export_path;
             document.getElementById("osm-tag").value = setting.osm_tag;
+            document.getElementById("tracking-notification-time").value =
+              setting.tracking_notification_time;
+            document.getElementById("tracking-notification-distance").value =
+              setting.tracking_notification_distance;
 
             helper.side_toaster(
               "the settings were loaded from the file, if you want to use them permanently don't forget to save.",
@@ -272,6 +299,13 @@ const settings = ((_) => {
                         setting.export_path;
                       document.getElementById("osm-tag").value =
                         setting.osm_tag;
+
+                      document.getElementById(
+                        "tracking-notification-time"
+                      ).value = setting.tracking_notification_time;
+                      document.getElementById(
+                        "tracking-notification-distance"
+                      ).value = setting.tracking_notification_distance;
 
                       helper.side_toaster(
                         "the settings were loaded from the file, if you want to use them permanently don't forget to save.",
