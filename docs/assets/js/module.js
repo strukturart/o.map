@@ -556,7 +556,7 @@ const module = (() => {
     }
     if (general.measurement_unit == "mil") {
       dis = dis / 1000;
-      let dis = dis / 1.60934;
+      dis = dis / 1.60934;
     }
     return dis;
   };
@@ -617,32 +617,38 @@ const module = (() => {
   ////PATH & TRACKING
   ///////////////////
 
-  //calculation of altitude ascents and descents
-  let elevation = function (t) {
-    let up_e = 0;
-    let down_e = 0;
+  //calc gain & loss
+  function calculateGainAndLoss(altitudes, threshold) {
+    let gain = 0;
+    let loss = 0;
+    let previousValidAltitude = null;
 
-    for (let i = 1; i < t.length; i++) {
-      if (t[i] === null || t[i - 1] === null) {
-        // Skip null values
+    for (let i = 0; i < altitudes.length; i++) {
+      const currentAltitude = altitudes[i];
+
+      // Skip null or inaccurate altitude values
+      if (currentAltitude === null || isNaN(currentAltitude)) {
         continue;
       }
 
-      const diff = t[i] - t[i - 1];
-      if (Math.abs(diff) > 15) {
-        // The GPS data is too inaccurate; skip this point
-        continue;
+      if (previousValidAltitude !== null) {
+        const altitudeDifference = currentAltitude - previousValidAltitude;
+
+        if (Math.abs(altitudeDifference) <= threshold) {
+          if (altitudeDifference > 0) {
+            gain += altitudeDifference;
+          } else {
+            loss -= altitudeDifference; // Convert negative difference to positive for loss
+          }
+        }
       }
-      if (diff > 0) {
-        up_e += diff;
-      } else if (diff < 0) {
-        down_e -= diff;
-      }
+
+      previousValidAltitude = currentAltitude;
     }
-    let r = { up: up_e, down: down_e };
 
-    return r;
-  };
+    return { gain, loss };
+  }
+
   //json to gpx
   let toGPX = function () {
     let e = tracking_group.toGeoJSON();
@@ -655,8 +661,6 @@ const module = (() => {
   };
 
   function isDivisible(number, divisor) {
-    console.log(number, divisor);
-    console.log(number % divisor);
     return number % divisor === 0;
   }
 
@@ -686,6 +690,45 @@ const module = (() => {
   let polyline_tracking = L.polyline(tracking_latlngs, path_option).addTo(
     tracking_group
   );
+
+  let update_tracking_view = () => {
+    document.querySelector("#tracking-view .duration div").innerText =
+      tracking.duration;
+
+    document.querySelector("#tracking-view .distance div").innerText =
+      tracking.distance;
+
+    document.querySelector("#tracking-view .gain div").innerText = isNaN(
+      tracking.gain
+    )
+      ? "-"
+      : tracking.gain;
+
+    document.querySelector("#tracking-view .loss div").innerText = isNaN(
+      tracking.loss
+    )
+      ? "-"
+      : tracking.loss;
+
+    document.querySelector("#tracking-view .altitude div").innerText = isNaN(
+      tracking.altitude
+    )
+      ? "-"
+      : tracking.altitude;
+
+    document.querySelector("#tracking-view .average-speed div").innerText =
+      isNaN(tracking.speed_average) ? "-" : tracking.speed_average;
+
+    document.querySelector("#tracking-evo-down span").innerText = tracking.loss;
+    document.querySelector("#tracking-evo-up span").innerText = tracking.gain;
+    document.getElementById("tracking-altitude").innerText = tracking.altitude;
+
+    document.querySelector("#tracking-speed-average-time").innerText =
+      tracking.speed_average;
+
+    document.querySelector("div#tracking-distance").innerText =
+      tracking.distance;
+  };
 
   const measure_distance = function (action) {
     if (action == "destroy") {
@@ -730,7 +773,6 @@ const module = (() => {
       status.tracking_running = true;
 
       if ("requestWakeLock" in navigator) {
-        // gps_lock = window.navigator.requestWakeLock("gps");
         if (setting.tracking_screenlock) screenWakeLock("lock", "screen");
       }
 
@@ -768,18 +810,17 @@ const module = (() => {
         }
       }
       let lastIntegerPart = 0;
-      k = 0.8;
       tracking_interval = setInterval(function () {
-        if (mainmarker.accuracy > 10000) return false;
         // Only record data if accuracy is high enough
+        if (mainmarker.accuracy > 10000) return false;
 
         //store time
         let ts = new Date();
         tracking_timestamp.push(ts.toISOString());
         //store altitude
-        let alt = 0;
-
+        let alt = "";
         if (mainmarker.device_alt) {
+          if (isNaN(mainmarker.device_alt)) return false;
           alt = mainmarker.device_alt;
         }
 
@@ -808,6 +849,8 @@ const module = (() => {
             JSON.stringify(tracking_cache)
           );
 
+          const { gain, loss } = calculateGainAndLoss(tracking_altitude, 100);
+
           //get tracking data to display in view
           new L.GPX(toGPX(), { async: true }).on("loaded", function (e) {
             //meter
@@ -815,53 +858,51 @@ const module = (() => {
             if (general.measurement_unit == "km") {
               // Calculate the distance along the polyline
               let a = calcDistance(polyline_tracking);
-              document.querySelector("div#tracking-distance").innerText =
-                a.toFixed(2) + general.measurement_unit;
+              tracking.distance = a.toFixed(2) + general.measurement_unit;
 
+              //gain
               let b = e.target._info.elevation.gain;
-              document.querySelector("#tracking-evo-up span").innerText =
-                parseInt(elevation(tracking_altitude).up);
+              tracking.gain = gain;
 
+              //loss
               let c = e.target._info.elevation.loss;
-              document.querySelector("#tracking-evo-down span").innerText =
-                parseInt(elevation(tracking_altitude).down);
+              tracking.loss = loss;
+              //alt
 
-              document.getElementById("tracking-altitude").innerText =
-                mainmarker.device_alt;
+              tracking.altitude = mainmarker.device_alt;
 
+              //speed
               let d = e.target.get_moving_speed();
               document.querySelector("#tracking-speed-average-time").innerText =
-                d.toFixed(2);
+                tracking.speed_average = d.toFixed(2);
             }
             //miles
             if (general.measurement_unit == "mil") {
               // Calculate the distance along the polyline
               let a = calcDistance(polyline_tracking);
-              document.querySelector("div#tracking-distance").innerText =
-                a.toFixed(2) + general.measurement_unit;
+              tracking.distance = a.toFixed(2) + general.measurement_unit;
 
+              //gain
               let b = e.target.get_elevation_gain_imp();
-              document.querySelector("#tracking-evo-up span").innerText =
-                b.toFixed(2);
+              tracking.gain = b.toFixed(2);
 
+              //loss
               let c = e.target.get_elevation_loss_imp();
-              document.querySelector("#tracking-evo-down span").innerText =
-                c.toFixed(2);
+              tracking.loss = c.toFixed(2);
 
-              document.getElementById("tracking-altitude").innerText =
-                mainmarker.device_alt * 3.280839895;
+              //alt
+              tracking.altitude = mainmarker.device_alt * 3.280839895;
 
+              //speed
               let d = e.target.get_moving_speed_imp();
-              d ? d.toFixed(2) : "-";
-              document.querySelector("#tracking-speed-average-time").innerText =
-                d;
+              tracking.speed_average = d.toFixed(2);
             }
 
             document.querySelector("#tracking-moving-time span").innerText =
               format_ms(e.target.get_total_time());
+            tracking.duration = format_ms(e.target.get_total_time());
 
             //tracking notification
-
             //distance
 
             if (setting.tracking_notification_distance > 0) {
@@ -880,7 +921,10 @@ const module = (() => {
               ) {
                 // If the integer part has changed or the interval missed an integer
                 // Trigger the notification
-                module.pushLocalNotification("o.map", "o.map distance");
+                module.pushLocalNotification(
+                  "o.map",
+                  "o.map distance " + tracking.distance
+                );
                 // Update the last seen integer part
                 lastIntegerPart = distance;
               }
@@ -888,14 +932,16 @@ const module = (() => {
 
             //time
             if (setting.tracking_notification_time > 0) {
-              return;
               if (
                 isDivisible(
                   Math.round(e.target.get_total_time() / 1000),
                   setting.tracking_notification_time * 60
                 )
               ) {
-                module.pushLocalNotification("o.map", "o.map duration");
+                module.pushLocalNotification(
+                  "o.map",
+                  "o.map duration " + tracking.duration
+                );
               }
             }
           });
@@ -926,6 +972,8 @@ const module = (() => {
           clearInterval(tracking_interval);
           if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
         }
+
+        update_tracking_view();
       }, 10000);
     }
 

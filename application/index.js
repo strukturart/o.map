@@ -119,6 +119,8 @@ let status = {
   select_gpx: false,
 };
 
+let tracking = {};
+
 if (!navigator.geolocation) {
   helper.toaster("Your device does't support geolocation!", 2000);
 }
@@ -2298,6 +2300,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (status.windowOpen != "map") {
           document.querySelector("div#finder").style.display = "none";
           document.querySelector("div#markers-option").style.display = "none";
+          document.getElementById("tracking-view").style.display = "none";
+
           status.windowOpen = "map";
           status.marker_selection = false;
           document.activeElement.blur();
@@ -2735,9 +2739,13 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "5":
-        module.pushLocalNotification("test", "test");
         // maps.export_db();
         //maps.import_db();
+
+        if (status.tracking_running) {
+          document.getElementById("tracking-view").style.display = "flex";
+          status.windowOpen = "trackingView";
+        }
 
         break;
 

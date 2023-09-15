@@ -37,6 +37,15 @@
       {{/data}}
     </script>
 
+    <div id="tracking-view" class="width-100 flex">
+      <div class="width-50 flex distance justify-content-center align-item-center"><div>000</div><span>Distance</span></div>
+      <div class="width-50 flex justify-content-center align-item-center duration"><div></div><span>Duration</span></div>
+      <div class="width-50 flex justify-content-center align-item-center average-speed"><div></div><span>Average speed</span></div>
+      <div class="width-50 flex justify-content-center align-item-center altitude"><div></div><span>Altitude</span></div>
+      <div class="width-50 flex justify-content-center align-item-center gain"><div></div><span>Gain</span></div>
+      <div class="width-50 flex justify-content-center align-item-center loss"><div></div><span>Loss</span></div>
+    </div>
+
     <div id="toast" class="width-100"></div>
     <div id="side-toast"></div>
 
@@ -814,6 +823,7 @@ Follow path        </button>
       </div>
 
       <div class="panel item menu-box" id="kaios-ads" name="KaiOsAds"></div>
+
     </div>
     <script src="assets/js/dayjs.js"></script>
 
@@ -831,8 +841,7 @@ Follow path        </button>
     <script defer src="assets/js/olc.js"></script>
     <script defer src="assets/js/leaflet.js"></script>
     <script defer src="assets/js/GeometryUtil.js"></script>
-
-    <script src="assets/js/pouchdb_7.3.0_pouchdb.min.js"></script>
+    <script defer src="assets/js/pouchdb_7.3.0_pouchdb.min.js"></script>
 
 
     <script defer src="assets/js/mustache.js"></script>
