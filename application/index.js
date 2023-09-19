@@ -460,7 +460,7 @@ document.addEventListener("DOMContentLoaded", function () {
             );
           //load gpx file on start
           if (e.name.substring(0, 1) == "_") {
-            module.loadGPX(fileinfo.path + "/" + fileinfo.name);
+            module.loadGPX(e.path + "/" + e.name);
           }
         });
       });
@@ -2741,7 +2741,6 @@ document.addEventListener("DOMContentLoaded", function () {
       case "5":
         // maps.export_db();
         //maps.import_db();
-
         if (status.tracking_running) {
           document.getElementById("tracking-view").style.display = "flex";
           status.windowOpen = "trackingView";

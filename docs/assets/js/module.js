@@ -1,11 +1,31 @@
 const module = (() => {
+  if (navigator.getBattery) {
+    let battery_memory = 1;
+    navigator.getBattery().then(function (battery) {
+      battery.addEventListener("levelchange", function () {
+        if (battery_memory < battery.level) return false;
+        if (battery.level <= 0.3) {
+          module.pushLocalNotification(
+            "battery is weak",
+            "",
+            "/assets/image/battery.png"
+          );
+
+          battery_memory = battery.level;
+        }
+      });
+    });
+  }
+
   let uniqueId =
     Date.now().toString(36) + Math.random().toString(36).substring(2);
 
-  let pushLocalNotification = function (title, text) {
+  let kk = "/assets/image/battery.png";
+  let pushLocalNotification = function (title, text, icon) {
     window.Notification.requestPermission().then((result) => {
       const options = {
         body: text,
+        icon: icon,
         mozbehavior: {
           vibrationPattern: [30, 200, 30],
         },
@@ -814,6 +834,15 @@ const module = (() => {
         // Only record data if accuracy is high enough
         if (mainmarker.accuracy > 10000) return false;
 
+        //only record when  movment
+        if (
+          tracking_cache.length > 0 &&
+          tracking_cache[tracking_cache.length - 1].lat ==
+            mainmarker.device_lat &&
+          tracking_cache[tracking_cache.length - 1].lng == mainmarker.device_lng
+        )
+          return false;
+
         //store time
         let ts = new Date();
         tracking_timestamp.push(ts.toISOString());
@@ -849,7 +878,7 @@ const module = (() => {
             JSON.stringify(tracking_cache)
           );
 
-          const { gain, loss } = calculateGainAndLoss(tracking_altitude, 100);
+          const { gain, loss } = calculateGainAndLoss(tracking_altitude, 50);
 
           //get tracking data to display in view
           new L.GPX(toGPX(), { async: true }).on("loaded", function (e) {
@@ -861,11 +890,11 @@ const module = (() => {
               tracking.distance = a.toFixed(2) + general.measurement_unit;
 
               //gain
-              let b = e.target._info.elevation.gain;
+              let b = gain;
               tracking.gain = gain;
 
               //loss
-              let c = e.target._info.elevation.loss;
+              let c = loss;
               tracking.loss = loss;
               //alt
 
@@ -883,11 +912,13 @@ const module = (() => {
               tracking.distance = a.toFixed(2) + general.measurement_unit;
 
               //gain
-              let b = e.target.get_elevation_gain_imp();
+              let b = gain;
+              b = b * 3.280839895;
               tracking.gain = b.toFixed(2);
 
               //loss
-              let c = e.target.get_elevation_loss_imp();
+              let c = loss;
+              c = c * 3.280839895;
               tracking.loss = c.toFixed(2);
 
               //alt

@@ -47,6 +47,7 @@ body {
 
 body.screenOff {
   filter: brightness(0);
+  overflow: hidden;
 }
 
 kbd {
