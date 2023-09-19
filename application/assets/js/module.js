@@ -87,6 +87,60 @@ const module = (() => {
     return result;
   };
 
+  var colors = ["blue", "green", "yellow", "red", "black"];
+
+  let hotline = (data) => {
+    // Clear the existing polylines from the group
+    hotline_group.clearLayers();
+
+    // Find the minimum and maximum elevations in the data
+    const minElevation = Math.min(...data.map((coord) => coord.alt));
+    const maxElevation = Math.max(...data.map((coord) => coord.alt));
+
+    // Loop through the coordinates using forEach
+    data.forEach(function (coord, index, array) {
+      if (index < array.length - 1) {
+        var segmentCoords = [
+          [coord.lat, coord.lng],
+          [array[index + 1].lat, array[index + 1].lng],
+        ];
+
+        var altitude = coord.alt;
+
+        // Calculate the percentage of elevation within the range
+        const elevationPercent =
+          (altitude - minElevation) / (maxElevation - minElevation);
+
+        // Interpolate color based on elevation percentage using Chroma.js
+        const color = chroma.scale(colors).mode("lab")(elevationPercent).hex();
+
+        L.polyline(segmentCoords, { color: color }).addTo(hotline_group);
+      }
+    });
+    setTimeout(() => {
+      hotline_group.bringToFront();
+    }, 1000);
+  };
+
+  //parse gpx
+
+  let parseGPX = function (gpxData) {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(gpxData, "text/xml");
+    const waypoints = xmlDoc.querySelectorAll("trkpt");
+
+    const latLngAltData = [];
+
+    waypoints.forEach(function (waypoint) {
+      const lat = parseFloat(waypoint.getAttribute("lat"));
+      const lng = parseFloat(waypoint.getAttribute("lon"));
+      const ele = parseFloat(waypoint.querySelector("ele").textContent);
+
+      latLngAltData.push({ lat: lat, lng: lng, alt: ele });
+    });
+
+    return latLngAltData;
+  };
   /////////////////////////
   /////Load GPX///////////
   ///////////////////////
@@ -138,7 +192,10 @@ const module = (() => {
         };
 
         reader.onloadend = function (event) {
-          var gpx = reader.result; // URL to your GPX file or the GPX itself
+          var gpx = reader.result;
+
+          // let a = parseGPX(gpx);
+          // hotline(a);
 
           new L.GPX(gpx, {
             async: true,
@@ -260,10 +317,32 @@ const module = (() => {
         //to do if geojson is marker add to  marker_array[]
         //https://blog.codecentric.de/2018/06/leaflet-geojson-daten/
         L.geoJSON(geojson_data, {
-          onEachFeature: function (feature, layer) {
+          style: function (feature) {
+            // Default values if not defined in the GeoJSON file
+            var color = "black"; // Default line color
+            var weight = 0.5; // Default line width
+
+            // Check if the style properties are defined in the GeoJSON
+            if (feature.properties.stroke) {
+              color = feature.properties.stroke; // Use "stroke" property for line color
+            }
+
+            if (feature.properties["stroke-width"]) {
+              weight = feature.properties["stroke-width"];
+            }
+
+            return {
+              color: color, // Line color
+              weight: weight, // Line width
+            };
+          },
+
+          onEachFeature: function (feature) {
             if (feature.geometry != null) {
               let p = feature.geometry.coordinates[0];
-              map.flyTo([p[1], p[0]]);
+              try {
+                map.flyTo([p[1], p[0]]);
+              } catch (e) {}
             }
             //routing data
             if (feature.properties.segments != undefined) {
@@ -272,10 +351,10 @@ const module = (() => {
               }
             }
           },
+
           // Marker Icon
           pointToLayer: function (feature, latlng) {
             let t = L.marker(latlng);
-            //to do
             if (feature.properties.hasOwnProperty("popup")) {
               t.bindPopup(feature.properties.popup, module.popup_option);
             }
@@ -422,6 +501,7 @@ const module = (() => {
     if (gpx_selection_count > gpx_selection.length - 1) gpx_selection_count = 0;
     map.fitBounds(gpx_selection[gpx_selection_count].getBounds());
     let m = gpx_selection[gpx_selection_count].getLayers();
+
     const keys = Object.keys(m[0]._layers);
     const firstKey = keys[0];
     general.gpx_selection_latlng = m[0]._layers[firstKey]._latlngs;
@@ -461,6 +541,7 @@ const module = (() => {
     let n = gpx_selection_info.distance / 1000;
     n = n.toFixed(2);
     document.getElementById("gpx-distance").innerText = n;
+    gpx_string = gpx_selection[gpx_selection_count]._gpx;
   };
 
   let closest_average = [];
@@ -851,9 +932,8 @@ const module = (() => {
         if (mainmarker.device_alt) {
           if (isNaN(mainmarker.device_alt)) return false;
           alt = mainmarker.device_alt;
+          tracking_altitude.push(alt);
         }
-
-        tracking_altitude.push(alt);
 
         polyline_tracking.addLatLng([
           mainmarker.device_lat,
@@ -867,6 +947,12 @@ const module = (() => {
           alt: alt,
           timestamp: ts.toISOString(),
         });
+
+        try {
+          hotline(tracking_cache);
+        } catch (e) {
+          console.log(e);
+        }
 
         // Update the view with tracking data
 
@@ -1100,6 +1186,7 @@ const module = (() => {
   };
 
   return {
+    hotline,
     convert_units,
     set_f_upd_markers,
     select_marker,
@@ -1121,5 +1208,6 @@ const module = (() => {
     get_closest_point,
     pushLocalNotification,
     uniqueId,
+    parseGPX,
   };
 })();

@@ -14,12 +14,14 @@ let measure_group = new L.FeatureGroup();
 let tracking_group = new L.FeatureGroup();
 let gpx_group = new L.FeatureGroup();
 let geoJSON_group = new L.FeatureGroup();
+var hotline_group = new L.FeatureGroup();
 
 var jsonLayer = L.geoJSON("", { color: "red" });
 let map;
 let tracking_timestamp = [];
 let myMarker;
 let gpx_selection_info = {};
+let gpx_string;
 let tilesLayer = "";
 let n;
 
@@ -89,7 +91,7 @@ let general = {
   last_map_attribution:
     localStorage.getItem("last_map_attribution") != null
       ? localStorage.getItem("last_map_attribution")
-      : "test",
+      : "",
   last_map_url:
     localStorage.getItem("last_map_url") != null
       ? localStorage.getItem("last_map_url")
@@ -415,6 +417,7 @@ document.addEventListener("DOMContentLoaded", function () {
   map.addLayer(tracking_group);
   map.addLayer(gpx_group);
   map.addLayer(geoJSON_group);
+  map.addLayer(hotline_group);
 
   jsonLayer.addTo(map);
 
@@ -996,9 +999,6 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   let open_finder = function () {
-    helper.calculateDatabaseSizeInMB(tilesLayer._db).then(function (sizeInMB) {
-      document.querySelector("#clear-cache em").innerText = sizeInMB.toFixed(2);
-    });
     settings.load_settings();
     finder_tabindex();
     document.querySelector("div#finder").style.display = "block";
@@ -1020,6 +1020,9 @@ document.addEventListener("DOMContentLoaded", function () {
         openweather_callback
       );
     }
+    helper.calculateDatabaseSizeInMB(tilesLayer._db).then(function (sizeInMB) {
+      document.querySelector("#clear-cache em").innerText = sizeInMB.toFixed(2);
+    });
   };
 
   //////////////////////////
@@ -1537,7 +1540,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       //custom maps and layers from json file
       if (document.activeElement.classList.contains("active-layer")) {
-        maps.addMap("");
+        maps.addMap("", "", "", "");
 
         return false;
       }
@@ -2225,6 +2228,10 @@ document.addEventListener("DOMContentLoaded", function () {
         window.close();
         break;
 
+      case "6":
+        module.hotline(module.parseGPX(gpx_string));
+        break;
+
       case "1":
         if (status.windowOpen == "map") {
           if (status.tracking_running) {
@@ -2750,6 +2757,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "6":
         module.select_gpx();
+
         break;
 
       case "7":

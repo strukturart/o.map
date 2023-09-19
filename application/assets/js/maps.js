@@ -221,6 +221,11 @@ const maps = (() => {
         document.activeElement.style.background = "black";
         document.activeElement.style.color = "white";
         general.last_map_url = "";
+        localStorage.setItem("last_map_type", "");
+        localStorage.setItem("last_map_attribution", "");
+        localStorage.setItem("last_map_max_zoom", "");
+        localStorage.setItem("last_map_url", "");
+
         helper.side_toaster("layer removed", 3000);
       }
       return false;
