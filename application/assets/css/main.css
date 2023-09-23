@@ -47,7 +47,16 @@ body {
 
 body.screenOff {
   filter: brightness(0);
+
   overflow: hidden;
+  max-height: 100vh;
+}
+
+html.screenOff {
+  filter: brightness(0);
+
+  overflow: hidden;
+  max-height: 100vh;
 }
 
 kbd {
@@ -380,7 +389,7 @@ div#side-toast {
   overflow: none;
   background: orange;
   color: white;
-  z-index: 10;
+  z-index: 100;
   padding: 8px;
   top: 70vh;
   border-bottom-right-radius: 15px;

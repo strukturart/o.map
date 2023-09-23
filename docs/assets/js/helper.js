@@ -1,4 +1,8 @@
 const helper = (() => {
+  if (window.NodeList && !NodeList.prototype.forEach) {
+    NodeList.prototype.forEach = Array.prototype.forEach;
+  }
+
   let isOnline = function () {
     var xhttp = new XMLHttpRequest({
       mozSystem: true,
@@ -344,9 +348,56 @@ const helper = (() => {
       });
   }
 
+  //bottom bar
+  function bottom_bar(left, center, right) {
+    document.querySelector("div#bottom-bar div#button-left").textContent = left;
+    document.querySelector("div#bottom-bar div#button-center").textContent =
+      center;
+    document.querySelector("div#bottom-bar div#button-right").textContent =
+      right;
+
+    if (left == "" && center == "" && right == "") {
+      document.querySelector("div#bottom-bar").style.display = "none";
+    } else {
+      document.querySelector("div#bottom-bar").style.display = "block";
+    }
+  }
+
+  //top bar
+  function top_bar(left, center, right) {
+    document.querySelector("div#top-bar div.button-left").textContent = left;
+    document.querySelector("div#top-bar div.button-center").textContent =
+      center;
+    document.querySelector("div#top-bar div.button-right").textContent = right;
+
+    if (left == "" && center == "" && right == "") {
+      document.querySelector("div#top-bar").style.display = "none";
+    } else {
+      document.querySelector("div#top-bar").style.display = "block";
+    }
+  }
+
+  function screenWakeLock(param, lock_type) {
+    let lock;
+    if (window.navigator.requestWakeLock == "is not a function") return false;
+    if (param == "lock") {
+      lock = window.navigator.requestWakeLock(lock_type);
+      return false;
+    }
+
+    if (param == "unlock") {
+      if (lock.topic == lock_type) {
+        lock.unlock();
+      }
+    }
+  }
+
   // Usage:
 
   return {
+    bottom_bar,
+    top_bar,
+    screenWakeLock,
     calculateDatabaseSizeInMB,
     getManifest,
     toaster,
@@ -361,49 +412,3 @@ const helper = (() => {
     list_files,
   };
 })();
-
-if (window.NodeList && !NodeList.prototype.forEach) {
-  NodeList.prototype.forEach = Array.prototype.forEach;
-}
-
-//bottom bar
-function bottom_bar(left, center, right) {
-  document.querySelector("div#bottom-bar div#button-left").textContent = left;
-  document.querySelector("div#bottom-bar div#button-center").textContent =
-    center;
-  document.querySelector("div#bottom-bar div#button-right").textContent = right;
-
-  if (left == "" && center == "" && right == "") {
-    document.querySelector("div#bottom-bar").style.display = "none";
-  } else {
-    document.querySelector("div#bottom-bar").style.display = "block";
-  }
-}
-
-//top bar
-function top_bar(left, center, right) {
-  document.querySelector("div#top-bar div.button-left").textContent = left;
-  document.querySelector("div#top-bar div.button-center").textContent = center;
-  document.querySelector("div#top-bar div.button-right").textContent = right;
-
-  if (left == "" && center == "" && right == "") {
-    document.querySelector("div#top-bar").style.display = "none";
-  } else {
-    document.querySelector("div#top-bar").style.display = "block";
-  }
-}
-
-function screenWakeLock(param, lock_type) {
-  let lock;
-  if (window.navigator.requestWakeLock == "is not a function") return false;
-  if (param == "lock") {
-    lock = window.navigator.requestWakeLock(lock_type);
-    return false;
-  }
-
-  if (param == "unlock") {
-    if (lock.topic == lock_type) {
-      lock.unlock();
-    }
-  }
-}
