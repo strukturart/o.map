@@ -20,15 +20,11 @@ const module = (() => {
   let uniqueId =
     Date.now().toString(36) + Math.random().toString(36).substring(2);
 
-  let kk = "/assets/image/battery.png";
   let pushLocalNotification = function (title, text, icon) {
     window.Notification.requestPermission().then((result) => {
       const options = {
         body: text,
         icon: icon,
-        mozbehavior: {
-          vibrationPattern: [30, 200, 30],
-        },
       };
 
       var notification = new window.Notification(title, options);
@@ -419,7 +415,7 @@ const module = (() => {
     if (index >= markers_collection.length) index = 0;
     map.setView(markers_collection[index]._latlng, map.getZoom());
     status.selected_marker = markers_collection[index];
-    bottom_bar("cancel", "option", "");
+    helper.bottom_bar("cancel", "option", "");
 
     //reset icons and close popus
     for (let t = 0; t < markers_collection.length; t++) {
@@ -786,7 +782,7 @@ const module = (() => {
   //let gps_lock;
   let tracking_altitude = [];
   let calc = 0;
-
+  let tracking = { duration: "" };
   let polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
   let polyline_tracking = L.polyline(tracking_latlngs, path_option).addTo(
     tracking_group
@@ -824,8 +820,11 @@ const module = (() => {
     document.querySelector("#tracking-evo-up span").innerText = tracking.gain;
     document.getElementById("tracking-altitude").innerText = tracking.altitude;
 
-    document.querySelector("#tracking-speed-average-time").innerText =
-      tracking.speed_average;
+    document.querySelector("#tracking-speed-average-time").innerText = isNaN(
+      tracking.speed_average
+    )
+      ? "-"
+      : tracking.speed_average;
 
     document.querySelector("div#tracking-distance").innerText =
       tracking.distance;
@@ -859,11 +858,13 @@ const module = (() => {
       }, 10000);
 
       tracking_group.clearLayers();
+      hotline_group.clearLayers();
+
       polyline_tracking = L.polyline(tracking_latlngs, path_option).addTo(
         tracking_group
       );
       status.tracking_running = false;
-      gps_lock.unlock();
+      //gps_lock.unlock();
       status.running = false;
       status.live_track = false;
       helper.side_toaster("tracking stopped", 2000);
@@ -874,7 +875,8 @@ const module = (() => {
       status.tracking_running = true;
 
       if ("requestWakeLock" in navigator) {
-        if (setting.tracking_screenlock) screenWakeLock("lock", "screen");
+        if (setting.tracking_screenlock)
+          helper.screenWakeLock("lock", "screen");
       }
 
       if (localStorage.getItem("tracking_cache") !== null) {
@@ -913,15 +915,8 @@ const module = (() => {
       let lastIntegerPart = 0;
       tracking_interval = setInterval(function () {
         // Only record data if accuracy is high enough
-        if (mainmarker.accuracy > 10000) return false;
-
-        //only record when  movment
-        if (
-          tracking_cache.length > 0 &&
-          tracking_cache[tracking_cache.length - 1].lat ==
-            mainmarker.device_lat &&
-          tracking_cache[tracking_cache.length - 1].lng == mainmarker.device_lng
-        )
+        console.log("jj" + mainmarker.positionHasChanged);
+        if (mainmarker.accuracy > 10000 && mainmarker.positionHasChanged)
           return false;
 
         //store time
@@ -930,9 +925,12 @@ const module = (() => {
         //store altitude
         let alt = "";
         if (mainmarker.device_alt) {
-          if (isNaN(mainmarker.device_alt)) return false;
-          alt = mainmarker.device_alt;
-          tracking_altitude.push(alt);
+          if (isNaN(mainmarker.device_alt)) {
+            alt = null;
+          } else {
+            alt = mainmarker.device_alt;
+            tracking_altitude.push(alt);
+          }
         }
 
         polyline_tracking.addLatLng([
@@ -947,12 +945,6 @@ const module = (() => {
           alt: alt,
           timestamp: ts.toISOString(),
         });
-        console.log(setting);
-        try {
-          if (setting.hotline_view) hotline(tracking_cache);
-        } catch (e) {
-          console.log(e);
-        }
 
         // Update the view with tracking data
 
@@ -963,6 +955,12 @@ const module = (() => {
             "tracking_cache",
             JSON.stringify(tracking_cache)
           );
+
+          try {
+            if (setting.hotline_view) hotline(tracking_cache);
+          } catch (e) {
+            console.log(e);
+          }
 
           const { gain, loss } = calculateGainAndLoss(tracking_altitude, 50);
 
@@ -1063,7 +1061,6 @@ const module = (() => {
             }
           });
         }
-
         //Upload gpx file every 5min, unfortunately the update function doesn't work, so I have to combine create/delete
         if (status.live_track) {
           if (status.live_track_file_created == false) {
@@ -1084,13 +1081,15 @@ const module = (() => {
             }
           }
         }
+
+        update_tracking_view();
+
         // Stop tracking if mainmarker.tracking is false
         if (status.tracking_running == false) {
           clearInterval(tracking_interval);
-          if (setting.tracking_screenlock) screenWakeLock("unlock", "screen");
+          if (setting.tracking_screenlock)
+            helper.screenWakeLock("unlock", "screen");
         }
-
-        update_tracking_view();
       }, 10000);
     }
 
@@ -1147,14 +1146,14 @@ const module = (() => {
       document.querySelector("div#user-input").style.bottom = "-1000px";
       document.querySelector("div#user-input input").blur();
       status.windowOpen = "map";
-      bottom_bar("", "", "");
+      helper.bottom_bar("", "", "");
     }
 
     if (param == "return") {
       let input_value = document.querySelector("div#user-input input").value;
       document.querySelector("div#user-input").style.bottom = "-1000px";
       document.querySelector("div#user-input input").blur();
-      bottom_bar("", "", "");
+      helper.bottom_bar("", "", "");
 
       return input_value;
     }
