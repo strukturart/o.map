@@ -118,6 +118,11 @@ const settings = ((_) => {
         localStorage.getItem("tips_view") != null
           ? JSON.parse(localStorage.getItem("tips_view"))
           : true,
+
+      hotline_view:
+        localStorage.getItem("hotline_view") != null
+          ? JSON.parse(localStorage.getItem("hotline_view"))
+          : true,
     };
 
     setting.tracking_screenlock
@@ -146,6 +151,10 @@ const settings = ((_) => {
     setting.tips_view
       ? (document.getElementById("tips-ckb").checked = true)
       : (document.getElementById("tips-ckb").checked = false);
+
+    setting.hotline_view
+      ? (document.getElementById("hotline-ckb").checked = true)
+      : (document.getElementById("hotline-ckb").checked = false);
 
     //show / hidde crosshair
     setting.crosshair

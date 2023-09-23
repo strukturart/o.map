@@ -1626,6 +1626,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (item_value == "remove-path") {
           module.remove_gpx();
+          hotline_group.clearLayers();
+        }
+
+        if (item_value == "hotline") {
+          module.hotline(module.parseGPX(gpx_string));
         }
 
         if (item_value == "follow-path") {

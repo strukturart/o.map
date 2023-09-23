@@ -947,9 +947,9 @@ const module = (() => {
           alt: alt,
           timestamp: ts.toISOString(),
         });
-
+        console.log(setting);
         try {
-          hotline(tracking_cache);
+          if (setting.hotline_view) hotline(tracking_cache);
         } catch (e) {
           console.log(e);
         }
