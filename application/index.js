@@ -2772,11 +2772,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "6":
         module.select_gpx();
-        module.pushLocalNotification(
-          "battery is weak",
-          "",
-          "/assets/image/battery.png"
-        );
+     
 
         break;
 

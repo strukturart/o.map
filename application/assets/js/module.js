@@ -844,6 +844,11 @@ const module = (() => {
     }
 
     if (action == "destroy_tracking") {
+      clearInterval(tracking_interval);
+
+      try{      localStorage.removeItem("tracking_cache");
+    }catch(e){console.log(e)}
+
       tracking_altitude = [];
       document.getElementById("tracking-altitude").innerText = "";
       document.querySelector("div#tracking-distance").innerText = "";
@@ -852,21 +857,20 @@ const module = (() => {
       document.querySelector("div#tracking-moving-time span").innerText = "";
       document.querySelector("div#tracking-speed-average-time").innerText = "";
       distances = [];
-      clearInterval(tracking_interval);
-      setTimeout(function () {
-        localStorage.removeItem("tracking_cache");
-      }, 10000);
+
+   
 
       tracking_group.clearLayers();
       hotline_group.clearLayers();
+
 
       polyline_tracking = L.polyline(tracking_latlngs, path_option).addTo(
         tracking_group
       );
       status.tracking_running = false;
-      //gps_lock.unlock();
       status.running = false;
       status.live_track = false;
+
       helper.side_toaster("tracking stopped", 2000);
       return true;
     }
@@ -915,6 +919,7 @@ const module = (() => {
       let lastIntegerPart = 0;
       tracking_interval = setInterval(function () {
         // Only record data if accuracy is high enough
+
         if (mainmarker.accuracy > 10000 && mainmarker.positionHasChanged)
           return false;
 
