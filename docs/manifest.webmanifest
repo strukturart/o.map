@@ -22,7 +22,7 @@
   ],
 
   "b2g_features": {
-    "version": "2.0.3",
+    "version": "2.0.4",
     "id": "o.map",
     "core": true,
     "categories": ["utilities"],
