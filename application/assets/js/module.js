@@ -4,7 +4,7 @@ const module = (() => {
     navigator.getBattery().then(function (battery) {
       battery.addEventListener("levelchange", function () {
         if (battery_memory < battery.level) return false;
-        if (battery.level <= 0.3) {
+        if (battery.level <= 0.2 && status.tracking_running) {
           module.pushLocalNotification(
             "battery is weak",
             "",
@@ -145,8 +145,8 @@ const module = (() => {
       new L.GPX(url, {
         async: true,
         marker_options: {
-          startIconUrl: "assets/css/images/start.png",
-          endIconUrl: "assets/css/images/end.png",
+          startIconUrl: "/assets/css/images/start.png",
+          endIconUrl: "/assets/css/images/end.png",
         },
       })
         .on("loaded", function (e) {
@@ -165,7 +165,9 @@ const module = (() => {
         request.onsuccess = function () {
           m(this.result);
         };
-        request.onerror = function () {};
+        request.onerror = function (error) {
+          alert(error);
+        };
       } catch (e) {}
 
       if ("b2g" in navigator) {
@@ -175,7 +177,9 @@ const module = (() => {
           request.onsuccess = function () {
             m(this.result);
           };
-          request.onerror = function () {};
+          request.onerror = function (error) {
+            alert(error);
+          };
         } catch (e) {}
       }
 
@@ -190,14 +194,11 @@ const module = (() => {
         reader.onloadend = function (event) {
           var gpx = reader.result;
 
-          // let a = parseGPX(gpx);
-          // hotline(a);
-
           new L.GPX(gpx, {
             async: true,
             marker_options: {
-              startIconUrl: "assets/css/images/start.png",
-              endIconUrl: "assets/css/images/end.png",
+              startIconUrl: "/assets/css/images/start.png",
+              endIconUrl: "/assets/css/images/end.png",
             },
           })
             .on("loaded", function (e) {
@@ -275,7 +276,7 @@ const module = (() => {
         m(this.result);
       };
       request.onerror = function () {
-        side_toaster("file not found", 3000);
+        helper.side_toaster("file not found", 3000);
       };
     } catch (e) {}
 
@@ -287,7 +288,7 @@ const module = (() => {
           m(this.result);
         };
         request.onerror = function (e) {
-          side_toaster(e + "error", 3000);
+          helper.side_toaster(e + "error", 3000);
         };
       } catch (e) {}
     }
@@ -846,8 +847,11 @@ const module = (() => {
     if (action == "destroy_tracking") {
       clearInterval(tracking_interval);
 
-      try{      localStorage.removeItem("tracking_cache");
-    }catch(e){console.log(e)}
+      try {
+        localStorage.removeItem("tracking_cache");
+      } catch (e) {
+        console.log(e);
+      }
 
       tracking_altitude = [];
       document.getElementById("tracking-altitude").innerText = "";
@@ -858,11 +862,8 @@ const module = (() => {
       document.querySelector("div#tracking-speed-average-time").innerText = "";
       distances = [];
 
-   
-
       tracking_group.clearLayers();
       hotline_group.clearLayers();
-
 
       polyline_tracking = L.polyline(tracking_latlngs, path_option).addTo(
         tracking_group
@@ -1068,7 +1069,7 @@ const module = (() => {
         //Upload gpx file every 5min, unfortunately the update function doesn't work, so I have to combine create/delete
         if (status.live_track) {
           if (status.live_track_file_created == false) {
-            osm.osm_server_upload_gpx("live_track.gpx", toGPX());
+            osm.osm_server_upload_gpx("live_track.gpx", toGPX(), false);
             status.live_track_file_created = true;
           } else {
             let calc_dif =

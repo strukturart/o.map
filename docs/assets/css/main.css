@@ -109,6 +109,12 @@ textarea {
   color: black;
 }
 
+img {
+  outline: 0px;
+  border: none;
+  display: block;
+}
+
 label {
   color: white;
   margin: 0 0 10px 0;

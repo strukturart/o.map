@@ -110,7 +110,6 @@ const rs = ((_) => {
   let reset_routing = () => {
     instructions = [];
     jsonLayer.clearLayers();
-    //jsonLayer = L.geoJSON("", { color: "red" });
     routing.data = "";
     routing.active = false;
     routing.loaded = false;

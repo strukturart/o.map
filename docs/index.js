@@ -127,7 +127,7 @@ let status = {
 let tracking = {};
 
 if (!navigator.geolocation) {
-  helper.toaster("Your device does't support geolocation!", 2000);
+  helper.side_toaster("Your device does't support geolocation!", 2000);
 }
 
 if ("requestWakeLock" in navigator) {
@@ -144,9 +144,7 @@ if ("b2g" in Navigator) {
           })
           .then((registration) => {
             registration.systemMessageManager.subscribe("activity").then(
-              (rv) => {
-                alert("installed");
-              },
+              (rv) => {},
               (error) => {}
             );
           });
@@ -343,7 +341,8 @@ document.addEventListener("DOMContentLoaded", function () {
       if (a.installOrigin == "app://kaios-plus.kaiostech.com") {
         load_ads();
       } else {
-        let t = document.getElementById("kaios-ads").remove();
+        //let t = document.getElementById("kaios-ads").remove();
+        load_ads();
       }
     };
 
@@ -366,11 +365,13 @@ document.addEventListener("DOMContentLoaded", function () {
   };
   //build menu
   let build_menu = function () {
+    /*
     document.querySelector("div#tracksmarkers").innerHTML = "";
     document.querySelector("div#maps").innerHTML = "";
     document.querySelector("div#layers").innerHTML = "";
     document.querySelector("div#overpass").innerHTML = "";
     document.querySelector("div#gpx").innerHTML = "";
+    */
 
     let el = document.querySelector("div#maps");
     el.innerHTML = "";
@@ -431,6 +432,8 @@ document.addEventListener("DOMContentLoaded", function () {
     general.last_map_type
   );
 
+  //get files and store
+
   //////////////////////////////////
   //READ GPX////////////////////////
   /////////////////////////////////
@@ -454,7 +457,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .querySelector("div#gpx")
             .insertAdjacentHTML(
               "afterend",
-              '<div class="item" data-map="gpx" data-filename="' +
+              '<div class="item gpx-file" data-map="gpx" data-filename="' +
                 e.name +
                 '" data-filepath="' +
                 e.path +
@@ -472,7 +475,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       finder_gpx.on("fileFound", function (file, fileinfo, storageName) {
-        files.push({ name: fileinfo.name, path: fileinfo.path });
+        files.push({ name: fileinfo.name, path: fileinfo.path, type: "gpx" });
         files.sort((a, b) => {
           return b.name.localeCompare(a.name);
         });
@@ -483,27 +486,36 @@ document.addEventListener("DOMContentLoaded", function () {
     //KaiOS 3.x
 
     let list_files_callback = function (e) {
+      let files = [];
+
       document.getElementById("gpx-title").style.display = "block";
 
       let filename = e.split("/");
       filename = filename[filename.length - 1];
 
-      document
-        .querySelector("div#gpx")
-        .insertAdjacentHTML(
-          "afterend",
-          '<div class="item" data-map="gpx" data-filename="' +
-            filename +
-            '" data-filepath="' +
-            e +
-            '">' +
-            filename +
-            "</div>"
-        );
+      files.push({ name: filename, path: e, type: "gpx" });
+      files.sort((a, b) => {
+        return b.name.localeCompare(a.name);
+      });
 
-      if (filename.substring(0, 1) == "_") {
-        module.loadGPX(e);
-      }
+      files.forEach((e) => {
+        document
+          .querySelector("div#gpx")
+          .insertAdjacentHTML(
+            "afterend",
+            '<div class="item gpx-file" data-map="gpx" data-filename="' +
+              e.name +
+              '" data-filepath="' +
+              e.path +
+              '">' +
+              e.name +
+              "</div>"
+          );
+        //load gpx file on start
+        if (e.name.substring(0, 1) == "_") {
+          module.loadGPX(e.path);
+        }
+      });
     };
 
     try {
@@ -521,6 +533,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let find_geojson = function () {
     try {
       let files = [];
+
       //search geojson
       let finder = new Applait.Finder({
         type: "sdcard",
@@ -544,6 +557,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 e.name +
                 "</div>"
             );
+          //load startup item
 
           if (e.name.substring(0, 1) == "_") {
             module.loadGeoJSON(e.path + "/" + e.name, false);
@@ -552,39 +566,49 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       });
       finder.on("fileFound", function (file, fileinfo, storageName) {
-        files.push({ name: fileinfo.name, path: fileinfo.path });
+        files.push({
+          name: fileinfo.name,
+          path: fileinfo.path,
+          type: "geoJSON",
+        });
         files.sort((a, b) => {
           return b.name.localeCompare(a.name);
         });
-
-        //load startup item
       });
     } catch (e) {}
 
     //KaiOS 3.x
 
     let list_files_callback = function (e) {
-      document.getElementById("tracks-title").style.display = "block";
+      let files = [];
 
       let filename = e.split("/");
       filename = filename[filename.length - 1];
 
-      document
-        .querySelector("div#tracksmarkers")
-        .insertAdjacentHTML(
-          "afterend",
-          '<div class="item" data-map="geojson" data-filename="' +
-            filename +
-            '" data-filepath="' +
-            e +
-            '">' +
-            filename +
-            "</div>"
-        );
+      files.push({ name: filename, path: e, type: "geoJSON" });
+      files.sort((a, b) => {
+        return b.name.localeCompare(a.name);
+      });
 
-      if (filename.substring(0, 1) == "_") {
-        module.loadGeoJSON(e, false);
-      }
+      files.forEach((e) => {
+        document
+          .querySelector("div#tracksmarkers")
+          .insertAdjacentHTML(
+            "afterend",
+            '<div class="item" data-map="geojson" data-filename="' +
+              e.name +
+              '" data-filepath="' +
+              e.path +
+              '">' +
+              e.name +
+              "</div>"
+          );
+
+        if (e.name.substring(0, 1) == "_") {
+          module.loadGeoJSON(e.path, false);
+        }
+        document.getElementById("tracks-title").style.display = "block";
+      });
     };
 
     try {
@@ -600,7 +624,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let load_maps = function () {
     let search_callback = (e) => {
-      let data = "";
       let reader = new FileReader();
 
       reader.onerror = function () {
@@ -611,69 +634,71 @@ document.addEventListener("DOMContentLoaded", function () {
         //check if json valid
 
         try {
-          data = JSON.parse(reader.result);
+          let data = JSON.parse(reader.result);
+
+          data.forEach(function (key) {
+            if (key.type == "map") {
+              document
+                .querySelector("div#maps")
+                .insertAdjacentHTML(
+                  "afterend",
+                  '<div class="item" data-type="' +
+                    key.type +
+                    '"  data-maxzoom="' +
+                    key.maxzoom +
+                    '"  data-url="' +
+                    key.url +
+                    '" data-attribution="' +
+                    key.attribution +
+                    '">' +
+                    key.name +
+                    "</div>"
+                );
+            }
+
+            if (key.type == "overlayer") {
+              document
+                .querySelector("div#layers")
+                .insertAdjacentHTML(
+                  "afterend",
+                  '<div class="item" data-type="' +
+                    key.type +
+                    '"  data-maxzoom="' +
+                    key.maxzoom +
+                    '"  data-url="' +
+                    key.url +
+                    '" data-attribution="' +
+                    key.attribution +
+                    '">' +
+                    key.name +
+                    "</div>"
+                );
+            }
+
+            if (key.type == "overpass") {
+              document
+                .querySelector("div#overpass")
+                .insertAdjacentHTML(
+                  "afterend",
+                  '<div class="item" data-type="' +
+                    key.type +
+                    '"  data-maxzoom="' +
+                    key.maxzoom +
+                    '"  data-url="' +
+                    key.url +
+                    '" data-attribution="' +
+                    key.attribution +
+                    '">' +
+                    key.name +
+                    "</div>"
+                );
+            }
+          });
         } catch (e) {
           helper.side_toaster("JSON is not valid", 2000);
+
           return false;
         }
-        data.forEach(function (key) {
-          if (key.type == "map") {
-            document
-              .querySelector("div#maps")
-              .insertAdjacentHTML(
-                "afterend",
-                '<div class="item" data-type="' +
-                  key.type +
-                  '"  data-maxzoom="' +
-                  key.maxzoom +
-                  '"  data-url="' +
-                  key.url +
-                  '" data-attribution="' +
-                  key.attribution +
-                  '">' +
-                  key.name +
-                  "</div>"
-              );
-          }
-
-          if (key.type == "overlayer") {
-            document
-              .querySelector("div#layers")
-              .insertAdjacentHTML(
-                "afterend",
-                '<div class="item" data-type="' +
-                  key.type +
-                  '"  data-maxzoom="' +
-                  key.maxzoom +
-                  '"  data-url="' +
-                  key.url +
-                  '" data-attribution="' +
-                  key.attribution +
-                  '">' +
-                  key.name +
-                  "</div>"
-              );
-          }
-
-          if (key.type == "overpass") {
-            document
-              .querySelector("div#overpass")
-              .insertAdjacentHTML(
-                "afterend",
-                '<div class="item" data-type="' +
-                  key.type +
-                  '"  data-maxzoom="' +
-                  key.maxzoom +
-                  '"  data-url="' +
-                  key.url +
-                  '" data-attribution="' +
-                  key.attribution +
-                  '">' +
-                  key.name +
-                  "</div>"
-              );
-          }
-        });
       };
 
       reader.readAsText(e);
@@ -685,7 +710,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
   ///////////////
-  ///OSM SERVER
+  ///OSM SERVER FILES
   /////////////
 
   let osm_server_list_gpx = function () {
@@ -701,6 +726,7 @@ document.addEventListener("DOMContentLoaded", function () {
     })
       .then((response) => response.text())
       .then((data) => {
+        let files = [];
         document.querySelector("div#osm-server-gpx").innerHTML = "";
         const parser = new DOMParser();
         const xml = parser.parseFromString(data, "application/xml");
@@ -713,16 +739,11 @@ document.addEventListener("DOMContentLoaded", function () {
               id: s[i].getAttribute("id"),
             };
 
-            document
-              .querySelector("div#osm-server-gpx")
-              .insertAdjacentHTML(
-                "afterend",
-                '<div class="item" data-id=' +
-                  m.id +
-                  ' data-map="gpx-osm">' +
-                  m.name +
-                  "</div>"
-              );
+            files.push({ name: m.name, id: m.id, type: "osm_sever" });
+            files.sort((a, b) => {
+              return b.name.localeCompare(a.name);
+            });
+            console.log(files);
           } else {
             for (let n = 0; n < s[i].childNodes.length; n++) {
               if (s[i].childNodes[n].tagName == "tag") {
@@ -732,27 +753,37 @@ document.addEventListener("DOMContentLoaded", function () {
                     id: s[i].getAttribute("id"),
                   };
 
-                  document
-                    .querySelector("div#osm-server-gpx")
-                    .insertAdjacentHTML(
-                      "afterend",
-                      '<div class="item" data-id=' +
-                        m.id +
-                        ' data-map="gpx-osm">' +
-                        m.name +
-                        "</div>"
-                    );
+                  files.push({ name: m.name, id: m.id, type: "osm_sever" });
+                  files.sort((a, b) => {
+                    return b.name.localeCompare(a.name);
+                  });
                 }
               }
             }
           }
         }
+        files.forEach((e) => {
+          document
+            .querySelector("div#osm-server-gpx")
+            .insertAdjacentHTML(
+              "afterend",
+              '<div class="item" data-id=' +
+                e.id +
+                ' data-map="gpx-osm">' +
+                e.name +
+                "</div>"
+            );
+        });
       })
 
       .catch((error) => {
         console.log(error);
       });
   };
+
+  ///////////////
+  ///OSM SERVER FILES DOWNLOAD
+  /////////////
 
   let osm_server_load_gpx = function (id, filename, download) {
     let n = "Bearer " + localStorage.getItem("openstreetmap_token");
@@ -824,8 +855,7 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   let gpx_callback = function (filename) {
-    helper.side_toaster(filename + " saved", 3000);
-    hotline_group.clearLayers();
+    helper.side_toaster(filename + " saved", 5000);
 
     document
       .querySelector("div#gpx")
@@ -839,6 +869,8 @@ document.addEventListener("DOMContentLoaded", function () {
           filename +
           "</div>"
       );
+
+    hotline_group.clearLayers();
   };
 
   /////openweather callback
@@ -1545,7 +1577,6 @@ document.addEventListener("DOMContentLoaded", function () {
       //custom maps and layers from json file
       if (document.activeElement.classList.contains("active-layer")) {
         maps.addMap("", "", "", "");
-
         return false;
       }
       if (document.activeElement.hasAttribute("data-url")) {
@@ -1571,6 +1602,26 @@ document.addEventListener("DOMContentLoaded", function () {
           module.loadGPX(document.activeElement.getAttribute("data-filepath"));
           document.querySelector("div#finder").style.display = "none";
           status.windowOpen = "map";
+        }
+
+        //add geoJson data
+        if (item_value == "geojson") {
+          module.loadGeoJSON(
+            document.activeElement.getAttribute("data-filepath"),
+            routing_service_callback
+          );
+
+          document.querySelector("div#finder").style.display = "none";
+          status.windowOpen = "map";
+        }
+
+        //add gpx data from osm
+        if (item_value == "gpx-osm") {
+          osm_server_load_gpx(
+            document.activeElement.getAttribute("data-id"),
+            "",
+            false
+          );
         }
 
         if (item_value == "weather") {
@@ -1732,26 +1783,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (item_value == "open_settings_app") {
           mozactivity.openSettings();
-        }
-
-        //add geoJson data
-        if (item_value == "geojson") {
-          module.loadGeoJSON(
-            document.activeElement.getAttribute("data-filepath"),
-            routing_service_callback
-          );
-
-          document.querySelector("div#finder").style.display = "none";
-          status.windowOpen = "map";
-        }
-
-        //add gpx data from osm
-        if (item_value == "gpx-osm") {
-          osm_server_load_gpx(
-            document.activeElement.getAttribute("data-id"),
-            "",
-            false
-          );
         }
       }
     }
@@ -2028,6 +2059,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     focus_after_selection();
   };
+
   function nav(move) {
     if (
       document.activeElement.nodeName == "SELECT" ||
@@ -2051,6 +2083,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       let b = document.activeElement.closest("div.menu-box");
       let items_list = b.querySelectorAll(".item");
+      console.log(items_list.length);
 
       if (move == "+1") {
         if (tabIndex < items_list.length - 1) {
@@ -2091,6 +2124,23 @@ document.addEventListener("DOMContentLoaded", function () {
         behavior: "smooth",
       });
     }
+  }
+
+  try {
+    // Check if the device has hardware Volume keys
+    if (navigator.hasFeature("device.key.endcall")) {
+      console.log("Device has hardware endcall keys.");
+    } else {
+      console.log("Device does not have endcall keys.");
+    }
+
+    if (navigator.hasFeature("device.key.backspace")) {
+      console.log("Device has hardware backspace keys.");
+    } else {
+      console.log("Device does not have backspace keys.");
+    }
+  } catch (e) {
+    console.error("Error:", e);
   }
 
   //////////////////////////////
@@ -2604,10 +2654,10 @@ document.addEventListener("DOMContentLoaded", function () {
         if (status.windowOpen == "search") {
           search.search_return_data();
 
-          map.setView([olc_lat_lng[0], olc_lat_lng[1]]);
+          // map.setView([olc_lat_lng[0], olc_lat_lng[1]]);
           search.hideSearch();
-          mainmarker.current_lat = Number(olc_lat_lng[0]);
-          mainmarker.current_lng = Number(olc_lat_lng[1]);
+          //mainmarker.current_lat = Number(olc_lat_lng[0]);
+          //mainmarker.current_lng = Number(olc_lat_lng[1]);
           helper.side_toaster("press 5 to save the marker", 2000);
           break;
         }
@@ -2772,8 +2822,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "6":
         module.select_gpx();
-     
-
         break;
 
       case "7":

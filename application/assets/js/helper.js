@@ -188,7 +188,14 @@ const helper = (() => {
             .then((file) => {
               if (!file.done) {
                 if (file.value.name.includes(name)) {
-                  callback(e);
+                  let sdcard = navigator.b2g.getDeviceStorage("sdcard");
+                  let request = sdcard.get(file.value.name);
+                  request.onsuccess = function () {
+                    callback(this.result);
+                  };
+                  request.onerror = function (e) {
+                    helper.side_toaster(e + "error", 3000);
+                  };
                 }
                 next(_files);
               }

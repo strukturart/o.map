@@ -377,15 +377,15 @@ const settings = ((_) => {
           var request = sdcard.addNamed(file, "omap_settings.json");
 
           request.onsuccess = function () {
-            helper.toaster("settings exported, omap_settings.json", 5000);
+            helper.side_toaster("settings exported, omap_settings.json", 5000);
           };
 
           request.onerror = function () {
-            toaster("Unable to write the file", 2000);
+            helper.side_toaster("Unable to write the file", 2000);
           };
         };
         request_del.onerror = function () {
-          toaster("Unable to write the file", 2000);
+          helper.side_toaster("Unable to write the file", 2000);
         };
       } catch (e) {
         alert(e);

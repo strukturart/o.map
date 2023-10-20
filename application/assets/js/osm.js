@@ -1,11 +1,7 @@
 const osm = (() => {
-  let osm_server_upload_gpx = function (filename, gpx_data, notify) {
-    if (!general.osm_token) {
-      helper.side_toaster(
-        "looks like you are not connected to openstreetmap",
-        5000
-      );
-      return false;
+  let osm_server_upload_gpx = function (filename, gpx_data, notify = true) {
+    if (general.osm_token) {
+      helper.side_toaster("you are connected to openstreetmap", 5000);
     }
 
     let n = "Bearer " + general.osm_token;

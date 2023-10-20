@@ -1,7 +1,5 @@
 "use strict";
 
-let olc_lat_lng;
-
 //////////////////////////
 ////SEARCH BOX////////////
 /////////////////////////
@@ -15,7 +13,7 @@ const search = (() => {
   };
 
   let showSearch = function () {
-    bottom_bar("close", "select", "");
+    helper.bottom_bar("close", "select", "");
     document.querySelector("div#search-box").style.display = "block";
     document.querySelector("div#search-box input").focus();
     document.querySelector("div#bottom-bar").style.display = "block";
@@ -40,7 +38,6 @@ const search = (() => {
     document.querySelector("div#search-box").style.display = "none";
     document.querySelector("div#search-box input").value = "";
     document.querySelector("div#search-box input").blur();
-    document.querySelector("div#olc").style.display = "none";
 
     setTimeout(function () {
       status.windowOpen = "map";
@@ -142,38 +139,8 @@ const search = (() => {
     status.windowOpen = "map";
   };
 
-  //////////////////////////
-  ////OLC////////////
-  /////////////////////////
-
   document.getElementById("search").addEventListener("input", function () {
-    let input_val = document.querySelector("input#search").value;
     start_search();
-
-    if (input_val.startsWith("/")) {
-      document.getElementById("search-info").style.display = "none";
-
-      input_val = input_val.replace("/", "");
-
-      document.querySelector("div#olc").style.display = "block";
-      document.querySelector("#olc").innerText = OLC.decode(input_val);
-
-      let ll = String(OLC.decode(input_val));
-
-      if (ll.includes("NaN") == false) {
-        olc_lat_lng = ll.split(",");
-        map.setView([olc_lat_lng[0], olc_lat_lng[1]]);
-
-        mainmarker.current_lat = olc_lat_lng[0];
-        mainmarker.current_lng = olc_lat_lng[1];
-      }
-
-      helper.toaster("press 9 to add an marker", 3000);
-
-      return true;
-    }
-
-    document.querySelector("div#olc").style.display = "none";
   });
 
   return {

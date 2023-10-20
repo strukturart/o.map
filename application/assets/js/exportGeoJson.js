@@ -77,7 +77,7 @@ const geojson = ((_) => {
 
     requestAdd.onsuccess = function () {
       status.windowOpen = "map";
-      bottom_bar("", "", "");
+      helper.bottom_bar("", "", "");
 
       if (type == "tracking") {
         module.measure_distance("destroy_tracking");
@@ -135,7 +135,7 @@ const geojson = ((_) => {
 
     requestAdd.onsuccess = function () {
       status.windowOpen = "map";
-      bottom_bar("", "", "");
+      helper.bottom_bar("", "", "");
 
       callback(file_path_name);
 

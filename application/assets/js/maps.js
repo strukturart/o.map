@@ -89,7 +89,7 @@ const maps = (() => {
     var bbox = L.latLngBounds(L.latLng(swLat, swLng), L.latLng(neLat, neLng));
     tilesLayer.seed(bbox, 0, zoom_depth);
 
-    top_bar("", "downloading", "");
+    helper.top_bar("", "downloading", "");
 
     // Display seed progress on console
     tilesLayer.on("seedprogress", function (seedData) {
@@ -107,7 +107,7 @@ const maps = (() => {
         "Downloads finished";
       status.caching_tiles_started = false;
       setTimeout(() => {
-        top_bar("", "", "");
+        helper.top_bar("", "", "");
       }, 2000);
     });
 
@@ -368,7 +368,7 @@ const maps = (() => {
     if (general.active_layer.includes("weather")) {
       general.active_layer.splice(general.active_layer.indexOf("weather"), 1);
 
-      top_bar("", "", "");
+      helper.top_bar("", "", "");
       map.removeLayer(weather_layer);
       map.removeLayer(weather_layer0);
       map.removeLayer(weather_layer1);
@@ -435,7 +435,7 @@ const maps = (() => {
               map.removeLayer(weather_layer2);
               map.removeLayer(weather_layer3);
               let t = formDat(data[data.length - 5]);
-              top_bar(
+              helper.top_bar(
                 "",
                 t.year +
                   "." +
@@ -457,7 +457,7 @@ const maps = (() => {
               map.removeLayer(weather_layer2);
               map.removeLayer(weather_layer3);
               let t = formDat(data[data.length - 4]);
-              top_bar(
+              helper.top_bar(
                 "",
                 t.year +
                   "." +
@@ -479,7 +479,7 @@ const maps = (() => {
               map.removeLayer(weather_layer2);
               map.removeLayer(weather_layer3);
               let t = formDat(data[data.length - 3]);
-              top_bar(
+              helper.top_bar(
                 "",
                 t.year +
                   "." +
@@ -501,7 +501,7 @@ const maps = (() => {
               map.addLayer(weather_layer2);
               map.removeLayer(weather_layer3);
               let t = formDat(data[data.length - 2]);
-              top_bar(
+              helper.top_bar(
                 "",
                 t.year +
                   "." +
@@ -522,7 +522,7 @@ const maps = (() => {
               map.removeLayer(weather_layer2);
               map.addLayer(weather_layer3);
               let t = formDat(data[data.length - 1]);
-              top_bar(
+              helper.top_bar(
                 "",
                 t.year +
                   "." +
