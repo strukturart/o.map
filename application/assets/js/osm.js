@@ -1,7 +1,11 @@
 const osm = (() => {
   let osm_server_upload_gpx = function (filename, gpx_data, notify = true) {
-    if (general.osm_token) {
-      helper.side_toaster("you are connected to openstreetmap", 5000);
+    if (!general.osm_token) {
+      helper.side_toaster(
+        "looks like you are not connected to openstreetmap",
+        5000
+      );
+      return false;
     }
 
     let n = "Bearer " + general.osm_token;
@@ -13,7 +17,7 @@ const osm = (() => {
       type: "application/gpx",
     });
 
-    if (notify) helper.side_toaster("try uploading file", 2000);
+    if (notify) helper.side_toaster("try uploading file", 5000);
 
     let formData = new FormData();
     formData.append("description", "uploaded from o.map");
@@ -28,10 +32,7 @@ const osm = (() => {
       .then((response) => response.text())
       .then((data) => {
         status.live_track_id.push(data);
-        setTimeout(() => {
-          if (notify)
-            helper.side_toaster("file uploaded" + status.live_track_id, 4000);
-        }, 2000);
+        if (notify == true) helper.side_toaster("file uploaded", 4000);
       })
 
       .catch((error) => {

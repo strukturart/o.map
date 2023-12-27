@@ -365,14 +365,6 @@ document.addEventListener("DOMContentLoaded", function () {
   };
   //build menu
   let build_menu = function () {
-    /*
-    document.querySelector("div#tracksmarkers").innerHTML = "";
-    document.querySelector("div#maps").innerHTML = "";
-    document.querySelector("div#layers").innerHTML = "";
-    document.querySelector("div#overpass").innerHTML = "";
-    document.querySelector("div#gpx").innerHTML = "";
-    */
-
     let el = document.querySelector("div#maps");
     el.innerHTML = "";
     el.insertAdjacentHTML(
@@ -743,7 +735,6 @@ document.addEventListener("DOMContentLoaded", function () {
             files.sort((a, b) => {
               return b.name.localeCompare(a.name);
             });
-            console.log(files);
           } else {
             for (let n = 0; n < s[i].childNodes.length; n++) {
               if (s[i].childNodes[n].tagName == "tag") {
@@ -1549,9 +1540,12 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelector("div#files-option").style.display = "none";
         open_finder();
         general.active_item.focus();
+        let loadGPX_data_callback = (filename, data) => {
+          osm.osm_server_upload_gpx(filename, data, true);
+        };
         module.loadGPX_data(
           general.active_item.getAttribute("data-filepath"),
-          osm.osm_server_upload_gpx
+          loadGPX_data_callback
         );
       }
     }
@@ -2602,6 +2596,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "Enter":
         if (status.intro) return false;
+        if (status.windowOpen == "user-input" && save_mode == "routing")
+          return false;
+
         if (
           status.windowOpen == "user-input" &&
           save_mode == "geojson-tracking"
@@ -2611,10 +2608,6 @@ document.addEventListener("DOMContentLoaded", function () {
           status.live_track = false;
           status.live_track_id = [];
           save_mode = "";
-          break;
-        }
-
-        if (status.windowOpen == "user-input" && save_mode == "routing") {
           break;
         }
 
@@ -2630,7 +2623,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (status.windowOpen == "map") {
           open_finder();
-          status.windowOpen = "finder";
           break;
         }
         if (
@@ -2654,10 +2646,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (status.windowOpen == "search") {
           search.search_return_data();
 
-          // map.setView([olc_lat_lng[0], olc_lat_lng[1]]);
           search.hideSearch();
-          //mainmarker.current_lat = Number(olc_lat_lng[0]);
-          //mainmarker.current_lng = Number(olc_lat_lng[1]);
           helper.side_toaster("press 5 to save the marker", 2000);
           break;
         }
@@ -2814,8 +2803,10 @@ document.addEventListener("DOMContentLoaded", function () {
         // maps.export_db();
         //maps.import_db();
         if (status.tracking_running) {
-          document.getElementById("tracking-view").style.display = "flex";
-          status.windowOpen = "trackingView";
+          document.getElementById("tracking-view").style.display =
+            status.windowOpen === "trackingView" ? "none" : "flex";
+          status.windowOpen =
+            status.windowOpen === "trackingView" ? "map" : "trackingView";
         }
 
         break;
@@ -2857,7 +2848,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "*":
         if (status.intro) return false;
-        mainmarker.selected_marker = module.select_marker();
+        if (status.keylock) return false;
+        if (status.windowOpen == "map") {
+          mainmarker.selected_marker = module.select_marker();
+        }
+
         break;
 
       case "#":
