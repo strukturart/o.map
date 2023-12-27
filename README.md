@@ -28,6 +28,7 @@ O.Map is an openstreetmap app for KaiOs, it is a good companion for your next ou
 ![image-2](/images/image-3.png)
 ![image-4](/images/image-4.png)
 ![image-5](/images/image-5.png)
+![image-6](/images/image-6.png)
 
 ## Maps
 
@@ -50,6 +51,7 @@ O.Map is an openstreetmap app for KaiOs, it is a good companion for your next ou
 - **key enter** open menu
 - **key 4** auto center map
   to delete the marker open with 3 the menu select the marker and press long enter (+- 5sec)
+- **key 5** parameters view during tracking
 - **key 6** jump between loaded gpx tracks
 - **key 7** measure distance
 - **key 8** export markers as geojson file
