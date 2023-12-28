@@ -701,145 +701,13 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log(e);
     }
   };
-  ///////////////
-  ///OSM SERVER FILES
-  /////////////
-
-  let osm_server_list_gpx = function () {
-    let n = "Bearer " + localStorage.getItem("openstreetmap_token");
-
-    const myHeaders = new Headers({
-      Authorization: n,
-    });
-
-    return fetch("https://api.openstreetmap.org/api/0.6/user/gpx_files", {
-      method: "GET",
-      headers: myHeaders,
-    })
-      .then((response) => response.text())
-      .then((data) => {
-        let files = [];
-        document.querySelector("div#osm-server-gpx").innerHTML = "";
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(data, "application/xml");
-        let s = xml.getElementsByTagName("gpx_file");
-        //filter by tag
-        for (let i = 0; i < s.length; i++) {
-          if (setting.osm_tag == null || setting.osm_tag == "") {
-            let m = {
-              name: s[i].getAttribute("name"),
-              id: s[i].getAttribute("id"),
-            };
-
-            files.push({ name: m.name, id: m.id, type: "osm_sever" });
-            files.sort((a, b) => {
-              return b.name.localeCompare(a.name);
-            });
-          } else {
-            for (let n = 0; n < s[i].childNodes.length; n++) {
-              if (s[i].childNodes[n].tagName == "tag") {
-                if (s[i].childNodes[n].textContent == setting.osm_tag) {
-                  let m = {
-                    name: s[i].getAttribute("name"),
-                    id: s[i].getAttribute("id"),
-                  };
-
-                  files.push({ name: m.name, id: m.id, type: "osm_sever" });
-                  files.sort((a, b) => {
-                    return b.name.localeCompare(a.name);
-                  });
-                }
-              }
-            }
-          }
-        }
-        files.forEach((e) => {
-          document
-            .querySelector("div#osm-server-gpx")
-            .insertAdjacentHTML(
-              "afterend",
-              '<div class="item" data-id=' +
-                e.id +
-                ' data-map="gpx-osm">' +
-                e.name +
-                "</div>"
-            );
-        });
-      })
-
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  ///////////////
-  ///OSM SERVER FILES DOWNLOAD
-  /////////////
-
-  let osm_server_load_gpx = function (id, filename, download) {
-    let n = "Bearer " + localStorage.getItem("openstreetmap_token");
-
-    const myHeaders = new Headers({
-      Authorization: n,
-      Accept: "application/gpx+xml",
-    });
-
-    return fetch("https://api.openstreetmap.org/api/0.6/gpx/" + id + "/data", {
-      method: "GET",
-      headers: myHeaders,
-    })
-      .then((response) => response.text())
-      .then((data) => {
-        var gpx = data;
-
-        //download file
-        if (download == true) {
-          helper.downloadFile(filename, data, callback_download);
-        } else {
-          new L.GPX(gpx, {
-            async: true,
-          })
-            .on("loaded", function (e) {
-              map.fitBounds(e.target.getBounds());
-            })
-            .addTo(gpx_group);
-
-          document.querySelector("div#finder").style.display = "none";
-          status.windowOpen = "map";
-        }
-      })
-
-      .catch((error) => {
-        helper.side_toaster(error, 2000);
-      });
-  };
 
   if (localStorage.getItem("openstreetmap_token") == null) {
     document.getElementById("osm-server-gpx-title").style.display = "none";
   } else {
-    osm_server_list_gpx();
+    osm.osm_server_list_gpx();
     document.getElementById("osm-server-gpx-title").style.display = "block";
   }
-  //callback download file
-  let callback_download = function (filename, filepath) {
-    helper.side_toaster("downloaded successfully", 2000);
-
-    document
-      .querySelector("div#gpx")
-      .nextSibling.insertAdjacentHTML(
-        "afterend",
-        "<div class='item' data-map='gpx' data-filename='" +
-          filename +
-          "' data-filepath='" +
-          filepath +
-          "'>" +
-          filename +
-          "</div>"
-      );
-
-    finder_tabindex();
-  };
-
   const osm_oauth_callback = function () {
     document.getElementById("osm-user").innerText =
       "logged in as " + general.osm_user;
@@ -847,7 +715,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let gpx_callback = function (filename) {
     helper.side_toaster(filename + " saved", 5000);
-
     document
       .querySelector("div#gpx")
       .nextSibling.insertAdjacentHTML(
@@ -1526,7 +1393,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       if (item_value == "download-file") {
-        osm_server_load_gpx(
+        osm.osm_server_load_gpx(
           general.active_item.getAttribute("data-id"),
           general.active_item.innerText,
           true
@@ -1611,7 +1478,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         //add gpx data from osm
         if (item_value == "gpx-osm") {
-          osm_server_load_gpx(
+          osm.osm_server_load_gpx(
             document.activeElement.getAttribute("data-id"),
             "",
             false
@@ -1788,40 +1655,35 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let show_files_option = function () {
     general.active_item = document.activeElement;
+
     document.getElementById("files-option").style.display = "block";
     status.windowOpen = "files-option";
-    document.querySelector("div#files-option div.item:first-child").focus();
-    helper.bottom_bar("", "select", "");
+    //reset
+    document.querySelectorAll("div#files-option div").forEach(function (e) {
+      e.style.display = "block";
+    });
+
     tabIndex = 0;
 
-    document
-      .querySelectorAll("div#files-option div")
-      .forEach(function (e, index) {
+    if (general.active_item.getAttribute("data-map") == "gpx") {
+      document.querySelectorAll("#files-option div").forEach(function (e) {
+        e.style.display = "none";
+      });
+      document.querySelectorAll("div.only-gpx-local").forEach(function (e) {
         e.style.display = "block";
       });
-
-    if (general.active_item.getAttribute("data-map") == "gpx") {
-      document
-        .querySelectorAll("div.only-gpx-local")
-        .forEach(function (e, index) {
-          e.style.display = "block";
-        });
     }
 
     if (general.active_item.getAttribute("data-map") == "geojson") {
-      document
-        .querySelectorAll("div.only-gpx-local")
-        .forEach(function (e, index) {
-          e.style.display = "block";
-        });
+      document.querySelectorAll("div.only-gpx-local").forEach(function (e) {
+        e.style.display = "block";
+      });
     }
 
     if (general.active_item.getAttribute("data-map") == "gpx-osm") {
-      document
-        .querySelectorAll("div.only-gpx-local")
-        .forEach(function (e, index) {
-          e.style.display = "none";
-        });
+      document.querySelectorAll("div.only-gpx-local").forEach(function (e) {
+        e.style.display = "none";
+      });
     }
 
     document.querySelectorAll("#files-option div").forEach(function (e) {
@@ -2044,6 +1906,10 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
+    if (finder_panels[count].id == "files") {
+      helper.bottom_bar("", "select", "option");
+    }
+
     if (finder_panels[count].id == "routing") {
       console.log("hey. " + setting.routing_profil);
       document.querySelectorAll(".item")[0].focus();
@@ -2213,7 +2079,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       setTimeout(() => {
         localStorage.setItem("openstreetmap_token", event.data.oauth_success);
-        osm_server_list_gpx();
+        osm.osm_server_list_gpx();
       }, 3000);
     }
   });
