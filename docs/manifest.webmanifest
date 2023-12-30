@@ -5,8 +5,8 @@
 
   "lang": "en-US",
   "start_url": "/index.html",
-      "priority": "high",
-        "userAgentInfo": "o.map written by strukturart@gmail.com",
+  "priority": "high",
+  "userAgentInfo": "o.map written by strukturart@gmail.com",
 
   "icons": [
     {
@@ -22,7 +22,7 @@
   ],
 
   "b2g_features": {
-    "version": "2.0.78",
+    "version": "2.0.79",
     "id": "o.map",
     "core": true,
     "categories": ["utilities"],
@@ -34,8 +34,8 @@
       "name": "strukturart",
       "url": "https://github.com/strukturart/o.map"
     },
-    
-      "messages": [
+
+    "messages": [
       { "serviceworker-notification": "index.html" },
       "alarm",
       "activity"
@@ -54,8 +54,7 @@
     },
 
     "permissions": {
-      
-  "desktop-notification": {
+      "desktop-notification": {
         "description": "Needed to fire system notifications"
       },
       "alarms": {

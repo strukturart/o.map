@@ -273,6 +273,8 @@ const osm = (() => {
             };
 
             files.push({ name: m.name, id: m.id, type: "osm_sever" });
+            files_.push({ name: m.name, id: m.id, type: "osm_sever" });
+
             files.sort((a, b) => {
               return b.name.localeCompare(a.name);
             });
@@ -286,6 +288,8 @@ const osm = (() => {
                   };
 
                   files.push({ name: m.name, id: m.id, type: "osm_sever" });
+                  files_.push({ name: m.name, id: m.id, type: "osm_sever" });
+
                   files.sort((a, b) => {
                     return b.name.localeCompare(a.name);
                   });

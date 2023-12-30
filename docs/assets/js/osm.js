@@ -182,11 +182,148 @@ const osm = (() => {
     windowRef.addEventListener("tokens", (ev) => callback());
   };
 
+  //load files
+
+  //callback download file
+  let callback_download = function (filename, filepath) {
+    helper.side_toaster("downloaded successfully", 2000);
+
+    document
+      .querySelector("div#gpx")
+      .nextSibling.insertAdjacentHTML(
+        "afterend",
+        "<div class='item' data-map='gpx' data-filename='" +
+          filename +
+          "' data-filepath='" +
+          filepath +
+          "'>" +
+          filename +
+          "</div>"
+      );
+
+    finder_tabindex();
+  };
+
+  let osm_server_load_gpx = function (id, filename, download) {
+    let n = "Bearer " + localStorage.getItem("openstreetmap_token");
+
+    const myHeaders = new Headers({
+      Authorization: n,
+      Accept: "application/gpx+xml",
+    });
+
+    return fetch("https://api.openstreetmap.org/api/0.6/gpx/" + id + "/data", {
+      method: "GET",
+      headers: myHeaders,
+    })
+      .then((response) => response.text())
+      .then((data) => {
+        var gpx = data;
+
+        //download file
+        if (download == true) {
+          helper.downloadFile(filename, data, callback_download);
+        } else {
+          new L.GPX(gpx, {
+            async: true,
+          })
+            .on("loaded", function (e) {
+              map.fitBounds(e.target.getBounds());
+            })
+            .addTo(gpx_group);
+
+          document.querySelector("div#finder").style.display = "none";
+          status.windowOpen = "map";
+        }
+      })
+
+      .catch((error) => {
+        helper.side_toaster(error, 2000);
+      });
+  };
+
+  ///////////////
+  ///List files
+  /////////////
+
+  let osm_server_list_gpx = function () {
+    let n = "Bearer " + localStorage.getItem("openstreetmap_token");
+
+    const myHeaders = new Headers({
+      Authorization: n,
+    });
+
+    return fetch("https://api.openstreetmap.org/api/0.6/user/gpx_files", {
+      method: "GET",
+      headers: myHeaders,
+    })
+      .then((response) => response.text())
+      .then((data) => {
+        let files = [];
+        document.querySelector("div#osm-server-gpx").innerHTML = "";
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(data, "application/xml");
+        let s = xml.getElementsByTagName("gpx_file");
+        //filter by tag
+        for (let i = 0; i < s.length; i++) {
+          if (setting.osm_tag == null || setting.osm_tag == "") {
+            let m = {
+              name: s[i].getAttribute("name"),
+              id: s[i].getAttribute("id"),
+            };
+
+            files.push({ name: m.name, id: m.id, type: "osm_sever" });
+            files_.push({ name: m.name, id: m.id, type: "osm_sever" });
+
+            files.sort((a, b) => {
+              return b.name.localeCompare(a.name);
+            });
+          } else {
+            for (let n = 0; n < s[i].childNodes.length; n++) {
+              if (s[i].childNodes[n].tagName == "tag") {
+                if (s[i].childNodes[n].textContent == setting.osm_tag) {
+                  let m = {
+                    name: s[i].getAttribute("name"),
+                    id: s[i].getAttribute("id"),
+                  };
+
+                  files.push({ name: m.name, id: m.id, type: "osm_sever" });
+                  files_.push({ name: m.name, id: m.id, type: "osm_sever" });
+
+                  files.sort((a, b) => {
+                    return b.name.localeCompare(a.name);
+                  });
+                }
+              }
+            }
+          }
+        }
+        files.forEach((e) => {
+          document
+            .querySelector("div#osm-server-gpx")
+            .insertAdjacentHTML(
+              "afterend",
+              '<div class="item" data-id=' +
+                e.id +
+                ' data-map="gpx-osm">' +
+                e.name +
+                "</div>"
+            );
+        });
+      })
+
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
   return {
     OAuth_osm,
     osm_server_upload_gpx,
     get_user,
     osm_update_gpx,
     osm_delete_gpx,
+    osm_server_load_gpx,
+    osm_server_list_gpx,
   };
 })();

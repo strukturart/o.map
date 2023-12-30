@@ -15,7 +15,6 @@ let tracking_group = new L.FeatureGroup();
 let gpx_group = new L.FeatureGroup();
 let geoJSON_group = new L.FeatureGroup();
 var hotline_group = new L.FeatureGroup();
-
 var jsonLayer = L.geoJSON("", { color: "red" });
 let map;
 let tracking_timestamp = [];
@@ -24,8 +23,9 @@ let gpx_selection_info = {};
 let gpx_string;
 let tilesLayer = "";
 let n;
-
 let gps_lock;
+
+let files_ = [];
 
 const audio = document.createElement("audio");
 audio.mozAudioChannelType = "content";
@@ -467,6 +467,8 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       finder_gpx.on("fileFound", function (file, fileinfo, storageName) {
+        files_.push({ name: fileinfo.name, path: fileinfo.path, type: "gpx" });
+
         files.push({ name: fileinfo.name, path: fileinfo.path, type: "gpx" });
         files.sort((a, b) => {
           return b.name.localeCompare(a.name);
@@ -484,7 +486,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       let filename = e.split("/");
       filename = filename[filename.length - 1];
-
+      files_.push({ name: filename, path: e, type: "gpx" });
       files.push({ name: filename, path: e, type: "gpx" });
       files.sort((a, b) => {
         return b.name.localeCompare(a.name);
@@ -558,6 +560,12 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       });
       finder.on("fileFound", function (file, fileinfo, storageName) {
+        files_.push({
+          name: fileinfo.name,
+          path: fileinfo.path,
+          type: "geoJSON",
+        });
+
         files.push({
           name: fileinfo.name,
           path: fileinfo.path,
@@ -570,12 +578,12 @@ document.addEventListener("DOMContentLoaded", function () {
     } catch (e) {}
 
     //KaiOS 3.x
-
     let list_files_callback = function (e) {
       let files = [];
 
       let filename = e.split("/");
       filename = filename[filename.length - 1];
+      files_.push({ name: filename, path: e, type: "geoJSON" });
 
       files.push({ name: filename, path: e, type: "geoJSON" });
       files.sort((a, b) => {
@@ -893,14 +901,21 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   let open_finder = function () {
+    console.log(files_);
     settings.load_settings();
     finder_tabindex();
     document.querySelector("div#finder").style.display = "block";
-    finder_navigation("start");
     status.windowOpen = "finder";
 
     activelayer();
     mapcenter_position();
+
+    if (general.active_item == "") {
+      finder_navigation("start");
+    } else {
+      general.active_item.focus();
+      tabIndex = document.activeElement.getAttribute("tabindex");
+    }
 
     //openweather request
     if (setting.openweather_api == "") return false;
@@ -1675,6 +1690,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (general.active_item.getAttribute("data-map") == "geojson") {
+      document.querySelectorAll("#files-option div").forEach(function (e) {
+        e.style.display = "none";
+      });
       document.querySelectorAll("div.only-gpx-local").forEach(function (e) {
         e.style.display = "block";
       });
@@ -1867,6 +1885,10 @@ document.addEventListener("DOMContentLoaded", function () {
       count--;
       if (count == -1) count = finder_panels.length - 1;
     }
+
+    if (dir == "start") {
+      console.log("start");
+    }
     document.getElementById(finder_panels[count].id).style.display = "block";
     document.getElementById(finder_panels[count].id).focus();
 
@@ -1911,7 +1933,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (finder_panels[count].id == "routing") {
-      console.log("hey. " + setting.routing_profil);
       document.querySelectorAll(".item")[0].focus();
       helper.bottom_bar("", "", "");
       document.querySelector("button.routing-profile-status").innerText =
@@ -1939,6 +1960,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.activeElement.parentNode.focus();
       }
       status.activeElement = document.activeElement;
+
       //get items from current
 
       let b = document.activeElement.closest("div.menu-box");
@@ -2212,7 +2234,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (status.windowOpen == "scan") {
           qr.stop_scan();
           open_finder();
-          windowOpen = "finder";
+          //windowOpen = "finder";
         }
 
         if (
@@ -2224,8 +2246,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (status.windowOpen == "files-option") {
           document.getElementById("files-option").style.display = "none";
           open_finder();
-          windowOpen = "finder";
-          general.active_item.focus();
+          // windowOpen = "finder";
+
           break;
         }
 

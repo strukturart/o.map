@@ -29,9 +29,7 @@ const module = (() => {
 
       var notification = new window.Notification(title, options);
 
-      notification.onerror = function (err) {
-        console.log(err);
-      };
+      notification.onerror = function (err) {};
       notification.onclick = function (event) {
         if (window.navigator.mozApps) {
           var request = window.navigator.mozApps.getSelf();
@@ -525,9 +523,7 @@ const module = (() => {
 
   let update_gpx_info = function () {
     document.getElementById("gpx-name").innerText = gpx_selection_info.name;
-    document.getElementById("gpx-time").innerText = format_ms(
-      gpx_selection_info.duration
-    );
+    document.getElementById("gpx-time").innerText = format_ms(gpx_selection_info.duration);
 
     document.querySelector("#gpx-evo-up span").innerText =
       gpx_selection_info.elevation_gain.toFixed(2);
@@ -736,7 +732,7 @@ const module = (() => {
           if (altitudeDifference > 0) {
             gain += altitudeDifference;
           } else {
-            loss -= altitudeDifference; // Convert negative difference to positive for loss
+            loss += Math.abs(altitudeDifference); 
           }
         }
       }
@@ -800,13 +796,13 @@ const module = (() => {
       tracking.gain
     )
       ? "-"
-      : tracking.gain;
+      : tracking.gain.toFixed(2);
 
     document.querySelector("#tracking-view .loss div").innerText = isNaN(
       tracking.loss
     )
       ? "-"
-      : tracking.loss;
+      : tracking.loss.toFixed(2);
 
     document.querySelector("#tracking-view .altitude div").innerText = isNaN(
       tracking.altitude
@@ -817,9 +813,9 @@ const module = (() => {
     document.querySelector("#tracking-view .average-speed div").innerText =
       isNaN(tracking.speed_average) ? "-" : tracking.speed_average;
 
-    document.querySelector("#tracking-evo-down span").innerText = tracking.loss;
-    document.querySelector("#tracking-evo-up span").innerText = tracking.gain;
-    document.getElementById("tracking-altitude").innerText = tracking.altitude;
+    document.querySelector("#tracking-evo-down span").innerText = tracking.loss.toFixed(2);
+    document.querySelector("#tracking-evo-up span").innerText = tracking.gain.toFixed(2);
+    document.getElementById("tracking-altitude").innerText = tracking.altitude.toFixed(2);
 
     document.querySelector("#tracking-speed-average-time").innerText = isNaN(
       tracking.speed_average
@@ -904,7 +900,7 @@ const module = (() => {
             polyline_tracking.addLatLng([
               tracking_cache[i].lat,
               tracking_cache[i].lng,
-              tracking_cache[i].timestamp,
+              tracking_cache[i].alt,
             ]);
 
             tracking_timestamp.push(tracking_cache[i].timestamp);
@@ -927,15 +923,12 @@ const module = (() => {
         //store time
         let ts = new Date();
         tracking_timestamp.push(ts.toISOString());
-        //store altitude
-        let alt = "";
-        if (mainmarker.device_alt) {
-          if (isNaN(mainmarker.device_alt)) {
-            alt = null;
-          } else {
-            alt = mainmarker.device_alt;
-            tracking_altitude.push(alt);
-          }
+        // Store altitude
+        let alt = null;
+
+        if (mainmarker.device_alt && !isNaN(mainmarker.device_alt)) {
+          alt = mainmarker.device_alt;
+          //  tracking_altitude.push(alt);
         }
 
         polyline_tracking.addLatLng([
@@ -967,6 +960,12 @@ const module = (() => {
             console.log(e);
           }
 
+          // Extract altitudes from the LatLng objects and filter out null values
+          tracking_altitude = tracking_cache
+            .map((latlng) => latlng.alt)
+            .filter((altitude) => altitude !== null);
+
+          // Now you can use the filtered tracking_altitude array in the calculateGainAndLoss function
           const { gain, loss } = calculateGainAndLoss(tracking_altitude, 50);
 
           //get tracking data to display in view
@@ -1213,5 +1212,6 @@ const module = (() => {
     pushLocalNotification,
     uniqueId,
     parseGPX,
+    update_gpx_info,
   };
 })();
