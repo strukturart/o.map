@@ -130,8 +130,8 @@ const osm = (() => {
     }
   };
 
-  const get_user = function () {
-    if (!general.osm_token) {
+  const get_user = function (notification = true) {
+    if (!general.osm_token && notification) {
       helper.side_toaster(
         "looks like you are not connected to openstreetmap",
         5000
@@ -246,7 +246,7 @@ const osm = (() => {
   ///List files
   /////////////
 
-  let osm_server_list_gpx = function () {
+  let osm_server_list_gpx = function (callback) {
     let n = "Bearer " + localStorage.getItem("openstreetmap_token");
 
     const myHeaders = new Headers({
@@ -272,8 +272,12 @@ const osm = (() => {
               id: s[i].getAttribute("id"),
             };
 
-            files.push({ name: m.name, id: m.id, type: "osm_sever" });
-            files_.push({ name: m.name, id: m.id, type: "osm_sever" });
+            files.push({
+              name: "_" + m.name,
+              path: m.id,
+              id: m.id,
+              type: "osm_sever",
+            });
 
             files.sort((a, b) => {
               return b.name.localeCompare(a.name);
@@ -287,8 +291,12 @@ const osm = (() => {
                     id: s[i].getAttribute("id"),
                   };
 
-                  files.push({ name: m.name, id: m.id, type: "osm_sever" });
-                  files_.push({ name: m.name, id: m.id, type: "osm_sever" });
+                  files.push({
+                    name: m.name,
+                    path: m.id,
+                    id: m.id,
+                    type: "osm_sever",
+                  });
 
                   files.sort((a, b) => {
                     return b.name.localeCompare(a.name);
@@ -298,18 +306,7 @@ const osm = (() => {
             }
           }
         }
-        files.forEach((e) => {
-          document
-            .querySelector("div#osm-server-gpx")
-            .insertAdjacentHTML(
-              "afterend",
-              '<div class="item" data-id=' +
-                e.id +
-                ' data-map="gpx-osm">' +
-                e.name +
-                "</div>"
-            );
-        });
+        callback(files);
       })
 
       .catch((error) => {

@@ -1,7 +1,14 @@
 const overpass = (() => {
   function call(map, overpassQuery, icon) {
+    console.log(general.zoomlevel);
     //clear group before ad new items
-
+    if (general.zoomlevel > 13) {
+      helper.side_toaster(
+        "Please zoom, otherwise too much data will be loaded",
+        2000
+      );
+      return false;
+    }
     if (overpass_group != "") {
       overpass_group.clearLayers();
       contained = [];
@@ -42,10 +49,6 @@ const overpass = (() => {
     fetch(resultUrl)
       .then((response) => response.json())
       .then(function (data) {
-        if (!data) {
-          return false;
-        }
-
         let no_data = false;
         data.elements.forEach((element) => {
           if (element.type == "node") {
@@ -54,9 +57,8 @@ const overpass = (() => {
               .addTo(overpass_group)
               .setIcon(maps[icon]);
             try {
-            } catch (e) {
               k.bindPopup(element.tags.name);
-            }
+            } catch (e) {}
           }
         });
 

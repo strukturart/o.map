@@ -378,20 +378,21 @@ const module = (() => {
   ////////////////////
   // Flag to keep track of the need
   // of generating the new marker list
-  var f_upd_markers_list = true;
-  let set_f_upd_markers = function () {
-    f_upd_markers_list = true;
+  let markers_updated = function () {
+    marker_list_updated = false;
   };
 
+  let marker_list_updated = false;
+
   let markers_collection = []; //makers in map boundingbox
-  let l = [];
   let index = -1;
   let select_marker = function () {
-    if (f_upd_markers_list) {
+    index++;
+
+    if (marker_list_updated == false) {
       // Reset contained list
       markers_collection = [];
 
-      //merge markers in viewport
       if (overpass_group != "") {
         overpass_group.eachLayer(function (l) {
           markers_collection.push(l);
@@ -402,14 +403,13 @@ const module = (() => {
         markers_collection.push(l);
       });
 
-      // Clear flag
-      f_upd_markers_list = false;
+      marker_list_updated = true;
     }
 
     status.marker_selection = true;
     status.windowOpen = "marker";
 
-    index++;
+    console.log(markers_collection, index);
 
     if (index >= markers_collection.length) index = 0;
     map.setView(markers_collection[index]._latlng, map.getZoom());
@@ -461,6 +461,7 @@ const module = (() => {
     }
     return markers_collection[index];
   };
+
   //remove GPX
   let remove_gpx = function () {
     let i = 0;
@@ -523,7 +524,9 @@ const module = (() => {
 
   let update_gpx_info = function () {
     document.getElementById("gpx-name").innerText = gpx_selection_info.name;
-    document.getElementById("gpx-time").innerText = format_ms(gpx_selection_info.duration);
+    document.getElementById("gpx-time").innerText = format_ms(
+      gpx_selection_info.duration
+    );
 
     document.querySelector("#gpx-evo-up span").innerText =
       gpx_selection_info.elevation_gain.toFixed(2);
@@ -732,7 +735,7 @@ const module = (() => {
           if (altitudeDifference > 0) {
             gain += altitudeDifference;
           } else {
-            loss += Math.abs(altitudeDifference); 
+            loss += Math.abs(altitudeDifference);
           }
         }
       }
@@ -813,9 +816,12 @@ const module = (() => {
     document.querySelector("#tracking-view .average-speed div").innerText =
       isNaN(tracking.speed_average) ? "-" : tracking.speed_average;
 
-    document.querySelector("#tracking-evo-down span").innerText = tracking.loss.toFixed(2);
-    document.querySelector("#tracking-evo-up span").innerText = tracking.gain.toFixed(2);
-    document.getElementById("tracking-altitude").innerText = tracking.altitude.toFixed(2);
+    document.querySelector("#tracking-evo-down span").innerText =
+      tracking.loss.toFixed(2);
+    document.querySelector("#tracking-evo-up span").innerText =
+      tracking.gain.toFixed(2);
+    document.getElementById("tracking-altitude").innerText =
+      tracking.altitude.toFixed(2);
 
     document.querySelector("#tracking-speed-average-time").innerText = isNaN(
       tracking.speed_average
@@ -849,6 +855,7 @@ const module = (() => {
         console.log(e);
       }
 
+      tracking_timestamp = [];
       tracking_altitude = [];
       document.getElementById("tracking-altitude").innerText = "";
       document.querySelector("div#tracking-distance").innerText = "";
@@ -903,8 +910,8 @@ const module = (() => {
               tracking_cache[i].alt,
             ]);
 
-            tracking_timestamp.push(tracking_cache[i].timestamp);
-            tracking_altitude.push(tracking_cache[i].alt);
+            //tracking_timestamp.push(tracking_cache[i].timestamp);
+            //tracking_altitude.push(tracking_cache[i].alt);
           }
         } else {
           localStorage.removeItem("tracking_cache");
@@ -922,13 +929,12 @@ const module = (() => {
 
         //store time
         let ts = new Date();
-        tracking_timestamp.push(ts.toISOString());
+        // tracking_timestamp.push(ts.toISOString());
         // Store altitude
         let alt = null;
 
         if (mainmarker.device_alt && !isNaN(mainmarker.device_alt)) {
           alt = mainmarker.device_alt;
-          //  tracking_altitude.push(alt);
         }
 
         polyline_tracking.addLatLng([
@@ -964,6 +970,11 @@ const module = (() => {
           tracking_altitude = tracking_cache
             .map((latlng) => latlng.alt)
             .filter((altitude) => altitude !== null);
+
+          // Extract time from the LatLng objects and filter out null values
+          tracking_timestamp = tracking_cache
+            .map((latlng) => latlng.timestamp)
+            .filter((timestamp) => timestamp !== null);
 
           // Now you can use the filtered tracking_altitude array in the calculateGainAndLoss function
           const { gain, loss } = calculateGainAndLoss(tracking_altitude, 50);
@@ -1191,7 +1202,7 @@ const module = (() => {
   return {
     hotline,
     convert_units,
-    set_f_upd_markers,
+    markers_updated,
     select_marker,
     select_gpx,
     calc_distance,

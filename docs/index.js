@@ -165,7 +165,7 @@ map = new L.map("map-container", {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-  osm.get_user();
+  osm.get_user(false);
   settings.load_settings();
 
   let routing_service_callback = function (e) {
@@ -426,6 +426,97 @@ document.addEventListener("DOMContentLoaded", function () {
 
   //get files and store
 
+  // Function to remove duplicates based on the 'name' property
+  function removeDuplicates(arr, prop) {
+    return arr.filter((obj, index, array) => {
+      return array.findIndex((o) => o[prop] === obj[prop]) === index;
+    });
+  }
+  let writeFileList = function (data) {
+    // Clear existing items before adding new ones
+    // Remove existing items with the same data-map attribute
+    document.querySelectorAll('[data-map="gpx"]').forEach((element) => {
+      element.remove();
+    });
+
+    document.querySelectorAll('[data-map="geojson"]').forEach((element) => {
+      element.remove();
+    });
+
+    document.querySelectorAll('[data-map="gpx-osm"]').forEach((element) => {
+      element.remove();
+    });
+
+    // Remove duplicates based on the 'name' property
+    var uniqueData = removeDuplicates(data, "name");
+
+    _files = uniqueData;
+
+    console.log(uniqueData);
+
+    uniqueData.forEach((e) => {
+      if (e.type == "gpx") {
+        document.getElementById("gpx-title").style.display = "block";
+
+        document
+          .querySelector("div#gpx")
+          .insertAdjacentHTML(
+            "afterend",
+            '<div class="item gpx-file" data-map="gpx" data-filename="' +
+              e.name +
+              '" data-filepath="' +
+              e.path +
+              '">' +
+              e.name +
+              "</div>"
+          );
+
+        // Load gpx file on start
+        if (e.name.substring(0, 1) == "_") {
+          module.loadGPX(e.path);
+        }
+      }
+
+      if (e.type == "geoJSON") {
+        document.getElementById("tracks-title").style.display = "block";
+
+        document
+          .querySelector("div#tracksmarkers")
+          .insertAdjacentHTML(
+            "afterend",
+            '<div class="item" data-map="geojson" data-filename="' +
+              e.name +
+              '" data-filepath="' +
+              e.path +
+              "/" +
+              e.name +
+              '">' +
+              e.name +
+              "</div>"
+          );
+
+        // Load startup item
+        if (e.name.substring(0, 1) == "_") {
+          module.loadGeoJSON(e.path + "/" + e.name, false);
+        }
+      }
+
+      if (e.type == "osm_sever") {
+        document.getElementById("osm-server-gpx-title").style.display = "block";
+        document
+          .querySelector("div#osm-server-gpx")
+          .insertAdjacentHTML(
+            "afterend",
+            '<div class="item" data-id=' +
+              e.id +
+              ' data-map="gpx-osm">' +
+              e.name +
+              "</div>"
+          );
+      }
+    });
+  };
+
   //////////////////////////////////
   //READ GPX////////////////////////
   /////////////////////////////////
@@ -434,8 +525,6 @@ document.addEventListener("DOMContentLoaded", function () {
   let find_gpx = function () {
     //KaiOS 2.x
     try {
-      let files = [];
-
       //search gpx
       let finder_gpx = new Applait.Finder({
         type: "sdcard",
@@ -444,36 +533,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
       finder_gpx.search(".gpx");
       finder_gpx.on("searchComplete", function (needle, filematchcount) {
-        files.forEach((e) => {
-          document
-            .querySelector("div#gpx")
-            .insertAdjacentHTML(
-              "afterend",
-              '<div class="item gpx-file" data-map="gpx" data-filename="' +
-                e.name +
-                '" data-filepath="' +
-                e.path +
-                "/" +
-                e.name +
-                '">' +
-                e.name +
-                "</div>"
-            );
-          //load gpx file on start
-          if (e.name.substring(0, 1) == "_") {
-            module.loadGPX(e.path + "/" + e.name);
-          }
-        });
+        writeFileList(files_);
       });
 
       finder_gpx.on("fileFound", function (file, fileinfo, storageName) {
-        files_.push({ name: fileinfo.name, path: fileinfo.path, type: "gpx" });
-
-        files.push({ name: fileinfo.name, path: fileinfo.path, type: "gpx" });
-        files.sort((a, b) => {
-          return b.name.localeCompare(a.name);
+        files_.push({
+          name: fileinfo.name,
+          path: file.name,
+          type: "gpx",
         });
-        document.getElementById("gpx-title").style.display = "block";
       });
     } catch (e) {}
 
@@ -487,29 +555,8 @@ document.addEventListener("DOMContentLoaded", function () {
       let filename = e.split("/");
       filename = filename[filename.length - 1];
       files_.push({ name: filename, path: e, type: "gpx" });
-      files.push({ name: filename, path: e, type: "gpx" });
-      files.sort((a, b) => {
-        return b.name.localeCompare(a.name);
-      });
 
-      files.forEach((e) => {
-        document
-          .querySelector("div#gpx")
-          .insertAdjacentHTML(
-            "afterend",
-            '<div class="item gpx-file" data-map="gpx" data-filename="' +
-              e.name +
-              '" data-filepath="' +
-              e.path +
-              '">' +
-              e.name +
-              "</div>"
-          );
-        //load gpx file on start
-        if (e.name.substring(0, 1) == "_") {
-          module.loadGPX(e.path);
-        }
-      });
+      writeFileList(files_);
     };
 
     try {
@@ -526,8 +573,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let find_geojson = function () {
     try {
-      let files = [];
-
       //search geojson
       let finder = new Applait.Finder({
         type: "sdcard",
@@ -536,43 +581,13 @@ document.addEventListener("DOMContentLoaded", function () {
       finder.search(".geojson");
 
       finder.on("searchComplete", function (needle, filematchcount) {
-        files.forEach((e) => {
-          document
-            .querySelector("div#tracksmarkers")
-            .insertAdjacentHTML(
-              "afterend",
-              '<div class="item" data-map="geojson" data-filename="' +
-                e.name +
-                '" data-filepath="' +
-                e.path +
-                "/" +
-                e.name +
-                '">' +
-                e.name +
-                "</div>"
-            );
-          //load startup item
-
-          if (e.name.substring(0, 1) == "_") {
-            module.loadGeoJSON(e.path + "/" + e.name, false);
-          }
-          document.getElementById("tracks-title").style.display = "block";
-        });
+        writeFileList(files_);
       });
       finder.on("fileFound", function (file, fileinfo, storageName) {
         files_.push({
           name: fileinfo.name,
-          path: fileinfo.path,
+          path: file.name,
           type: "geoJSON",
-        });
-
-        files.push({
-          name: fileinfo.name,
-          path: fileinfo.path,
-          type: "geoJSON",
-        });
-        files.sort((a, b) => {
-          return b.name.localeCompare(a.name);
         });
       });
     } catch (e) {}
@@ -585,30 +600,7 @@ document.addEventListener("DOMContentLoaded", function () {
       filename = filename[filename.length - 1];
       files_.push({ name: filename, path: e, type: "geoJSON" });
 
-      files.push({ name: filename, path: e, type: "geoJSON" });
-      files.sort((a, b) => {
-        return b.name.localeCompare(a.name);
-      });
-
-      files.forEach((e) => {
-        document
-          .querySelector("div#tracksmarkers")
-          .insertAdjacentHTML(
-            "afterend",
-            '<div class="item" data-map="geojson" data-filename="' +
-              e.name +
-              '" data-filepath="' +
-              e.path +
-              '">' +
-              e.name +
-              "</div>"
-          );
-
-        if (e.name.substring(0, 1) == "_") {
-          module.loadGeoJSON(e.path, false);
-        }
-        document.getElementById("tracks-title").style.display = "block";
-      });
+      writeFileList(files_);
     };
 
     try {
@@ -713,8 +705,13 @@ document.addEventListener("DOMContentLoaded", function () {
   if (localStorage.getItem("openstreetmap_token") == null) {
     document.getElementById("osm-server-gpx-title").style.display = "none";
   } else {
-    osm.osm_server_list_gpx();
-    document.getElementById("osm-server-gpx-title").style.display = "block";
+    let osm_server_list_gpx_callback = (e) => {
+      e.forEach((m) => {
+        files_.push(m);
+      });
+      writeFileList(files_);
+    };
+    osm.osm_server_list_gpx(osm_server_list_gpx_callback);
   }
   const osm_oauth_callback = function () {
     document.getElementById("osm-user").innerText =
@@ -723,18 +720,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let gpx_callback = function (filename) {
     helper.side_toaster(filename + " saved", 5000);
-    document
-      .querySelector("div#gpx")
-      .nextSibling.insertAdjacentHTML(
-        "afterend",
-        "<div class='item' data-map='gpx' data-filename='" +
-          filename +
-          "' data-filepath='" +
-          filename +
-          "'>" +
-          filename +
-          "</div>"
-      );
+    find_gpx();
 
     hotline_group.clearLayers();
   };
@@ -1377,7 +1363,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelector("div#markers-option").style.display = "none";
         status.windowOpen = "map";
         helper.bottom_bar("", "", "");
-        module.set_f_upd_markers();
+        module.markers_updated();
       }
 
       if (item_value == "save_marker") {
@@ -2362,6 +2348,8 @@ document.addEventListener("DOMContentLoaded", function () {
             w = module.user_input("return");
           }
 
+          console.log(setting.export_path + w + ".geojson");
+
           geojson.save_geojson(
             setting.export_path + w + ".geojson",
             "single-direct"
@@ -2724,7 +2712,7 @@ document.addEventListener("DOMContentLoaded", function () {
           L.marker([mainmarker.current_lat, mainmarker.current_lng]).addTo(
             markers_group
           );
-          module.set_f_upd_markers();
+          module.markers_updated();
         }
         break;
 
@@ -2737,7 +2725,7 @@ document.addEventListener("DOMContentLoaded", function () {
       case "*":
         if (status.intro) return false;
         if (status.keylock) return false;
-        if (status.windowOpen == "map") {
+        if (status.windowOpen == "map" || status.windowOpen == "marker") {
           mainmarker.selected_marker = module.select_marker();
         }
 

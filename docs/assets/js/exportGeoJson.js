@@ -26,7 +26,6 @@ const geojson = ((_) => {
     if (type == "path") {
       let p = geoJSON_group.toGeoJSON();
       extData = JSON.stringify(p);
-      console.log(p);
     }
 
     if (type == "tracking") {
@@ -56,6 +55,8 @@ const geojson = ((_) => {
 
       extData = JSON.stringify(collection);
     }
+
+    console.log(extData);
 
     let geojson_file = new Blob([extData], {
       type: "application/json",
@@ -89,10 +90,14 @@ const geojson = ((_) => {
         module.measure_distance("destroy");
       }
       helper.side_toaster("saved", 5000);
+      let filename = file_path_name.split("/");
+      filename = filename[filename.length - 1];
+      // files_.push({ name: filename, path: file_path_name, type: "geoJSON" });
     };
 
-    requestAdd.onerror = function () {
-      helper.toaster(
+    requestAdd.onerror = function (e) {
+      console.log(e);
+      helper.side_toaster(
         file_path_name +
           " Unable to write the file, the file name may already be used",
         10000

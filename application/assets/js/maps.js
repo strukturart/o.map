@@ -212,6 +212,8 @@ const maps = (() => {
   let overlayer = "";
 
   let addMap = function (url, attribution, max_zoom, type) {
+    if (attribution == null) attribution = "";
+    if (max_zoom == null) max_zoom = 12;
     //remove layer
     if (url == "") {
       if (map.hasLayer(tilesLayer)) {
@@ -325,13 +327,9 @@ const maps = (() => {
       if (overpass_query == url) {
         overpass.call(map, url, "climbing_icon");
         general.active_layer.splice(general.active_layer.indexOf(url), 1);
-        return false;
-      }
-
-      map.setZoom(14);
-      setTimeout(function () {
+      } else {
         overpass.call(map, url, "climbing_icon");
-      }, 1000);
+      }
     }
   };
 

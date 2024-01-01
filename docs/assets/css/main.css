@@ -10,6 +10,7 @@
   --color-seven: gainsboro;
   --color-eight: rgb(241, 86, 24);
   --color-ten: rgb(218, 229, 253);
+  --color-eleven: rgb(44, 83, 17);
 }
 
 *,
@@ -650,7 +651,7 @@ div#intro div#icon img {
 }
 
 div#intro div#icon {
-  background: var(--color-ten);
+  background: var(--color-eleven);
   border-radius: 10px;
   width: 70px;
   display: block;

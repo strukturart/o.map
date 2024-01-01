@@ -1,5 +1,5 @@
   {
-  "version": "1.9.759",
+  "version": "1.9.762",
   "version_name": "hotline",
   "name": "o.map",
   "description": "O.map, your ultimate navigation companion for KaiOS-powered devices. O.map is a lightweight and feature-rich map application designed specifically for KaiOS, enabling you to explore and navigate the world with ease. Whether you're a local resident, a tourist, or an adventurer, O.map is here to enhance your journey and keep you on the right track.",
@@ -44,7 +44,7 @@
   "locales": {
     "en-US": {
       "name": "o.map",
-      "subtitle": "openstreetmap app",
+      "subtitle": "O.map is a lightweight and feature-rich map application",
       "description": "O.map, your ultimate navigation companion for KaiOS-powered devices. O.map is a lightweight and feature-rich map application designed specifically for KaiOS, enabling you to explore and navigate the world with ease. Whether you're a local resident, a tourist, or an adventurer, o.map is here to enhance your journey and keep you on the right track."
 
     }
