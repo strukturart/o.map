@@ -673,51 +673,14 @@ const module = (() => {
   };
 
   /////////////////////
-  ////STARTUP MARKERS
-  ///////////////////
-
-  let startup_marker = function (markerid, action) {
-    if (action == "set") {
-      if (!mainmarker.startup_marker_toggle) {
-        mainmarker.startup_markers.push({ latlng: markerid._latlng });
-        localStorage.setItem(
-          "startup_markers",
-          JSON.stringify(mainmarker.startup_markers)
-        );
-        helper.toaster("set as startup marker", 2000);
-      } else {
-        for (let i = 0; i < mainmarker.startup_markers.length; i++) {
-          if (
-            markerid._latlng.lng == mainmarker.startup_markers[i].latlng.lng &&
-            markerid._latlng.lat == mainmarker.startup_markers[i].latlng.lat
-          ) {
-            mainmarker.startup_markers.splice(i, 1);
-            localStorage.setItem(
-              "startup_markers",
-              JSON.stringify(mainmarker.startup_markers)
-            );
-            helper.toaster("unset startup marker", 2000);
-          }
-        }
-      }
-    }
-
-    if (action == "add") {
-      if (mainmarker.startup_markers.length == 0) return false;
-      mainmarker.startup_markers.forEach(function (index) {
-        L.marker([index.latlng.lat, index.latlng.lng]).addTo(markers_group);
-      });
-    }
-  };
-
-  /////////////////////
   ////PATH & TRACKING
   ///////////////////
 
   //calc gain & loss
-  function calculateGainAndLoss(altitudes, threshold) {
+  function calculateGainAndLoss(altitudes) {
     let gain = 0;
     let loss = 0;
+    /*
     let previousValidAltitude = null;
 
     for (let i = 0; i < altitudes.length; i++) {
@@ -742,6 +705,13 @@ const module = (() => {
 
       previousValidAltitude = currentAltitude;
     }
+    */
+
+    const highestAltitude = Math.max(...altitudes);
+    const lowestAltitude = Math.min(...altitudes);
+
+    gain = highestAltitude - altitudes[0];
+    loss = altitudes[0] - lowestAltitude;
 
     return { gain, loss };
   }
@@ -922,10 +892,11 @@ const module = (() => {
       }
       let lastIntegerPart = 0;
       tracking_interval = setInterval(function () {
-        // Only record data if accuracy is high enough
+        // Only record data if accuracy is good
+        if (mainmarker.accuracy > 10000) return false;
 
-        if (mainmarker.accuracy > 10000 && mainmarker.positionHasChanged)
-          return false;
+        // Only record data if device has moved
+        if (general.positionHasChanged == false) return false;
 
         //store time
         let ts = new Date();
@@ -969,15 +940,15 @@ const module = (() => {
           // Extract altitudes from the LatLng objects and filter out null values
           tracking_altitude = tracking_cache
             .map((latlng) => latlng.alt)
-            .filter((altitude) => altitude !== null);
+            .filter((altitude) => altitude !== null && altitude != "");
 
           // Extract time from the LatLng objects and filter out null values
           tracking_timestamp = tracking_cache
             .map((latlng) => latlng.timestamp)
-            .filter((timestamp) => timestamp !== null);
+            .filter((timestamp) => timestamp !== null && timestamp !== "");
 
           // Now you can use the filtered tracking_altitude array in the calculateGainAndLoss function
-          const { gain, loss } = calculateGainAndLoss(tracking_altitude, 50);
+          const { gain, loss } = calculateGainAndLoss(tracking_altitude);
 
           //get tracking data to display in view
           new L.GPX(toGPX(), { async: true }).on("loaded", function (e) {
@@ -1210,7 +1181,6 @@ const module = (() => {
     measure_distance,
     link_to_marker,
     popup_option,
-    startup_marker,
     loadGeoJSON,
     loadGPX,
     sunrise,

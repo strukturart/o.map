@@ -25,7 +25,7 @@ let tilesLayer = "";
 let n;
 let gps_lock;
 
-let files_ = [];
+let files = [];
 
 const audio = document.createElement("audio");
 audio.mozAudioChannelType = "content";
@@ -47,11 +47,7 @@ let mainmarker = {
   target_marker: "",
   selected_marker: "",
   gpx_selection_latlng: [],
-  startup_markers:
-    localStorage.getItem("startup_markers") != null
-      ? JSON.parse(localStorage.getItem("startup_markers"))
-      : [],
-  startup_marker_toggle: false,
+
   tracking_distance: 0,
   auto_view_center: false,
   device_lat: "",
@@ -399,7 +395,6 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelector("div#intro").style.display = "none";
 
     build_menu();
-    module.startup_marker("", "add");
     getLocation("init");
     status.windowOpen = "map";
     status.intro = false;
@@ -450,7 +445,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Remove duplicates based on the 'name' property
     var uniqueData = removeDuplicates(data, "name");
 
-    _files = uniqueData;
+    files = uniqueData;
 
     console.log(uniqueData);
 
@@ -488,8 +483,6 @@ document.addEventListener("DOMContentLoaded", function () {
               e.name +
               '" data-filepath="' +
               e.path +
-              "/" +
-              e.name +
               '">' +
               e.name +
               "</div>"
@@ -497,7 +490,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Load startup item
         if (e.name.substring(0, 1) == "_") {
-          module.loadGeoJSON(e.path + "/" + e.name, false);
+          module.loadGeoJSON(e.path, false);
         }
       }
 
@@ -533,11 +526,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
       finder_gpx.search(".gpx");
       finder_gpx.on("searchComplete", function (needle, filematchcount) {
-        writeFileList(files_);
+        writeFileList(files);
       });
 
       finder_gpx.on("fileFound", function (file, fileinfo, storageName) {
-        files_.push({
+        files.push({
           name: fileinfo.name,
           path: file.name,
           type: "gpx",
@@ -554,9 +547,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       let filename = e.split("/");
       filename = filename[filename.length - 1];
-      files_.push({ name: filename, path: e, type: "gpx" });
+      files.push({ name: filename, path: e, type: "gpx" });
 
-      writeFileList(files_);
+      writeFileList(files);
     };
 
     try {
@@ -581,10 +574,10 @@ document.addEventListener("DOMContentLoaded", function () {
       finder.search(".geojson");
 
       finder.on("searchComplete", function (needle, filematchcount) {
-        writeFileList(files_);
+        writeFileList(files);
       });
       finder.on("fileFound", function (file, fileinfo, storageName) {
-        files_.push({
+        files.push({
           name: fileinfo.name,
           path: file.name,
           type: "geoJSON",
@@ -594,13 +587,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     //KaiOS 3.x
     let list_files_callback = function (e) {
-      let files = [];
-
       let filename = e.split("/");
       filename = filename[filename.length - 1];
-      files_.push({ name: filename, path: e, type: "geoJSON" });
+      files.push({ name: filename, path: e, type: "geoJSON" });
 
-      writeFileList(files_);
+      writeFileList(files);
     };
 
     try {
@@ -707,9 +698,9 @@ document.addEventListener("DOMContentLoaded", function () {
   } else {
     let osm_server_list_gpx_callback = (e) => {
       e.forEach((m) => {
-        files_.push(m);
+        files.push(m);
       });
-      writeFileList(files_);
+      writeFileList(files);
     };
     osm.osm_server_list_gpx(osm_server_list_gpx_callback);
   }
@@ -887,7 +878,7 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   let open_finder = function () {
-    console.log(files_);
+    console.log(files);
     settings.load_settings();
     finder_tabindex();
     document.querySelector("div#finder").style.display = "block";
@@ -918,6 +909,11 @@ document.addEventListener("DOMContentLoaded", function () {
     helper.calculateDatabaseSizeInMB(tilesLayer._db).then(function (sizeInMB) {
       document.querySelector("#clear-cache em").innerText = sizeInMB.toFixed(2);
     });
+  };
+
+  let geojson_save_callback = (file) => {
+    files.push(file);
+    find_geojson();
   };
 
   //////////////////////////
@@ -1296,12 +1292,6 @@ document.addEventListener("DOMContentLoaded", function () {
           4000
         );
         document.querySelector("div#markers-option").style.display = "none";
-        status.windowOpen = "map";
-        helper.bottom_bar("", "", "");
-      }
-
-      if (item_value == "set_startup_marker") {
-        module.startup_marker(mainmarker.selected_marker, "set");
         status.windowOpen = "map";
         helper.bottom_bar("", "", "");
       }
@@ -2352,7 +2342,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
           geojson.save_geojson(
             setting.export_path + w + ".geojson",
-            "single-direct"
+            "single-direct",
+            geojson_save_callback
           );
           save_mode = "";
           break;
@@ -2369,7 +2360,11 @@ document.addEventListener("DOMContentLoaded", function () {
             w = module.user_input("return");
           }
 
-          geojson.save_geojson(setting.export_path + w + ".geojson", "single");
+          geojson.save_geojson(
+            setting.export_path + w + ".geojson",
+            "single",
+            geojson_save_callback
+          );
           save_mode = "";
           break;
         }
@@ -2400,7 +2395,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
           geojson.save_geojson(
             setting.export_path + w + ".geojson",
-            "collection"
+            "collection",
+            geojson_save_callback
           );
 
           save_mode = "";
@@ -2415,7 +2411,11 @@ document.addEventListener("DOMContentLoaded", function () {
             w = module.user_input("return");
           }
 
-          geojson.save_geojson(setting.export_path + w + ".geojson", "routing");
+          geojson.save_geojson(
+            setting.export_path + w + ".geojson",
+            "routing",
+            geojson_save_callback
+          );
           save_mode = "";
           break;
         }

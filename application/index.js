@@ -47,11 +47,7 @@ let mainmarker = {
   target_marker: "",
   selected_marker: "",
   gpx_selection_latlng: [],
-  startup_markers:
-    localStorage.getItem("startup_markers") != null
-      ? JSON.parse(localStorage.getItem("startup_markers"))
-      : [],
-  startup_marker_toggle: false,
+
   tracking_distance: 0,
   auto_view_center: false,
   device_lat: "",
@@ -399,7 +395,6 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelector("div#intro").style.display = "none";
 
     build_menu();
-    module.startup_marker("", "add");
     getLocation("init");
     status.windowOpen = "map";
     status.intro = false;
@@ -488,8 +483,6 @@ document.addEventListener("DOMContentLoaded", function () {
               e.name +
               '" data-filepath="' +
               e.path +
-              "/" +
-              e.name +
               '">' +
               e.name +
               "</div>"
@@ -497,7 +490,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Load startup item
         if (e.name.substring(0, 1) == "_") {
-          module.loadGeoJSON(e.path + "/" + e.name, false);
+          module.loadGeoJSON(e.path, false);
         }
       }
 
@@ -918,6 +911,11 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   };
 
+  let geojson_save_callback = (file) => {
+    files.push(file);
+    find_geojson();
+  };
+
   //////////////////////////
   ///M A R K E R S//////////
   //////////////////////////
@@ -1294,12 +1292,6 @@ document.addEventListener("DOMContentLoaded", function () {
           4000
         );
         document.querySelector("div#markers-option").style.display = "none";
-        status.windowOpen = "map";
-        helper.bottom_bar("", "", "");
-      }
-
-      if (item_value == "set_startup_marker") {
-        module.startup_marker(mainmarker.selected_marker, "set");
         status.windowOpen = "map";
         helper.bottom_bar("", "", "");
       }
@@ -1855,6 +1847,10 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!routing.loaded) {
       finder_panels = finder_panels.filter((e) => e.id != "routing");
     }
+
+    if (files.length == 0) {
+      finder_panels = finder_panels.filter((e) => e.id != "files");
+    }
     tabIndex = 0;
 
     panels.forEach(function (e) {
@@ -2350,7 +2346,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
           geojson.save_geojson(
             setting.export_path + w + ".geojson",
-            "single-direct"
+            "single-direct",
+            geojson_save_callback
           );
           save_mode = "";
           break;
@@ -2367,7 +2364,11 @@ document.addEventListener("DOMContentLoaded", function () {
             w = module.user_input("return");
           }
 
-          geojson.save_geojson(setting.export_path + w + ".geojson", "single");
+          geojson.save_geojson(
+            setting.export_path + w + ".geojson",
+            "single",
+            geojson_save_callback
+          );
           save_mode = "";
           break;
         }
@@ -2398,7 +2399,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
           geojson.save_geojson(
             setting.export_path + w + ".geojson",
-            "collection"
+            "collection",
+            geojson_save_callback
           );
 
           save_mode = "";
@@ -2413,7 +2415,11 @@ document.addEventListener("DOMContentLoaded", function () {
             w = module.user_input("return");
           }
 
-          geojson.save_geojson(setting.export_path + w + ".geojson", "routing");
+          geojson.save_geojson(
+            setting.export_path + w + ".geojson",
+            "routing",
+            geojson_save_callback
+          );
           save_mode = "";
           break;
         }

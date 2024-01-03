@@ -2,7 +2,7 @@ const geojson = ((_) => {
   ///////////
   //save geoJson file
   /////////////////
-  const save_geojson = function (file_path_name, type) {
+  const save_geojson = function (file_path_name, type, callback) {
     let extData = "";
 
     if (type == "single-direct") {
@@ -92,7 +92,8 @@ const geojson = ((_) => {
       helper.side_toaster("saved", 5000);
       let filename = file_path_name.split("/");
       filename = filename[filename.length - 1];
-      // files_.push({ name: filename, path: file_path_name, type: "geoJSON" });
+      let file = { name: filename, path: file_path_name, type: "geoJSON" };
+      callback(file);
     };
 
     requestAdd.onerror = function (e) {

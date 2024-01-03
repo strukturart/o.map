@@ -846,12 +846,8 @@ div#markers-option div:last-child {
   margin: 0 0 100px 0;
 }
 
-div#markers-option div:last-child {
-  margin: 0 0 100px 0;
-}
-
 div#markers-option div input {
-  margin: 0 0 100px 0;
+  margin: 0 0 10px 0;
   min-width: 100%;
   padding: 10px;
 }
