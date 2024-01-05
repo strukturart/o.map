@@ -49,8 +49,10 @@ const overpass = (() => {
     fetch(resultUrl)
       .then((response) => response.json())
       .then(function (data) {
+        console.log(data);
         let no_data = false;
         data.elements.forEach((element) => {
+          console.log(element);
           if (element.type == "node") {
             no_data = true;
             let k = L.marker([element.lat, element.lon])

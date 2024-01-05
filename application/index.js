@@ -386,6 +386,13 @@ document.addEventListener("DOMContentLoaded", function () {
         '<div class="item"  data-type="overpass" data-url="water" data-map="water">Drinking water <i>Layer</i></div>'
       );
 
+    document
+      .querySelector("div#overpass")
+      .insertAdjacentHTML(
+        "afterend",
+        '<div class="item"  data-type="overpass" data-url="public_transport" data-map="public_transport">public transport <i>Layer</i></div>'
+      );
+
     find_gpx();
     find_geojson();
     load_maps();
