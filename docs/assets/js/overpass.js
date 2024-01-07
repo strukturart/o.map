@@ -107,12 +107,17 @@ const overpass = (() => {
               data.elements.forEach((m) => {
                 if (m.id == e.ref) {
                   if (m.type == "node") {
-                    console.log(f);
+                    // console.log(f.tags.name);
                     let k = L.marker([m.lat, m.lon])
                       .addTo(overpass_group)
                       .setIcon(maps[icon]);
 
                     k.tag = overpassQuery;
+
+                    try {
+                      k.bindPopup(f.tags.name);
+                    } catch (e) {}
+
                     segmentCoords.push([m.lat, m.lon]);
 
                     //draw line and reset
@@ -129,10 +134,6 @@ const overpass = (() => {
                     }
 
                     history = f.id;
-
-                    try {
-                      k.bindPopup(element.tags.name);
-                    } catch (e) {}
                   }
                 }
               });

@@ -66,7 +66,7 @@ const maps = (() => {
   });
 
   const public_transport = L.divIcon({
-    iconSize: [40, 40],
+    iconSize: [20, 20],
     iconAnchor: [30, 40],
     className: "climbing-marker",
     html: '<div></div><div class="public_transport"></div>',

@@ -337,14 +337,14 @@ img.marker-1 {
 }
 
 .public_transport {
-  width: 15px;
-  height: 15px;
+  width: 10px;
+  height: 10px;
   background-color: #867772;
   border-radius: 50%;
   position: absolute;
   top: 23px;
   left: 23px;
-  border: 3px solid black;
+  border: 2px solid black;
 }
 
 .climbing {
