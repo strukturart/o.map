@@ -403,6 +403,13 @@ const module = (() => {
       }
     });
 
+    selected_polyline_markers_group.eachLayer(function (l) {
+      // Check if the layer is a marker and not already in markers_collection
+      if (l instanceof L.Marker && markers_collection.indexOf(l) === -1) {
+        markers_collection.push(l);
+      }
+    });
+
     status.marker_selection = true;
     status.windowOpen = "marker";
 
@@ -463,12 +470,34 @@ const module = (() => {
       }
     });
 
-    if (index_polyline >= polyline_collection.length) index = 0;
+    if (index_polyline >= polyline_collection.length) index_polyline = 0;
+    let hh = polyline_collection[index_polyline];
+    selected_polyline_markers_group.clearLayers();
 
     //show selected marker
-    let i = polyline_collection[index];
-    console.log(polyline_collection);
-    // map.setView(i[0]);
+    try {
+      let pu = polyline_collection[index_polyline].getPopup();
+
+      if (pu != undefined && pu._content != undefined) {
+        //get popup content
+        document.querySelector("input#popup").value = pu._content;
+        //show popup
+
+        polyline_collection[index_polyline].openPopup();
+        //close popup
+        setTimeout(function () {
+          polyline_collection[index_polyline].closePopup();
+        }, 5000);
+      }
+
+      map.setView(polyline_collection[index_polyline].getCenter());
+
+      hh.getLatLngs().forEach((e) => {
+        L.marker(e)
+          .addTo(selected_polyline_markers_group)
+          .setIcon(maps.public_transport);
+      });
+    } catch (e) {}
 
     return polyline_collection[index];
   };

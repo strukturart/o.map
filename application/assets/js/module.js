@@ -386,7 +386,6 @@ const module = (() => {
   let select_marker = function () {
     index++;
     let markers_collection = []; //makers in map boundingbox
-    let polyline_collection = [];
 
     // Reset contained list
     overpass_group.eachLayer(function (l) {
@@ -403,6 +402,13 @@ const module = (() => {
       }
     });
 
+    selected_polyline_markers_group.eachLayer(function (l) {
+      // Check if the layer is a marker and not already in markers_collection
+      if (l instanceof L.Marker && markers_collection.indexOf(l) === -1) {
+        markers_collection.push(l);
+      }
+    });
+
     status.marker_selection = true;
     status.windowOpen = "marker";
 
@@ -413,6 +419,7 @@ const module = (() => {
 
     //show selected marker
     map.setView(markers_collection[index].getLatLng());
+    console.log(markers_collection[index]);
 
     //popup
     document.querySelector("input#popup").value = "";
@@ -463,16 +470,42 @@ const module = (() => {
       }
     });
 
-    if (index_polyline >= polyline_collection.length) index = 0;
+    if (index_polyline >= polyline_collection.length) index_polyline = 0;
+    let hh = polyline_collection[index_polyline];
+    selected_polyline_markers_group.clearLayers();
 
     //show selected marker
-    let i = polyline_collection[index_polyline].getLatLngs();
-    console.log(polyline_collection[index_polyline]);
+    try {
+      let pu = polyline_collection[index_polyline].getPopup();
 
-    // Check if the polyline has a popup
-    var popup = polyline_collection[index_polyline];
+      if (pu != undefined && pu._content != undefined) {
+        //get popup content
+        document.querySelector("input#popup").value = pu._content;
+        //show popup
 
-    map.setView(i[0]);
+        polyline_collection[index_polyline].openPopup();
+        //close popup
+        setTimeout(function () {
+          polyline_collection[index_polyline].closePopup();
+        }, 5000);
+      }
+
+      map.setView(polyline_collection[index_polyline].getCenter());
+
+      // console.log(polyline_collection[index_polyline].markers);
+      /*
+      hh.getLatLngs().forEach((e) => {
+        L.marker(e)
+          .addTo(selected_polyline_markers_group)
+          .setIcon(maps.public_transport);
+      });*/
+
+      polyline_collection[index_polyline].markers.forEach((e) => {
+        L.marker(e.latlng)
+          .addTo(selected_polyline_markers_group)
+          .setIcon(maps.public_transport);
+      });
+    } catch (e) {}
 
     return polyline_collection[index];
   };

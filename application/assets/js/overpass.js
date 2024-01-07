@@ -21,19 +21,15 @@ const overpass = (() => {
 
   function call(map, overpassQuery, icon) {
     //clear group before ad new items
-    if (general.zoomlevel > 13) {
-      helper.side_toaster(
-        "Please zoom, otherwise too much data will be loaded",
-        2000
-      );
-      return false;
-    }
+
     let public_transport = false;
     let relation_query = "[" + overpassQuery + "]";
-    let way_query = overpassQuery;
+    let way_query = "[" + overpassQuery + "]";
+    let node_query = "[" + overpassQuery + "]";
     if (overpassQuery.indexOf("public_transport") > -1) {
+      node_query = "['public_transport'='stop_position']['bus'='yes']";
       relation_query = "['type'='route']['route'='bus']";
-      way_query = "public_transport=platform";
+      way_query = "['public_transport'='stop_platform']['bus'='yes']";
       public_transport = true;
     }
 
@@ -43,7 +39,6 @@ const overpass = (() => {
 
       overpass_group.eachLayer(function (layer) {
         if (layer.tag === overpassQuery) {
-          console.log("try");
           overpass_group.removeLayer(layer._leaflet_id);
         }
       });
@@ -63,94 +58,189 @@ const overpass = (() => {
     let s = map.getBounds().getSouth();
 
     var bounds = s + "," + w + "," + n + "," + e;
-    var nodeQuery = "(node[" + overpassQuery + "](" + bounds + ");";
-    var wayQuery = "way[" + way_query + "](" + bounds + ");";
+    var nodeQuery = "(node" + node_query + "(" + bounds + ");";
+    var wayQuery = "way" + way_query + "(" + bounds + ");";
     var relationQuery = "relation" + relation_query + "(" + bounds + ");)";
     var query =
       "?data=[out:json][timeout:25];" +
       nodeQuery +
       wayQuery +
       relationQuery +
-      ";out;>;out skel%3b";
+      ";out body;>;out skel%3b";
     var baseUrl = "https://overpass-api.de/api/interpreter";
     var resultUrl = baseUrl + query;
 
     let segmentCoords = [];
-    let history = "";
-    fetch(resultUrl)
-      .then((response) => response.json())
-      .then(function (data) {
-        let no_data = false;
-        data.elements.forEach((element) => {
-          // console.log(element);
-          if (element.type == "node" && !public_transport) {
-            no_data = true;
-            let k = L.marker([element.lat, element.lon])
-              .addTo(overpass_group)
-              .setIcon(maps[icon]);
+    let segmentCoordsMarker = [];
+    function fetchDataWithXHR(resultUrl, callback, errorCallback) {
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", resultUrl, true);
+      xhr.responseType = "json";
 
-            k.tag = overpassQuery;
-            try {
-              k.bindPopup(element.tags.name);
-            } catch (e) {}
-          }
+      var timeoutId; // Variable to store the timeout ID
 
-          if (element.type == "way" && !public_transport) {
-            no_data = true;
-          }
+      // Set up a function to handle the timeout event
+      // Set up a one-time timeout using setTimeout
+      timeoutId = setTimeout(function () {
+        xhr.abort();
+        document.querySelector(".loading-spinner").style.display = "none";
+        helper.side_toaster("Too much data, loading was aborted", 6000);
+      }, 20000); // Set the timeout duration in milliseconds
 
-          if (element.type == "relation" && public_transport) {
-            no_data = true;
-            let f = element;
-            element.members.forEach((e) => {
-              //console.log(e.ref);
-              data.elements.forEach((m) => {
-                if (m.id == e.ref) {
-                  if (m.type == "node") {
-                    // console.log(f.tags.name);
-                    let k = L.marker([m.lat, m.lon])
-                      .addTo(overpass_group)
-                      .setIcon(maps[icon]);
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          callback(xhr.response);
+          clearInterval(timeoutId); // Clear the interval if the request is successful
+        } else {
+          errorCallback(
+            new Error(`Failed to fetch: ${xhr.status} ${xhr.statusText}`)
+          );
+        }
+      };
 
-                    k.tag = overpassQuery;
+      xhr.onprogress = function (event) {
+        document.querySelector(".loading-spinner").style.display = "block";
 
-                    try {
-                      k.bindPopup(f.tags.name);
-                    } catch (e) {}
+        if (event.lengthComputable) {
+          // If total size is known, you can calculate the progress percentage
+          var progress = (event.loaded / event.total) * 100;
+          console.log(`Download Progress: ${progress}% (${event.loaded})`);
+        } else {
+          // If total size is not known, just track the downloaded size
+          downloadedSize = event.loaded / (1024 * 1024); // Convert bytes to megabytes
+          console.log(`Downloaded Size: ${downloadedSize} megabytes`);
+        }
+      };
 
-                    segmentCoords.push([m.lat, m.lon]);
+      xhr.onerror = function () {
+        errorCallback(new Error("Network error occurred"));
+        document.querySelector(".loading-spinner").style.display = "none";
+        clearTimeout(timeoutId); // Clear the timeout if there is an error
+      };
 
-                    //draw line and reset
-                    if (f.id != history) {
-                      segmentCoords.pop();
-                      let h = L.polyline(segmentCoords, {
-                        color: generateRandomColor(),
-                      });
+      xhr.send();
+    }
 
-                      h.tag = overpassQuery;
-                      h.name = "test";
+    fetchDataWithXHR(
+      resultUrl,
+      function (data) {
+        if (data.elements.length === 0) {
+          helper.side_toaster("no data", 4000);
+          document.querySelector(".loading-spinner").style.display = "none";
+          document.activeElement.classList.remove("");
+          return false;
+        }
 
-                      h.addTo(overpass_group);
-                      segmentCoords = [];
-                    }
+        if (data.elements.length > 80000) {
+          helper.side_toaster(
+            "There is too much data to process, please use a different zoom level",
+            6000
+          );
+          document.querySelector(".loading-spinner").style.display = "none";
+        } else {
+          // console.log(data);
 
-                    history = f.id;
+          for (let i = 0; i < data.elements.length; i++) {
+            const element = data.elements[i];
+
+            if (element.type === "node" && !public_transport) {
+              let k = L.marker([element.lat, element.lon])
+                .addTo(overpass_group)
+                .setIcon(maps[icon]);
+
+              k.tag = overpassQuery;
+              try {
+                k.bindPopup(element.tags.name);
+              } catch (e) {}
+            }
+
+            if (element.type === "way" && !public_transport) {
+              // Your logic for ways
+            }
+
+            if (element.type === "way" && public_transport) {
+              //  if (element.tags.name) console.log(element);
+            }
+
+            //public transport
+            if (element.type === "relation" && public_transport) {
+              let f = element;
+
+              //relation name
+              let relation_name =
+                f.tags.name !== undefined && f.tags.name !== null
+                  ? f.tags.name
+                  : "";
+              //color
+              let color =
+                f.tags.colour !== undefined && f.tags.colour !== null
+                  ? f.tags.colour
+                  : generateRandomColor();
+
+              element.members.forEach((e, index) => {
+                let m = data.elements.find((m) => m.id === e.ref);
+
+                if (m && m.type === "node") {
+                  if (e.role == "stop") {
+                    segmentCoordsMarker.push({
+                      id: m.id,
+                      latlng: [m.lat, m.lon],
+                    });
                   }
                 }
-              });
-            });
-          }
-        });
 
-        if (!no_data) {
-          helper.side_toaster("no data", 4000);
-        } else {
-          helper.side_toaster("layer loaded", 2000);
+                if (m && m.type === "way") {
+                  m.nodes.forEach((e) => {
+                    let m = data.elements.find((m) => m.id === e);
+
+                    segmentCoords.push({
+                      id: m.id,
+                      latlng: [m.lat, m.lon],
+                      color: color,
+                      name: relation_name,
+                    });
+                  });
+                }
+
+                if (index === element.members.length - 1) {
+                  let h = L.polyline(
+                    segmentCoords.map((coord) => coord.latlng),
+                    {
+                      color: color,
+                      weight: 4,
+                    }
+                  );
+
+                  var popup = L.popup({
+                    maxWidth: "80%",
+                  });
+
+                  popup.setContent(relation_name);
+
+                  h.bindPopup(popup);
+                  h.tag = overpassQuery;
+                  h.markers = segmentCoordsMarker;
+
+                  h.addTo(overpass_group);
+                  segmentCoords = [];
+                  segmentCoordsMarker = [];
+                }
+              });
+            }
+          }
+          helper.side_toaster(
+            "You can select the line with key 0 and the stops with key 3",
+            6000
+          );
+          document.querySelector(".loading-spinner").style.display = "none";
         }
-      })
-      .catch(function (err) {
+      },
+      function (err) {
+        document.querySelector(".loading-spinner").style.display = "none";
+
         helper.side_toaster("something went wrong, try again" + err, 6000);
-      });
+      }
+    );
   }
 
   return {

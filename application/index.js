@@ -6,6 +6,7 @@ const debug = false;
 
 //groups
 let markers_group = new L.FeatureGroup();
+let selected_polyline_markers_group = new L.FeatureGroup();
 let overpass_group = new L.FeatureGroup();
 let measure_group_path = new L.FeatureGroup();
 let measure_group = new L.FeatureGroup();
@@ -76,7 +77,7 @@ let general = {
       ? localStorage.getItem("openstreetmap_token")
       : "",
   step: 0.001,
-  zoomlevel: 12,
+  zoomlevel: 18,
   measurement_unit: "km",
   active_item: "",
   active_layer: [],
@@ -414,6 +415,7 @@ document.addEventListener("DOMContentLoaded", function () {
   map.addLayer(gpx_group);
   map.addLayer(geoJSON_group);
   map.addLayer(hotline_group);
+  map.addLayer(selected_polyline_markers_group);
 
   jsonLayer.addTo(map);
 
@@ -423,6 +425,8 @@ document.addEventListener("DOMContentLoaded", function () {
     general.last_map_max_zoom,
     general.last_map_type
   );
+
+  console.log(general);
 
   //get files and store
 
@@ -881,7 +885,6 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   let open_finder = function () {
-    console.log(overpass_group);
     settings.load_settings();
     finder_tabindex();
     document.querySelector("div#finder").style.display = "block";
@@ -2683,6 +2686,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         break;
 
+      case "3":
+        if (status.windowOpen == "map") {
+          mozactivity.share_position();
+        }
+        break;
+
       case "4":
         if (status.windowOpen == "map") {
           auto_update_view();
@@ -2732,7 +2741,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "0":
         if (status.windowOpen == "map") {
-          //mozactivity.share_position();
           module.select_polyline();
         }
         break;
