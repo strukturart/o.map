@@ -336,6 +336,17 @@ img.marker-1 {
   left: 23px;
 }
 
+.public_transport {
+  width: 10px;
+  height: 10px;
+  background-color: #867772;
+  border-radius: 50%;
+  position: absolute;
+  top: 23px;
+  left: 23px;
+  border: 2px solid black;
+}
+
 .climbing {
   width: 15px;
   height: 15px;

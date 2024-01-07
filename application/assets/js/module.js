@@ -382,66 +382,39 @@ const module = (() => {
     marker_list_updated = false;
   };
 
-  let marker_list_updated = false;
-
-  let markers_collection = []; //makers in map boundingbox
   let index = -1;
   let select_marker = function () {
     index++;
+    let markers_collection = []; //makers in map boundingbox
 
-    if (marker_list_updated == false) {
-      // Reset contained list
-      markers_collection = [];
-
-      if (overpass_group != "") {
-        overpass_group.eachLayer(function (l) {
-          markers_collection.push(l);
-        });
-      }
-
-      markers_group.eachLayer(function (l) {
+    // Reset contained list
+    overpass_group.eachLayer(function (l) {
+      // Check if the layer is a marker
+      if (l instanceof L.Marker && markers_collection.indexOf(l) === -1) {
         markers_collection.push(l);
-      });
+      }
+    });
 
-      marker_list_updated = true;
-    }
+    markers_group.eachLayer(function (l) {
+      // Check if the layer is a marker and not already in markers_collection
+      if (l instanceof L.Marker && markers_collection.indexOf(l) === -1) {
+        markers_collection.push(l);
+      }
+    });
 
     status.marker_selection = true;
     status.windowOpen = "marker";
 
-    console.log(markers_collection, index);
-
     if (index >= markers_collection.length) index = 0;
-    map.setView(markers_collection[index]._latlng, map.getZoom());
+
+    console.log(overpass_group)
+
     status.selected_marker = markers_collection[index];
     helper.bottom_bar("cancel", "option", "");
 
-    //reset icons and close popus
-    for (let t = 0; t < markers_collection.length; t++) {
-      let p = markers_collection[t].getIcon();
-
-      if (
-        p.options.className != "follow-marker" &&
-        p.options.className != "goal-marker" &&
-        p.options.className != "start-marker" &&
-        p.options.className != "end-marker"
-      ) {
-        markers_collection[t].setIcon(maps.default_icon);
-      }
-      markers_collection[index].closePopup();
-    }
-
     //show selected marker
+    map.setView(markers_collection[index].getLatLng());
 
-    let p = markers_collection[index].getIcon();
-    if (
-      p.options.className != "follow-marker" &&
-      p.options.className != "goal-marker" &&
-      p.options.className != "start-marker" &&
-      p.options.className != "end-marker"
-    ) {
-      markers_collection[index].setIcon(maps.select_icon);
-    }
 
     //popup
     document.querySelector("input#popup").value = "";
@@ -451,13 +424,16 @@ const module = (() => {
       //get popup content
       document.querySelector("input#popup").value = pu._content;
       //show popup
-      markers_collection[index]
-        .bindPopup(pu._content, popup_option)
-        .openPopup();
+
+      setTimeout(function () {
+        markers_collection[index]
+          .bindPopup(pu._content, popup_option)
+          .openPopup();
+      }, 1000);
       //close popup
       setTimeout(function () {
         markers_collection[index].closePopup();
-      }, 3000);
+      }, 5000);
     }
     return markers_collection[index];
   };

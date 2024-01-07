@@ -336,6 +336,17 @@ img.marker-1 {
   left: 23px;
 }
 
+.public_transport {
+  width: 15px;
+  height: 15px;
+  background-color: #867772;
+  border-radius: 50%;
+  position: absolute;
+  top: 23px;
+  left: 23px;
+  border: 3px solid black;
+}
+
 .climbing {
   width: 15px;
   height: 15px;
@@ -846,12 +857,8 @@ div#markers-option div:last-child {
   margin: 0 0 100px 0;
 }
 
-div#markers-option div:last-child {
-  margin: 0 0 100px 0;
-}
-
 div#markers-option div input {
-  margin: 0 0 100px 0;
+  margin: 0 0 10px 0;
   min-width: 100%;
   padding: 10px;
 }
