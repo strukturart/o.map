@@ -2732,7 +2732,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "0":
         if (status.windowOpen == "map") {
-          mozactivity.share_position();
+          //mozactivity.share_position();
+          module.select_polyline();
         }
         break;
 

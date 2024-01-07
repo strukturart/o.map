@@ -128,6 +128,7 @@ const overpass = (() => {
                       });
 
                       h.tag = overpassQuery;
+                      h.name = "test";
 
                       h.addTo(overpass_group);
                       segmentCoords = [];

@@ -386,6 +386,7 @@ const module = (() => {
   let select_marker = function () {
     index++;
     let markers_collection = []; //makers in map boundingbox
+    let polyline_collection = [];
 
     // Reset contained list
     overpass_group.eachLayer(function (l) {
@@ -405,8 +406,6 @@ const module = (() => {
     status.marker_selection = true;
     status.windowOpen = "marker";
 
-    let f = markers_collection[index];
-    let m = f._latlng;
     if (index >= markers_collection.length) index = 0;
 
     status.selected_marker = markers_collection[index];
@@ -435,6 +434,47 @@ const module = (() => {
       }, 5000);
     }
     return markers_collection[index];
+  };
+
+  let index_polyline = -1;
+  let select_polyline = function () {
+    index_polyline++;
+    let polyline_collection = [];
+
+    overpass_group.eachLayer(function (l) {
+      if (l instanceof L.Polyline) {
+        // Check if the polyline has valid latlng coordinates
+        var latlngs = l.getLatLngs();
+        if (latlngs.length > 0 && latlngs[0] instanceof L.LatLng) {
+          // Add the polyline to the collection
+          polyline_collection.push(l);
+        }
+      }
+    });
+
+    markers_group.eachLayer(function (l) {
+      if (l instanceof L.Polyline) {
+        // Check if the polyline has valid latlng coordinates
+        var latlngs = l.getLatLngs();
+        if (latlngs.length > 0 && latlngs[0] instanceof L.LatLng) {
+          // Add the polyline to the collection
+          polyline_collection.push(l);
+        }
+      }
+    });
+
+    if (index_polyline >= polyline_collection.length) index = 0;
+
+    //show selected marker
+    let i = polyline_collection[index_polyline].getLatLngs();
+    console.log(polyline_collection[index_polyline]);
+
+    // Check if the polyline has a popup
+    var popup = polyline_collection[index_polyline];
+
+    map.setView(i[0]);
+
+    return polyline_collection[index];
   };
 
   //remove GPX
@@ -1151,6 +1191,7 @@ const module = (() => {
     markers_updated,
     select_marker,
     select_gpx,
+    select_polyline,
     calc_distance,
     compass,
     measure_distance,
