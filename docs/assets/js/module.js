@@ -409,10 +409,13 @@ const module = (() => {
     status.marker_selection = true;
     status.windowOpen = "marker";
 
-    console.log(markers_collection, index);
-
+    let f = markers_collection[index];
+    let m = f._latlng;
+    console.log(f);
     if (index >= markers_collection.length) index = 0;
-    map.setView(markers_collection[index]._latlng, map.getZoom());
+    setTimeout(() => {
+      map.setView([m.lat, m.lng], map.getZoom());
+    }, 800);
     status.selected_marker = markers_collection[index];
     helper.bottom_bar("cancel", "option", "");
 
@@ -426,7 +429,7 @@ const module = (() => {
         p.options.className != "start-marker" &&
         p.options.className != "end-marker"
       ) {
-        markers_collection[t].setIcon(maps.default_icon);
+        // markers_collection[t].setIcon(maps.default_icon);
       }
       markers_collection[index].closePopup();
     }
@@ -440,7 +443,7 @@ const module = (() => {
       p.options.className != "start-marker" &&
       p.options.className != "end-marker"
     ) {
-      markers_collection[index].setIcon(maps.select_icon);
+      // markers_collection[index].setIcon(maps.select_icon);
     }
 
     //popup
@@ -451,9 +454,12 @@ const module = (() => {
       //get popup content
       document.querySelector("input#popup").value = pu._content;
       //show popup
-      markers_collection[index]
-        .bindPopup(pu._content, popup_option)
-        .openPopup();
+
+      setTimeout(function () {
+        markers_collection[index]
+          .bindPopup(pu._content, popup_option)
+          .openPopup();
+      }, 1000);
       //close popup
       setTimeout(function () {
         markers_collection[index].closePopup();

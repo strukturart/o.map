@@ -3,8 +3,6 @@
 let save_mode = "";
 let scale;
 const debug = false;
-let contained = []; //markers in viewport
-let overpass_query = ""; //to toggle overpass layer
 
 //groups
 let markers_group = new L.FeatureGroup();
@@ -386,6 +384,13 @@ document.addEventListener("DOMContentLoaded", function () {
         '<div class="item"  data-type="overpass" data-url="water" data-map="water">Drinking water <i>Layer</i></div>'
       );
 
+    document
+      .querySelector("div#overpass")
+      .insertAdjacentHTML(
+        "afterend",
+        '<div class="item" data-marker="public_transport"  data-type="overpass" data-url="public_transport=stop_position" data-map="public_transport">public transport <i>Layer</i></div>'
+      );
+
     find_gpx();
     find_geojson();
     load_maps();
@@ -446,8 +451,6 @@ document.addEventListener("DOMContentLoaded", function () {
     var uniqueData = removeDuplicates(data, "name");
 
     files = uniqueData;
-
-    console.log(uniqueData);
 
     uniqueData.forEach((e) => {
       if (e.type == "gpx") {
@@ -878,7 +881,7 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   let open_finder = function () {
-    console.log(files);
+    console.log(overpass_group);
     settings.load_settings();
     finder_tabindex();
     document.querySelector("div#finder").style.display = "block";
@@ -1437,8 +1440,15 @@ document.addEventListener("DOMContentLoaded", function () {
         let item_attribution =
           document.activeElement.getAttribute("data-attribution");
         let item_maxzoom = document.activeElement.getAttribute("data-maxzoom");
+        let marker = document.activeElement.getAttribute("data-marker");
 
-        maps.addMap(item_url, item_attribution, item_maxzoom, item_type);
+        maps.addMap(
+          item_url,
+          item_attribution,
+          item_maxzoom,
+          item_type,
+          marker
+        );
 
         document.querySelector("div#finder").style.display = "none";
         status.windowOpen = "map";
@@ -1846,6 +1856,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!routing.loaded) {
       finder_panels = finder_panels.filter((e) => e.id != "routing");
+    }
+
+    if (files.length == 0) {
+      finder_panels = finder_panels.filter((e) => e.id != "files");
     }
     tabIndex = 0;
 

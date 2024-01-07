@@ -37,7 +37,7 @@ const maps = (() => {
     html: '<div class="ringring"></div><div class="goal"></div>',
   });
 
-  const climbing_icon = L.divIcon({
+  const default_overpass_icon = L.divIcon({
     iconSize: [40, 40],
     iconAnchor: [30, 40],
     className: "climbing-marker",
@@ -63,6 +63,13 @@ const maps = (() => {
     iconSize: [35, 40],
     iconAnchor: [15, 40],
     className: "end-marker",
+  });
+
+  const public_transport = L.divIcon({
+    iconSize: [40, 40],
+    iconAnchor: [30, 40],
+    className: "climbing-marker",
+    html: '<div></div><div class="public_transport"></div>',
   });
 
   //caching settings from settings panel
@@ -211,7 +218,8 @@ const maps = (() => {
 
   let overlayer = "";
 
-  let addMap = function (url, attribution, max_zoom, type) {
+  let addMap = function (url, attribution, max_zoom, type, marker) {
+    console.log(general.active_layer);
     if (attribution == null) attribution = "";
     if (max_zoom == null) max_zoom = 12;
     //remove layer
@@ -301,6 +309,9 @@ const maps = (() => {
       if (map.hasLayer(overlayer)) {
         general.active_layer.splice(general.active_layer.indexOf(url), 1);
         map.removeLayer(overlayer);
+        document.activeElement.classList.remove("active-layer");
+        document.activeElement.style.background = "black";
+        document.activeElement.style.color = "white";
         return false;
       }
       general.active_layer.push(url);
@@ -313,6 +324,9 @@ const maps = (() => {
       if (map.hasLayer(overlayer)) {
         general.active_layer.splice(general.active_layer.indexOf(url), 1);
         map.removeLayer(overlayer);
+        document.activeElement.classList.remove("active-layer");
+        document.activeElement.style.background = "black";
+        document.activeElement.style.color = "white";
         return false;
       } else {
         general.active_layer.push(url);
@@ -324,11 +338,23 @@ const maps = (() => {
     //overpass
 
     if (type == "overpass") {
-      if (overpass_query == url) {
-        overpass.call(map, url, "climbing_icon");
+      //reset
+
+      if (marker == "" || marker == null) marker = "default_overpass_icon";
+      if (general.active_layer.includes(url)) {
+        //remove
+        overpass.call(map, url, marker);
         general.active_layer.splice(general.active_layer.indexOf(url), 1);
+        document.activeElement.classList.remove("active-layer");
+        document.activeElement.style.background = "black";
+        document.activeElement.style.color = "white";
       } else {
-        overpass.call(map, url, "climbing_icon");
+        overpass.call(map, url, marker);
+        general.active_layer.push(url);
+
+        document.activeElement.classList.add("active-layer");
+        document.activeElement.style.background = "white";
+        document.activeElement.style.color = "black";
       }
     }
   };
@@ -552,8 +578,9 @@ const maps = (() => {
   return {
     follow_icon,
     default_icon,
+    default_overpass_icon,
     goal_icon,
-    climbing_icon,
+    public_transport,
     water_icon,
     select_icon,
     tracking_icon,
