@@ -383,17 +383,17 @@ const helper = (() => {
       document.querySelector("div#top-bar").style.display = "block";
     }
   }
+  function wakeLock(param, lock_type) {
+    if ("requestWakeLock" in navigator) {
+      let lock;
 
-  function screenWakeLock(param, lock_type) {
-    let lock;
-    if (window.navigator.requestWakeLock == "is not a function") return false;
-    if (param == "lock") {
-      lock = window.navigator.requestWakeLock(lock_type);
-      return false;
-    }
+      if (param === "lock") {
+        lock = window.navigator.requestWakeLock(lock_type);
 
-    if (param == "unlock") {
-      if (lock.topic == lock_type) {
+        if ("b2g" in Navigator) {
+          lock = navigator.b2g.requestWakeLock(lock_type);
+        }
+      } else if (param === "unlock" && lock && lock.topic === lock_type) {
         lock.unlock();
       }
     }
@@ -404,7 +404,7 @@ const helper = (() => {
   return {
     bottom_bar,
     top_bar,
-    screenWakeLock,
+    wakeLock,
     calculateDatabaseSizeInMB,
     getManifest,
     toaster,

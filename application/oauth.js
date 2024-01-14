@@ -1,10 +1,11 @@
 function getToken() {
-  const code = location.search.split("?code=")[1];
+  let code = location.search.split("?code=")[1];
 
   var myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
 
   var urlencoded = new URLSearchParams();
+
   urlencoded.append("code", code);
   urlencoded.append("grant_type", "authorization_code");
   urlencoded.append(

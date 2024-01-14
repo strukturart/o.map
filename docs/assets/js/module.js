@@ -138,7 +138,7 @@ const module = (() => {
   /////////////////////////
   /////Load GPX///////////
   ///////////////////////
-  function loadGPX(filename, url) {
+  function loadGPX(filename, url, move_to = true) {
     if (url) {
       new L.GPX(url, {
         async: true,
@@ -152,8 +152,10 @@ const module = (() => {
         })
         .addTo(gpx_group);
 
-      document.querySelector("div#finder").style.display = "none";
-      status.windowOpen = "map";
+      if (move_to) {
+        document.querySelector("div#finder").style.display = "none";
+        status.windowOpen = "map";
+      }
     }
 
     if (filename) {
@@ -205,8 +207,10 @@ const module = (() => {
             })
             .addTo(gpx_group);
 
-          document.querySelector("div#finder").style.display = "none";
-          status.windowOpen = "map";
+          if (move_to) {
+            document.querySelector("div#finder").style.display = "none";
+            status.windowOpen = "map";
+          }
         };
 
         reader.readAsText(r);
@@ -265,7 +269,7 @@ const module = (() => {
   /////////////////////////
   /////Load GeoJSON///////////
   ///////////////////////
-  let loadGeoJSON = function (filename, callback) {
+  let loadGeoJSON = function (filename, callback, move_to = true) {
     //file reader
     try {
       let sdcard = navigator.getDeviceStorage("sdcard");
@@ -364,9 +368,10 @@ const module = (() => {
 
           // Popup
         }).addTo(geoJSON_group);
-
-        document.querySelector("div#finder").style.display = "none";
-        status.windowOpen = "map";
+        if (move_to) {
+          document.querySelector("div#finder").style.display = "none";
+          status.windowOpen = "map";
+        }
       };
 
       reader.readAsText(r);
@@ -386,7 +391,6 @@ const module = (() => {
   let select_marker = function () {
     index++;
     let markers_collection = []; //makers in map boundingbox
-    let polyline_collection = [];
 
     // Reset contained list
     overpass_group.eachLayer(function (l) {
@@ -420,6 +424,7 @@ const module = (() => {
 
     //show selected marker
     map.setView(markers_collection[index].getLatLng());
+    console.log(markers_collection[index]);
 
     //popup
     document.querySelector("input#popup").value = "";
@@ -492,8 +497,16 @@ const module = (() => {
 
       map.setView(polyline_collection[index_polyline].getCenter());
 
+      // console.log(polyline_collection[index_polyline].markers);
+      /*
       hh.getLatLngs().forEach((e) => {
         L.marker(e)
+          .addTo(selected_polyline_markers_group)
+          .setIcon(maps.public_transport);
+      });*/
+
+      polyline_collection[index_polyline].markers.forEach((e) => {
+        L.marker(e.latlng)
           .addTo(selected_polyline_markers_group)
           .setIcon(maps.public_transport);
       });
@@ -538,6 +551,24 @@ const module = (() => {
     map.fitBounds(gpx_selection[gpx_selection_count].getBounds());
     let m = gpx_selection[gpx_selection_count].getLayers();
 
+    var parser = new DOMParser();
+    var xmlDoc = parser.parseFromString(
+      gpx_selection[gpx_selection_count]._gpx,
+      "text/xml"
+    );
+
+    var eleElements = xmlDoc.getElementsByTagName("ele");
+
+    let altitudes = [];
+    for (var i = 0; i < eleElements.length; i++) {
+      var currentElement = eleElements[i];
+      altitudes.push(currentElement.textContent);
+    }
+
+    const { gain, loss } = calculateGainAndLoss(altitudes);
+
+    console.log(gain, loss);
+
     const keys = Object.keys(m[0]._layers);
     const firstKey = keys[0];
     general.gpx_selection_latlng = m[0]._layers[firstKey]._latlngs;
@@ -545,14 +576,9 @@ const module = (() => {
     //store info in object
     gpx_selection_info.duration =
       gpx_selection[gpx_selection_count]._info.duration.total;
-    gpx_selection_info.elevation_gain =
-      gpx_selection[gpx_selection_count]._info.elevation.gain;
+    gpx_selection_info.elevation_gain = gain;
 
-    gpx_selection_info.elevation_loss =
-      gpx_selection[gpx_selection_count]._info.elevation.loss;
-
-    gpx_selection_info.elevation_loss =
-      gpx_selection[gpx_selection_count]._info.elevation.loss;
+    gpx_selection_info.elevation_loss = loss;
 
     gpx_selection_info.distance =
       gpx_selection[gpx_selection_count]._info.length;
@@ -791,7 +817,6 @@ const module = (() => {
   let tracking_cache = [];
   //let gps_lock;
   let tracking_altitude = [];
-  let calc = 0;
   let tracking = { duration: "" };
   let polyline = L.polyline(latlngs, path_option).addTo(measure_group_path);
   let polyline_tracking = L.polyline(tracking_latlngs, path_option).addTo(
@@ -892,10 +917,7 @@ const module = (() => {
     if (action == "tracking") {
       status.tracking_running = true;
 
-      if ("requestWakeLock" in navigator) {
-        if (setting.tracking_screenlock)
-          helper.screenWakeLock("lock", "screen");
-      }
+      if (setting.tracking_screenlock) helper.wakeLock("lock", "screen");
 
       if (localStorage.getItem("tracking_cache") !== null) {
         if (
@@ -1090,7 +1112,11 @@ const module = (() => {
         //Upload gpx file every 5min, unfortunately the update function doesn't work, so I have to combine create/delete
         if (status.live_track) {
           if (status.live_track_file_created == false) {
-            osm.osm_server_upload_gpx("live_track.gpx", toGPX(), false);
+            const currentDate = new Date();
+            const isoString = currentDate.toISOString();
+            const a = isoString.substring(0, 10);
+
+            osm.osm_server_upload_gpx("live_track.gpx-" + a, toGPX(), false);
             status.live_track_file_created = true;
           } else {
             let calc_dif =
@@ -1102,7 +1128,8 @@ const module = (() => {
                   osm.osm_delete_gpx(e, false);
               });
 
-              osm.osm_server_upload_gpx("live_track.gpx", toGPX(), false);
+              osm.osm_server_upload_gpx("live_track.gpx-" + a, toGPX(), false);
+
               status.tracking_backupup_at = new Date().getTime() / 1000;
             }
           }

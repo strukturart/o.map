@@ -17,7 +17,7 @@ const osm = (() => {
       type: "application/gpx",
     });
 
-    if (notify) helper.side_toaster("try uploading file", 5000);
+    //if (notify) helper.side_toaster("try uploading file", 5000);
 
     let formData = new FormData();
     formData.append("description", "uploaded from o.map");
@@ -31,8 +31,8 @@ const osm = (() => {
     })
       .then((response) => response.text())
       .then((data) => {
+        if (notify) helper.side_toaster("file uploaded", 4000);
         status.live_track_id.push(data);
-        if (notify == true) helper.side_toaster("file uploaded", 4000);
       })
 
       .catch((error) => {
@@ -110,9 +110,10 @@ const osm = (() => {
       xhr.setRequestHeader("Authorization", n);
 
       xhr.onload = function () {
+        helper.side_toaster("file uploaded", 5000);
+
         if (xhr.status === 200) {
           const data = xhr.responseText;
-          helper.side_toaster("file updated", 2000);
         } else {
           const error = "Error: " + xhr.status;
           helper.side_toaster(error, 4000);
@@ -272,12 +273,15 @@ const osm = (() => {
               id: s[i].getAttribute("id"),
             };
 
-            files.push({
-              name: "_" + m.name,
-              path: m.id,
-              id: m.id,
-              type: "osm_sever",
-            });
+            if (!files.some((file) => file.id === m.id)) {
+              // If not present, add it to the array
+              files.push({
+                name: m.name,
+                path: m.id,
+                id: m.id,
+                type: "osm_sever",
+              });
+            }
 
             files.sort((a, b) => {
               return b.name.localeCompare(a.name);

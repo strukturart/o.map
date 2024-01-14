@@ -24,10 +24,12 @@ const overpass = (() => {
 
     let public_transport = false;
     let relation_query = "[" + overpassQuery + "]";
-    let way_query = overpassQuery;
+    let way_query = "[" + overpassQuery + "]";
+    let node_query = "[" + overpassQuery + "]";
     if (overpassQuery.indexOf("public_transport") > -1) {
+      node_query = "['public_transport'='stop_position']['bus'='yes']";
       relation_query = "['type'='route']['route'='bus']";
-      way_query = "public_transport=platform";
+      way_query = "['public_transport'='stop_platform']['bus'='yes']";
       public_transport = true;
     }
 
@@ -37,7 +39,6 @@ const overpass = (() => {
 
       overpass_group.eachLayer(function (layer) {
         if (layer.tag === overpassQuery) {
-          console.log("try");
           overpass_group.removeLayer(layer._leaflet_id);
         }
       });
@@ -57,20 +58,20 @@ const overpass = (() => {
     let s = map.getBounds().getSouth();
 
     var bounds = s + "," + w + "," + n + "," + e;
-    var nodeQuery = "(node[" + overpassQuery + "](" + bounds + ");";
-    var wayQuery = "way[" + way_query + "](" + bounds + ");";
+    var nodeQuery = "(node" + node_query + "(" + bounds + ");";
+    var wayQuery = "way" + way_query + "(" + bounds + ");";
     var relationQuery = "relation" + relation_query + "(" + bounds + ");)";
     var query =
       "?data=[out:json][timeout:25];" +
       nodeQuery +
       wayQuery +
       relationQuery +
-      ";out;>;out skel%3b";
+      ";out body;>;out skel%3b";
     var baseUrl = "https://overpass-api.de/api/interpreter";
     var resultUrl = baseUrl + query;
 
     let segmentCoords = [];
-    let history = "";
+    let segmentCoordsMarker = [];
     function fetchDataWithXHR(resultUrl, callback, errorCallback) {
       var xhr = new XMLHttpRequest();
       xhr.open("GET", resultUrl, true);
@@ -123,6 +124,7 @@ const overpass = (() => {
     fetchDataWithXHR(
       resultUrl,
       function (data) {
+        console.log(data);
         if (data.elements.length === 0) {
           helper.side_toaster("no data", 4000);
           document.querySelector(".loading-spinner").style.display = "none";
@@ -130,17 +132,18 @@ const overpass = (() => {
           return false;
         }
 
-        if (data.elements.length > 80000) {
+        if (data.elements.length > 50000) {
           helper.side_toaster(
             "There is too much data to process, please use a different zoom level",
             6000
           );
           document.querySelector(".loading-spinner").style.display = "none";
         } else {
+          // console.log(data);
+
           for (let i = 0; i < data.elements.length; i++) {
             const element = data.elements[i];
 
-            // Your existing logic here
             if (element.type === "node" && !public_transport) {
               let k = L.marker([element.lat, element.lon])
                 .addTo(overpass_group)
@@ -156,50 +159,72 @@ const overpass = (() => {
               // Your logic for ways
             }
 
+            if (element.type === "way" && public_transport) {
+              //  if (element.tags.name) console.log(element);
+            }
+
+            //public transport
             if (element.type === "relation" && public_transport) {
               let f = element;
 
-              element.members.forEach((e) => {
+              //relation name
+              let relation_name =
+                f.tags.name !== undefined && f.tags.name !== null
+                  ? f.tags.name
+                  : "";
+              //color
+              let color =
+                f.tags.colour !== undefined && f.tags.colour !== null
+                  ? f.tags.colour
+                  : generateRandomColor();
+
+              element.members.forEach((e, index) => {
                 let m = data.elements.find((m) => m.id === e.ref);
 
-                let hh = "";
-                try {
-                  hh = m.tags.name;
-                } catch (e) {}
-
-                if (m && m.type === "way") {
+                if (m && m.type === "node") {
+                  if (e.role == "stop") {
+                    segmentCoordsMarker.push({
+                      id: m.id,
+                      latlng: [m.lat, m.lon],
+                    });
+                  }
                 }
 
-                if (m && m.type === "node") {
-                  //todo add tags.name as popoup
-                  segmentCoords.push({
-                    latlng: [m.lat, m.lon],
-                    popup: hh,
+                if (m && m.type === "way") {
+                  m.nodes.forEach((e) => {
+                    let m = data.elements.find((m) => m.id === e);
+
+                    segmentCoords.push({
+                      id: m.id,
+                      latlng: [m.lat, m.lon],
+                      color: color,
+                      name: relation_name,
+                    });
+                  });
+                }
+
+                if (index === element.members.length - 1) {
+                  let h = L.polyline(
+                    segmentCoords.map((coord) => coord.latlng),
+                    {
+                      color: color,
+                      weight: 4,
+                    }
+                  );
+
+                  var popup = L.popup({
+                    maxWidth: "80%",
                   });
 
-                  if (f.id !== history) {
-                    segmentCoords.pop();
-                    let h = L.polyline(
-                      segmentCoords.map((coord) => coord.latlng),
-                      {
-                        color: generateRandomColor(),
-                      }
-                    );
+                  popup.setContent(relation_name);
 
-                    var popup = L.popup({
-                      maxWidth: "80%",
-                    });
+                  h.bindPopup(popup);
+                  h.tag = overpassQuery;
+                  h.markers = segmentCoordsMarker;
 
-                    popup.setContent(f.tags.name);
-
-                    h.bindPopup(popup);
-                    h.tag = overpassQuery;
-
-                    h.addTo(overpass_group);
-                    segmentCoords = [];
-                  }
-
-                  history = f.id;
+                  h.addTo(overpass_group);
+                  segmentCoords = [];
+                  segmentCoordsMarker = [];
                 }
               });
             }
@@ -212,6 +237,8 @@ const overpass = (() => {
         }
       },
       function (err) {
+        document.querySelector(".loading-spinner").style.display = "none";
+
         helper.side_toaster("something went wrong, try again" + err, 6000);
       }
     );

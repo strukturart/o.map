@@ -22,7 +22,6 @@ let gpx_selection_info = {};
 let gpx_string;
 let tilesLayer = "";
 let n;
-let gps_lock;
 
 let files = [];
 
@@ -126,7 +125,10 @@ if (!navigator.geolocation) {
 }
 
 if ("requestWakeLock" in navigator) {
-  gps_lock = window.navigator.requestWakeLock("gps");
+  window.navigator.requestWakeLock("gps");
+  if ("b2g" in Navigator) {
+    window.navigator.b2g.requestWakeLock("gps");
+  }
 }
 
 if ("b2g" in Navigator) {
@@ -426,8 +428,6 @@ document.addEventListener("DOMContentLoaded", function () {
     general.last_map_type
   );
 
-  console.log(general);
-
   //get files and store
 
   // Function to remove duplicates based on the 'name' property
@@ -452,9 +452,11 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Remove duplicates based on the 'name' property
-    var uniqueData = removeDuplicates(data, "name");
+    var uniqueData = removeDuplicates(data, "path");
 
     files = uniqueData;
+
+    console.log(files);
 
     uniqueData.forEach((e) => {
       if (e.type == "gpx") {
@@ -475,7 +477,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Load gpx file on start
         if (e.name.substring(0, 1) == "_") {
-          module.loadGPX(e.path);
+          if (status.windowOpen == "map") {
+            module.loadGPX(e.path, false, true);
+          } else {
+            module.loadGPX(e.path, false, false);
+          }
         }
       }
 
@@ -497,7 +503,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Load startup item
         if (e.name.substring(0, 1) == "_") {
-          module.loadGeoJSON(e.path, false);
+          if (status.windowOpen == "map") {
+            module.loadGeoJSON(e.path, false, true);
+          } else {
+            module.loadGeoJSON(e.path, false, false);
+          }
         }
       }
 

@@ -124,6 +124,7 @@ const overpass = (() => {
     fetchDataWithXHR(
       resultUrl,
       function (data) {
+        console.log(data);
         if (data.elements.length === 0) {
           helper.side_toaster("no data", 4000);
           document.querySelector(".loading-spinner").style.display = "none";
@@ -131,7 +132,7 @@ const overpass = (() => {
           return false;
         }
 
-        if (data.elements.length > 80000) {
+        if (data.elements.length > 50000) {
           helper.side_toaster(
             "There is too much data to process, please use a different zoom level",
             6000
