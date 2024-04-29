@@ -119,6 +119,8 @@ The search can be opened with key 2, you can search for locations or start the s
 Some layers cannot be loaded because KaiOs has not equipped all devices with a valid Let's Encrypt certificate. If your device is rooted you can do it yourself:
 https://github.com/openGiraffes/b2g-certificates
 
+If you use the tiles intentisv cache, the app can slow down from around 400mb. The solution is to delete the cache via the app menu.
+
 ## Desktop Version
 
 https://strukturart.github.io/o.map/
