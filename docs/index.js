@@ -346,20 +346,6 @@ document.addEventListener("DOMContentLoaded", function () {
     helper.getManifest(manifest);
   }
 
-  let geoip_callback = function (data) {
-    helper.side_toaster(
-      "your position was found out via your ip address, the accuracy is rather poor",
-      2000
-    );
-    mainmarker.current_lat = data[0];
-    mainmarker.current_lng = data[1];
-    mainmarker.device_lat = data[0];
-    mainmarker.device_lng = data[1];
-    myMarker.setLatLng([mainmarker.device_lat, mainmarker.device_lng]).update();
-    setTimeout(function () {
-      map.setView([mainmarker.device_lat, mainmarker.device_lng], 12);
-    }, 1000);
-  };
   //build menu
   let build_menu = function () {
     let el = document.querySelector("div#maps");
@@ -455,8 +441,6 @@ document.addEventListener("DOMContentLoaded", function () {
     var uniqueData = removeDuplicates(data, "path");
 
     files = uniqueData;
-
-    console.log(files);
 
     uniqueData.forEach((e) => {
       if (e.type == "gpx") {
@@ -991,33 +975,20 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function error(err) {
-      if (setting.ipbase_api != "") {
-        var z = confirm(
-          "do you want to find out your position by your ip address ?"
-        );
-      }
+      helper.side_toaster("Position not found, load last known position", 4000);
+      mainmarker.current_lat = mainmarker.last_location[0];
+      mainmarker.current_lng = mainmarker.last_location[1];
+      mainmarker.current_alt = 0;
 
-      if (z == true) {
-        helper.geoip(geoip_callback, setting.ipbase_api);
-      } else {
-        helper.side_toaster(
-          "Position not found, load last known position",
-          4000
-        );
-        mainmarker.current_lat = mainmarker.last_location[0];
-        mainmarker.current_lng = mainmarker.last_location[1];
-        mainmarker.current_alt = 0;
-
-        mainmarker.device_lat = mainmarker.last_location[0];
-        mainmarker.device_lng = mainmarker.last_location[1];
-        geolocationWatch();
-        myMarker
-          .setLatLng([mainmarker.device_lat, mainmarker.device_lng])
-          .update();
-        setTimeout(function () {
-          map.setView([mainmarker.device_lat, mainmarker.device_lng], 12);
-        }, 1000);
-      }
+      mainmarker.device_lat = mainmarker.last_location[0];
+      mainmarker.device_lng = mainmarker.last_location[1];
+      geolocationWatch();
+      myMarker
+        .setLatLng([mainmarker.device_lat, mainmarker.device_lng])
+        .update();
+      setTimeout(function () {
+        map.setView([mainmarker.device_lat, mainmarker.device_lng], 12);
+      }, 1000);
     }
 
     navigator.geolocation.getCurrentPosition(success, error, options);

@@ -1,10 +1,6 @@
 const settings = ((_) => {
   let save_settings = function () {
     localStorage.setItem("owm-key", document.getElementById("owm-key").value);
-    localStorage.setItem(
-      "ipbase-key",
-      document.getElementById("ipbase-key").value
-    );
 
     localStorage.setItem(
       "routing_profil",
@@ -78,9 +74,7 @@ const settings = ((_) => {
         localStorage["tracking-notification-time"] || 0,
 
       openweather_api: localStorage.getItem("owm-key"),
-      ipbase_api: localStorage.getItem("ipbase-key")
-        ? localStorage.getItem("ipbase-key")
-        : "",
+
       ors_api: localStorage.getItem("ors-key"),
       routing_profil: localStorage.getItem("routing_profil")
         ? localStorage.getItem("routing_profil")
@@ -176,7 +170,6 @@ const settings = ((_) => {
     //set values in setting page
 
     document.getElementById("owm-key").value = setting.openweather_api;
-    document.getElementById("ipbase-key").value = setting.ipbase_api;
     document.getElementById("ors-key").value = setting.ors_api;
     document.getElementById("routing-profil").value = setting.routing_profil;
 
@@ -244,7 +237,6 @@ const settings = ((_) => {
 
           setTimeout(() => {
             document.getElementById("owm-key").value = setting.openweather_api;
-            document.getElementById("ipbase-key").value = setting.ipbase_api;
             document.getElementById("ors-key").value = setting.ors_api;
             document.getElementById("routing-profil").value =
               setting.routing_profil;
@@ -293,8 +285,7 @@ const settings = ((_) => {
                     setTimeout(() => {
                       document.getElementById("owm-key").value =
                         setting.openweather_api;
-                      document.getElementById("ipbase-key").value =
-                        setting.ipbase_api;
+
                       document.getElementById("ors-key").value =
                         setting.ors_api;
                       document.getElementById("routing-profil").value =
