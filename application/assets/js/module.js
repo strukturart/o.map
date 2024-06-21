@@ -423,6 +423,14 @@ const module = (() => {
     helper.bottom_bar("cancel", "option", "");
 
     //show selected marker
+    //show/hide popop editor input field
+    if (markers_collection[index].tag == undefined) {
+      document.querySelector("#popup-editor").style.display = "block";
+    } else {
+      document.querySelector("#popup-editor").style.display = "none";
+    }
+
+    //get latlng
     map.setView(markers_collection[index].getLatLng());
 
     let marker_latlng = markers_collection[index].getLatLng();

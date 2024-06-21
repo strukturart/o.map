@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <link
       rel="manifest"
-      href="manifest.webapp"
+      href="manifest.webmanifest"
       type="application/x-web-app-manifest+json"
     />
     <meta
@@ -113,35 +113,39 @@
     </div>
 
     <div id="markers-option" class="width-100 menu-box">
-      <div class="item" data-action="save_marker" tabindex="0">save marker</div>
-      <div class="item" data-action="set_target_marker" tabindex="1">
+      <div class="item" data-action="save_marker">save marker</div>
+      <div class="item" data-action="set_target_marker" >
         set marker as target
       </div>
-      <div class="item" data-action="remove_marker" tabindex="2">
+      <div class="item" data-action="remove_marker" >
         remove marker
       </div>
 
       <h2>What3words</h2>
-      <div class="item" id="what3words" tabindex="3"></div>
+      <div class="item" id="what3words"></div>
+
+      <div class="item" data-action="share" >
+        share
+      </div>
 
       
 
 
 
       <h2>Routing</h2>
-      <div class="item" data-action="set_marker_route_start" tabindex="3">
+      <div class="item" data-action="set_marker_route_start" >
         set as start point
       </div>
 
-      <div class="item" data-action="set_marker_route_end" tabindex="3">
+      <div class="item" data-action="set_marker_route_end"">
         set as end point
       </div>
 
-      <div class="item" data-action="auto_update_route" tabindex="4">
+      <div class="item" data-action="auto_update_route" >
         get me there
       </div>
       
-      <div class="item input-parent" tabindex="4">
+      <div class="item input-parent" id="popup-editor" >
         <label for="popup">popup text</label>
         <input type="text"  id="popup" />
       </div>
@@ -191,7 +195,7 @@
         <h2>LAYERS</h2>
         <div id="layers"></div>
 
-        <h2>OVERPASS</h2>
+        <h2>POI</h2>
         <div id="overpass"></div>
       </div>
 
@@ -211,18 +215,18 @@
 
       <div class="panel menu-box" id="settings" name="Settings">
         <h2>Openweathermap</h2>
-        <div class="item input-parent" tabindex="0">
+        <div class="item input-parent" >
           <label for="owm-key">Openweathermap API-Key</label>
           <input type="text" class="qr" id="owm-key" />
         </div>
 
         <h2>Routing Service</h2>
-        <div class="item input-parent" tabindex="0">
+        <div class="item input-parent" >
           <label for="ors-key">openrouteservice.org API-Key</label>
           <input type="text" class="qr" id="ors-key" />
         </div>
 
-        <div class="item input-parent width-100" tabindex="0">
+        <div class="item input-parent width-100" >
           <label for="cars">Routing profile</label>
           <select name="routing-profil" class="select-box" id="routing-profil">
             <option value="cycling-mountain">cycliny mountain</option>
@@ -232,7 +236,7 @@
           </select>
         </div>
 
-        <div class="item input-parent flex" tabindex="0">
+        <div class="item input-parent flex" >
           <label for="routing-notification-ckb" class="grid-col-14"
             >receive a vibration notification when you leave the routing
             path</label
@@ -248,7 +252,7 @@
         </div>
 
         <h2>Crosshair</h2>
-        <div class="item input-parent flex" tabindex="3">
+        <div class="item input-parent flex" >
           <label for="crosshair-ckb" class="grid-col-14"
             >show crosshair ?</label
           >
@@ -263,7 +267,7 @@
         </div>
 
         <h2>Scale</h2>
-        <div class="item input-parent flex" tabindex="4">
+        <div class="item input-parent flex" >
           <label for="scale-ckb" class="grid-col-14">show scale ?</label>
           <input
             class="checkboxes grid-col-2"
@@ -276,7 +280,7 @@
         </div>
 
         <h2>Unit of measurement</h2>
-        <div class="item input-parent flex" tabindex="5">
+        <div class="item input-parent flex" >
           <label for="measurement-ckb" class="grid-col-14"></label>
           <input
             class="checkboxes grid-col-2"
@@ -287,7 +291,7 @@
         </div>
 
         <h2>Tracking</h2>
-        <div class="item input-parent flex" tabindex="6">
+        <div class="item input-parent flex">
           <label for="screenlock-ckb" class="grid-col-14"
             >The screen should not be switched off during tracking ?</label
           >
@@ -302,7 +306,7 @@
         </div>
 
         <h2>Offline maps</h2>
-        <div class="item input-parent" tabindex="1">
+        <div class="item input-parent" >
           <label for="cache-time"
             >After how many month should the maps be re-downloaded?</label
           >
@@ -322,7 +326,7 @@
         </div>
 
         <h2>Cache</h2>
-        <div class="item input-parent" tabindex="7">
+        <div class="item input-parent" >
           <label for="cache-zoom">How much zoom level should be saved ?</label>
           <select id="cache-zoom" class="select-box">
             <option value="0">0</option>
@@ -344,7 +348,7 @@
         </div>
 
         <h2>Whether to fetch tiles from the network or not.</h2>
-        <div class="item input-parent flex" tabindex="3">
+        <div class="item input-parent flex" >
           <label for="useOnlyCache-ckb" class="grid-col-14"
             >only show the offline map ?</label
           >
@@ -358,15 +362,15 @@
           <div class="toogle-button"></div>
         </div>
         <br />
-        <button class="item" id="clear-cache" tabindex="8">
+        <button class="item" id="clear-cache" >
           clear <em></em> MB cached map data
         </button>
 
         <h2>connect with openstreetmap.org</h2>
         <div id="osm-user"></div>
-        <button class="item" id="oauth" tabindex="8">connect</button>
+        <button class="item" id="oauth">connect</button>
 
-        <div class="item input-parent" tabindex="9">
+        <div class="item input-parent" >
           <label for="osm-tag"
             >if you don't want to display all your files from openstreetmap, you
             can set a tag name which you also use in your files in
@@ -424,7 +428,7 @@
         </div>
 
 
-        <div class="item input-parent flex" tabindex="6">
+        <div class="item input-parent flex" >
           <label for="hotline-ckb" class="grid-col-14">Path with hotline ?</label>
           <input
             class="checkboxes grid-col-2"
@@ -437,7 +441,7 @@
         </div>
 
         <h2>Views</h2>
-        <div class="item input-parent flex" tabindex="6">
+        <div class="item input-parent flex" >
           <label for="tips-ckb" class="grid-col-14">show tips ?</label>
           <input
             class="checkboxes grid-col-2"
@@ -450,16 +454,16 @@
         </div>
 
         <h2>Export</h2>
-        <div class="item input-parent" tabindex="9">
+        <div class="item input-parent">
           <label for="export-path">Export path</label>
           <input type="text" id="export-path" />
         </div>
 
-        <button tabindex="10" class="item" id="save-settings">save</button>
-        <button tabindex="11" class="item" id="export-settings">
+        <button class="item" id="save-settings">save</button>
+        <button  class="item" id="export-settings">
           export settings
         </button>
-        <button tabindex="12" class="item" id="load_settings_from_file">
+        <button  class="item" id="load_settings_from_file">
           load settings
         </button>
         <!--<button tabindex="12" class="item" id="load_map_data">
@@ -582,7 +586,7 @@
         <strong class="item"><u>Duration</u></strong>
         <div id="routing-duration"><span></span></div>
         <button data-map="change-profile" class="item routing-profile-status"></button>
-        <button class="item" tabindex="0" data-map="saverouting">
+        <button class="item" data-map="saverouting">
           save route
         </button>
         <button
@@ -657,7 +661,6 @@ Follow path        </button>
         <div
           class="item start-stop-tracking"
           autofocus
-          tabindex="0"
           data-map="tracking"
         >
           <div class="flex justify-content-spacebetween">

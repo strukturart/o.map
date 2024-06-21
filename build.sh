@@ -29,3 +29,4 @@ rm ./application.zip
 # Copy website files to docs directory
 cd ..
 cp -r application/* docs/
+rm docs/manifest.webapp

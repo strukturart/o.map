@@ -219,7 +219,6 @@ const maps = (() => {
   let overlayer = "";
 
   let addMap = function (url, attribution, max_zoom, type, marker) {
-    console.log(general.active_layer);
     if (attribution == null) attribution = "";
     if (max_zoom == null) max_zoom = 17;
     //remove layer
