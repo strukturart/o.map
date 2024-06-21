@@ -116,7 +116,14 @@ let status = {
   screenOff: false,
   follow_path: false,
   select_gpx: false,
+  notKaiOS: true,
 };
+
+if ("b2g" in navigator || "mozAlarms" in navigator) {
+  status.notKaiOS = false;
+} else {
+  status.notKaiOS = true;
+}
 
 let tracking = {};
 
@@ -157,7 +164,7 @@ if ("b2g" in Navigator) {
 //leaflet add basic map
 map = new L.map("map-container", {
   zoomControl: false,
-  dragging: false,
+  dragging: true,
   keyboard: true,
 });
 
@@ -338,7 +345,6 @@ document.addEventListener("DOMContentLoaded", function () {
       if (a.installOrigin == "app://kaios-plus.kaiostech.com") {
         load_ads();
       } else {
-        //let t = document.getElementById("kaios-ads").remove();
         load_ads();
       }
     };
@@ -370,14 +376,55 @@ document.addEventListener("DOMContentLoaded", function () {
       .querySelector("div#overpass")
       .insertAdjacentHTML(
         "afterend",
-        '<div class="item"  data-type="overpass" data-url="water" data-map="water">Drinking water <i>Layer</i></div>'
+        '<div class="item" data-marker="public_transport"  data-type="overpass" data-url="public_transport=stop_position" data-map="public_transport">Public transport</div>'
       );
 
     document
       .querySelector("div#overpass")
       .insertAdjacentHTML(
         "afterend",
-        '<div class="item" data-marker="public_transport"  data-type="overpass" data-url="public_transport=stop_position" data-map="public_transport">public transport <i>Layer</i></div>'
+        '<div class="item"  data-type="overpass" data-url="amenity=hospital">Hospital</div>'
+      );
+
+    document
+      .querySelector("div#overpass")
+      .insertAdjacentHTML(
+        "afterend",
+        '<div class="item"  data-type="overpass" data-url="water">Drinking water</div>'
+      );
+
+    document
+      .querySelector("div#overpass")
+      .insertAdjacentHTML(
+        "afterend",
+        '<div class="item"  data-type="overpass" data-url="tourism=camp_site">Camping</div>'
+      );
+
+    document
+      .querySelector("div#overpass")
+      .insertAdjacentHTML(
+        "afterend",
+        '<div class="item"  data-type="overpass" data-url="tourism=hotel">Hotel</div>'
+      );
+    document
+      .querySelector("div#overpass")
+      .insertAdjacentHTML(
+        "afterend",
+        '<div class="item"  data-type="overpass" data-url="amenity=restaurant">Restaurant</div>'
+      );
+
+    document
+      .querySelector("div#overpass")
+      .insertAdjacentHTML(
+        "afterend",
+        '<div class="item"  data-type="overpass" data-url="amenity=bar">Bar</div>'
+      );
+
+    document
+      .querySelector("div#overpass")
+      .insertAdjacentHTML(
+        "afterend",
+        '<div class="item"  data-type="overpass" data-url="amenity=shelter">Shelter</div>'
       );
 
     find_gpx();
@@ -1233,6 +1280,7 @@ document.addEventListener("DOMContentLoaded", function () {
   /////////////////////////
   /////MENU///////////////
   ////////////////////////
+  //buttons action
   let markers_action = function () {
     if (
       (document.activeElement.className == "item" &&
@@ -1240,6 +1288,13 @@ document.addEventListener("DOMContentLoaded", function () {
       status.windowOpen == "files-option"
     ) {
       let item_value = document.activeElement.getAttribute("data-action");
+
+      if (item_value == "share") {
+        mozactivity.share_position();
+        document.querySelector("div#markers-option").style.display = "none";
+        helper.bottom_bar("", "", "");
+        status.windowOpen = "map";
+      }
 
       if (item_value == "auto_update_route") {
         routing.active = true;
@@ -1845,6 +1900,10 @@ document.addEventListener("DOMContentLoaded", function () {
     if (files.length == 0) {
       finder_panels = finder_panels.filter((e) => e.id != "files");
     }
+
+    if (status.notKaiOS == true) {
+      finder_panels = finder_panels.filter((e) => e.id != "kaios-ads");
+    }
     tabIndex = 0;
 
     panels.forEach(function (e) {
@@ -1860,9 +1919,6 @@ document.addEventListener("DOMContentLoaded", function () {
       if (count == -1) count = finder_panels.length - 1;
     }
 
-    if (dir == "start") {
-      console.log("start");
-    }
     document.getElementById(finder_panels[count].id).style.display = "block";
     document.getElementById(finder_panels[count].id).focus();
 
@@ -1939,7 +1995,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
       let b = document.activeElement.closest("div.menu-box");
       let items_list = b.querySelectorAll(".item");
-      console.log(items_list.length);
+
+      console.log(tabIndex + "/" + items_list.length);
 
       if (move == "+1") {
         if (tabIndex < items_list.length - 1) {
@@ -1980,23 +2037,6 @@ document.addEventListener("DOMContentLoaded", function () {
         behavior: "smooth",
       });
     }
-  }
-
-  try {
-    // Check if the device has hardware Volume keys
-    if (navigator.hasFeature("device.key.endcall")) {
-      console.log("Device has hardware endcall keys.");
-    } else {
-      console.log("Device does not have endcall keys.");
-    }
-
-    if (navigator.hasFeature("device.key.backspace")) {
-      console.log("Device has hardware backspace keys.");
-    } else {
-      console.log("Device does not have backspace keys.");
-    }
-  } catch (e) {
-    console.error("Error:", e);
   }
 
   //////////////////////////////
@@ -2079,6 +2119,52 @@ document.addEventListener("DOMContentLoaded", function () {
       }, 3000);
     }
   });
+
+  /*
+  //top bar
+
+  document
+    .querySelector("#top-bar div div.button-right")
+    .addEventListener("click", function (event) {});
+
+  //buttom bar
+  // Add click listeners to simulate key events
+  document
+    .querySelector("div.button-left")
+    .addEventListener("click", function (event) {
+      simulateKeyPress("SoftLeft");
+    });
+
+  document
+    .querySelector("div.button-right")
+    .addEventListener("click", function (event) {
+      simulateKeyPress("SoftRight");
+    });
+
+  document
+    .querySelector("div.button-center")
+    .addEventListener("click", function (event) {
+      simulateKeyPress("Enter");
+    });
+
+  document.querySelector("#menu").addEventListener("click", function (event) {
+    simulateKeyPress("Enter");
+  });
+  // Function to simulate key press events
+  function simulateKeyPress(k) {
+    shortpress_action({ key: k });
+  }
+
+  // Add an event listener for keydown events
+  document.addEventListener("keydown", function (event) {
+    handleKeyDown(event);
+  });
+
+  // Add an event listener for keydown events
+  document.addEventListener("keyup", function (event) {
+    handleKeyUp(event);
+  });
+  */
 
   //////////////////////////////
   ////KEYPAD HANDLER////////////

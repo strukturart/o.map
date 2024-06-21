@@ -51,16 +51,25 @@ const overpass = (() => {
       return false;
     }
 
-    //boundingbox
-    let e = map.getBounds().getEast();
-    let w = map.getBounds().getWest();
-    let n = map.getBounds().getNorth();
-    let s = map.getBounds().getSouth();
+    let currentBounds = map.getBounds();
 
+    // Apply 20% padding to the bounds
+    let paddedBounds = currentBounds.pad(0.2);
+
+    // Extract the padded bounds
+    let e = paddedBounds.getEast();
+    let w = paddedBounds.getWest();
+    let n = paddedBounds.getNorth();
+    let s = paddedBounds.getSouth();
+
+    // Create the bounding box string
     var bounds = s + "," + w + "," + n + "," + e;
+
+    // Construct the queries using the padded bounds
     var nodeQuery = "(node" + node_query + "(" + bounds + ");";
     var wayQuery = "way" + way_query + "(" + bounds + ");";
     var relationQuery = "relation" + relation_query + "(" + bounds + ");)";
+
     var query =
       "?data=[out:json][timeout:25];" +
       nodeQuery +

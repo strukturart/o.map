@@ -26,6 +26,21 @@ const overpass = (() => {
     let relation_query = "[" + overpassQuery + "]";
     let way_query = "[" + overpassQuery + "]";
     let node_query = "[" + overpassQuery + "]";
+
+    if (overpassQuery.indexOf(",") > -1) {
+      // Split the query by comma
+      let parts = overpassQuery.split(",");
+
+      // Trim whitespace from each part
+      let part1 = parts[0].trim();
+      let part2 = parts[1].trim();
+
+      // Construct the queries
+      relation_query = `[${part1}][${part2}]`;
+      way_query = `[${part1}][${part2}]`;
+      node_query = `[${part1}][${part2}]`;
+    }
+
     if (overpassQuery.indexOf("public_transport") > -1) {
       node_query = "['public_transport'='stop_position']['bus'='yes']";
       relation_query = "['type'='route']['route'='bus']";
@@ -51,16 +66,25 @@ const overpass = (() => {
       return false;
     }
 
-    //boundingbox
-    let e = map.getBounds().getEast();
-    let w = map.getBounds().getWest();
-    let n = map.getBounds().getNorth();
-    let s = map.getBounds().getSouth();
+    let currentBounds = map.getBounds();
 
+    // Apply 20% padding to the bounds
+    let paddedBounds = currentBounds.pad(0.2);
+
+    // Extract the padded bounds
+    let e = paddedBounds.getEast();
+    let w = paddedBounds.getWest();
+    let n = paddedBounds.getNorth();
+    let s = paddedBounds.getSouth();
+
+    // Create the bounding box string
     var bounds = s + "," + w + "," + n + "," + e;
+
+    // Construct the queries using the padded bounds
     var nodeQuery = "(node" + node_query + "(" + bounds + ");";
     var wayQuery = "way" + way_query + "(" + bounds + ");";
     var relationQuery = "relation" + relation_query + "(" + bounds + ");)";
+
     var query =
       "?data=[out:json][timeout:25];" +
       nodeQuery +
