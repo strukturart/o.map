@@ -26,7 +26,22 @@ const overpass = (() => {
     let relation_query = "[" + overpassQuery + "]";
     let way_query = "[" + overpassQuery + "]";
     let node_query = "[" + overpassQuery + "]";
-    if (overpassQuery.indexOf("public_transport") > -1) {
+
+    if (overpassQuery.indexOf(",") > -1) {
+      // Split the query by comma
+      let parts = overpassQuery.split(",");
+
+      // Trim whitespace from each part
+      let part1 = parts[0].trim();
+      let part2 = parts[1].trim();
+
+      // Construct the queries
+      relation_query = `[${part1}][${part2}]`;
+      way_query = `[${part1}][${part2}]`;
+      node_query = `[${part1}][${part2}]`;
+    }
+
+    if (overpassQuery == "public_transport") {
       node_query = "['public_transport'='stop_position']['bus'='yes']";
       relation_query = "['type'='route']['route'='bus']";
       way_query = "['public_transport'='stop_platform']['bus'='yes']";

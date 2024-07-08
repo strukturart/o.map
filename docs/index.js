@@ -424,7 +424,7 @@ document.addEventListener("DOMContentLoaded", function () {
       .querySelector("div#overpass")
       .insertAdjacentHTML(
         "afterend",
-        '<div class="item"  data-type="overpass" data-url="amenity=shelter">Shelter</div>'
+        '<div class="item"  data-type="overpass" data-url="amenity=shelter,shelter_type!=public_transport">Shelter</div>'
       );
 
     find_gpx();

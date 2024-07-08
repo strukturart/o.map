@@ -41,7 +41,7 @@ const overpass = (() => {
       node_query = `[${part1}][${part2}]`;
     }
 
-    if (overpassQuery.indexOf("public_transport") > -1) {
+    if (overpassQuery == "public_transport") {
       node_query = "['public_transport'='stop_position']['bus'='yes']";
       relation_query = "['type'='route']['route'='bus']";
       way_query = "['public_transport'='stop_platform']['bus'='yes']";
