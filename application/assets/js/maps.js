@@ -272,7 +272,9 @@ const maps = (() => {
         crossOrigin: true,
         cacheMaxAge: caching_time,
         useOnlyCache: useOnlyCache,
-        maxZoom: max_zoom,
+        maxZoom: 20,
+        maxNativeZoom: max_zoom,
+
         attribution: attribution,
         format: "image/png",
         transparent: true,

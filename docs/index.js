@@ -427,6 +427,13 @@ document.addEventListener("DOMContentLoaded", function () {
         '<div class="item"  data-type="overpass" data-url="amenity=shelter,shelter_type!=public_transport">Shelter</div>'
       );
 
+    document
+      .querySelector("div#overpass")
+      .insertAdjacentHTML(
+        "afterend",
+        '<div class="item"  data-type="overpass" data-url="amenity=atm">ATM</div>'
+      );
+
     find_gpx();
     find_geojson();
     load_maps();
@@ -2919,6 +2926,15 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("keydown", handleKeyDown);
   document.addEventListener("keyup", handleKeyUp);
 });
+//mozActivity
+//open app
+try {
+  navigator.mozSetMessageHandler("activity", function (activityRequest) {
+    console.log(activityRequest.source);
+  });
+} catch (e) {}
+
+//debugger helper
 
 if (debug) {
   window.onerror = function (msg, url, linenumber) {
