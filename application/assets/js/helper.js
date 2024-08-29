@@ -113,27 +113,6 @@ const helper = (() => {
     }, time);
   };
 
-  //get location by ip
-  let geoip = function (callback, key) {
-    const url = "https://api.ipbase.com/v2/info?apikey=" + key;
-    let xhr = new XMLHttpRequest();
-    xhr.open("GET", url);
-    xhr.responseType = "json";
-    xhr.send();
-    xhr.error = function (err) {
-      helper.side_toaster(err, 3000);
-    };
-
-    xhr.onload = function () {
-      let responseObj = xhr.response;
-      let latlng = [
-        responseObj.data.location.latitude,
-        responseObj.data.location.longitude,
-      ];
-      callback(latlng);
-    };
-  };
-
   //delete file
   let deleteFile = function (filename) {
     let sdcard = "";
@@ -411,7 +390,6 @@ const helper = (() => {
     add_script,
     deleteFile,
     isOnline,
-    geoip,
     side_toaster,
     renameFile,
     downloadFile,

@@ -424,6 +424,13 @@ document.addEventListener("DOMContentLoaded", function () {
       .querySelector("div#overpass")
       .insertAdjacentHTML(
         "afterend",
+        '<div class="item"  data-type="overpass" data-url="amenity=toilets">Toilets</div>'
+      );
+
+    document
+      .querySelector("div#overpass")
+      .insertAdjacentHTML(
+        "afterend",
         '<div class="item"  data-type="overpass" data-url="amenity=shelter,shelter_type!=public_transport">Shelter</div>'
       );
 

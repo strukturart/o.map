@@ -761,32 +761,6 @@ const module = (() => {
   function calculateGainAndLoss(altitudes) {
     let gain = 0;
     let loss = 0;
-    /*
-    let previousValidAltitude = null;
-
-    for (let i = 0; i < altitudes.length; i++) {
-      const currentAltitude = altitudes[i];
-
-      // Skip null or inaccurate altitude values
-      if (currentAltitude === null || isNaN(currentAltitude)) {
-        continue;
-      }
-
-      if (previousValidAltitude !== null) {
-        const altitudeDifference = currentAltitude - previousValidAltitude;
-
-        if (Math.abs(altitudeDifference) <= threshold) {
-          if (altitudeDifference > 0) {
-            gain += altitudeDifference;
-          } else {
-            loss += Math.abs(altitudeDifference);
-          }
-        }
-      }
-
-      previousValidAltitude = currentAltitude;
-    }
-    */
 
     const highestAltitude = Math.max(...altitudes);
     const lowestAltitude = Math.min(...altitudes);

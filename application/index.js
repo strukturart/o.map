@@ -424,6 +424,13 @@ document.addEventListener("DOMContentLoaded", function () {
       .querySelector("div#overpass")
       .insertAdjacentHTML(
         "afterend",
+        '<div class="item"  data-type="overpass" data-url="amenity=toilets">Toilets</div>'
+      );
+
+    document
+      .querySelector("div#overpass")
+      .insertAdjacentHTML(
+        "afterend",
         '<div class="item"  data-type="overpass" data-url="amenity=shelter,shelter_type!=public_transport">Shelter</div>'
       );
 
@@ -2301,7 +2308,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (status.windowOpen == "scan") {
           qr.stop_scan();
           open_finder();
-          //windowOpen = "finder";
         }
 
         if (
@@ -2313,8 +2319,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (status.windowOpen == "files-option") {
           document.getElementById("files-option").style.display = "none";
           open_finder();
-          // windowOpen = "finder";
-
           break;
         }
 
@@ -2773,8 +2777,6 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "5":
-        // maps.export_db();
-        //maps.import_db();
         if (status.tracking_running) {
           document.getElementById("tracking-view").style.display =
             status.windowOpen === "trackingView" ? "none" : "flex";
