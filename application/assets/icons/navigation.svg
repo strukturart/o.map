@@ -1,44 +1,99 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 459 459" style="enable-background:new 0 0 459 459;" xml:space="preserve">
-<g>
-	<g>
-		<path d="M229.5,0C102.751,0,0,102.751,0,229.5S102.751,459,229.5,459C356.25,459,459,356.25,459,229.5S356.25,0,229.5,0z
-			 M350.814,119.183l-72.647,139.261c-4.401,8.438-11.285,15.321-19.722,19.723l-139.262,72.647
-			c-3.156,1.647-7.016,1.055-9.534-1.463c-2.518-2.518-3.11-6.378-1.463-9.534l72.648-139.261
-			c4.401-8.438,11.285-15.321,19.722-19.723l139.261-72.647c3.156-1.646,7.016-1.054,9.534,1.463
-			C351.868,112.166,352.461,116.026,350.814,119.183z"/>
+
+<svg
+   version="1.1"
+   id="Layer_1"
+   x="0px"
+   y="0px"
+   viewBox="0 0 459 459"
+   style="enable-background:new 0 0 459 459;"
+   xml:space="preserve"
+   sodipodi:docname="navigation.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+   id="defs41" /><sodipodi:namedview
+   id="namedview39"
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1.0"
+   inkscape:pageshadow="2"
+   inkscape:pageopacity="0.0"
+   inkscape:pagecheckerboard="0"
+   showgrid="false"
+   inkscape:zoom="1.7037037"
+   inkscape:cx="229.79348"
+   inkscape:cy="229.79348"
+   inkscape:window-width="1920"
+   inkscape:window-height="1016"
+   inkscape:window-x="0"
+   inkscape:window-y="0"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="Layer_1" />
+<rect
+   style="fill:#008080"
+   id="rect882"
+   width="462.8244"
+   height="459.39896"
+   x="-0.068783969"
+   y="0.820822"
+   ry="76.817932" /><g
+   id="g6"
+   transform="matrix(0.96886519,0,0,0.96886519,7.1454389,7.1454389)">
+	<g
+   id="g4"
+   transform="matrix(0.94466244,0,0,0.94466244,12.69997,12.69997)">
+		<path
+   d="M 229.5,0 C 102.751,0 0,102.751 0,229.5 0,356.249 102.751,459 229.5,459 356.25,459 459,356.25 459,229.5 459,102.75 356.25,0 229.5,0 Z m 121.314,119.183 -72.647,139.261 c -4.401,8.438 -11.285,15.321 -19.722,19.723 l -139.262,72.647 c -3.156,1.647 -7.016,1.055 -9.534,-1.463 -2.518,-2.518 -3.11,-6.378 -1.463,-9.534 l 72.648,-139.261 c 4.401,-8.438 11.285,-15.321 19.722,-19.723 l 139.261,-72.647 c 3.156,-1.646 7.016,-1.054 9.534,1.463 2.517,2.517 3.11,6.377 1.463,9.534 z"
+   id="path2" />
 	</g>
 </g>
-<g>
+<g
+   id="g8">
 </g>
-<g>
+<g
+   id="g10">
 </g>
-<g>
+<g
+   id="g12">
 </g>
-<g>
+<g
+   id="g14">
 </g>
-<g>
+<g
+   id="g16">
 </g>
-<g>
+<g
+   id="g18">
 </g>
-<g>
+<g
+   id="g20">
 </g>
-<g>
+<g
+   id="g22">
 </g>
-<g>
+<g
+   id="g24">
 </g>
-<g>
+<g
+   id="g26">
 </g>
-<g>
+<g
+   id="g28">
 </g>
-<g>
+<g
+   id="g30">
 </g>
-<g>
+<g
+   id="g32">
 </g>
-<g>
+<g
+   id="g34">
 </g>
-<g>
+<g
+   id="g36">
 </g>
 </svg>

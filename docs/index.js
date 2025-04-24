@@ -116,14 +116,11 @@ let status = {
   screenOff: false,
   follow_path: false,
   select_gpx: false,
-  notKaiOS: true,
+  os: "default",
 };
 
-if ("b2g" in navigator || "mozAlarms" in navigator) {
-  status.notKaiOS = false;
-} else {
-  status.notKaiOS = true;
-}
+if ("b2g" in Navigator) status.os = "KaiOS3";
+if ("navigator.mozApps" in navigator) status.os = "KaiOS2";
 
 let tracking = {};
 
@@ -1915,7 +1912,7 @@ document.addEventListener("DOMContentLoaded", function () {
       finder_panels = finder_panels.filter((e) => e.id != "files");
     }
 
-    if (status.notKaiOS == true) {
+    if (status.os == "default") {
       finder_panels = finder_panels.filter((e) => e.id != "kaios-ads");
     }
     tabIndex = 0;
@@ -2308,7 +2305,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (status.windowOpen == "scan") {
           qr.stop_scan();
           open_finder();
-          //windowOpen = "finder";
         }
 
         if (
@@ -2320,8 +2316,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (status.windowOpen == "files-option") {
           document.getElementById("files-option").style.display = "none";
           open_finder();
-          // windowOpen = "finder";
-
           break;
         }
 
@@ -2780,8 +2774,6 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "5":
-        // maps.export_db();
-        //maps.import_db();
         if (status.tracking_running) {
           document.getElementById("tracking-view").style.display =
             status.windowOpen === "trackingView" ? "none" : "flex";

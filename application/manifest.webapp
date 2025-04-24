@@ -21,7 +21,7 @@
  "activities": {
     "maps": {
     href: "/index.html",
-    disposition: "inline"
+    disposition: "inline"}
 },
 
   "dependencies": {

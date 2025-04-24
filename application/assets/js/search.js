@@ -90,12 +90,19 @@ const search = (() => {
 
   //SEARCH
 
+  let lastFetchTime = 0;
+
   let start_search = function () {
+    let now = Date.now();
+    if (now - lastFetchTime < 2000) return;
     let search_term = document.getElementById("search").value;
-    if (search_term.length < 3) return false;
+    if (search_term.length < 3) return;
+
+    lastFetchTime = now;
+
     const url =
       "https://nominatim.openstreetmap.org/search?format=json&addressdetails=0&q=" +
-      search_term;
+      encodeURIComponent(search_term);
 
     const options = { method: "GET" };
 
