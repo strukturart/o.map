@@ -116,14 +116,11 @@ let status = {
   screenOff: false,
   follow_path: false,
   select_gpx: false,
-  notKaiOS: true,
+  os: "default",
 };
 
-if ("b2g" in navigator || "mozAlarms" in navigator) {
-  status.notKaiOS = false;
-} else {
-  status.notKaiOS = true;
-}
+if ("b2g" in Navigator) status.os = "KaiOS3";
+if ("navigator.mozApps" in navigator) status.os = "KaiOS2";
 
 let tracking = {};
 
@@ -1915,7 +1912,7 @@ document.addEventListener("DOMContentLoaded", function () {
       finder_panels = finder_panels.filter((e) => e.id != "files");
     }
 
-    if (status.notKaiOS == true) {
+    if (status.os == "default") {
       finder_panels = finder_panels.filter((e) => e.id != "kaios-ads");
     }
     tabIndex = 0;

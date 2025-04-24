@@ -15,7 +15,13 @@
     "maxzoom": 18
   },
 
-
+  {
+    "name": "OpenTopoMap",
+    "type": "map",
+    "url": "https://tile.opentopomap.org/{z}/{x}/{y}.png",
+    "attribution": "© OpenTopoMap (CC-BY-SA)",
+    "maxzoom": 18
+  },
   {
     "name": "climbing",
     "type": "overpass",
@@ -24,7 +30,7 @@
     "maxzoom": 18
   },
 
-    {
+  {
     "name": "water",
     "type": "overpass",
     "url": "amenity=drinking_water",
