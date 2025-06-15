@@ -2,6 +2,12 @@ const settings = ((_) => {
   let save_settings = function () {
     localStorage.setItem("owm-key", document.getElementById("owm-key").value);
 
+    localStorage.setItem("past-radar", document.getElementById("past-radar").value)
+
+    localStorage.setItem("forecast-radar", document.getElementById("forecast-radar").value)
+
+    localStorage.setItem("radar-time", document.getElementById("radar-time").value)
+
     localStorage.setItem(
       "routing_profil",
       document.getElementById("routing-profil").value
@@ -74,6 +80,12 @@ const settings = ((_) => {
         localStorage["tracking-notification-time"] || 0,
 
       openweather_api: localStorage.getItem("owm-key"),
+
+      past_radar_count: localStorage.getItem("past-radar") || "5",
+
+      forecast_radar_count: localStorage.getItem("forecast-radar") || "3",
+
+      radar_time: localStorage.getItem("radar-time") || "2000",
 
       ors_api: localStorage.getItem("ors-key"),
       routing_profil: localStorage.getItem("routing_profil")
@@ -170,6 +182,10 @@ const settings = ((_) => {
     //set values in setting page
 
     document.getElementById("owm-key").value = setting.openweather_api;
+    document.getElementById("past-radar").value = setting.past_radar_count;
+    document.getElementById("forecast-radar").value = setting.forecast_radar_count;
+    document.getElementById("radar-time").value = setting.radar_time
+
     document.getElementById("ors-key").value = setting.ors_api;
     document.getElementById("routing-profil").value = setting.routing_profil;
 
@@ -237,6 +253,10 @@ const settings = ((_) => {
 
           setTimeout(() => {
             document.getElementById("owm-key").value = setting.openweather_api;
+            document.getElementById("past-radar").value = setting.past_radar_count || "5";
+            document.getElementById("forecast-radar").value = setting.forecast_radar_count || "3";
+            document.getElementById("radar-time").value = setting.radar_time || "2000";
+
             document.getElementById("ors-key").value = setting.ors_api;
             document.getElementById("routing-profil").value =
               setting.routing_profil;
@@ -285,6 +305,12 @@ const settings = ((_) => {
                     setTimeout(() => {
                       document.getElementById("owm-key").value =
                         setting.openweather_api;
+
+                      document.getElementById("past-radar").value = setting.past_radar_count;
+
+                      document.getElementById("forecast-radar").value = setting.forecast_radar_count;
+
+                      document.getElementById("radar-time").value = setting.radar_time
 
                       document.getElementById("ors-key").value =
                         setting.ors_api;
