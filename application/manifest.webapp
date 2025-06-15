@@ -20,8 +20,8 @@
 
  "activities": {
     "maps": {
-    href: "/index.html",
-    disposition: "inline"}
+    "href": "/index.html",
+    "disposition": "inline"}
 },
 
   "dependencies": {
