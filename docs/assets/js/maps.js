@@ -382,11 +382,8 @@ const maps = (() => {
   };
 
   let k;
-  let weather_layer,
-    weather_layer0,
-    weather_layer1,
-    weather_layer2,
-    weather_layer3;
+  let weather_layers = [];
+  let weather_time = [];
 
   function weather_map() {
     let weather_url;
@@ -394,182 +391,90 @@ const maps = (() => {
       general.active_layer.splice(general.active_layer.indexOf("weather"), 1);
 
       helper.top_bar("", "", "");
-      map.removeLayer(weather_layer);
-      map.removeLayer(weather_layer0);
-      map.removeLayer(weather_layer1);
-      map.removeLayer(weather_layer2);
-      map.removeLayer(weather_layer3);
+
+        for (let i = 0; i < weather_layers.length; i++) {
+          map.removeLayer(weather_layers[i])
+        }
+      weather_layers = [];
+      weather_time = [];
+
       clearInterval(k);
       map.attributionControl.setPrefix("");
       helper.side_toaster("layer removed", 2000);
       return false;
     } else {
-      fetch("https://api.rainviewer.com/public/maps.json")
+      fetch("https://api.rainviewer.com/public/weather-maps.json")
         .then(function (response) {
           general.active_layer.push("weather");
           map.attributionControl.setPrefix(
-            "<a href='https://www.rainviewer.com/terms.html'>waether data collected by rainviewer.com</a>"
+            "<a href='https://www.rainviewer.com/terms.html'>weather data collected by rainviewer.com</a>"
           );
           return response.json();
         })
         .then(function (data) {
-          weather_url =
-            "https://tilecache.rainviewer.com/v2/radar/" +
-            data[data.length - 5] +
-            "/256/{z}/{x}/{y}/2/1_1.png";
-          weather_layer = L.tileLayer(weather_url);
+          const api_url = data.host;
 
-          weather_url0 =
-            "https://tilecache.rainviewer.com/v2/radar/" +
-            data[data.length - 4] +
-            "/256/{z}/{x}/{y}/2/1_1.png";
-          weather_layer0 = L.tileLayer(weather_url0);
+          const past_count = (localStorage.getItem("past-radar") || 5) * 1 ;
+          //fetch past 5 layers
+          const past_layers = data.radar.past
+          for (let j = past_layers.length - past_count; j < past_layers.length; j++) {
+            const layer = past_layers[j];
+            weather_url = api_url + layer.path + "/256/{z}/{x}/{y}/2/1_1.png";
+            weather_layers.push(L.tileLayer(weather_url));
+            weather_time.push(layer.time)
+          }
 
-          weather_url1 =
-            "https://tilecache.rainviewer.com/v2/radar/" +
-            data[data.length - 3] +
-            "/256/{z}/{x}/{y}/2/1_1.png";
-          weather_layer1 = L.tileLayer(weather_url1);
+          const future_count = (localStorage.getItem("forecast-radar") || 3) * 1;
+          //fetch future 3 layers
+          const future_layers = data.radar.nowcast;
+          for (let j = 0; j < future_count; j++) {
+            const layer = future_layers[j];
+            weather_url = api_url + layer.path + "/256/{z}/{x}/{y}/2/1_1.png";
+            weather_layers.push(L.tileLayer(weather_url));
+            weather_time.push(layer.time)
+          }
 
-          weather_url2 =
-            "https://tilecache.rainviewer.com/v2/radar/" +
-            data[data.length - 2] +
-            "/256/{z}/{x}/{y}/2/1_1.png";
-          weather_layer2 = L.tileLayer(weather_url2);
+          //display layers
+          for (let j = 0; j < weather_layers.length; j++) {
+            map.addLayer(weather_layers[j]);
+          }
 
-          weather_url3 =
-            "https://tilecache.rainviewer.com/v2/radar/" +
-            data[data.length - 1] +
-            "/256/{z}/{x}/{y}/2/1_1.png";
-          weather_layer3 = L.tileLayer(weather_url3);
-
-          map.addLayer(weather_layer);
-          map.addLayer(weather_layer0);
-          map.addLayer(weather_layer1);
-          map.addLayer(weather_layer2);
-          map.addLayer(weather_layer3);
 
           let i = -1;
           k = setInterval(() => {
             i++;
 
-            if (i == 0) {
-              map.addLayer(weather_layer);
-              map.removeLayer(weather_layer0);
-              map.removeLayer(weather_layer1);
-              map.removeLayer(weather_layer2);
-              map.removeLayer(weather_layer3);
-              let t = formDat(data[data.length - 5]);
-              helper.top_bar(
-                "",
-                t.year +
-                  "." +
-                  t.month +
-                  "." +
-                  t.day +
-                  ", " +
-                  t.hour +
-                  ":" +
-                  t.minute,
-                ""
-              );
+            for (let j = 0; j < weather_layers.length; j++) {
+              if(j === i)
+                map.addLayer(weather_layers[j])
+              else
+                map.removeLayer(weather_layers[j])
             }
 
-            if (i == 1) {
-              map.removeLayer(weather_layer);
-              map.addLayer(weather_layer0);
-              map.removeLayer(weather_layer1);
-              map.removeLayer(weather_layer2);
-              map.removeLayer(weather_layer3);
-              let t = formDat(data[data.length - 4]);
-              helper.top_bar(
+            let t = formDat(weather_time[i])
+            helper.top_bar(
                 "",
                 t.year +
-                  "." +
-                  t.month +
-                  "." +
-                  t.day +
-                  ", " +
-                  t.hour +
-                  ":" +
-                  t.minute,
+                "." +
+                t.month +
+                "." +
+                t.day +
+                ", " +
+                t.hour +
+                ":" +
+                t.minute,
                 ""
-              );
-            }
+            );
 
-            if (i == 2) {
-              map.removeLayer(weather_layer);
-              map.removeLayer(weather_layer0);
-              map.addLayer(weather_layer1);
-              map.removeLayer(weather_layer2);
-              map.removeLayer(weather_layer3);
-              let t = formDat(data[data.length - 3]);
-              helper.top_bar(
-                "",
-                t.year +
-                  "." +
-                  t.month +
-                  "." +
-                  t.day +
-                  ", " +
-                  t.hour +
-                  ":" +
-                  t.minute,
-                ""
-              );
-            }
-
-            if (i == 3) {
-              map.removeLayer(weather_layer);
-              map.removeLayer(weather_layer0);
-              map.removeLayer(weather_layer1);
-              map.addLayer(weather_layer2);
-              map.removeLayer(weather_layer3);
-              let t = formDat(data[data.length - 2]);
-              helper.top_bar(
-                "",
-                t.year +
-                  "." +
-                  t.month +
-                  "." +
-                  t.day +
-                  ", " +
-                  t.hour +
-                  ":" +
-                  t.minute,
-                ""
-              );
-            }
-            if (i == 4) {
-              map.removeLayer(weather_layer);
-              map.removeLayer(weather_layer0);
-              map.removeLayer(weather_layer1);
-              map.removeLayer(weather_layer2);
-              map.addLayer(weather_layer3);
-              let t = formDat(data[data.length - 1]);
-              helper.top_bar(
-                "",
-                t.year +
-                  "." +
-                  t.month +
-                  "." +
-                  t.day +
-                  ", " +
-                  t.hour +
-                  ":" +
-                  t.minute,
-                ""
-              );
-            }
-            if (i == 5) {
+            if (i === weather_layers.length - 1) {
               i = -1;
             }
-          }, 2000);
+          }, (localStorage.getItem("radar-time") || 2000) * 1);
         })
         .catch(function (err) {
           if (helper.isOnline == true) {
             helper.allow_unsecure(
-              "https://api.rainviewer.com/public/maps.json"
+              "https://api.rainviewer.com/public/weather-maps.json"
             );
             helper.side_toaster("Can't load weather data" + err, 3000);
           }
