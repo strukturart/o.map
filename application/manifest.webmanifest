@@ -8,6 +8,7 @@
   "display": "standalone",
   "userAgentInfo": "o.map written by strukturart@gmail.com",
 
+  "origin": "app://omap.strukturart.com",
   "icons": [
     {
       "src": "/assets/icons/icon-56-56.png",
