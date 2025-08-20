@@ -13,6 +13,7 @@
     "112": "/assets/icons/icon-112-112.png"
   },
 
+  "origin": "app://omap.strukturart.com",
   "developer": {
     "name": "strukturart",
     "url": "https://github.com/strukturart/o.map"
