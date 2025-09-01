@@ -120,9 +120,7 @@
         remove marker
       </div>
 
-      <h2>What3words</h2>
-      <div class="item" id="what3words"></div>
-
+     
       <div class="item" data-action="share" >
         share
       </div>
@@ -213,10 +211,44 @@
       </div>
 
       <div class="panel menu-box" id="settings" name="Settings">
-        <h2>Openweathermap</h2>
-        <div class="item input-parent" >
-          <label for="owm-key">Openweathermap API-Key</label>
-          <input type="text" class="qr" id="owm-key" />
+
+         <h2>Crosshair</h2>
+        <div class="item input-parent flex" >
+          <label for="crosshair-ckb" class="grid-col-14"
+            >show crosshair ?</label
+          >
+          <input
+            class="checkboxes grid-col-2"
+            type="checkbox"
+            id="crosshair-ckb"
+            value="crosshair"
+          />
+          <div class="ckb-icon"></div>
+          <div class="toogle-button"></div>
+        </div>
+
+        <h2>Scale</h2>
+        <div class="item input-parent flex" >
+          <label for="scale-ckb" class="grid-col-14">show scale ?</label>
+          <input
+            class="checkboxes grid-col-2"
+            type="checkbox"
+            id="scale-ckb"
+            value="scale"
+          />
+          <div class="ckb-icon"></div>
+          <div class="toogle-button"></div>
+        </div>
+
+        <h2>Unit of measurement</h2>
+        <div class="item input-parent flex" >
+          <label for="measurement-ckb" class="grid-col-14"></label>
+          <input
+            class="checkboxes grid-col-2"
+            type="checkbox"
+            id="measurement-ckb"
+            value="measurement"
+          />
         </div>
 
         <h2>Weather radar layer</h2>
@@ -276,6 +308,7 @@
           </select>
         </div>
 
+        <h2>Routing Notification</h2>
         <div class="item input-parent flex" >
           <label for="routing-notification-ckb" class="grid-col-14"
             >receive a vibration notification when you leave the routing
@@ -291,59 +324,9 @@
           <div class="toogle-button"></div>
         </div>
 
-        <h2>Crosshair</h2>
-        <div class="item input-parent flex" >
-          <label for="crosshair-ckb" class="grid-col-14"
-            >show crosshair ?</label
-          >
-          <input
-            class="checkboxes grid-col-2"
-            type="checkbox"
-            id="crosshair-ckb"
-            value="crosshair"
-          />
-          <div class="ckb-icon"></div>
-          <div class="toogle-button"></div>
-        </div>
+       
 
-        <h2>Scale</h2>
-        <div class="item input-parent flex" >
-          <label for="scale-ckb" class="grid-col-14">show scale ?</label>
-          <input
-            class="checkboxes grid-col-2"
-            type="checkbox"
-            id="scale-ckb"
-            value="scale"
-          />
-          <div class="ckb-icon"></div>
-          <div class="toogle-button"></div>
-        </div>
-
-        <h2>Unit of measurement</h2>
-        <div class="item input-parent flex" >
-          <label for="measurement-ckb" class="grid-col-14"></label>
-          <input
-            class="checkboxes grid-col-2"
-            type="checkbox"
-            id="measurement-ckb"
-            value="measurement"
-          />
-        </div>
-
-        <h2>Tracking</h2>
-        <div class="item input-parent flex">
-          <label for="screenlock-ckb" class="grid-col-14"
-            >The screen should not be switched off during tracking ?</label
-          >
-          <input
-            class="checkboxes grid-col-2"
-            type="checkbox"
-            id="screenlock-ckb"
-            value="tracking_screenlock"
-          />
-          <div class="ckb-icon"></div>
-          <div class="toogle-button"></div>
-        </div>
+       
 
         <h2>Offline maps</h2>
         <div class="item input-parent" >
@@ -469,6 +452,20 @@
             <option value="180">3h</option>
             <option value="120">4h</option>
           </select> 
+        </div>
+
+        <div class="item input-parent flex">
+          <label for="screenlock-ckb" class="grid-col-14"
+            >The screen should not be switched off during tracking ?</label
+          >
+          <input
+            class="checkboxes grid-col-2"
+            type="checkbox"
+            id="screenlock-ckb"
+            value="tracking_screenlock"
+          />
+          <div class="ckb-icon"></div>
+          <div class="toogle-button"></div>
         </div>
 
 
@@ -657,46 +654,7 @@ Follow path        </button>
           {{/data}}
         </script>
       </div>
-      <!--WEATHER-->
-      <div class="panel menu-box" id="weather" name="Weather">
-        <section id="forecast-hourly">
-          <strong><u>forecast coming hour</u></strong>
-          <div class="flex">
-            <div class="temp"></div>
-            <div class="description"></div>
-          </div>
-        </section>
-
-        <section>
-          <strong><u>forecast coming days</u></strong>
-
-          <div id="day-0" class="flex">
-            <div class="time"></div>
-            <div class="temp"></div>
-            <div class="description"></div>
-          </div>
-          <div id="day-1" class="flex">
-            <div class="time"></div>
-            <div class="temp"></div>
-            <div class="description"></div>
-          </div>
-          <div id="day-2" class="flex">
-            <div class="time"></div>
-            <div class="temp"></div>
-            <div class="description"></div>
-          </div>
-          <div id="day-3" class="flex">
-            <div class="time"></div>
-            <div class="temp"></div>
-            <div class="description"></div>
-          </div>
-          <div id="day-4" class="flex">
-            <div class="time"></div>
-            <div class="temp"></div>
-            <div class="description"></div>
-          </div>
-        </section>
-      </div>
+     
 
 
       <div class="panel menu-box" id="shortcuts" name="Shortcuts">
@@ -841,12 +799,7 @@ Follow path        </button>
           In order to automatically load markers or paths when starting the app,
           the file name must begin with _, e.g. _track-alps.json
         </p>
-        <h2>weather data</h2>
-        <p>
-          you have the possibility to call up a weather forecast for positions.
-          for this you have to deposit an api key in the settings, you can get
-          this for free at openweathermap.org.
-        </p>
+       
         <h2>position determination</h2>
         <p>
           Unfortunately there is still a KaiOs bug that prevents the exact
@@ -876,7 +829,6 @@ Follow path        </button>
             </a>
           </li>
           <li><a href="https://opentopomap.org">opentopomap</a></li>
-          <li><a href="https://openweathermap.org">openweathermap.org</a></li>
           <li>
             <a href="https://www.rainviewer.com/terms.html"
               >waether layer data collected by rainviewer.com</a
@@ -918,11 +870,10 @@ Follow path        </button>
         </div>
       </div>
 
-      <div class="panel item menu-box" id="kaios-ads" name="KaiOsAds"></div>
+      <div class="panel item menu-box" id="kaios-ads" name="KaiOSAds"></div>
 
     </div>
 
-        <script src="assets/js/dayjs.js"></script>
 
     <script src="assets/js/dayjs.js"></script>
     <script src="assets/js/chroma.min.js"></script>
@@ -965,7 +916,6 @@ Follow path        </button>
     <script defer src="assets/js/helper.js"></script>
     <script defer src="assets/js/exportGeoJson.js"></script>
     <script defer src="assets/js/mozactivity.js"></script>
-    <script defer src="assets/js/openweather.js"></script>
     <script defer src="assets/js/togpx.js"></script>
 
 

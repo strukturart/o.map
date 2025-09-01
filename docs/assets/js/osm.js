@@ -174,7 +174,7 @@ const osm = (() => {
     );
     url.searchParams.append(
       "redirect_uri",
-      "https://omap.strukturart.com/redirect.html"
+      "https://omap.strukturart.com/index.html"
     );
     url.searchParams.append("scope", "write_gpx read_gpx read_prefs");
 

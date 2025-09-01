@@ -117,10 +117,13 @@ let status = {
   follow_path: false,
   select_gpx: false,
   os: "default",
+  version: 0,
 };
 
-if ("b2g" in Navigator) status.os = "KaiOS3";
-if ("navigator.mozApps" in navigator) status.os = "KaiOS2";
+if ("b2g" in navigator) status.os = "KaiOS3";
+if (navigator.mozApps) {
+  status.os = "KaiOS2";
+}
 
 let tracking = {};
 
@@ -130,12 +133,12 @@ if (!navigator.geolocation) {
 
 if ("requestWakeLock" in navigator) {
   window.navigator.requestWakeLock("gps");
-  if ("b2g" in Navigator) {
+  if ("b2g" in navigator) {
     window.navigator.b2g.requestWakeLock("gps");
   }
 }
 
-if ("b2g" in Navigator) {
+if ("b2g" in navigator) {
   try {
     if ("serviceWorker" in navigator) {
       try {
@@ -158,6 +161,96 @@ if ("b2g" in Navigator) {
   }
 }
 
+let oauthRedirect = (code) => {
+  if (!code) {
+    const urlParams = new URLSearchParams(window.location.search);
+    code = urlParams.get("code");
+    if (!code) return;
+  }
+
+  const myHeaders = new Headers({
+    "Content-Type": "application/x-www-form-urlencoded",
+  });
+
+  const urlencoded = new URLSearchParams({
+    code: code,
+    grant_type: "authorization_code",
+    redirect_uri: "https://omap.strukturart.com/index.html",
+    client_id: "KEcqDV16BjfRr-kYuOyRGmiQcx6YCyRz8T21UjtQWy4",
+  });
+
+  const requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: urlencoded,
+    redirect: "follow",
+  };
+
+  return fetch("https://www.openstreetmap.org/oauth2/token", requestOptions)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((result) => {
+      localStorage.setItem("openstreetmap_token", result.access_token);
+      return result;
+    });
+};
+
+let app_launcher = () => {
+  var currentUrl = window.location.href;
+
+  // Check if the URL includes 'id='
+  if (!currentUrl.includes("code=")) {
+    return false;
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  let result = urlParams.get("code");
+
+  if (!result) {
+    return false;
+  }
+
+  setTimeout(() => {
+    try {
+      const activity = new MozActivity({
+        name: "omap-oauth",
+        data: result,
+      });
+      activity.onsuccess = function () {
+        console.log("Activity successfuly handled");
+        window.close();
+      };
+
+      activity.onerror = function () {
+        console.log("The activity encouter en error: " + this.error);
+        alert(this.error);
+      };
+    } catch (e) {}
+    if ("b2g" in navigator) {
+      try {
+        let activity = new WebActivity("omap-oauth", {
+          name: "omap-oauth",
+          type: "string",
+          data: result,
+        });
+        activity.start().then(
+          (rv) => {
+            window.close();
+            console.log(rv);
+          },
+          (err) => {
+            alert(err);
+          }
+        );
+      } catch (e) {}
+    }
+  }, 4000);
+};
+
 //leaflet add basic map
 map = new L.map("map-container", {
   zoomControl: false,
@@ -165,9 +258,30 @@ map = new L.map("map-container", {
   keyboard: true,
 });
 
+try {
+  fetch("/manifest.webapp")
+    .then((r) => r.json())
+    .then((parsedResponse) => {
+      status.version = parsedResponse.version;
+      localStorage.setItem("version", status.version);
+    });
+} catch (e) {}
+
+try {
+  fetch("/manifest.webmanifest")
+    .then((r) => r.json())
+    .then((parsedResponse) => {
+      status.version = parsedResponse.b2g_features.version;
+      localStorage.setItem("version", status.version);
+    });
+} catch (e) {}
+
 document.addEventListener("DOMContentLoaded", function () {
   osm.get_user(false);
   settings.load_settings();
+
+  document.getElementById("intro-footer").innerText =
+    "Version " + localStorage.getItem("version");
 
   let routing_service_callback = function (e) {
     //clean layer
@@ -299,7 +413,7 @@ document.addEventListener("DOMContentLoaded", function () {
         app: "omap",
         slot: "omap",
         test: 0,
-        timeout: 10000,
+        timeout: 40000,
         h: 220,
         w: 220,
         container: document.getElementById("kaios-ads"),
@@ -328,25 +442,11 @@ document.addEventListener("DOMContentLoaded", function () {
     document.head.appendChild(js);
   };
 
-  if ("b2g" in navigator) {
+  if (status.os != "default") {
+    app_launcher();
     load_ads();
-    let manifest = function (a) {
-      document.getElementById("intro-footer").innerText =
-        "Version " + a.version;
-    };
-    helper.getManifest(manifest);
   } else {
-    let manifest = function (a) {
-      document.getElementById("intro-footer").innerText =
-        "Version " + a.manifest.version;
-      if (a.installOrigin == "app://kaios-plus.kaiostech.com") {
-        load_ads();
-      } else {
-        load_ads();
-      }
-    };
-
-    helper.getManifest(manifest);
+    oauthRedirect();
   }
 
   //build menu
@@ -775,37 +875,9 @@ document.addEventListener("DOMContentLoaded", function () {
     hotline_group.clearLayers();
   };
 
-  /////openweather callback
-  ////build elements in weather panel
-
-  let getDay = function (dt) {
-    let t = new Date(dt);
-    return days[t.getDay()];
-  };
-
-  function openweather_callback(some) {
-    document.querySelector("section#forecast-hourly div.temp").innerText =
-      some.hourly[0].temp + " °C";
-    document.querySelector(
-      "section#forecast-hourly div.description"
-    ).innerText = some.hourly[0].weather[0].description;
-
-    for (let i = 0; i < 4; i++) {
-      document.querySelector("div#day-" + i + " div.time").innerText = getDay(
-        some.daily[i].dt * 1000
-      );
-
-      document.querySelector("div#day-" + i + " div.temp").innerText =
-        some.daily[i].temp.day + " °C";
-
-      document.querySelector("div#day-" + i + " div.description").innerText =
-        some.daily[i].weather[0].description;
-    }
-  }
-
   //distance to target marker
-  let distance_to_target = function () {
-    //device
+  let distances = function () {
+    //current device position to map center
     let calc = module.calc_distance(
       mainmarker.current_lat,
       mainmarker.current_lng,
@@ -822,23 +894,22 @@ document.addEventListener("DOMContentLoaded", function () {
     ).innerText = calc + " " + general.measurement_unit;
 
     //map center
-    let calc2 = module.calc_distance(
-      mainmarker.current_lat,
-      mainmarker.current_lng,
-      mainmarker.device_lat,
-      mainmarker.device_lng,
-      general.measurement_unit
-    );
-    calc2 = calc2 / 1000;
-    calc2.toFixed(2);
-    parseFloat(calc2);
-
     document.querySelector(
       "section#mapcenter-distance div.distance span"
-    ).innerText = calc2 + " " + general.measurement_unit;
+    ).innerText = calc + " " + general.measurement_unit;
 
-    if (mainmarker.target_marker != undefined) {
-      //target marker
+    if (mainmarker.target_marker) {
+      //show distance element
+
+      document.querySelector(
+        "section#mapcenter-distance div.target"
+      ).style.display = "block";
+
+      document.querySelector(
+        "section#device-distance div.target span"
+      ).style.display = "block";
+
+      //distance target marker to current device position
       let calc3 = module.calc_distance(
         mainmarker.current_lat,
         mainmarker.current_lng,
@@ -853,22 +924,32 @@ document.addEventListener("DOMContentLoaded", function () {
       document.querySelector(
         "section#mapcenter-distance div.target span"
       ).innerText = calc3 + " " + general.measurement_unit;
+
+      //distance target marker to map center
+      let calc4 = module.calc_distance(
+        mainmarker.device_lat,
+        mainmarker.device_lng,
+        mainmarker.target_marker.lat,
+        mainmarker.target_marker.lng,
+        general.measurement_unit
+      );
+      calc4 = calc4 / 1000;
+      calc4.toFixed(2);
+      parseFloat(calc4);
+
+      document.querySelector(
+        "section#device-distance div.target span"
+      ).innerText = calc4 + " " + general.measurement_unit;
+    } else {
+      //hide distance element
+      document.querySelector(
+        "section#mapcenter-distance div.target"
+      ).style.display = "none";
+
+      document.querySelector(
+        "section#device-distance div.target"
+      ).style.display = "none";
     }
-
-    let calc4 = module.calc_distance(
-      mainmarker.device_lat,
-      mainmarker.device_lng,
-      mainmarker.target_marker.lat,
-      mainmarker.target_marker.lng,
-      general.measurement_unit
-    );
-    calc4 = calc4 / 1000;
-    calc4.toFixed(2);
-    parseFloat(calc4);
-
-    document.querySelector(
-      "section#device-distance div.target span"
-    ).innerText = calc4 + " " + general.measurement_unit;
   };
 
   //update data fields
@@ -952,18 +1033,6 @@ document.addEventListener("DOMContentLoaded", function () {
       tabIndex = document.activeElement.getAttribute("tabindex");
     }
 
-    //openweather request
-    if (setting.openweather_api == "") return false;
-    let c = map.getCenter();
-
-    if (setting.openweather_api != "") {
-      weather.openweather_call(
-        c.lat,
-        c.lng,
-        setting.openweather_api,
-        openweather_callback
-      );
-    }
     helper.calculateDatabaseSizeInMB(tilesLayer._db).then(function (sizeInMB) {
       document.querySelector("#clear-cache em").innerText = sizeInMB.toFixed(2);
     });
@@ -1226,7 +1295,7 @@ document.addEventListener("DOMContentLoaded", function () {
         module.get_closest_point(general.gpx_selection_latlng);
       }
 
-      distance_to_target();
+      distances();
     }
 
     function errorHandler(err) {
@@ -1762,6 +1831,9 @@ document.addEventListener("DOMContentLoaded", function () {
   /////////////////////
   ////ZOOM MAP/////////
   ////////////////////
+  /////////////////////
+  ////ZOOM MAP/////////
+  ////////////////////
 
   function ZoomMap(in_out) {
     let current_zoom_level = map.getZoom();
@@ -1777,91 +1849,35 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  map.on("zoomend", function (ev) {
-    let zoom_level = map.getZoom();
-    if (zoom_level < 2) {
-      general.step = 20;
-    }
-    if (zoom_level > 2) {
-      general.step = 8;
-    }
-    if (zoom_level > 3) {
-      general.step = 4.5;
-    }
-    if (zoom_level > 4) {
-      general.step = 2.75;
-    }
-    if (zoom_level > 5) {
-      general.step = 1.2;
-    }
-    if (zoom_level > 6) {
-      general.step = 0.5;
-    }
-    if (zoom_level > 7) {
-      general.step = 0.3;
-    }
-    if (zoom_level > 8) {
-      general.step = 0.15;
-    }
-    if (zoom_level > 9) {
-      general.step = 0.075;
-    }
-    if (zoom_level > 10) {
-      general.step = 0.04;
-    }
-    if (zoom_level > 11) {
-      general.step = 0.02;
-    }
-    if (zoom_level > 12) {
-      general.step = 0.01;
-    }
-    if (zoom_level > 13) {
-      general.step = 0.004;
-    }
-    if (zoom_level > 14) {
-      general.step = 0.002;
-    }
-    if (zoom_level > 15) {
-      general.step = 0.001;
-    }
-    if (zoom_level > 16) {
-      general.step = 0.0005;
-    }
+  map.on("zoomend", function () {
+    const zoom = map.getZoom();
+    // Schritt halbiert sich bei jedem Zoomlevel (Basiswert anpassen)
+    general.step = 20 / Math.pow(2, zoom);
   });
 
   /////////////////////
   //MAP NAVIGATION//
   /////////////////////
 
-  function MovemMap(direction) {
-    if (status.windowOpen == "map") {
-      mapcenter_position();
+  function MoveMap(direction) {
+    const center = map.getCenter(); // L.LatLng
+    let newLat = center.lat;
+    let newLng = center.lng;
 
-      let n = map.getCenter();
+    if (direction === "left") newLng -= general.step;
+    else if (direction === "right") newLng += general.step;
+    else if (direction === "up") newLat += general.step;
+    else if (direction === "down") newLat -= general.step;
 
-      mainmarker.current_lat = n.lat;
-      mainmarker.current_lng = n.lng;
+    const newCenter = L.latLng(newLat, newLng);
+    map.panTo(newCenter);
 
-      if (direction == "left") {
-        mainmarker.current_lng = n.lng - general.step;
-        map.panTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
-      }
+    // Update lokale Variablen
+    mainmarker.current_lat = newLat;
+    mainmarker.current_lng = newLng;
 
-      if (direction == "right") {
-        mainmarker.current_lng = n.lng + general.step;
-        map.panTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
-      }
-
-      if (direction == "up") {
-        mainmarker.current_lat = n.lat + general.step;
-        map.panTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
-      }
-
-      if (direction == "down") {
-        mainmarker.current_lat = n.lat - general.step;
-        map.panTo(new L.LatLng(mainmarker.current_lat, mainmarker.current_lng));
-      }
-    }
+    mapcenter_position();
+    distances();
   }
 
   //////////////////////
@@ -1885,10 +1901,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!setting.tips_view) {
       finder_panels = finder_panels.filter((e) => e.id != "tips");
-    }
-
-    if (!setting.openweather_api) {
-      finder_panels = finder_panels.filter((e) => e.id != "weather");
     }
 
     let f = gpx_group.getLayers();
@@ -2007,8 +2019,6 @@ document.addEventListener("DOMContentLoaded", function () {
       let b = document.activeElement.closest("div.menu-box");
       let items_list = b.querySelectorAll(".item");
 
-      console.log(tabIndex + "/" + items_list.length);
-
       if (move == "+1") {
         if (tabIndex < items_list.length - 1) {
           tabIndex++;
@@ -2115,67 +2125,14 @@ document.addEventListener("DOMContentLoaded", function () {
     //callback from osm OAuth
 
     if (event.data.oauth_success) {
-      //callback from  OAuth
-      //ugly method to open a new window, because a window from sw clients.open can no longer be closed
-      const l = event.data.oauth_success;
-      if (event.data.oauth_success) {
-        setTimeout(() => {
-          window.open(l);
-        }, 5000);
-      }
+      let result = event.data.oauth_success.data;
 
-      setTimeout(() => {
-        localStorage.setItem("openstreetmap_token", event.data.oauth_success);
+      if (result) {
+        oauthRedirect(result);
         osm.osm_server_list_gpx();
-      }, 3000);
+      }
     }
   });
-
-  /*
-  //top bar
-
-  document
-    .querySelector("#top-bar div div.button-right")
-    .addEventListener("click", function (event) {});
-
-  //buttom bar
-  // Add click listeners to simulate key events
-  document
-    .querySelector("div.button-left")
-    .addEventListener("click", function (event) {
-      simulateKeyPress("SoftLeft");
-    });
-
-  document
-    .querySelector("div.button-right")
-    .addEventListener("click", function (event) {
-      simulateKeyPress("SoftRight");
-    });
-
-  document
-    .querySelector("div.button-center")
-    .addEventListener("click", function (event) {
-      simulateKeyPress("Enter");
-    });
-
-  document.querySelector("#menu").addEventListener("click", function (event) {
-    simulateKeyPress("Enter");
-  });
-  // Function to simulate key press events
-  function simulateKeyPress(k) {
-    shortpress_action({ key: k });
-  }
-
-  // Add an event listener for keydown events
-  document.addEventListener("keydown", function (event) {
-    handleKeyDown(event);
-  });
-
-  // Add an event listener for keydown events
-  document.addEventListener("keyup", function (event) {
-    handleKeyUp(event);
-  });
-  */
 
   //////////////////////////////
   ////KEYPAD HANDLER////////////
@@ -2188,19 +2145,19 @@ document.addEventListener("DOMContentLoaded", function () {
   function repeat_action(param) {
     switch (param.key) {
       case "ArrowUp":
-        MovemMap("up");
+        MoveMap("up");
         break;
 
       case "ArrowDown":
-        MovemMap("down");
+        MoveMap("down");
         break;
 
       case "ArrowLeft":
-        MovemMap("left");
+        MoveMap("left");
         break;
 
       case "ArrowRight":
-        MovemMap("right");
+        MoveMap("right");
         break;
     }
   }
@@ -2832,7 +2789,7 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "ArrowRight":
-        MovemMap("right");
+        MoveMap("right");
 
         if (
           status.windowOpen == "finder" &&
@@ -2843,7 +2800,7 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
 
       case "ArrowLeft":
-        MovemMap("left");
+        MoveMap("left");
         if (
           status.windowOpen == "finder" &&
           document.activeElement.tagName != "INPUT"
@@ -2854,7 +2811,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "ArrowUp":
         if (status.windowOpen == "map" || status.windowOpen == "coordinations")
-          MovemMap("up");
+          MoveMap("up");
 
         if (status.windowOpen == "search") search.search_nav(-1);
         nav("-1");
@@ -2862,7 +2819,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       case "ArrowDown":
         if (status.windowOpen == "map" || status.windowOpen == "coordinations")
-          MovemMap("down");
+          MoveMap("down");
 
         if (status.windowOpen == "search") search.search_nav(+1);
 
@@ -2927,9 +2884,14 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 //mozActivity
 //open app
+
 try {
   navigator.mozSetMessageHandler("activity", function (activityRequest) {
-    console.log(activityRequest.source);
+    var option = activityRequest.source;
+
+    if (option.name == "omap-oauth") {
+      oauthRedirect(option.data);
+    }
   });
 } catch (e) {}
 
