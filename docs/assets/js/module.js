@@ -435,12 +435,6 @@ const module = (() => {
 
     let marker_latlng = markers_collection[index].getLatLng();
 
-    what3words(marker_latlng.lat, marker_latlng.lng, "76YHEAE5").then(
-      (what3wordsAddress) => {
-        document.querySelector("#what3words").textContent = what3wordsAddress;
-      }
-    );
-
     //popup
     document.querySelector("input#popup").value = "";
     let pu = markers_collection[index].getPopup();
@@ -1226,24 +1220,6 @@ const module = (() => {
     return a.toFixed(2);
   };
 
-  let what3words = (lat, lng, key) => {
-    const url = `https://api.what3words.com/v3/convert-to-3wa?coordinates=${lat},${lng}&key=${key}`;
-
-    return fetch(url)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.words) {
-          return data.words;
-        } else {
-          throw new Error(data);
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        return "sorry, could not be determined";
-      });
-  };
-
   return {
     hotline,
     convert_units,
@@ -1269,6 +1245,5 @@ const module = (() => {
     uniqueId,
     parseGPX,
     update_gpx_info,
-    what3words,
   };
 })();

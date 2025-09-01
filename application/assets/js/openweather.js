@@ -1,6 +1,7 @@
 const weather = (() => {
-  //todo > 2024 06 change to 3.O
   let openweather_call = function (lat, lng, apikey, callback) {
+    if (!apikey) return;
+
     let xhr = new XMLHttpRequest({
       mozSystem: true,
     });

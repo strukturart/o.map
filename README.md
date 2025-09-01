@@ -109,11 +109,6 @@ you can also add an overpass layer, https://taginfo.openstreetmap.org/ you add t
 
 you can find an example file here: [omap_maps.json](omap_maps.json)
 
-### Search
-
-The search can be opened with key 2, you can search for locations or start the search with / and then enter an open location code
-[open location code](https://en.wikipedia.org/wiki/Open_Location_Code)
-
 ### Good to know
 
 Some layers cannot be loaded because KaiOs has not equipped all devices with a valid Let's Encrypt certificate. If your device is rooted you can do it yourself:
@@ -127,7 +122,7 @@ https://strukturart.github.io/o.map/
 
 ## How to install
 
-- KaiOs Store
+- KaiOS Store
 - Sideloading <a href="https://www.martinkaptein.com/blog/sideloading-and-deploying-apps-to-kai-os/">step-by-step article</a> by martinkaptein
 
 ### Thank you
@@ -138,8 +133,6 @@ https://strukturart.github.io/o.map/
 - https://www.rainviewer.com/api.html
 - https://github.com/MazeMap/Leaflet.TileLayer.PouchDBCached
 - leaflet.js
-- [Bananna Hackers Group](https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/bananahackers)
-- Luxferre [olc](https://gist.github.com/plugnburn/95de231ff94130f1de8eb2a2afaf8516)
 
 ### LICENSES
 

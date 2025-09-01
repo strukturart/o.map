@@ -13,7 +13,6 @@
     "112": "/assets/icons/icon-112-112.png"
   },
 
-  "origin": "app://omap.strukturart.com",
   "developer": {
     "name": "strukturart",
     "url": "https://github.com/strukturart/o.map"
@@ -32,8 +31,8 @@
   "redirects": [
     {
 
-      "from": "https://omap.strukturart.com/redirect.html",
-      "to": "/oauth.html"
+      "from": "https://omap.strukturart.com/index.html",
+      "to": "/"
     }
   ],
   

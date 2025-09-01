@@ -1,0 +1,38 @@
+{
+  "name": "o.map",
+  "version": "2.0.2",
+  "source": "application/index.html",
+  "author": "",
+  "license": "ISC",
+  "browserslist": [
+    "Firefox <= 84"
+  ],
+  "scripts": {
+    "build": "rm -rf dist/* && parcel build --no-source-maps application/index.html && mkdir -p dist/assets/js && cp -r application/assets/icons dist/assets/ && cp -r application/assets/image dist/assets/ && cp application/assets/js/kaiads.v5.min.js dist/assets/js/ && mkdir -p build && (cd dist && zip -r ../build/flop.zip .)",
+    "run": "parcel",
+    "web": "rm -rf docs/* && parcel build --dist-dir docs --public-url ./ --no-source-maps --no-content-hash application/index.html &&  cp application/manifest.webmanifest docs && mkdir -p docs/assets/js && mkdir -p docs/assets/image && cp -r application/assets/image docs/assets/ && cp -r application/assets/fonts docs/assets/ && cp -r application/assets/icons docs/assets/ && ./generate_file_list.sh"
+  },
+  "keywords": [],
+  "devDependencies": {
+    "@agragregra/parcel-namer-beautify": "^1.0.1",
+    "@babel/cli": "^7.27.2",
+    "@babel/core": "^7.27.1",
+    "@babel/plugin-syntax-dynamic-import": "^7.8.3",
+    "@babel/plugin-transform-named-capturing-groups-regex": "^7.17.12",
+    "@babel/preset-env": "^7.27.2",
+    "@parcel/packager-raw-url": "2.10.0",
+    "@parcel/resolver-default": "^2.15.2",
+    "@parcel/transformer-html": "2.10.0",
+    "@parcel/transformer-webmanifest": "^2.10.0",
+    "dayjs": "^1.11.9",
+    "leaflet": "1.9.4",
+    "parcel": "2.10.0"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.27.1",
+    "@parcel/service-worker": "^2.8.0",
+    "leaflet": "^1.9.4",
+    "mithril": "^3.0.0-next.3",
+    "pouchdb": "^8.0.1"
+  }
+}
