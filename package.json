@@ -20,13 +20,13 @@
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "@babel/plugin-transform-named-capturing-groups-regex": "^7.17.12",
     "@babel/preset-env": "^7.27.2",
-    "@parcel/packager-raw-url": "2.10.0",
-    "@parcel/resolver-default": "^2.15.2",
-    "@parcel/transformer-html": "2.10.0",
-    "@parcel/transformer-webmanifest": "^2.10.0",
+    "@parcel/packager-raw-url": "2.16.4",
+    "@parcel/resolver-default": "^2.16.4",
+    "@parcel/transformer-html": "2.16.4",
+    "@parcel/transformer-webmanifest": "^2.16.4",
     "dayjs": "^1.11.9",
     "leaflet": "1.9.4",
-    "parcel": "2.10.0"
+    "parcel": "2.16.4"
   },
   "dependencies": {
     "@babel/runtime": "^7.27.1",
