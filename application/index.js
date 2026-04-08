@@ -149,7 +149,7 @@ if ("b2g" in navigator) {
           .then((registration) => {
             registration.systemMessageManager.subscribe("activity").then(
               (rv) => {},
-              (error) => {}
+              (error) => {},
             );
           });
       } catch (e) {
@@ -244,7 +244,7 @@ let app_launcher = () => {
           },
           (err) => {
             alert(err);
-          }
+          },
         );
       } catch (e) {}
     }
@@ -256,6 +256,7 @@ map = new L.map("map-container", {
   zoomControl: false,
   dragging: true,
   keyboard: true,
+  referrerPolicy: "strict-origin-when-cross-origin",
 });
 
 try {
@@ -300,7 +301,7 @@ document.addEventListener("DOMContentLoaded", function () {
           p = feature.geometry.coordinates[0];
 
           reverse_2D_array = feature.geometry.coordinates.map((row) =>
-            row.reverse()
+            row.reverse(),
           );
 
           routing.coordinates = reverse_2D_array;
@@ -308,7 +309,7 @@ document.addEventListener("DOMContentLoaded", function () {
           document.getElementById("routing-distance").innerText =
             module.convert_units(
               "kilometer",
-              feature.properties.summary.distance
+              feature.properties.summary.distance,
             );
 
           document.getElementById("routing-ascent").innerText =
@@ -372,7 +373,7 @@ document.addEventListener("DOMContentLoaded", function () {
       onEachFeature: function (feature) {
         if (feature.geometry != "") {
           reverse_2D_array = feature.geometry.coordinates.map((row) =>
-            row.reverse()
+            row.reverse(),
           );
 
           routing.coordinates = reverse_2D_array;
@@ -397,7 +398,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!routing.auto_update)
       helper.side_toaster(
         "the track has been loaded, to see information about it open the menu with enter",
-        10000
+        10000,
       );
   };
 
@@ -455,87 +456,87 @@ document.addEventListener("DOMContentLoaded", function () {
     el.innerHTML = "";
     el.insertAdjacentHTML(
       "afterend",
-      '<div class="item" data-type="map" data-url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" data-maxzoom="18" data-attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community">Satellite Map</div>'
+      '<div class="item" data-type="map" data-url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" data-maxzoom="18" data-attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community">Satellite Map</div>',
     );
     el.insertAdjacentHTML(
       "afterend",
-      '<div class="item" data-type="map" data-url="https://a.tile.openstreetmap.de/{z}/{x}/{y}.png" data-maxzoom="18" data-attribution="Map data &copy; OpenStreetMap contributors, CC-BY-SA">Openstreetmap</div>'
+      '<div class="item" data-type="map" data-url="https://a.tile.openstreetmap.de/{z}/{x}/{y}.png" data-maxzoom="18" data-attribution="Map data &copy; OpenStreetMap contributors, CC-BY-SA">Openstreetmap</div>',
     );
 
     document
       .querySelector("div#layers")
       .insertAdjacentHTML(
         "afterend",
-        '<div class="item"  data-type="none" data-url="weather" data-map="weather">Weather <i>Layer</i></div>'
+        '<div class="item"  data-type="none" data-url="weather" data-map="weather">Weather <i>Layer</i></div>',
       );
 
     document
       .querySelector("div#overpass")
       .insertAdjacentHTML(
         "afterend",
-        '<div class="item" data-marker="public_transport"  data-type="overpass" data-url="public_transport=stop_position" data-map="public_transport">Public transport</div>'
+        '<div class="item" data-marker="public_transport"  data-type="overpass" data-url="public_transport=stop_position" data-map="public_transport">Public transport</div>',
       );
 
     document
       .querySelector("div#overpass")
       .insertAdjacentHTML(
         "afterend",
-        '<div class="item"  data-type="overpass" data-url="amenity=hospital">Hospital</div>'
+        '<div class="item"  data-type="overpass" data-url="amenity=hospital">Hospital</div>',
       );
 
     document
       .querySelector("div#overpass")
       .insertAdjacentHTML(
         "afterend",
-        '<div class="item"  data-type="overpass" data-url="water">Drinking water</div>'
+        '<div class="item"  data-type="overpass" data-url="water">Drinking water</div>',
       );
 
     document
       .querySelector("div#overpass")
       .insertAdjacentHTML(
         "afterend",
-        '<div class="item"  data-type="overpass" data-url="tourism=camp_site">Camping</div>'
+        '<div class="item"  data-type="overpass" data-url="tourism=camp_site">Camping</div>',
       );
 
     document
       .querySelector("div#overpass")
       .insertAdjacentHTML(
         "afterend",
-        '<div class="item"  data-type="overpass" data-url="tourism=hotel">Hotel</div>'
+        '<div class="item"  data-type="overpass" data-url="tourism=hotel">Hotel</div>',
       );
     document
       .querySelector("div#overpass")
       .insertAdjacentHTML(
         "afterend",
-        '<div class="item"  data-type="overpass" data-url="amenity=restaurant">Restaurant</div>'
-      );
-
-    document
-      .querySelector("div#overpass")
-      .insertAdjacentHTML(
-        "afterend",
-        '<div class="item"  data-type="overpass" data-url="amenity=bar">Bar</div>'
+        '<div class="item"  data-type="overpass" data-url="amenity=restaurant">Restaurant</div>',
       );
 
     document
       .querySelector("div#overpass")
       .insertAdjacentHTML(
         "afterend",
-        '<div class="item"  data-type="overpass" data-url="amenity=toilets">Toilets</div>'
+        '<div class="item"  data-type="overpass" data-url="amenity=bar">Bar</div>',
       );
 
     document
       .querySelector("div#overpass")
       .insertAdjacentHTML(
         "afterend",
-        '<div class="item"  data-type="overpass" data-url="amenity=shelter,shelter_type!=public_transport">Shelter</div>'
+        '<div class="item"  data-type="overpass" data-url="amenity=toilets">Toilets</div>',
       );
 
     document
       .querySelector("div#overpass")
       .insertAdjacentHTML(
         "afterend",
-        '<div class="item"  data-type="overpass" data-url="amenity=atm">ATM</div>'
+        '<div class="item"  data-type="overpass" data-url="amenity=shelter,shelter_type!=public_transport">Shelter</div>',
+      );
+
+    document
+      .querySelector("div#overpass")
+      .insertAdjacentHTML(
+        "afterend",
+        '<div class="item"  data-type="overpass" data-url="amenity=atm">ATM</div>',
       );
 
     find_gpx();
@@ -569,7 +570,7 @@ document.addEventListener("DOMContentLoaded", function () {
     general.last_map_url,
     general.last_map_attribution,
     general.last_map_max_zoom,
-    general.last_map_type
+    general.last_map_type,
   );
 
   //get files and store
@@ -614,7 +615,7 @@ document.addEventListener("DOMContentLoaded", function () {
               e.path +
               '">' +
               e.name +
-              "</div>"
+              "</div>",
           );
 
         // Load gpx file on start
@@ -640,7 +641,7 @@ document.addEventListener("DOMContentLoaded", function () {
               e.path +
               '">' +
               e.name +
-              "</div>"
+              "</div>",
           );
 
         // Load startup item
@@ -663,7 +664,7 @@ document.addEventListener("DOMContentLoaded", function () {
               e.id +
               ' data-map="gpx-osm">' +
               e.name +
-              "</div>"
+              "</div>",
           );
       }
     });
@@ -794,7 +795,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     key.attribution +
                     '">' +
                     key.name +
-                    "</div>"
+                    "</div>",
                 );
             }
 
@@ -813,7 +814,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     key.attribution +
                     '">' +
                     key.name +
-                    "</div>"
+                    "</div>",
                 );
             }
 
@@ -832,7 +833,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     key.attribution +
                     '">' +
                     key.name +
-                    "</div>"
+                    "</div>",
                 );
             }
           });
@@ -883,30 +884,30 @@ document.addEventListener("DOMContentLoaded", function () {
       mainmarker.current_lng,
       mainmarker.device_lat,
       mainmarker.device_lng,
-      general.measurement_unit
+      general.measurement_unit,
     );
     calc = calc / 1000;
     calc.toFixed(2);
     parseFloat(calc);
 
     document.querySelector(
-      "section#device-distance div.distance span"
+      "section#device-distance div.distance span",
     ).innerText = calc + " " + general.measurement_unit;
 
     //map center
     document.querySelector(
-      "section#mapcenter-distance div.distance span"
+      "section#mapcenter-distance div.distance span",
     ).innerText = calc + " " + general.measurement_unit;
 
     if (mainmarker.target_marker) {
       //show distance element
 
       document.querySelector(
-        "section#mapcenter-distance div.target"
+        "section#mapcenter-distance div.target",
       ).style.display = "block";
 
       document.querySelector(
-        "section#device-distance div.target span"
+        "section#device-distance div.target span",
       ).style.display = "block";
 
       //distance target marker to current device position
@@ -915,14 +916,14 @@ document.addEventListener("DOMContentLoaded", function () {
         mainmarker.current_lng,
         mainmarker.target_marker.lat,
         mainmarker.target_marker.lng,
-        general.measurement_unit
+        general.measurement_unit,
       );
       calc3 = calc3 / 1000;
       calc3.toFixed(2);
       parseFloat(calc3);
 
       document.querySelector(
-        "section#mapcenter-distance div.target span"
+        "section#mapcenter-distance div.target span",
       ).innerText = calc3 + " " + general.measurement_unit;
 
       //distance target marker to map center
@@ -931,23 +932,23 @@ document.addEventListener("DOMContentLoaded", function () {
         mainmarker.device_lng,
         mainmarker.target_marker.lat,
         mainmarker.target_marker.lng,
-        general.measurement_unit
+        general.measurement_unit,
       );
       calc4 = calc4 / 1000;
       calc4.toFixed(2);
       parseFloat(calc4);
 
       document.querySelector(
-        "section#device-distance div.target span"
+        "section#device-distance div.target span",
       ).innerText = calc4 + " " + general.measurement_unit;
     } else {
       //hide distance element
       document.querySelector(
-        "section#mapcenter-distance div.target"
+        "section#mapcenter-distance div.target",
       ).style.display = "none";
 
       document.querySelector(
-        "section#device-distance div.target"
+        "section#device-distance div.target",
       ).style.display = "none";
     }
   };
@@ -1149,7 +1150,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (status.geolocation == false) {
           helper.side_toaster(
             "the position of your device could now be found.",
-            2000
+            2000,
           );
         }
         status.geolocation = true;
@@ -1157,14 +1158,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (general.measurement_unit == "km") {
           document.querySelector(
-            "section#device-position div.accuracy span"
+            "section#device-position div.accuracy span",
           ).innerText = crd.accuracy.toFixed(2);
         }
 
         if (general.measurement_unit == "mil") {
           let n = crd.accuracy * 3.280839895;
           document.querySelector(
-            "section#device-position div.accuracy span"
+            "section#device-position div.accuracy span",
           ).innerText = n.toFixed(2);
         }
       }
@@ -1174,19 +1175,19 @@ document.addEventListener("DOMContentLoaded", function () {
         mainmarker.device_alt = parseInt(crd.altitude);
         if (general.measurement_unit == "km") {
           document.querySelector(
-            "section#device-position div.altitude span"
+            "section#device-position div.altitude span",
           ).innerText = mainmarker.device_alt;
         }
 
         if (general.measurement_unit == "mil") {
           let n = crd.altitude * 3.280839895;
           document.querySelector(
-            "section#device-position div.altitude span"
+            "section#device-position div.altitude span",
           ).innerText = mainmarker.device_alt;
         }
       } else {
         document.querySelector(
-          "section#device-position div.altitude span"
+          "section#device-position div.altitude span",
         ).innerText = "unknow";
       }
 
@@ -1194,11 +1195,11 @@ document.addEventListener("DOMContentLoaded", function () {
         mainmarker.accuracyAlt = crd.altitudeAccuracy;
 
         document.querySelector(
-          "section#device-position div.alt-accuracy span"
+          "section#device-position div.alt-accuracy span",
         ).innerText = crd.altitudeAccuracy;
       } else {
         document.querySelector(
-          "section#device-position div.alt-accuracy span"
+          "section#device-position div.alt-accuracy span",
         ).innerText = "unknow";
       }
 
@@ -1207,11 +1208,11 @@ document.addEventListener("DOMContentLoaded", function () {
         mainmarker.current_heading = crd.heading;
         mainmarker.device_heading = crd.heading;
         document.querySelector(
-          "section#device-position div.heading span"
+          "section#device-position div.heading span",
         ).innerText = crd.heading.toFixed(2);
       } else {
         document.querySelector(
-          "section#device-position div.heading span"
+          "section#device-position div.heading span",
         ).innerText = "unknow";
       }
       //speed
@@ -1223,7 +1224,7 @@ document.addEventListener("DOMContentLoaded", function () {
           n = n.toFixed(2);
 
           document.querySelector(
-            "section#device-position div.speed span"
+            "section#device-position div.speed span",
           ).innerText = n + " km/h";
         }
 
@@ -1232,12 +1233,12 @@ document.addEventListener("DOMContentLoaded", function () {
           n = n.toFixed(2);
 
           document.querySelector(
-            "section#device-position div.speed span"
+            "section#device-position div.speed span",
           ).innerText = n + " mph";
         }
       } else {
         document.querySelector(
-          "section#device-position div.speed span"
+          "section#device-position div.speed span",
         ).innerText = "unknow";
       }
 
@@ -1353,7 +1354,7 @@ document.addEventListener("DOMContentLoaded", function () {
       routing.end,
       setting.ors_api,
       setting.routing_profil,
-      routing_service_callback
+      routing_service_callback,
     );
   };
 
@@ -1398,7 +1399,7 @@ document.addEventListener("DOMContentLoaded", function () {
           routing.end,
           setting.ors_api,
           setting.routing_profil,
-          routing_service_callback
+          routing_service_callback,
         );
 
         map.flyTo([mainmarker.device_lat, mainmarker.device_lng], 16);
@@ -1411,7 +1412,7 @@ document.addEventListener("DOMContentLoaded", function () {
         mainmarker.selected_marker.setIcon(maps.goal_icon);
         helper.side_toaster(
           "target marker set, press enter to be informed about the current distance.",
-          4000
+          4000,
         );
         document.querySelector("div#markers-option").style.display = "none";
         status.windowOpen = "map";
@@ -1425,7 +1426,7 @@ document.addEventListener("DOMContentLoaded", function () {
           routing.end,
           setting.ors_api,
           setting.routing_profil,
-          routing_service_callback
+          routing_service_callback,
         );
       }
 
@@ -1443,7 +1444,7 @@ document.addEventListener("DOMContentLoaded", function () {
               routing.end,
               setting.ors_api,
               setting.routing_profil,
-              routing_service_callback
+              routing_service_callback,
             );
           }
         }, 1000);
@@ -1462,7 +1463,7 @@ document.addEventListener("DOMContentLoaded", function () {
               routing.end,
               setting.ors_api,
               setting.routing_profil,
-              routing_service_callback
+              routing_service_callback,
             );
           }
         }, 1000);
@@ -1509,7 +1510,7 @@ document.addEventListener("DOMContentLoaded", function () {
         osm.osm_server_load_gpx(
           general.active_item.getAttribute("data-id"),
           general.active_item.innerText,
-          true
+          true,
         );
         document.querySelector("div#files-option").style.display = "none";
         open_finder();
@@ -1525,7 +1526,7 @@ document.addEventListener("DOMContentLoaded", function () {
         };
         module.loadGPX_data(
           general.active_item.getAttribute("data-filepath"),
-          loadGPX_data_callback
+          loadGPX_data_callback,
         );
       }
     }
@@ -1566,7 +1567,7 @@ document.addEventListener("DOMContentLoaded", function () {
           item_attribution,
           item_maxzoom,
           item_type,
-          marker
+          marker,
         );
 
         document.querySelector("div#finder").style.display = "none";
@@ -1589,7 +1590,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (item_value == "geojson") {
           module.loadGeoJSON(
             document.activeElement.getAttribute("data-filepath"),
-            routing_service_callback
+            routing_service_callback,
           );
 
           document.querySelector("div#finder").style.display = "none";
@@ -1601,7 +1602,7 @@ document.addEventListener("DOMContentLoaded", function () {
           osm.osm_server_load_gpx(
             document.activeElement.getAttribute("data-id"),
             "",
-            false
+            false,
           );
         }
 
@@ -1653,7 +1654,7 @@ document.addEventListener("DOMContentLoaded", function () {
             routing.end,
             setting.ors_api,
             setting.routing_profil,
-            routing_service_callback
+            routing_service_callback,
           );
         }
 
@@ -1673,7 +1674,7 @@ document.addEventListener("DOMContentLoaded", function () {
           if (setting.routing_notification == false) {
             helper.side_toaster(
               "You have to activate the notification in the settings of the app",
-              3000
+              3000,
             );
             return false;
           }
@@ -1684,7 +1685,7 @@ document.addEventListener("DOMContentLoaded", function () {
             status.windowOpen = "map";
             helper.side_toaster(
               "you will get a warning if you are too far off the path",
-              3000
+              3000,
             );
           } else {
             status.follow_path = false;
@@ -1740,21 +1741,21 @@ document.addEventListener("DOMContentLoaded", function () {
         if (item_value == "tracking") {
           helper.side_toaster(
             "please close the menu and press key 1 to start tracking.",
-            3000
+            3000,
           );
         }
 
         if (item_value == "draw-path") {
           helper.side_toaster(
             "please close the menu and press key 7 to draw a path.",
-            3000
+            3000,
           );
         }
 
         if (item_value == "add-marker-icon") {
           helper.side_toaster(
             "please close the menu and press key 9 to set a marker.",
-            3000
+            3000,
           );
         }
 
@@ -2215,13 +2216,13 @@ document.addEventListener("DOMContentLoaded", function () {
             if (status.geolocation == false) {
               helper.side_toaster(
                 "can't start tracking, the position of your device could not be determined.",
-                4000
+                4000,
               );
               return false;
             }
             helper.side_toaster(
               "tracking started,\n stop tracking with key 1",
-              4000
+              4000,
             );
             status.live_track = true;
             module.measure_distance("tracking");
@@ -2392,7 +2393,7 @@ document.addEventListener("DOMContentLoaded", function () {
           geojson.save_geojson(
             setting.export_path + w + ".geojson",
             "single-direct",
-            geojson_save_callback
+            geojson_save_callback,
           );
           save_mode = "";
           break;
@@ -2412,7 +2413,7 @@ document.addEventListener("DOMContentLoaded", function () {
           geojson.save_geojson(
             setting.export_path + w + ".geojson",
             "single",
-            geojson_save_callback
+            geojson_save_callback,
           );
           save_mode = "";
           break;
@@ -2445,7 +2446,7 @@ document.addEventListener("DOMContentLoaded", function () {
           geojson.save_geojson(
             setting.export_path + w + ".geojson",
             "collection",
-            geojson_save_callback
+            geojson_save_callback,
           );
 
           save_mode = "";
@@ -2463,7 +2464,7 @@ document.addEventListener("DOMContentLoaded", function () {
           geojson.save_geojson(
             setting.export_path + w + ".geojson",
             "routing",
-            geojson_save_callback
+            geojson_save_callback,
           );
           save_mode = "";
           break;
@@ -2483,7 +2484,7 @@ document.addEventListener("DOMContentLoaded", function () {
           geojson.save_gpx(
             setting.export_path + w + ".gpx",
             "tracking",
-            gpx_callback
+            gpx_callback,
           );
           save_mode = "";
           status.live_track = false;
@@ -2539,7 +2540,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (status.windowOpen == "user-input" && save_mode == "rename-file") {
           helper.renameFile(
             general.active_item.getAttribute("data-filepath"),
-            module.user_input("return")
+            module.user_input("return"),
           );
           status.windowOpen = "finder";
           save_mode = "";
@@ -2563,7 +2564,7 @@ document.addEventListener("DOMContentLoaded", function () {
           if (document.activeElement.type == "checkbox") {
             settings.save_chk(
               document.activeElement.id,
-              document.activeElement.value
+              document.activeElement.value,
             );
           }
         }
@@ -2693,13 +2694,13 @@ document.addEventListener("DOMContentLoaded", function () {
             if (status.geolocation == false) {
               helper.side_toaster(
                 "can't start tracking, the position of your device could not be determined.",
-                4000
+                4000,
               );
               return false;
             }
             helper.side_toaster(
               "tracking started,\n stop tracking with key 1",
-              4000
+              4000,
             );
             module.measure_distance("tracking");
             status.tracking_running = true;
@@ -2763,7 +2764,7 @@ document.addEventListener("DOMContentLoaded", function () {
       case "9":
         if (status.windowOpen == "map") {
           L.marker([mainmarker.current_lat, mainmarker.current_lng]).addTo(
-            markers_group
+            markers_group,
           );
           module.markers_updated();
         }
@@ -2900,7 +2901,12 @@ try {
 if (debug) {
   window.onerror = function (msg, url, linenumber) {
     alert(
-      "Error message: " + msg + "\nURL: " + url + "\nLine Number: " + linenumber
+      "Error message: " +
+        msg +
+        "\nURL: " +
+        url +
+        "\nLine Number: " +
+        linenumber,
     );
     return true;
   };
