@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>o.map</title>
+    <meta charset="utf-8" />
+    <meta name="description" content="o.map">
+    <meta name="keywords" content="o.map,osm,KaiOS,localByDesign">
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1" />
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <meta property="og:site_name" content="o.map">
+
+    <meta property="og:title" content="o.map">
+    <meta property="og:description" content="o.map">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://omap.strukturart.com/">
+    <meta property="og:image" content="https://omap.strukturart.com/assets/icons/preview.png">
+
+
+
+    <link rel="icon" href="assets/icons/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="manifest" href="manifest.webapp" />
+
+
+    <link rel="stylesheet" href="assets/css/qr-reader.css" />
+    <link rel="stylesheet" href="assets/css/leaflet.css" />
+
+    <link rel="stylesheet" href="assets/css/main.css" />
+    <link rel="stylesheet" href="assets/css/flexboxgrid.css" />
+</head>
+
+
+
+
+
+<body>
+
+
+         
+    <div id="toast"></div>
+    <div id="side-toast"></div>
+
+
+ <div id="top-bar" class="container">
+    <div class="row center-xs center-md">
+    <div class="inner col-xs-12 col-md-5">
+      <div class="row between-xs between-md">
+        <div class="button-left"></div>
+        <div class="button-center"></div>
+        <div class="button-right"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+     <div id="bottom-bar" class="container">
+        <div class="row center-xs center-md">
+            <div class="inner col-xs-12 col-md-5">
+                <div class="row between-xs between-md">
+                    <div class="button-left"></div>
+                    <div class="button-center"></div>
+                    <div class="button-right"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+
+    <div id="qr-screen">
+        <video id="video"></video>
+        <div id="corner-nw"></div>
+        <div id="corner-no"></div>
+        <div id="corner-so"></div>
+        <div id="corner-sw"></div>
+    </div>
+
+
+
+
+
+  <div id="wrapper" class="container">
+    <div class="row center-xs center-md">
+      <div id="map-container"></div>
+      <div id="app" class="col-xs-12 col-md-5">
+      </div>
+      <div id="toolbar" class="col-md-3"></div>
+
+    </div>
+  </div>
+
+
+
+</body>
+
+<script type="module" src="index.js"></script>
+</html>
