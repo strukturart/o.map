@@ -1,0 +1,168 @@
+const geojson = ((_) => {
+  ///////////
+  //save geoJson file
+  /////////////////
+  const save_geojson = function (file_path_name, type, callback) {
+    let extData = "";
+
+    if (type == "single-direct") {
+      let l = markers_group.getLayers();
+      let single = l[l.length - 1].toGeoJSON();
+      extData = JSON.stringify(single);
+    }
+
+    if (type == "single") {
+      let single = mainmarker.selected_marker.toGeoJSON();
+      // store popup content
+      let a = document.querySelector("input#popup").value;
+      if (a != "") {
+        let a = document.querySelector("input#popup").value;
+        single.properties.popup = a;
+      }
+
+      extData = JSON.stringify(single);
+    }
+
+    if (type == "path") {
+      let p = geoJSON_group.toGeoJSON();
+      extData = JSON.stringify(p);
+    }
+
+    if (type == "tracking") {
+      let e = tracking_group.toGeoJSON();
+      e.features[0].properties.software = "o.map";
+      e.features[0].properties.timestamp = tracking_timestamp;
+
+      extData = JSON.stringify(e);
+    }
+
+    if (type == "routing") {
+      extData = JSON.stringify(routing.data);
+    }
+
+    if (type == "collection") {
+      let collection = markers_group.toGeoJSON();
+      let bounds = map.getBounds();
+
+      collection.bbox = [
+        [
+          bounds.getSouthWest().lng,
+          bounds.getSouthWest().lat,
+          bounds.getNorthEast().lng,
+          bounds.getNorthEast().lat,
+        ],
+      ];
+
+      extData = JSON.stringify(collection);
+    }
+
+    console.log(extData);
+
+    let geojson_file = new Blob([extData], {
+      type: "application/json",
+    });
+
+    let sdcard;
+
+    try {
+      sdcard = navigator.getDeviceStorage("sdcard");
+    } catch (e) {}
+
+    if ("b2g" in navigator) {
+      try {
+        sdcard = navigator.b2g.getDeviceStorage("sdcard");
+      } catch (e) {}
+    }
+
+    let requestAdd = sdcard.addNamed(geojson_file, file_path_name);
+
+    requestAdd.onsuccess = function () {
+      status.windowOpen = "map";
+      helper.bottom_bar("", "", "");
+
+      if (type == "tracking") {
+        module.measure_distance("destroy_tracking");
+        mainmarker.tracking = false;
+        localStorage.removeItem("tracking_cache");
+      }
+
+      if (type == "path") {
+        module.measure_distance("destroy");
+      }
+      helper.side_toaster("saved", 5000);
+      let filename = file_path_name.split("/");
+      filename = filename[filename.length - 1];
+      let file = { name: filename, path: file_path_name, type: "geoJSON" };
+      callback(file);
+    };
+
+    requestAdd.onerror = function (e) {
+      console.log(e);
+      helper.side_toaster(
+        file_path_name +
+          " Unable to write the file, the file name may already be used",
+        10000
+      );
+      status.windowOpen = "map";
+    };
+  };
+
+  ///////////
+  //save gpx file
+  /////////////////
+  const save_gpx = function (file_path_name, type, callback) {
+    let extData = "";
+
+    if (type == "tracking") {
+      let e = tracking_group.toGeoJSON();
+      e.features[0].properties.software = "o.map";
+      e.features[0].properties.timestamp = tracking_timestamp;
+
+      let option = { featureCoordTimes: "timestamp", creator: "o.map" };
+
+      extData = togpx(e, option);
+    }
+
+    let geojson_file = new Blob([extData], {
+      type: "application/gpx+xm",
+    });
+
+    let sdcard;
+
+    try {
+      sdcard = navigator.getDeviceStorage("sdcard");
+    } catch (e) {}
+
+    try {
+      sdcard = navigator.b2g.getDeviceStorage("sdcard");
+    } catch (e) {}
+
+    let requestAdd = sdcard.addNamed(geojson_file, file_path_name);
+
+    requestAdd.onsuccess = function () {
+      status.windowOpen = "map";
+      helper.bottom_bar("", "", "");
+
+      callback(file_path_name);
+
+      if (type == "tracking") {
+        module.measure_distance("destroy_tracking");
+        mainmarker.tracking = false;
+        localStorage.removeItem("tracking_cache");
+      }
+    };
+
+    requestAdd.onerror = function () {
+      helper.side_toaster(
+        "Unable to write the file, the file name may already be used",
+        10000
+      );
+      status.windowOpen = "map";
+    };
+  };
+
+  return {
+    save_geojson,
+    save_gpx,
+  };
+})();
