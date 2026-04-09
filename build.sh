@@ -1,32 +1,17 @@
-
-#!/bin/bash
+#!/bin/sh
 
 # Create default app zip
-cd application/
-rm ../build/o.map.zip
-rm ../build/o.map-kaios3.zip
-zip -r ../build/o.map.zip ./*
+rm -rf build
+mkdir build
+(cd application && zip -r ../build/o.map.zip ./*)
 
-mv manifest.webapp ../
-zip -r ../build/o.map-kaios3.zip ./*
-mv ../manifest.webapp ./
+(cd application && zip -r ../build/o.map-kaios3.zip ./* -x ./manifest.webapp)
 
 # Create bHaCkers zip
-rm ../build/o.map-omnisd.zip
-zip -r ../build/application.zip ./*
-cd ../build/
-mkdir -p o.map-omnisd
-touch ./o.map-omnisd/metadata.json
-echo '{ "version": 1, "manifestURL": "app://o.map/manifest.webapp" }' > ./o.map-omnisd/metadata.json
-
-cp application.zip o.map-omnisd/
-cd o.map-omnisd/
-zip -r ../o.map-omnisd.zip ./*
-rm -fr ../o.map-omnisd
-cd ../
-rm ./application.zip
+cp build/o.map.zip build/application.zip
+echo '{ "version": 1, "manifestURL": "app://o.map/manifest.webapp" }' > build/metadata.json
+zip build/o.map-omnisd.zip -j build/metadata.json build/application.zip
 
 # Copy website files to docs directory
-cd ..
 cp -r application/* docs/
-rm docs/manifest.webapp
+rm -f docs/manifest.webapp
