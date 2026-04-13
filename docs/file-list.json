@@ -79,5 +79,15 @@
 "/assets/icons/icon.png",
 "/assets/icons/icon-112x112.png",
 "/assets/fonts/Lato-Regular.ttf",
+"/assets/js/route-service.js",
+"/assets/js/osm.js",
+"/assets/js/helper.js",
+"/assets/js/pouchdb_7.3.0_pouchdb.min.js",
+"/assets/js/L.TileLayer.PouchDBCached.js",
+"/assets/js/module.js",
+"/assets/js/gpx.js",
+"/assets/js/mozactivity.js",
+"/assets/js/maps.js",
+"/assets/js/kaiads.v5.min.js",
 "/marker-icon.fd059376.png"
 ]

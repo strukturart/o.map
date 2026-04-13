@@ -8,7 +8,7 @@
   --color-five: rgb(38, 38, 38);
   --color-six: rgb(78, 206, 144);
   --color-seven: gainsboro;
-  --color-eight: rgb(241, 86, 24);
+  --color-eight: rgb(24, 64, 241);
   --color-ten: rgb(218, 229, 253);
   --color-eleven: rgb(44, 83, 17);
 }
@@ -35,11 +35,11 @@
 html,
 body {
   font-family: "Lato-Regular";
-  font-weight: 100;
+  font-weight: 400;
   position: relative;
   margin: 0px;
   padding: 0px;
-  font-size: 0.95rem;
+  font-size: 1rem;
   line-height: 1.4rem;
   scroll-behavior: smooth;
   height: 100%;
@@ -61,9 +61,21 @@ html.screenOff {
 }
 
 kbd {
-  border-radius: 3px;
-  padding: 1px 2px 0;
-  border: 1px solid black;
+  display: inline-block;
+  padding: 3px 6px;
+  font-family: monospace;
+  font-size: 0.9em;
+
+  background: #b8f7bd; /* klassisches Win95 Grau */
+
+  border-top: 2px solid #fff; /* Licht */
+  border-left: 2px solid #fff;
+  border-bottom: 4px solid #404040; /* Schatten */
+  border-right: 4px solid #404040;
+
+  box-shadow:
+    inset -1px -1px 0 #808080,
+    inset 1px 1px 0 #fff;
 }
 
 form {
@@ -86,22 +98,40 @@ h1 {
 }
 
 h2 {
-  font-size: 1rem;
-  margin: 25px 0 5px 0;
-  color: gray;
+  font-size: 1.2rem;
+  margin: 25px 0 10px 0;
+  color: black;
   text-transform: uppercase;
+  min-width: 100%;
+  text-align: center;
+}
+
+h2 {
+  font-size: 1rem;
+  margin: 0px 0 10px 0;
+  color: black;
+  font-weight: bold;
+  min-width: 100%;
+  text-align: center;
 }
 
 button {
   width: 100%;
   border-radius: 2px;
-  padding: 3px;
+  padding: 7px;
   margin: 0 0 5px 0;
+  font-size: 1rem;
 }
 
 button:focus {
   background: var(--color-five);
   font-weight: bold;
+}
+
+button.vip {
+  background: var(--color-eight);
+  color: white;
+  font-family: "Lato-Regular";
 }
 
 textarea {
@@ -116,6 +146,10 @@ img {
   display: block;
 }
 
+a {
+  color: black;
+}
+
 label {
   color: white;
   margin: 0 0 10px 0;
@@ -123,36 +157,21 @@ label {
   display: block;
 }
 
-input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  background: #fcfff4;
-  border-radius: 50px;
-  opacity: 0;
+input[type="search"] {
+  border-radius: 10px;
+  padding: 10px;
+  width: 80%;
+  margin: 0 0 20px 0;
+  outline: 2px solid black;
 }
 
-div.ckb-icon {
-  background: rgb(203, 209, 201);
-  width: 40px;
-  height: 20px;
-  position: absolute;
-  right: 5px;
-  top: 50%;
-  margin-top: -10px;
-  opacity: 0.6;
+input[type="search"]:focus {
+  background: none;
 }
 
-div.toogle-button {
-  background: rgb(105, 110, 102);
-  border-radius: 50%;
-  width: 16px;
-  height: 16px;
-  position: absolute;
-
-  right: 23px;
-  top: 50%;
-  margin-top: -8px;
-  z-index: 3;
+.search-results .result-name {
+  margin: 0 0 10px 0;
+  padding: 10px;
 }
 
 select {
@@ -174,11 +193,6 @@ select {
   background: #fafafa url("../image/E264.svg") no-repeat 99% 80%;
 }
 
-input[type="checkbox"]:checked ~ div.ckb-icon {
-  background: rgb(255, 255, 255);
-  opacity: 1;
-}
-
 input[type="checkbox"]:checked ~ div.toogle-button {
   right: 7px;
 }
@@ -193,6 +207,50 @@ input:focus {
 
 .input-parent {
   position: relative;
+  text-align: center;
+}
+.toggle {
+  position: absolute;
+  width: 40px;
+  height: 20px;
+  display: block;
+  margin: 50px 0 0 0;
+  left: 50%;
+  margin-left: -20px;
+}
+
+.label-text {
+  text-align: center;
+  min-width: 100%;
+}
+.toggle input {
+  opacity: 0;
+  position: absolute;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  background: rgb(203, 209, 201);
+  border-radius: 20px;
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgb(105, 110, 102);
+  border-radius: 50%;
+  transition: 0.2s;
+}
+
+.toggle input:checked + .slider::before {
+  transform: translate(20px, -50%);
+  background: #4caf50;
 }
 
 div.textarea-footer {
@@ -215,12 +273,6 @@ a.button:focus {
   background: var(--color-three);
 }
 
-a {
-  font-style: normal;
-  text-decoration: none;
-  color: white;
-}
-
 .debug {
   outline: 1px solid red;
 }
@@ -228,10 +280,6 @@ a {
 #app {
   min-width: 100vw;
   min-height: 100vh;
-}
-
-.panel {
-  position: relative;
 }
 
 .loader {
@@ -269,94 +317,12 @@ a {
   animation: bump 0.4s ease-in-out infinite alternate;
 }
 
-@keyframes bump {
-  0% {
-    transform: translate(-50%, 5px);
-  }
-  100% {
-    transform: translate(-50%, -5px);
-  }
+label {
+  color: black;
 }
 
-/*///////////////////////////
-///MARKERS////////////////*/
-
-img.marker-1 {
-  filter: hue-rotate(140deg);
-}
-
-.earthquake-marker {
-  background: rgb(5, 48, 240);
-  border-radius: 50%;
-}
-
-.default-marker {
-  background: rgb(78, 110, 17);
-  border-radius: 50%;
-  border: 3px solid black;
-}
-
-/*follow marker*/
-
-.follow {
-  width: 15px;
-  height: 15px;
-  background-color: #ec410d;
-  border-radius: 50%;
-  position: absolute;
-  top: 23px;
-  left: 23px;
-}
-
-.ringring {
-  border: 3px solid #e9ece6;
-  -webkit-border-radius: 30px;
-  height: 25px;
-  width: 25px;
-  position: absolute;
-  left: 18px;
-  top: 18px;
-  -webkit-animation: pulsate 4s ease-out;
-  -webkit-animation-iteration-count: infinite;
-  opacity: 0;
-}
-
-/*goal marker*/
-
-.goal {
-  width: 15px;
-  height: 15px;
-  background-color: #281bd8;
-  border-radius: 50%;
-  position: absolute;
-  top: 23px;
-  left: 23px;
-}
-
-/*tracking marker*/
-
-.tracking {
-  width: 15px;
-  height: 15px;
-  background-color: #e2140c;
-  border-radius: 50%;
-  position: absolute;
-  top: 23px;
-  left: 23px;
-}
-
-@-webkit-keyframes pulsate {
-  0% {
-    -webkit-transform: scale(0.1, 0.1);
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    -webkit-transform: scale(1.2, 1.2);
-    opacity: 0;
-  }
+section {
+  margin: 0 0 60px 0;
 }
 
 /*///////////////////////////
@@ -467,7 +433,8 @@ button.active {
 }
 
 .panel {
-  padding: 10px 10px 10px 10px;
+  padding: 20px 10px 60px 10px;
+  position: relative;
 }
 
 #meu .item i {
@@ -535,6 +502,7 @@ div#bottom-bar {
   z-index: 6;
   background: none;
   display: none;
+  padding: 7px 12px 7px 12px;
 }
 
 div#bottom-bar div div.inner {
@@ -556,15 +524,15 @@ div#bottom-bar div.button-left {
 }
 
 div#bottom-bar div.button-left img {
-  width: 50px;
+  width: 40px;
 }
 
 div#bottom-bar div.button-right img {
-  width: 50px;
+  width: 40px;
 }
 
 div#bottom-bar div.button-center img {
-  width: 50px;
+  width: 40px;
 }
 
 div#bottom-bar div.button-right {
@@ -623,15 +591,15 @@ div#top-bar div.button-left {
 }
 
 div#top-bar div.button-left img {
-  width: 50px;
+  width: 40px;
 }
 
 div#top-bar div.button-right img {
-  width: 50px;
+  width: 40px;
 }
 
 div#top-bar div.button-center img {
-  width: 50px;
+  width: 40px;
 }
 
 div#top-bar div.button-right {
@@ -656,14 +624,6 @@ div#top-bar div.button-right:hover {
 
 div#top-bar div.button-center:hover {
   cursor: pointer;
-}
-
-div#top-bar #name {
-  width: fit-content;
-  background: silver !important;
-  border-radius: 10px;
-  padding: 3px 7px 3px 7px !important;
-  margin-top: 4px;
 }
 
 .menu-button {
@@ -736,52 +696,6 @@ div#intro img {
   color: white;
   width: fit-content;
   height: 20px;
-}
-
-/*///////////////////////////
-///LOADING////////////////*/
-
-.loading-spinner {
-  display: none;
-  position: fixed;
-  width: 80px;
-  height: 80px;
-  top: 50%;
-  left: 50%;
-  margin-left: -40px;
-  margin-top: -40px;
-
-  z-index: 5000000;
-}
-.loading-spinner div {
-  box-sizing: border-box;
-  display: block;
-  position: absolute;
-  width: 64px;
-  height: 64px;
-  margin: 8px;
-  border: 8px solid rgb(126, 11, 11);
-  border-radius: 50%;
-  animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-  border-color: rgb(238, 27, 27) transparent transparent transparent;
-}
-.loading-spinner div:nth-child(1) {
-  animation-delay: -0.45s;
-}
-.loading-spinner div:nth-child(2) {
-  animation-delay: -0.3s;
-}
-.loading-spinner div:nth-child(3) {
-  animation-delay: -0.15s;
-}
-
-@keyframes lds-ring {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
 }
 
 /*ADS*/
@@ -866,6 +780,18 @@ div.unavailable div:nth-child(4) {
 
 div.unavailable div:nth-child(3) {
   outline: 2px solid yellow !important;
+}
+
+#tracking .item {
+  border-radius: 5px;
+  margin: 0 0 5px 0;
+  background: silver;
+  padding: 10px 0px 10px 0;
+  border: 10px solid white;
+}
+
+#keys .row {
+  margin: 0 0 10px 0;
 }
 
 @media screen and (min-width: 600px) {

@@ -11,7 +11,7 @@
     "build": "rm -rf dist/* && parcel build  --no-source-maps src/index.html && mkdir -p dist/assets/js && cp -r src/assets/icons dist/assets/ && cp -r src/assets/image dist/assets/ && cp src/assets/js/kaiads.v5.min.js dist/assets/js/ && mkdir -p build && rm dist/manifest.webapp && (cd dist && zip -r ../build/omap.zip .)",
     "build-k2": "rm -rf dist/* && parcel build src/index.html --no-scope-hoist --no-source-maps && mkdir -p dist/assets/js && cp -r src/assets/icons dist/assets/ && cp -r src/assets/image dist/assets/ && cp src/assets/js/kaiads.v5.min.js  dist/assets/js/ && mkdir -p build && rm dist/manifest.webmanifest && (cd dist && zip -r ../build/omap-k2.zip .)",
     "run": "parcel",
-    "web": "rm -rf docs/*  && parcel build --dist-dir docs --public-url ./ --no-source-maps --no-content-hash src/index.html &&  cp src/manifest.webmanifest docs && mkdir -p docs/assets/js && mkdir -p docs/assets/image && cp -r src/assets/image docs/assets/ && cp -r src/assets/fonts docs/assets/ && cp -r src/assets/icons docs/assets/ &&./generate_file_list.sh && rm dist/manifest.webapp"
+    "web": "rm -rf docs/*  && parcel build --dist-dir docs --public-url ./ --no-source-maps --no-content-hash src/index.html &&  cp src/manifest.webmanifest docs && mkdir -p docs/assets/js && mkdir -p docs/assets/image && cp -r src/assets/image docs/assets/ && cp -r src/assets/fonts docs/assets/  && cp -r src/assets/js docs/assets/ && cp -r src/assets/icons docs/assets/ &&./generate_file_list.sh && rm dist/manifest.webapp"
   },
   "keywords": [],
   "devDependencies": {
@@ -35,10 +35,14 @@
     "@parcel/service-worker": "^2.8.0",
     "@turf/turf": "^7.3.4",
     "leaflet-gpx": "^2.2.0",
+    "leaflet.tilelayer.pouchdbcached": "github:mazemap/Leaflet.TileLayer.PouchDBCached",
     "localforage": "^1.10.0",
     "lucide": "^1.8.0",
     "mithril": "^3.0.0-next.3",
     "pouchdb": "^8.0.1",
-    "swiped-events": "1.2.0"
+    "swiped-events": "1.2.0",
+    "dotenv": "^16.4.1",
+    "jsqr": "^1.4.0",
+    "uuid": "^9.0.0"
   }
 }
