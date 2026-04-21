@@ -81,6 +81,7 @@ export let status = {
   osm_files: [],
   selectedMarker: "",
   search_collection: [],
+  routingData: [],
 };
 
 let tilesLayer = null;
@@ -107,7 +108,11 @@ let gpx_files = localforage.getItem("gpx_files").then((e) => {
 });
 
 localforage.getItem("search_collection").then((value) => {
-  if (value) status.search_collection = value;
+  if (value) {
+    status.search_collection = value;
+  } else {
+    status.search_collection = [];
+  }
 });
 
 export let settings;
@@ -357,21 +362,23 @@ let loadFiles = () => {
 };
 
 //display GeoJSON
-let displayGeoJSONOnMap = (geoJsonData, map) => {
+let displayGeoJSONOnMap = async (
+  geoJsonData,
+  map,
+  addLineEndpoints = false,
+) => {
   geoJsonLayer = L.geoJSON(geoJsonData, {
     style: (feature) => {
       return {
-        color: feature.properties.color || "#3388ff",
-        weight: feature.properties.weight || 2,
+        color: feature.properties.color || "#fc0b1fff",
+        weight: feature.properties.weight || 4,
         opacity: feature.properties.opacity || 0.8,
         fillOpacity: feature.properties.fillOpacity || 0.2,
         dashArray: feature.properties.dashArray || null,
       };
     },
 
-    // Marker
     pointToLayer: (feature, latlng) => {
-      // Popup-Text
       let popupText = '<div style="max-width: 300px;">';
 
       if (feature.properties) {
@@ -381,9 +388,9 @@ let displayGeoJSONOnMap = (geoJsonData, map) => {
       }
 
       popupText += "</div>";
-
-      // Marker
-      return createPOIMarker(latlng.lat, latlng.lng, popupText);
+      createPOIMarker(latlng.lat, latlng.lng, popupText).then((e) => {
+        e.addTo(markersGroup);
+      });
     },
 
     onEachFeature: (feature, layer) => {
@@ -397,10 +404,23 @@ let displayGeoJSONOnMap = (geoJsonData, map) => {
         popupContent += "</div>";
         layer.bindPopup(popupContent);
       }
-    },
-  }).addTo(map);
 
-  // Fit
+      if (addLineEndpoints && feature.geometry.type === "LineString") {
+        const coords = feature.geometry.coordinates;
+        const startCoord = coords[0];
+        const endCoord = coords[coords.length - 1];
+
+        createStartMarker(startCoord[1], startCoord[0]).then((e) => {
+          e.addTo(markersGroup);
+        });
+
+        createEndMarker(endCoord[1], endCoord[0]).then((e) => {
+          e.addTo(markersGroup);
+        });
+      }
+    },
+  }).addTo(geoJsonLayer);
+
   const bounds = geoJsonLayer.getBounds();
   if (bounds.isValid()) {
     map.fitBounds(bounds, { padding: [50, 50] });
@@ -440,12 +460,12 @@ let displayGPX = async (gpxString) => {
 
         map.fitBounds(gpx.getBounds());
 
-        resolve(); // ← Signalisiert, dass alles fertig ist
+        resolve();
       })
       .on("error", function (e) {
         reject(e);
       })
-      .addTo(map);
+      .addTo(gpxOverlayer);
   });
 };
 
@@ -486,8 +506,9 @@ function renderPOIs(data) {
   data.elements.forEach((el) => {
     if (el.type !== "node") return;
     const name = el.tags?.name || el.tags?.amenity || "POI";
-    const marker = createPOIMarker(el.lat, el.lon, name);
-    marker.addTo(poiGroup);
+    createPOIMarker(el.lat, el.lon, name).then((e) => {
+      e.addTo(markersGroup);
+    });
   });
 }
 
@@ -543,7 +564,7 @@ let addOverLayer = (url, maxzoom, attribution) => {
   status.current_overlayer = url;
 };
 //create default marker
-let createMarker = (lat, lng, popupText = "", customData) => {
+let createMarker = async (lat, lng, popupText = "", customData) => {
   const marker = L.marker([lat, lng], {
     icon: L.icon({
       iconUrl: markerIcon,
@@ -586,7 +607,7 @@ let createMarker = (lat, lng, popupText = "", customData) => {
 };
 
 //create poi marker
-let createPOIMarker = (lat, lng, popupText) => {
+let createPOIMarker = async (lat, lng, popupText) => {
   const marker = L.marker([lat, lng], {
     icon: L.icon({
       iconUrl: markerPoi,
@@ -622,7 +643,7 @@ let createPOIMarker = (lat, lng, popupText) => {
 };
 
 //create start marker
-let createStartMarker = (lat, lng) => {
+let createStartMarker = async (lat, lng) => {
   const marker = L.marker([lat, lng], {
     icon: L.icon({
       iconUrl: startIcon,
@@ -646,7 +667,7 @@ let createStartMarker = (lat, lng) => {
 };
 
 //create end marker
-let createEndMarker = (lat, lng) => {
+let createEndMarker = async (lat, lng) => {
   const marker = L.marker([lat, lng], {
     icon: L.icon({
       iconUrl: endIcon,
@@ -914,9 +935,10 @@ const initMap = () => {
 
 initMap();
 
+//search comp
 const searchService = {
   async search(query) {
-    if (!query || query.length < 3) return [];
+    if (!query || query.length < 5) return [];
 
     try {
       const res = await fetch(
@@ -940,7 +962,7 @@ const SearchInput = {
   view(vnode) {
     const state = vnode.state;
 
-    return m("div", { class: "col-xs-9" }, [
+    return m("div", { class: "col-xs-12" }, [
       m("input", {
         type: "search",
         class: "item",
@@ -951,7 +973,10 @@ const SearchInput = {
           state.query = e.target.value;
 
           state.results = await searchService.search(state.query);
+          try {
+          } catch (e) {}
 
+          // console.log(state.results);
           // optional: Parent informieren
           if (vnode.attrs.onResults) {
             vnode.attrs.onResults(state.results);
@@ -993,6 +1018,57 @@ const SearchInput = {
         ),
     ]);
   },
+};
+
+//routing api
+
+let ors = async (from, to, apikey, profile) => {
+  return new Promise((resolve, reject) => {
+    let xhr = new XMLHttpRequest({
+      mozSystem: true,
+    });
+
+    xhr.open(
+      "POST",
+      "https://api.openrouteservice.org/v2/directions/" + profile + "/geojson",
+    );
+    xhr.setRequestHeader("Authorization", apikey);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader(
+      "Accept",
+      "application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8",
+    );
+
+    xhr.timeout = 4000;
+
+    xhr.ontimeout = function () {
+      reject(new Error("Timeout"));
+    };
+
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        let test = JSON.parse(xhr.response);
+        resolve(test);
+      } else if (xhr.status === 403) {
+        reject(new Error("Forbidden"));
+      } else if (xhr.status === 503) {
+        reject(new Error("Service unavailable"));
+      } else {
+        reject(new Error("Unknown error"));
+      }
+    };
+
+    xhr.onerror = function (err) {
+      reject(err);
+    };
+
+    const body = {
+      coordinates: [from, to],
+      elevation: "true",
+    };
+
+    xhr.send(JSON.stringify(body));
+  });
 };
 
 ////////////////
@@ -1117,7 +1193,9 @@ let mapView = {
 
     if (e.key === "5") {
       let center = map.getCenter();
-      createPOIMarker(center.lat, center.lng, "", "").addTo(markersGroup);
+      createPOIMarker(center.lat, center.lng, "", "").then((e) => {
+        e.addTo(markersGroup);
+      });
     }
     if (e.key === "#") {
       panToNextMarker();
@@ -1589,7 +1667,7 @@ var poiView = {
         tabindex: 0,
       },
       [
-        m("div", { class: "col-xs-8 col-md-3" }, [
+        m("div", { class: "col-xs-11 col-md-3" }, [
           m("h2", "POI"),
           m(
             "div",
@@ -1668,7 +1746,7 @@ var filesView = {
     return m(
       "div",
       {
-        class: "panel",
+        class: "panel row center-xs",
         name: "Files",
         id: "files",
         tabindex: 0,
@@ -1687,9 +1765,11 @@ var filesView = {
                 {
                   onclick: () => {
                     const [lng, lat] = item.geometry.coordinates;
-                    createPOIMarker(lat, lng, item.properties.name)
-                      .addTo(map)
-                      .openPopup();
+                    createPOIMarker(lat, lng, item.properties.name).then(
+                      (e) => {
+                        e.addTo(markersGroup);
+                      },
+                    );
 
                     map.setView([lat, lng], 14);
 
@@ -1702,30 +1782,34 @@ var filesView = {
           ]),
         ]),
 
-        m("div", [m("h2", "GPX")]),
+        !status.notKaiOS
+          ? m("div", [m("h2", "GPX", { oncreate: () => {} })])
+          : null,
         m("div", [
           m("h2", {}, "OSM FILES"),
-          m("div", [
-            status.osm_files.map((e) => {
-              return m(
-                "button",
-                {
-                  onclick: () => {
-                    osm_server_load_gpx(e.id, e.name).then((data) => {
-                      displayGPX(data)
-                        .then(() => {
-                          m.route.set("/mapView");
-                        })
-                        .catch((e) => {
-                          side_toaster("Could not be loaded", 3000);
+          status.osmLogged
+            ? m("div", [
+                status.osm_files.map((e) => {
+                  return m(
+                    "button",
+                    {
+                      onclick: () => {
+                        osm_server_load_gpx(e.id, e.name).then((data) => {
+                          displayGPX(data)
+                            .then(() => {
+                              m.route.set("/mapView");
+                            })
+                            .catch((e) => {
+                              side_toaster("Could not be loaded", 3000);
+                            });
                         });
-                    });
-                  },
-                },
-                e.name,
-              );
-            }),
-          ]),
+                      },
+                    },
+                    e.name,
+                  );
+                }),
+              ])
+            : "",
         ]),
       ],
     );
@@ -1920,10 +2004,11 @@ let searchView = {
             let lng = document.activeElement.getAttribute("data-lng");
             let text = document.activeElement.getAttribute("data-text");
 
-            let marker = createPOIMarker(lat, lng, text);
+            createPOIMarker(lat, lng, text).then((e) => {
+              e.addTo(markersGroup);
+            });
             map.setView([lat, lng], 15);
 
-            marker.addTo(map);
             m.route.set("/mapView");
           }
 
@@ -1944,11 +2029,13 @@ let searchView = {
             status.search_collection.push(item);
             localforage
               .setItem("search", status.search_collection)
-              .then((data) => {});
-
-            createPOIMarker(item.lat, item.lng, item.name);
-            map.setView([item.lat, item.lng], 14);
-            m.route.set("/mapView");
+              .then((data) => {
+                createPOIMarker(item.lat, item.lng, item.name).addTo(
+                  markersGroup,
+                );
+                map.setView([item.lat, item.lng], 15);
+                m.route.set("/mapView");
+              });
           },
         }),
 
@@ -1960,7 +2047,9 @@ let searchView = {
                 class: "item",
                 tabIndex: 0,
                 onclick: () => {
-                  createPOIMarker(e.lat, e.lng, e.name);
+                  createPOIMarker(e.lat, e.lng, e.name).then((e) => {
+                    e.addTo(markersGroup);
+                  });
                   map.setView([e.lat, e.lng], 14);
                   m.route.set("/mapView");
                 },
@@ -1974,6 +2063,12 @@ let searchView = {
   },
 };
 
+localforage.getItem("routingData").then((data) => {
+  if (data) {
+    status.routingData = data || [];
+  }
+});
+
 var routingView = {
   handler: function (e) {
     if (e.key === "SoftLeft" || e.key === "Control") {
@@ -1983,7 +2078,7 @@ var routingView = {
     }
   },
 
-  oncreate: () => {
+  oncreate: function () {
     bottom_bar(
       "<img class='map-button' src='assets/image/map.svg'>",
       "",
@@ -1998,21 +2093,16 @@ var routingView = {
     document.querySelector(".menu-button").addEventListener("click", () => {
       m.route.set("/menuView");
     });
+
+    // Keyboard events hier registrieren
+    document.addEventListener("keydown", this.handler.bind(this));
   },
 
   onremove: function () {
     document.removeEventListener("keydown", this.handler);
   },
 
-  onkeydown: (e) => {
-    if (e.key === "SoftLeft" || e.key === "Control") {
-      m.route.set("/mapView");
-    }
-
-    if (e.key === "SoftRight" || e.key === "Alt") {
-      m.route.set("/menuView");
-    }
-  },
+  oninit: () => {},
 
   view: function () {
     return m(
@@ -2024,55 +2114,153 @@ var routingView = {
         tabindex: 0,
       },
       [
-        m("div", { class: "col-xs-9" }, [
+        m("div", { class: "col-xs-11" }, [
           // 🔹 PROFILE
-          m("section", [
-            m("h2", "Profile"),
+          m("div", { class: "row center-xs" }, [
+            m("div", { class: "col-xs-11" }, [
+              m("h2", "Profile"),
 
-            m("div", { class: "item input-parent" }, [
-              m("label", { for: "routing-profile" }, "choose profile"),
+              m("div", { class: "item input-parent" }, [
+                m("label", { for: "routing-profile" }, "choose profile"),
 
-              m(
-                "select",
-                {
-                  id: "routing-profile",
-                  class: "select-box",
-                  value: settings.routinge_profile || "foot-hiking",
-                  onchange: (e) => {
-                    settings.routinge_profile = e.target.value;
+                m(
+                  "select",
+                  {
+                    id: "routing-profile",
+                    class: "select-box",
+                    value: settings.routinge_profile || "foot-hiking",
+                    onchange: (e) => {
+                      settings.routinge_profile = e.target.value;
+                    },
                   },
-                },
-                [
-                  m(
-                    "option",
-                    { value: "cycling-mountain" },
-                    "cycling-mountain",
-                  ),
-                  m("option", { value: "cycling-road" }, "cycling-road"),
-                  m("option", { value: "foot-hiking" }, "foot-hiking"),
-                  m("option", { value: "driving-car" }, "driving-car"),
-                ],
-              ),
+                  [
+                    m(
+                      "option",
+                      { value: "cycling-mountain" },
+                      "cycling-mountain",
+                    ),
+                    m("option", { value: "cycling-road" }, "cycling-road"),
+                    m("option", { value: "foot-hiking" }, "foot-hiking"),
+                    m("option", { value: "driving-car" }, "driving-car"),
+                  ],
+                ),
+              ]),
             ]),
           ]),
 
-          m("label", "From"),
-          m(SearchInput, {
-            placeholder: "search from",
-            onSelect: (item) => {
-              routingView.from = item;
-            },
-          }),
+          m("div", { class: "row center-xs" }, [
+            m("div", { class: "col-xs-12" }, [
+              m("label", "From"),
+              m(SearchInput, {
+                placeholder: "search from",
+                onSelect: (item) => {
+                  status.routingFrom = item;
+                  console.log(item);
+                },
+              }),
+            ]),
+          ]),
 
-          m("label", "To"),
-          m(SearchInput, {
-            placeholder: "search to",
-            onSelect: (item) => {
-              routingView.to = item;
+          m("div", { class: "row center-xs" }, [
+            m("div", { class: "col-xs-12" }, [
+              m("label", "To"),
+              m(SearchInput, {
+                placeholder: "search to",
+                onSelect: (item) => {
+                  status.routingTo = item;
+                  console.log(item);
+                  let from = [status.routingFrom.lng, status.routingFrom.lat];
+                  let to = [status.routingTo.lng, status.routingTo.lat];
 
-              console.log(item);
-            },
-          }),
+                  ors(
+                    from,
+                    to,
+                    process.env.ORS_KEY,
+                    settings.routingProfile,
+                  ).then((e) => {
+                    if (
+                      e.features &&
+                      e.features[0] &&
+                      e.features[0].properties
+                    ) {
+                      e.features[0].properties.from =
+                        status.routingFrom.name || "";
+                      e.features[0].properties.to = status.routingTo.name || "";
+                    }
+                    if (Array.isArray(status.routingData)) {
+                      status.routingData.push(e);
+                      localforage.setItem("routingData", status.routingData);
+                    }
+
+                    displayGeoJSONOnMap(e, map, true);
+                    m.route.set("/mapView");
+                  });
+                },
+              }),
+            ]),
+          ]),
+
+          m("div", { class: "row center-xs" }, [
+            m("div", { class: "col-xs-12" }, [
+              m(
+                "div",
+                { class: "row" },
+                status.routingData.map((e) => [
+                  m(
+                    "div",
+                    {
+                      class: "row between-xs debug item",
+                      onclick: (vnode) => {
+                        displayGeoJSONOnMap(e, map, true);
+                        m.route.set("/mapView");
+                      },
+                      tabIndex: 0,
+                    },
+                    [
+                      m("div", { class: "col-xs-3 text-algin-left" }, "From"),
+                      m(
+                        "div",
+                        { class: "col-xs-7" },
+                        e.features[0].properties.from || "",
+                      ),
+                      m("div", { class: "col-xs-3 text-algin-left" }, "To"),
+                      m(
+                        "div",
+                        { class: "col-xs-7" },
+                        e.features[0].properties.to || "",
+                      ),
+                      m("div", { class: "col-xs-3 text-algin-left" }, "Ascent"),
+                      m(
+                        "div",
+                        { class: "col-xs-7" },
+                        e.features[0].properties.ascent,
+                      ),
+                      m(
+                        "div",
+                        { class: "col-xs-3 text-algin-left" },
+                        "Descent",
+                      ),
+                      m(
+                        "div",
+                        { class: "col-xs-7" },
+                        e.features[0].properties.descent,
+                      ),
+                      m(
+                        "div",
+                        { class: "col-xs-3 text-algin-left" },
+                        "Distance",
+                      ),
+                      m(
+                        "div",
+                        { class: "col-xs-7" },
+                        e.features[0].properties.summary.distance,
+                      ),
+                    ],
+                  ),
+                ]),
+              ),
+            ]),
+          ]),
         ]),
       ],
     );
