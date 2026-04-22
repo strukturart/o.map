@@ -121,8 +121,6 @@ const DEFAULT_SETTINGS = {
   crosshair: true,
   scale: true,
   measurement: "metric",
-  pastRadar: "0",
-  forecastRadar: "0",
   radarTime: "1000",
   routingNotification: false,
   useOnlyCache: false,
@@ -341,7 +339,7 @@ let loadFiles = () => {
 
         if (fileType === "gpx") {
           try {
-            displayGPX(content);
+            displayGPX(content).then(() => {});
             side_toaster("File loaded", 2000);
           } catch (error) {
             console.error(`Fehler bei GPX-Konvertierung: ${fileName}`, error);
@@ -537,6 +535,8 @@ let addTilesLayer = (url, maxzoom, attribution) => {
     attribution: attribution,
   });
 
+  //   tilesLayer.bringToBack();
+
   status.current_tilelayer = url;
 };
 
@@ -555,6 +555,7 @@ let addOverLayer = (url, maxzoom, attribution) => {
     maxZoom: maxzoom,
     attribution,
   }).addTo(map);
+  // overLayer.bringToFront();
 
   localforage.setItem("lastOverLayer", {
     url: url,
@@ -828,10 +829,6 @@ const initMap = () => {
     worldCopyJump: true,
   });
 
-  map.on("move", () => {
-    // status.selectedMarker = "";
-  });
-
   const scripts = [
     "./assets/js/L.TileLayer.PouchDBCached.js",
     "./assets/js/pouchdb_7.3.0_pouchdb.min.js",
@@ -891,7 +888,18 @@ const initMap = () => {
     }, 0);
   }
 
+  let crosshair = document.querySelector("div#cross div#cross-inner");
+
   geolocation((e) => {
+    if (e == "error") {
+      if (crosshair) {
+        crosshair.classList.add("unavailable");
+      }
+    } else {
+      if (crosshair) {
+        crosshair.classList.remove("unavailable");
+      }
+    }
     if (!mainmarker) {
       mainmarker = L.marker([e.coords.latitude, e.coords.longitude], {
         draggable: false,
@@ -923,10 +931,7 @@ const initMap = () => {
 
       if (status.tracking) {
         status.trackigData.push(point);
-        console.log(JSON.stringify(status.trackigData));
-
         trackingLine.addLatLng([e.coords.latitude, e.coords.longitude]);
-
         status.trackingStats = analyzeTrack(status.trackigData);
       }
     }
@@ -1071,6 +1076,76 @@ let ors = async (from, to, apikey, profile) => {
   });
 };
 
+//weather api
+
+async function loadWeatherLayers() {
+  try {
+    if (status.layerLoopInterval) {
+      clearInterval(status.layerLoopInterval);
+      let info = document.querySelector("#map-info");
+      if (info) {
+        info.textContent = "";
+      }
+      return;
+    }
+    const response = await fetch(
+      "https://api.rainviewer.com/public/weather-maps.json",
+    );
+    let attribution =
+      "<a href='https://www.rainviewer.com/terms.html'>weather data collected by rainviewer.com</a>";
+
+    const data = await response.json();
+
+    //  console.log(JSON.stringify(data.radar.past));
+
+    const imageCache = {};
+
+    async function preloadImages() {
+      for (const element of data.radar.past) {
+        const url = data.host + element.path + "/256/{z}/{x}/{y}/2/1_1.png";
+
+        try {
+          const response = await fetch(url);
+          const blob = await response.blob();
+          imageCache[url] = URL.createObjectURL(blob);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      startLayerLoop();
+    }
+
+    function startLayerLoop() {
+      let currentIndex = 0;
+      const layerDuration = settings.radarTime;
+
+      status.layerLoopInterval = setInterval(() => {
+        const element = data.radar.past[currentIndex];
+        const url = data.host + element.path + "/256/{z}/{x}/{y}/2/1_1.png";
+
+        let time = dayjs(element.time * 1000).format("HH:mm");
+
+        let info = document.querySelector("#map-info");
+        if (info) {
+          info.textContent = time;
+        }
+
+        const cachedUrl = imageCache[url];
+
+        addOverLayer(cachedUrl, 7, attribution);
+
+        currentIndex = (currentIndex + 1) % data.radar.past.length;
+      }, layerDuration);
+    }
+
+    // Starten
+    preloadImages();
+  } catch (err) {
+    // side_toaster(`Can't load weather data: ${err}`, 3000);
+  }
+}
+
 ////////////////
 ///VIEWS
 ///////////////
@@ -1151,7 +1226,6 @@ var intro = {
 
 let mapView = {
   handler: function (e) {
-    console.log(e);
     if (e.key === "SoftLeft" || e.key === "Control") {
       map.zoomIn();
       getMarkers();
@@ -1251,6 +1325,7 @@ let mapView = {
         },
       },
       [
+        m("div", { id: "map-info" }, ""),
         m(
           "div",
           {
@@ -1509,6 +1584,7 @@ var imageryView = {
               return m(
                 "button",
                 {
+                  tabIndex: 0,
                   class: buttonClass + " item",
                   onclick: () => {
                     addTilesLayer(e.url, e.maxzoom, e.attribution);
@@ -1522,8 +1598,25 @@ var imageryView = {
         ]),
         m("div", [
           m("h2", "LAYERS"),
-          m(
-            "div",
+          m("div", [
+            m(
+              "button",
+              {
+                oncreate: (vnode) => {
+                  if (status.weatherlayer) {
+                    vnode.dom.classList.add("active");
+                  }
+                },
+                onclick: () => {
+                  loadWeatherLayers();
+                  status.weatherlayer = !true;
+
+                  m.route.set("/mapView");
+                },
+                class: "item",
+              },
+              "Weather Radar",
+            ),
             basic_layers.map((e) => {
               let buttonClass = "";
               if (status.current_overlayer == e.url) {
@@ -1542,7 +1635,7 @@ var imageryView = {
                 e.name,
               );
             }),
-          ),
+          ]),
         ]),
       ],
     );
@@ -1755,61 +1848,64 @@ var filesView = {
         },
       },
       [
-        m("div", [m("h2", "MARKERS")]),
+        m("div", { class: "col-xs-11 col-md-3" }, [
+          m("div", { class: "col-xs-11" }, [m("h2", "MARKERS")]),
+          m("div", { class: "col-xs-11" }, [
+            m("div", [
+              markersLocal.map((item, index) => {
+                return m(
+                  "button",
+                  {
+                    onclick: () => {
+                      const [lng, lat] = item.geometry.coordinates;
+                      createPOIMarker(lat, lng, item.properties.name).then(
+                        (e) => {
+                          e.addTo(markersGroup);
+                        },
+                      );
 
-        m("div", [
-          m("div", [
-            markersLocal.map((item, index) => {
-              return m(
-                "button",
-                {
-                  onclick: () => {
-                    const [lng, lat] = item.geometry.coordinates;
-                    createPOIMarker(lat, lng, item.properties.name).then(
-                      (e) => {
-                        e.addTo(markersGroup);
-                      },
-                    );
+                      map.setView([lat, lng], 14);
 
-                    map.setView([lat, lng], 14);
-
-                    m.route.set("/mapView");
-                  },
-                },
-                item.properties.name,
-              );
-            }),
-          ]),
-        ]),
-
-        !status.notKaiOS
-          ? m("div", [m("h2", "GPX", { oncreate: () => {} })])
-          : null,
-        m("div", [
-          m("h2", {}, "OSM FILES"),
-          status.osmLogged
-            ? m("div", [
-                status.osm_files.map((e) => {
-                  return m(
-                    "button",
-                    {
-                      onclick: () => {
-                        osm_server_load_gpx(e.id, e.name).then((data) => {
-                          displayGPX(data)
-                            .then(() => {
-                              m.route.set("/mapView");
-                            })
-                            .catch((e) => {
-                              side_toaster("Could not be loaded", 3000);
-                            });
-                        });
-                      },
+                      m.route.set("/mapView");
                     },
-                    e.name,
-                  );
-                }),
+                  },
+                  item.properties.name || "unknow",
+                );
+              }),
+            ]),
+          ]),
+
+          !status.notKaiOS
+            ? m("div", { class: "col-xs-11" }, [
+                m("h2", "GPX", { oncreate: () => {} }),
               ])
-            : "",
+            : null,
+          m("div", { class: "col-xs-11" }, [
+            m("h2", {}, "OSM FILES"),
+            status.osmLogged
+              ? m("div", [
+                  status.osm_files.map((e) => {
+                    return m(
+                      "button",
+                      {
+                        onclick: () => {
+                          osm_server_load_gpx(e.id, e.name).then((data) => {
+                            displayGPX(data)
+                              .then(() => {
+                                m.route.set("/mapView");
+                              })
+                              .catch((e) => {
+                                side_toaster("Could not be loaded", 3000);
+                              });
+                          });
+                        },
+                      },
+                      e.name,
+                    );
+                  }),
+                ])
+              : "",
+          ]),
         ]),
       ],
     );
@@ -1973,7 +2069,7 @@ let searchView = {
     return m(
       "div",
       {
-        class: "panel search-panel row center-xs",
+        class: "panel row center-xs",
         id: "search",
         oncreate: (vnode) => {
           key_delay();
@@ -2022,41 +2118,46 @@ let searchView = {
         },
       },
       [
-        m(SearchInput, {
-          class: "col-xs-9",
-          placeholder: "search",
-          onSelect: (item) => {
-            status.search_collection.push(item);
-            localforage
-              .setItem("search", status.search_collection)
-              .then((data) => {
-                createPOIMarker(item.lat, item.lng, item.name).addTo(
-                  markersGroup,
-                );
-                map.setView([item.lat, item.lng], 15);
-                m.route.set("/mapView");
-              });
-          },
-        }),
-
-        m("div", { class: "col-xs-9", tabIndex: 0 }, [
-          status.search_collection.map((e) => {
-            return m(
-              "div",
-              {
-                class: "item",
-                tabIndex: 0,
-                onclick: () => {
-                  createPOIMarker(e.lat, e.lng, e.name).then((e) => {
-                    e.addTo(markersGroup);
-                  });
-                  map.setView([e.lat, e.lng], 14);
+        m("div", { class: "col-xs-12 col-md-3" }, [
+          m(SearchInput, {
+            class: "col-xs-11",
+            placeholder: "search",
+            oncreate: () => {
+              document.querySelector("input").focus();
+            },
+            onSelect: (item) => {
+              status.search_collection.push(item);
+              localforage
+                .setItem("search", status.search_collection)
+                .then((data) => {
+                  createPOIMarker(item.lat, item.lng, item.name).addTo(
+                    markersGroup,
+                  );
+                  map.setView([item.lat, item.lng], 15);
                   m.route.set("/mapView");
-                },
-              },
-              [m("h3", e.name), m("div", e.display_name)],
-            );
+                });
+            },
           }),
+
+          m("div", { class: "col-xs-12", tabIndex: 0 }, [
+            status.search_collection.map((e) => {
+              return m(
+                "div",
+                {
+                  class: "item",
+                  tabIndex: 0,
+                  onclick: () => {
+                    createPOIMarker(e.lat, e.lng, e.name).then((e) => {
+                      e.addTo(markersGroup);
+                    });
+                    map.setView([e.lat, e.lng], 14);
+                    m.route.set("/mapView");
+                  },
+                },
+                [m("h3", e.name), m("div", e.display_name)],
+              );
+            }),
+          ]),
         ]),
       ],
     );
@@ -2114,7 +2215,7 @@ var routingView = {
         tabindex: 0,
       },
       [
-        m("div", { class: "col-xs-11" }, [
+        m("div", { class: "col-xs-11 col-md-3" }, [
           // 🔹 PROFILE
           m("div", { class: "row center-xs" }, [
             m("div", { class: "col-xs-11" }, [
@@ -2372,7 +2473,7 @@ var aboutView = {
         onkeydown: (e) => {},
       },
       [
-        m("div", { class: "col-xs-9" }, [
+        m("div", { class: "col-xs-9 col-md-3" }, [
           m("div", [
             "Various software and map data are used in this app, please note the licenses.",
             m("br"),
@@ -2500,7 +2601,7 @@ var settingsView = {
       },
       [
         m("div", { class: "settings-container row center-xs" }, [
-          m("div", { class: "col-xs-12 col-md-6 col-xs-center" }, [
+          m("div", { class: "col-xs-12 col-md-3" }, [
             // ===== Crosshair =====
             m("section", [
               m("h2", "Crosshair"),
@@ -2620,60 +2721,6 @@ var settingsView = {
             // ===== Weather radar =====
             m("section", [
               m("h2", "Weather radar layer"),
-
-              m("div", { class: "item input-parent", tabIndex: 0 }, [
-                m(
-                  "label",
-                  { for: "past-radar" },
-                  "How many PAST radar images to display?",
-                ),
-                m(
-                  "select",
-                  {
-                    id: "past-radar",
-                    class: "select-box",
-                    value: settings.pastRadar,
-                    onchange: (e) => (settings.pastRadar = e.target.value),
-                  },
-                  [
-                    m("option", { value: "0" }, "0"),
-                    m("option", { value: "1" }, "1"),
-                    m("option", { value: "2" }, "2"),
-                    m("option", { value: "3" }, "3"),
-                    m("option", { value: "4" }, "4"),
-                    m("option", { value: "5" }, "5"),
-                    m("option", { value: "6" }, "6"),
-                    m("option", { value: "7" }, "7"),
-                    m("option", { value: "8" }, "8"),
-                    m("option", { value: "9" }, "9"),
-                    m("option", { value: "10" }, "10"),
-                    m("option", { value: "12" }, "12"),
-                  ],
-                ),
-              ]),
-
-              m("div", { class: "item input-parent", tabIndex: 0 }, [
-                m(
-                  "label",
-                  { for: "forecast-radar" },
-                  "How many FORECAST radar images to display?",
-                ),
-                m(
-                  "select",
-                  {
-                    id: "forecast-radar",
-                    class: "select-box",
-                    value: settings.forecastRadar,
-                    onchange: (e) => (settings.forecastRadar = e.target.value),
-                  },
-                  [
-                    m("option", { value: "0" }, "0"),
-                    m("option", { value: "1" }, "1"),
-                    m("option", { value: "2" }, "2"),
-                    m("option", { value: "3" }, "3"),
-                  ],
-                ),
-              ]),
 
               m("div", { class: "item input-parent", tabIndex: 0 }, [
                 m(
