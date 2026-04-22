@@ -10,28 +10,52 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
   <defs
-     id="defs16" />
+     id="defs2298">
+    <linearGradient
+       id="linearGradient4804"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop4802" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient4780"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop4778" />
+    </linearGradient>
+  </defs>
   <sodipodi:namedview
-     id="namedview14"
+     id="namedview2296"
      pagecolor="#ffffff"
      bordercolor="#666666"
      borderopacity="1.0"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
+     inkscape:pagecheckerboard="true"
      showgrid="false"
-     inkscape:zoom="10.861111"
-     inkscape:cx="35.907929"
-     inkscape:cy="35.953965"
+     inkscape:zoom="0.65364581"
+     inkscape:cx="35.187252"
+     inkscape:cy="35.952193"
      inkscape:window-width="1920"
      inkscape:window-height="1016"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
      inkscape:current-layer="emoji" />
+  <ellipse
+     style="fill:#fffffd;fill-opacity:1;stroke:none"
+     id="path848"
+     cx="36"
+     cy="36"
+     rx="34.541"
+     ry="34.540272" />
   <g
      id="g1365"
-     transform="translate(-0.38085556,0.62905519)">
+     transform="matrix(0.69687504,0,0,0.69687504,10.64709,11.350871)">
     <g
        id="g1318">
       <rect

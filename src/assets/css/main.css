@@ -134,6 +134,11 @@ button.vip {
   font-family: "Lato-Regular";
 }
 
+button.active {
+  background: black;
+  color: white;
+}
+
 textarea {
   background: white;
   width: 100%;
@@ -163,6 +168,7 @@ input[type="search"] {
   width: 80%;
   margin: 0 0 20px 0;
   outline: 2px solid black;
+  color: black !important;
 }
 
 input[type="search"]:focus {
@@ -293,6 +299,20 @@ section {
   margin: 0 0 60px 0;
 }
 
+#map-info {
+  width: fit-content;
+  border-radius: 10px;
+  position: fixed;
+  z-index: 10000;
+  top: 10px;
+  right: 10px;
+  background: yellow;
+  padding: 10px;
+}
+#map-info:empty {
+  display: none;
+}
+
 /*///////////////////////////
 ///TOAST////////////////*/
 
@@ -386,12 +406,9 @@ div#cross {
   opacity: 100;
 }
 
-button.active {
-  background: orange;
-}
-
 .item:focus {
-  background: orange;
+  background: black;
+  color: white;
 }
 
 #menu button {
@@ -470,12 +487,11 @@ div#bottom-bar {
   z-index: 6;
   background: none;
   display: none;
-  padding: 7px 12px 7px 12px;
+  padding: 0px;
 }
 
 div#bottom-bar div div.inner {
   position: relative;
-  padding: 5px 10px 15px 10px;
   background: none;
 }
 
@@ -592,10 +608,6 @@ div#top-bar div.button-right:hover {
 
 div#top-bar div.button-center:hover {
   cursor: pointer;
-}
-
-.menu-button {
-  width: 2rem !important;
 }
 
 /*///////////////////////////
@@ -762,8 +774,31 @@ div.unavailable div:nth-child(3) {
   margin: 0 0 10px 0;
 }
 
-@media screen and (min-width: 400px) {
+@media screen and (max-width: 340px) {
   *::-webkit-scrollbar {
     display: none;
+  }
+
+  div#bottom-bar {
+    height: 30px;
+    bottom: 5px;
+    min-width: 100vw;
+  }
+
+  div#bottom-bar div.button-left img {
+    width: 30px;
+  }
+
+  div#bottom-bar div.button-right img {
+    width: 30px;
+  }
+
+  div#bottom-bar div.button-center img {
+    width: 30px;
+  }
+
+  div#bottom-bar div div.inner {
+    position: relative;
+    padding: 0px 20px 15px 20px;
   }
 }
