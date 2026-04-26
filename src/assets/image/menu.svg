@@ -55,19 +55,22 @@
      ry="34.540272" />
   <g
      id="g1365"
-     transform="matrix(0.63906253,0,0,0.6463081,12.750358,13.139472)">
+     transform="matrix(0.63906253,0,0,0.6463081,15.200549,15.065527)">
     <g
-       id="g1318">
+       id="g1318-6"
+       transform="translate(-2.2692464,-4.7094982)"
+       inkscape:transform-center-x="13.350384"
+       inkscape:transform-center-y="-13.018063">
       <rect
          style="fill:#000000;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0"
-         id="rect1027"
+         id="rect1027-7"
          width="29.999998"
          height="29.999998"
-         x="4.3808575"
+         x="1.2512733"
          y="3.3709466" />
       <rect
          style="fill:#000000;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0"
-         id="rect1027-3"
+         id="rect1027-3-5"
          width="29.999998"
          height="29.999998"
          x="38.380856"
@@ -76,20 +79,20 @@
          inkscape:transform-center-y="-3.4929668" />
     </g>
     <g
-       id="g1318-6"
-       transform="translate(0,33.999998)"
+       id="g1318-6-3"
+       transform="translate(-2.2692464,32.749321)"
        inkscape:transform-center-x="13.350384"
        inkscape:transform-center-y="-13.018063">
       <rect
          style="fill:#000000;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0"
-         id="rect1027-7"
+         id="rect1027-7-6"
          width="29.999998"
          height="29.999998"
-         x="4.3808575"
+         x="1.2512733"
          y="3.3709466" />
       <rect
          style="fill:#000000;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0"
-         id="rect1027-3-5"
+         id="rect1027-3-5-7"
          width="29.999998"
          height="29.999998"
          x="38.380856"

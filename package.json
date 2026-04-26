@@ -8,42 +8,9 @@
     "Firefox 48",
     "defaults and not supports es6-module"
   ],
-  "targets": {
-    "default": {
-      "context": "browser",
-      "outputFormat": "global",
-      "includeNodeModules": true,
-      "isLibrary": false,
-      "engines": {
-        "browsers": [
-          "Firefox 48"
-        ]
-      }
-    }
-  },
-  "babel": {
-    "presets": [
-      [
-        "@babel/preset-env",
-        {
-          "targets": {
-            "firefox": "48"
-          },
-          "useBuiltIns": "usage",
-          "corejs": "3.37",
-          "forceAllTransforms": false
-        }
-      ]
-    ],
-    "plugins": [
-      "babel-plugin-transform-async-to-promises",
-      "@babel/plugin-transform-export-namespace-from"
-    ],
-    "ignore": []
-  },
   "scripts": {
-    "build": "rm -rf dist/* && parcel build  --no-source-maps src/index.html && mkdir -p dist/assets/js && cp -r src/assets/icons dist/assets/ && cp -r src/assets/image dist/assets/ && cp src/assets/js/kaiads.v5.min.js dist/assets/js/ && mkdir -p build && rm dist/manifest.webapp && (cd dist && zip -r ../build/omap.zip .)",
-    "build-k2": "rm -rf dist/* && parcel build src/index.html --no-scope-hoist --no-source-maps && mkdir -p dist/assets/js && cp -r src/assets/icons dist/assets/ && cp -r src/assets/image dist/assets/ && cp src/assets/js/kaiads.v5.min.js  dist/assets/js/ && mkdir -p build && rm dist/manifest.webmanifest && (cd dist && zip -r ../build/omap-k2.zip .)",
+    "build": "rm -rf dist/* && rm -rf build/* && parcel build --no-source-maps src/index.html && mkdir -p dist/assets/js && cp -r src/assets/icons dist/assets/ && cp -r src/assets/image dist/assets/ && cp src/assets/js/kaiads.v5.min.js dist/assets/js/ && mkdir -p build && rm dist/manifest.webapp && (cd dist && zip -r ../build/omap.zip .)",
+    "build-k2": "rm -rf dist/*&& rm -rf build/* && parcel build src/index.html --no-scope-hoist --no-source-maps && mkdir -p dist/assets/js && cp -r src/assets/icons dist/assets/ && cp -r src/assets/image dist/assets/ && cp src/assets/js/kaiads.v5.min.js  dist/assets/js/ && mkdir -p build && rm dist/manifest.webmanifest && (cd dist && zip -r ../build/omap-k2.zip .)",
     "run": "parcel",
     "web": "rm -rf docs/*  && parcel build --dist-dir docs --public-url ./ --no-source-maps --no-content-hash src/index.html &&  cp src/manifest.webmanifest docs && mkdir -p docs/assets/js && mkdir -p docs/assets/image && cp -r src/assets/image docs/assets/ && cp -r src/assets/fonts docs/assets/  && cp -r src/assets/js docs/assets/ && cp -r src/assets/icons docs/assets/ &&./generate_file_list.sh && rm dist/manifest.webapp"
   },
@@ -55,21 +22,21 @@
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "@babel/plugin-transform-named-capturing-groups-regex": "^7.17.12",
     "@babel/preset-env": "^7.27.2",
-    "parcel": "^2.10.0",
     "@parcel/packager-raw-url": "^2.10.0",
     "@parcel/resolver-default": "^2.10.0",
     "@parcel/transformer-html": "^2.10.0",
     "@parcel/transformer-webmanifest": "^2.10.0",
-    "dayjs": "^1.11.9",
-    "leaflet": "^1.9.4",
-    "core-js": "^3.22.5",
     "assert": "^2.1.0",
     "babel-plugin-transform-async-to-promises": "^0.8.18",
     "buffer": "^6.0.3",
+    "core-js": "^3.22.5",
     "crypto-browserify": "^3.12.0",
+    "dayjs": "^1.11.9",
     "events": "^3.3.0",
     "https-browserify": "^1.0.0",
+    "leaflet": "^1.9.4",
     "os-browserify": "^0.3.0",
+    "parcel": "^2.10.0",
     "parcel-namer-rewrite": "^2.10.3-rc.2",
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",
@@ -83,15 +50,14 @@
     "@babel/runtime": "^7.27.1",
     "@parcel/service-worker": "^2.8.0",
     "@turf/turf": "^7.3.4",
+    "dotenv": "^16.4.1",
+    "jsqr": "^1.4.0",
     "leaflet-gpx": "^2.2.0",
-    "leaflet.tilelayer.pouchdbcached": "github:mazemap/Leaflet.TileLayer.PouchDBCached",
     "localforage": "^1.10.0",
     "lucide": "^1.8.0",
     "mithril": "^3.0.0-next.3",
-    "pouchdb": "^8.0.1",
+    "scroll-into-view-if-needed": "^3.1.0",
     "swiped-events": "1.2.0",
-    "dotenv": "^16.4.1",
-    "jsqr": "^1.4.0",
     "url-search-params-polyfill": "^8.1.1",
     "uuid": "^9.0.0"
   }

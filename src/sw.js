@@ -29,7 +29,7 @@ sw_channel.postMessage({});
 const userAgent = navigator.userAgent || "";
 
 if (userAgent && !userAgent.includes("KAIOS")) {
-  const CACHE_NAME = "pwa-cache-v2.2323";
+  const CACHE_NAME = "pwa-cache-v2.2328";
   const FILE_LIST_URL = "file-list.json";
 
   self.addEventListener("install", (event) => {

@@ -7,7 +7,7 @@ import {
   top_bar,
   getManifest,
   geolocation,
-  setTabindex,
+  list_files,
 } from "./assets/js/helper.js";
 import localforage from "localforage";
 import m from "mithril";
@@ -15,7 +15,6 @@ import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 
 import L from "leaflet";
-import "swiped-events";
 import { basic_maps, basic_layers, basic_pois } from "./assets/js/maps.js";
 import "leaflet-gpx";
 import * as turf from "@turf/turf";
@@ -23,6 +22,7 @@ import * as turf from "@turf/turf";
 import { v4 as uuidv4 } from "uuid";
 
 import { createElement, Files, Upload } from "lucide";
+import scrollIntoView from "scroll-into-view-if-needed";
 
 //icons
 import {
@@ -82,6 +82,7 @@ export let status = {
   selectedMarker: "",
   search_collection: [],
   routingData: [],
+  osmLogged: false,
 };
 
 let tilesLayer = null;
@@ -341,12 +342,15 @@ let loadFiles = () => {
           try {
             displayGPX(content).then(() => {});
             side_toaster("File loaded", 2000);
+            m.route.set("/mapView");
           } catch (error) {
             console.error(`Fehler bei GPX-Konvertierung: ${fileName}`, error);
           }
         } else if (fileType === "geojson" || fileType === "json") {
           const geoJsonData = JSON.parse(content);
           displayGeoJSONOnMap(geoJsonData, map);
+          m.route.set("/mapView");
+
           side_toaster("File loaded", 2000);
         }
       } catch (error) {
@@ -360,11 +364,7 @@ let loadFiles = () => {
 };
 
 //display GeoJSON
-let displayGeoJSONOnMap = async (
-  geoJsonData,
-  map,
-  addLineEndpoints = false,
-) => {
+let displayGeoJSONOnMap = (geoJsonData, map, addLineEndpoints = false) => {
   geoJsonLayer = L.geoJSON(geoJsonData, {
     style: (feature) => {
       return {
@@ -1401,7 +1401,7 @@ var menuView = {
     return m(
       "div",
       {
-        class: "row panel",
+        class: "row panel not-scroll",
         id: "menu",
       },
       [
@@ -1797,14 +1797,16 @@ var filesView = {
   },
 
   oncreate: function () {
-    status.osm_files = [];
+    if (status.osmLogged) {
+      status.osm_files = [];
 
-    osm_server_list_gpx()
-      .then((files) => {
-        status.osm_files = files;
-        m.redraw();
-      })
-      .catch((error) => console.error("Failed:", error));
+      osm_server_list_gpx()
+        .then((files) => {
+          status.osm_files = files;
+          m.redraw();
+        })
+        .catch((error) => console.error("Failed:", error));
+    }
 
     bottom_bar(
       "<img class='map-button' src='assets/image/map.svg'>",
@@ -1852,36 +1854,51 @@ var filesView = {
           m("div", { class: "col-xs-11" }, [m("h2", "MARKERS")]),
           m("div", { class: "col-xs-11" }, [
             m("div", [
-              markersLocal.map((item, index) => {
-                return m(
-                  "button",
-                  {
-                    onclick: () => {
-                      const [lng, lat] = item.geometry.coordinates;
-                      createPOIMarker(lat, lng, item.properties.name).then(
-                        (e) => {
-                          e.addTo(markersGroup);
+              markersLocal.length
+                ? markersLocal.map((item, index) => {
+                    return m(
+                      "button",
+                      {
+                        class: "item",
+                        oncreate: (vnode) => {
+                          if (index == 0) {
+                            vnode.dom.focus();
+                          }
                         },
-                      );
+                        onclick: () => {
+                          const [lng, lat] = item.geometry.coordinates;
+                          createPOIMarker(lat, lng, item.properties.name).then(
+                            (e) => {
+                              e.addTo(markersGroup);
+                              map.setView([lat, lng], 14);
 
-                      map.setView([lat, lng], 14);
-
-                      m.route.set("/mapView");
-                    },
-                  },
-                  item.properties.name || "unknow",
-                );
-              }),
+                              m.route.set("/mapView");
+                            },
+                          );
+                        },
+                      },
+                      item.properties.name || "unknow",
+                    );
+                  })
+                : null,
             ]),
           ]),
 
           !status.notKaiOS
             ? m("div", { class: "col-xs-11" }, [
-                m("h2", "GPX", { oncreate: () => {} }),
+                m("h2", "GPX", {
+                  oncreate: () => {
+                    list_files("gpx").then((e) => {
+                      alert(e);
+                    });
+                  },
+                }),
               ])
             : null,
+
           m("div", { class: "col-xs-11" }, [
             m("h2", {}, "OSM FILES"),
+
             status.osmLogged
               ? m("div", [
                   status.osm_files.map((e) => {
@@ -2187,23 +2204,27 @@ var routingView = {
     );
     top_bar("", "", "");
 
-    document.querySelector(".map-button").addEventListener("click", () => {
-      m.route.set("/mapView");
-    });
+    const mapBtn = document.querySelector(".map-button");
+    const menuBtn = document.querySelector(".menu-button");
 
-    document.querySelector(".menu-button").addEventListener("click", () => {
-      m.route.set("/menuView");
-    });
+    if (mapBtn) {
+      mapBtn.addEventListener("click", () => {
+        m.route.set("/mapView");
+      });
+    }
 
-    // Keyboard events hier registrieren
-    document.addEventListener("keydown", this.handler.bind(this));
+    if (menuBtn) {
+      menuBtn.addEventListener("click", () => {
+        m.route.set("/menuView");
+      });
+    }
+
+    document.addEventListener("keydown", this.handler);
   },
 
   onremove: function () {
     document.removeEventListener("keydown", this.handler);
   },
-
-  oninit: () => {},
 
   view: function () {
     return m(
@@ -2221,7 +2242,7 @@ var routingView = {
             m("div", { class: "col-xs-11" }, [
               m("h2", "Profile"),
 
-              m("div", { class: "item input-parent" }, [
+              m("div", { class: "item input-parent", tabIndex: 0 }, [
                 m("label", { for: "routing-profile" }, "choose profile"),
 
                 m(
@@ -2256,7 +2277,9 @@ var routingView = {
                 placeholder: "search from",
                 onSelect: (item) => {
                   status.routingFrom = item;
-                  console.log(item);
+                },
+                oncreate: () => {
+                  document.querySelector("input").focus();
                 },
               }),
             ]),
@@ -2269,7 +2292,6 @@ var routingView = {
                 placeholder: "search to",
                 onSelect: (item) => {
                   status.routingTo = item;
-                  console.log(item);
                   let from = [status.routingFrom.lng, status.routingFrom.lat];
                   let to = [status.routingTo.lng, status.routingTo.lat];
 
@@ -2310,7 +2332,7 @@ var routingView = {
                   m(
                     "div",
                     {
-                      class: "row between-xs debug item",
+                      class: "row between-xs item routing-history-item",
                       onclick: (vnode) => {
                         displayGeoJSONOnMap(e, map, true);
                         m.route.set("/mapView");
@@ -2428,6 +2450,15 @@ var keyView = {
             m("kbd", { class: "col-xs-1" }, "#"),
             m("span", "select marker"),
           ]),
+          m("div", {
+            id: "KaiOSads-Wrapper",
+            class: "item",
+            tabindex: 0,
+
+            oncreate: () => {
+              load_ads();
+            },
+          }),
         ),
       ],
     );
@@ -2456,6 +2487,9 @@ var aboutView = {
     });
 
     document.addEventListener("keydown", this.handler);
+
+    document.querySelector("html").style.overflow = "scroll";
+    document.querySelector("body").style.overflow = "scroll";
   },
 
   onremove: function () {
@@ -2566,7 +2600,7 @@ var settingsView = {
     }
   },
 
-  oncreate: () => {
+  oncreate: function () {
     bottom_bar(
       "<img class='map-button' src='assets/image/map.svg'>",
       "",
@@ -2574,13 +2608,22 @@ var settingsView = {
     );
     top_bar("", "", "");
 
-    document.querySelector(".map-button").addEventListener("click", () => {
-      m.route.set("/mapView");
-    });
+    const mapBtn = document.querySelector(".map-button");
+    const menuBtn = document.querySelector(".menu-button");
 
-    document.querySelector(".menu-button").addEventListener("click", () => {
-      m.route.set("/menuView");
-    });
+    if (mapBtn) {
+      mapBtn.addEventListener("click", () => {
+        m.route.set("/mapView");
+      });
+    }
+
+    if (menuBtn) {
+      menuBtn.addEventListener("click", () => {
+        m.route.set("/menuView");
+      });
+    }
+
+    document.addEventListener("keydown", this.handler);
   },
 
   onremove: function () {
@@ -2611,7 +2654,9 @@ var settingsView = {
                   class: "item input-parent row middle-xs between-xs",
                   tabIndex: 0,
                   oncreate: (vnode) => {
-                    vnode.dom.focus();
+                    setTimeout(() => {
+                      vnode.dom.focus();
+                    }, 1000);
                   },
                 },
                 [
@@ -2687,7 +2732,7 @@ var settingsView = {
                   tabIndex: 0,
 
                   oncreate: (vnode) => {
-                    if (status.osmLogged) {
+                    if (!status.osmLogged) {
                       vnode.dom.remove();
                     }
                   },
@@ -2705,7 +2750,7 @@ var settingsView = {
                   tabIndex: 0,
 
                   oncreate: (vnode) => {
-                    if (!status.osmLogged) {
+                    if (status.osmLogged) {
                       vnode.dom.remove();
                     }
                   },
@@ -2827,55 +2872,47 @@ m.route(root, "/intro", {
   "/optionsView": optionsView,
 });
 
-function scrollToCenter() {
-  const activeElement = document.activeElement;
-  if (!activeElement) return;
+function scrollToCenter(element) {
+  if (!element) return;
 
-  const rect = activeElement.getBoundingClientRect();
-  let elY = rect.top + rect.height / 2;
+  const rect = element.getBoundingClientRect();
+  let container = element.parentNode;
 
-  let scrollContainer = activeElement.parentNode;
+  while (container) {
+    const style = window.getComputedStyle(container);
 
-  // Find the first scrollable parent
-  while (scrollContainer) {
     if (
-      scrollContainer.scrollHeight > scrollContainer.clientHeight ||
-      scrollContainer.scrollWidth > scrollContainer.clientWidth
+      /(auto|scroll)/.test(style.overflowY) &&
+      container.scrollHeight > container.clientHeight
     ) {
-      // Calculate the element's offset relative to the scrollable parent
-      const containerRect = scrollContainer.getBoundingClientRect();
-      elY = rect.top - containerRect.top + rect.height / 2;
-      break;
+      const containerRect = container.getBoundingClientRect();
+
+      const offset =
+        rect.top -
+        containerRect.top +
+        container.scrollTop -
+        container.clientHeight / 2 +
+        rect.height / 2;
+
+      container.scrollTop = offset;
+      return;
     }
-    scrollContainer = scrollContainer.parentNode;
+
+    container = container.parentNode;
   }
 
-  if (scrollContainer) {
-    scrollContainer.scrollBy({
-      left: 0,
-      top: elY - scrollContainer.clientHeight / 2,
-      behavior: "smooth",
-    });
-  } else {
-    // If no scrollable parent is found, scroll the document body
-    document.body.scrollBy({
-      left: 0,
-      top: elY - window.innerHeight / 2,
-      behavior: "smooth",
-    });
-  }
+  const pageOffset =
+    rect.top + window.pageYOffset - window.innerHeight / 2 + rect.height / 2;
+
+  window.scrollTo(0, pageOffset);
 }
-
-document.addEventListener("onbeforeunload", function (e) {
-  cache_search();
-});
 
 document.addEventListener("DOMContentLoaded", function (e) {
   /////////////////
   ///NAVIGATION
   /////////////////
-
-  let nav = function (move) {
+  /*
+  function nav(move) {
     const active = document.activeElement;
 
     if (
@@ -2884,19 +2921,14 @@ document.addEventListener("DOMContentLoaded", function (e) {
       active.type === "time" ||
       active.classList.contains("scroll")
     ) {
-      return false;
+      return;
     }
 
-    const items = Array.from(
-      document.getElementById("app").querySelectorAll(".item"),
-    );
-
-    console.log(items);
+    const items = Array.from(document.querySelectorAll("#app .item"));
 
     if (!items.length) return;
 
     let currentIndex = items.indexOf(active);
-
     if (currentIndex === -1) currentIndex = 0;
 
     let next = currentIndex + move;
@@ -2904,13 +2936,12 @@ document.addEventListener("DOMContentLoaded", function (e) {
     if (next < 0) next = items.length - 1;
     if (next >= items.length) next = 0;
 
-    const targetElement = items[next];
+    const target = items[next];
+    if (!target) return;
 
-    if (targetElement) {
-      targetElement.focus();
-      scrollToCenter();
-    }
-  };
+    target.focus();
+    scrollToCenter(target);
+  }
 
   let isKeyDownHandled = false;
 
@@ -2927,20 +2958,38 @@ document.addEventListener("DOMContentLoaded", function (e) {
     }
   });
 
-  let isKeyUpHandled = false;
+  */
 
-  document.addEventListener("keyup", function (event) {
-    if (!isKeyUpHandled) {
-      handleKeyUp(event); // Your keydown handler
+  function nav(move) {
+    const active = document.activeElement;
 
-      isKeyUpHandled = true;
-
-      // Reset the flag after some time if needed, or based on your conditions
-      setTimeout(() => {
-        isKeyUpHandled = false;
-      }, 300); // Optional timeout to reset the flag after a short delay
+    if (
+      active.nodeName === "SELECT" ||
+      active.type === "date" ||
+      active.type === "time" ||
+      active.classList.contains("scroll")
+    ) {
+      return;
     }
-  });
+    const items = Array.from(document.querySelectorAll("#app .item"));
+
+    let index = items.indexOf(active);
+
+    if (index === -1) index = 0;
+
+    index += move;
+
+    if (index < 0) index = items.length - 1;
+    if (index >= items.length) index = 0;
+
+    const target = items[index];
+
+    if (!target) return;
+
+    target.focus({ preventScroll: true });
+
+    scrollToCenter(target);
+  }
 
   // ////////////////////////////
   // //KEYPAD HANDLER////////////

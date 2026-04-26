@@ -27,8 +27,8 @@ export let setTabindex = () => {
 export let load_ads = function () {
   getKaiAd({
     publisher: "4408b6fa-4e1d-438f-af4d-f3be2fa97208",
-    app: "flop",
-    slot: "flop",
+    app: "o.map",
+    slot: "o.map",
     test: 0,
     timeout: 10000,
     h: 120,
@@ -116,56 +116,56 @@ export const geolocation = function (callback) {
   });
 };
 
-export let list_files = function (filetype, callback) {
+export const list_files = async function (filetype) {
+  const files = [];
+
   try {
-    var d = navigator.getDeviceStorage("sdcard");
-    var t = false;
-    var cursor = d.enumerate();
+    // Firefox OS / KaiOS 2
+    if ("getDeviceStorage" in navigator) {
+      const storage = navigator.getDeviceStorage("sdcard");
+      const cursor = storage.enumerate();
 
-    cursor.onsuccess = function () {
-      if (!this.result) {
-        console.log("finished");
-      }
-
-      if (cursor.result.name !== null) {
-        var file = cursor.result;
-        let n = file.name.split(".");
-        let file_type = n[n.length - 1];
-
-        if (file_type == filetype) {
-          callback(file.name);
-          t = true;
-        }
-        this.continue();
-      }
-    };
-
-    cursor.onerror = function () {
-      console.warn("No file found: " + this.error);
-    };
-  } catch (e) {
-    console.log(e);
-  }
-  if ("b2g" in navigator) {
-    try {
-      var sdcard = navigator.b2g.getDeviceStorage("sdcard");
-      var iterable = sdcard.enumerate();
-      async function printAllFiles() {
-        for await (let file of iterable) {
-          let n = file.name.split(".");
-          let file_type = n[n.length - 1];
-
-          if (file_type == filetype) {
-            callback(file.name);
-            t = true;
+      await new Promise((resolve, reject) => {
+        cursor.onsuccess = function () {
+          if (!this.result) {
+            resolve();
+            return;
           }
+
+          const file = this.result;
+          const extension = file.name.split(".").pop()?.toLowerCase();
+
+          if (extension === filetype.toLowerCase()) {
+            files.push(file.name);
+          }
+
+          this.continue();
+        };
+
+        cursor.onerror = function () {
+          reject(this.error);
+        };
+      });
+    }
+
+    // B2G / KaiOS 3
+    else if ("b2g" in navigator) {
+      const storage = navigator.b2g.getDeviceStorage("sdcard");
+      const iterable = storage.enumerate();
+
+      for await (const file of iterable) {
+        const extension = file.name.split(".").pop()?.toLowerCase();
+
+        if (extension === filetype.toLowerCase()) {
+          files.push(file.name);
         }
       }
-      printAllFiles();
-    } catch (e) {
-      console.log(e);
     }
+  } catch (error) {
+    console.error(error);
   }
+
+  return files;
 };
 
 export let clipboard = function () {

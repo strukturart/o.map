@@ -30,6 +30,36 @@ let pushLocalNotification = function (title, text, icon) {
   });
 };
 
+
+export let share_position = function () {
+    let a =
+      "https://www.openstreetmap.org/?mlat=" +
+      mainmarker.current_lat +
+      "&mlon=" +
+      mainmarker.current_lng +
+      "#map=13/" +
+      mainmarker.current_lat +
+      "/" +
+      mainmarker.current_lng +
+      "&layers=T";
+    try {
+      let activity = new MozActivity({
+        name: "share",
+        data: {
+          type: "url",
+          url: a,
+        },
+      });
+
+      activity.onsuccess = function () {
+        console.log("successfully shared");
+      };
+
+      activity.onerror = function () {
+        console.log("The activity encounter en error: " + this.error);
+      };
+    } catch (e) {}
+
 export let link_to_marker = function (url) {
   let url_split = url.split("/");
   current_lat = url_split[url_split.length - 2];
