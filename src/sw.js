@@ -1,35 +1,68 @@
-const sw_channel = new BroadcastChannel("sw-messages");
-sw_channel.addEventListener("message", (event) => {});
-self.addEventListener("systemmessage", async (evt) => {
-  // Store evt data early
-  let activityData;
+const channel = new BroadcastChannel("sw-messages");
 
-  if (evt.name === "activity") {
-    try {
-      const handler = evt.data.webActivityRequestHandler();
+self.onsystemmessage = (evt) => {
+  try {
+    const serviceHandler = async () => {
+      if (evt.name === "activity") {
+        let handler = evt.data.webActivityRequestHandler();
 
-      const { name: activityName, data } = handler.source;
+        if (!handler || !handler.source) {
+          throw new Error("Handler oder handler.source ist undefined");
+        }
 
-      // Store data for later use
-      activityData = data;
-
-      if (activityData.name === "omap") {
-        sw_channel.postMessage({
-          oauth_success: activityData.data,
+        channel.postMessage({
+          oauth_success: handler.source.data,
+        });
+      } else {
+        channel.postMessage({
+          action: "error",
+          oauth_success: activityName,
         });
       }
-    } catch (error) {
-      console.error("Error handling system message:", error);
-    }
+    };
+
+    evt.waitUntil(serviceHandler());
+  } catch (e) {
+    channel.postMessage({
+      action: "error",
+      content: e.message || String(e),
+      stack: e.stack,
+    });
   }
+};
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clientList) => {
+        for (var i = 0; i < clientList.length; i++) {
+          let client = clientList[i];
+          if (client.url == "/" && "focus" in client) return client.focus();
+        }
+        if (clients.openWindow) {
+          return clients
+            .openWindow(new URL("/", self.location.origin))
+            .then((w) => w.focus());
+        }
+        if (clients.openApp) {
+          return clients.openApp();
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      }),
+  );
 });
 
-sw_channel.postMessage({});
-
-const userAgent = navigator.userAgent || "";
+const userAgent =
+  typeof self !== "undefined" && self.navigator && self.navigator.userAgent
+    ? self.navigator.userAgent
+    : "";
 
 if (userAgent && !userAgent.includes("KAIOS")) {
-  const CACHE_NAME = "pwa-cache-v2.2323";
+  const CACHE_NAME = "pwa-cache-v2.239999";
   const FILE_LIST_URL = "file-list.json";
 
   self.addEventListener("install", (event) => {

@@ -1,6 +1,6 @@
 ![logo](/images/logo.png)
 
-O.Map is an openstreetmap app for KaiOs, it is a good companion for your next outdoor adventure.
+O.Map is an openstreetmap app for KaiOS, it is a good companion for your next outdoor adventure.
 
 ![badge-release](https://img.shields.io/github/v/release/strukturart/o.map?include_prereleases&style=plastic)
 ![badge-downloads](https://img.shields.io/github/downloads/strukturart/o.map/total)
@@ -118,12 +118,26 @@ If you use the tiles intentisv cache, the app can slow down from around 400mb. T
 
 ## Desktop Version
 
-https://strukturart.github.io/o.map/
+https://omap.strukturart.com
 
 ## How to install
 
 - KaiOS Store
 - Sideloading <a href="https://www.martinkaptein.com/blog/sideloading-and-deploying-apps-to-kai-os/">step-by-step article</a> by martinkaptein
+
+### Build your own
+
+Installing the dependencies<br>
+`npm -i`
+
+Build KaiOS 3 app<br>
+`npm run build`<br>
+
+Build KaiOS 2 app<br>
+`npm run build-k2`<br>
+
+If you want to create a browser version<br>
+`npm run web`
 
 ### Thank you
 

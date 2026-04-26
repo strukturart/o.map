@@ -7,7 +7,13 @@ import {
   top_bar,
   getManifest,
   geolocation,
-  setTabindex,
+  list_files,
+  get_file,
+  downloadFile,
+  pushLocalNotification,
+  share,
+  allowScreenOff,
+  keepScreenOn,
 } from "./assets/js/helper.js";
 import localforage from "localforage";
 import m from "mithril";
@@ -15,7 +21,6 @@ import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 
 import L from "leaflet";
-import "swiped-events";
 import { basic_maps, basic_layers, basic_pois } from "./assets/js/maps.js";
 import "leaflet-gpx";
 import * as turf from "@turf/turf";
@@ -35,11 +40,10 @@ import {
   Settings,
   Upload,
   List,
+  Navigation,
 } from "lucide";
 
 import {
-  osm_server_upload_gpx,
-  osm_delete_gpx,
   osm_get_user,
   osm_server_list_gpx,
   OAuth_osm,
@@ -82,7 +86,19 @@ export let status = {
   selectedMarker: "",
   search_collection: [],
   routingData: [],
+  osmLogged: false,
+  kaiosGPX: [],
+  kaiosGeoJSON: [],
+  gpxFiles: [],
+  loadedFiles: [],
+  automapCenter: false,
+  lastNotification: Date.now(),
 };
+
+const userAgent = navigator.userAgent || "";
+if (userAgent && userAgent.includes("KAIOS")) {
+  status.notKaiOS = false;
+}
 
 let tilesLayer = null;
 let overLayer = null;
@@ -92,10 +108,58 @@ let map = null;
 let mainmarker = null;
 let mainmarkerGroup = null;
 let markersGroup = null;
+
 let trackingLine;
 
-let gpxLocalFiles = localforage.getItem("gpxLocalFiles").then((e) => {
-  return e || [];
+//load custom maps,layers and pois from user
+if (!status.notKaiOS) {
+  list_files("json").then((files) => {
+    files.forEach((file) => {
+      if (file.includes("omap_maps.json")) {
+        get_file(file)
+          .then((data) => {
+            return data.text().then((result) => {
+              let jdata = JSON.parse(result);
+
+              jdata.forEach((item) => {
+                if (item.type == "map") {
+                  basic_maps.push(item);
+                }
+
+                if (item.type == "overlay") {
+                  basic_layers.push(item);
+                }
+
+                if (item.type == "overpass") {
+                  item.query = item.url;
+                  basic_pois.push(item);
+                }
+              });
+            });
+          })
+
+          .catch((e) => {
+            side_toaster(e, 2000);
+          });
+      }
+    });
+  });
+}
+
+localforage.getItem("gpxFiles").then((data) => {
+  if (data) {
+    status.gpxFiles = data || [];
+  } else {
+    status.gpxfiles = [];
+  }
+});
+
+localforage.getItem("search").then((value) => {
+  if (value) {
+    status.search_collection = value;
+  } else {
+    status.search_collection = [];
+  }
 });
 
 let markersLocal = [];
@@ -103,17 +167,23 @@ localforage.getItem("markersLocal").then((e) => {
   markersLocal = e || [];
 });
 
-let gpx_files = localforage.getItem("gpx_files").then((e) => {
-  return e || [];
-});
+if (!status.notKaiOS) {
+  list_files("gpx").then((e) => {
+    if (e) {
+      status.kaiosGPX = e;
+    } else {
+      status.kaiosGPX = [];
+    }
+  });
 
-localforage.getItem("search_collection").then((value) => {
-  if (value) {
-    status.search_collection = value;
-  } else {
-    status.search_collection = [];
-  }
-});
+  list_files("geojson").then((e) => {
+    if (e) {
+      status.kaiosGeoJSON = e;
+    } else {
+      status.kaiosGeoJSON = [];
+    }
+  });
+}
 
 export let settings;
 
@@ -122,8 +192,7 @@ const DEFAULT_SETTINGS = {
   scale: true,
   measurement: "metric",
   radarTime: "1000",
-  routingNotification: false,
-  useOnlyCache: false,
+  routingNotification: true,
   screenlock: false,
   cacheTime: "6",
   cacheZoom: "14",
@@ -143,11 +212,7 @@ localforage.getItem("settings").then((value) => {
   localforage.setItem("settings", settings);
 });
 
-const userAgent = navigator.userAgent || "";
-if (userAgent && userAgent.includes("KAIOS")) {
-  status.notKaiOS = false;
-}
-
+//KaiOS ads
 if (!status.notKaiOS) {
   const scripts = [
     "./assets/js/kaiads.v5.min.js",
@@ -181,9 +246,15 @@ if (status.debug) {
 }
 
 //osm
-
 osm_get_user().then((user) => {
+  if (!user) return;
   status.osmLogged = true;
+
+  osm_server_list_gpx()
+    .then((files) => {
+      status.osm_files = files;
+    })
+    .catch((error) => console.error("Failed:", error));
 });
 
 //kaios button delay
@@ -228,7 +299,7 @@ function MoveMap(direction) {
 
 let getMarkers = async () => {
   // Get the current bounds of the map
-  const bounds = map.getBounds();
+  const bounds = map.getBounds().pad(0.3);
 
   // Get the center of the map for distance calculations
   const mapCenter = map.getCenter();
@@ -239,6 +310,9 @@ let getMarkers = async () => {
   if (m.route.get() == "/mapView") {
     bottom_bar("", "<img class='menu-button' src='assets/image/menu.svg'>", "");
   }
+
+  //close all popups
+  map.closePopup();
 
   // Iterate over all layers on the map
   map.eachLayer(function (layer) {
@@ -283,6 +357,16 @@ function panToNextMarker() {
   // Increment the index and loop back to the start if at the end of the list
   currentMarkerIndex = (currentMarkerIndex + 1) % markers.length;
   status.selectedMarker = markers[currentMarkerIndex];
+  console.log(status.selectedMarker.feature.properties.type);
+  if (status.selectedMarker.feature.properties.type) {
+    if (status.selectedMarker.feature.properties.type == "start") {
+      status.routeSelected = true;
+    }
+
+    if (status.selectedMarker.feature.properties.type == "end") {
+      status.routeSelected = true;
+    }
+  }
   const markerLatLng = status.selectedMarker.getLatLng();
 
   // Open popup for the selected marker
@@ -290,7 +374,6 @@ function panToNextMarker() {
 
   if (popup) {
     const content = popup.getContent();
-    console.log(content);
 
     if (content != "") {
       status.selectedMarker.openPopup();
@@ -321,38 +404,73 @@ function panToNextMarker() {
   }
 }
 
+//folloe Route
+
+const followRoute = () => {
+  if (status.followRoute) {
+    status.followRoute = false;
+    status.followRouteData = "";
+    m.route.set("/mapView");
+    side_toaster("following route stopped", 4000);
+    return;
+  }
+
+  status.followRoute = true;
+  let obj = gpxOverlayer._layers;
+  Object.entries(obj).forEach(([key, value]) => {
+    if (value._path) {
+      status.followRouteData = value._latlngs;
+    }
+  });
+  m.route.set("/mapView");
+  side_toaster("following route started", 4000);
+};
+
 //load files
 let loadFiles = () => {
   const input = document.createElement("input");
+
   input.type = "file";
-  input.accept = ".gpx,.geojson,.json";
+  input.accept = "*/*";
   input.multiple = false;
 
   input.addEventListener("change", async (event) => {
-    const files = event.target.files;
+    const file = event.target.files[0];
 
-    for (let file of files) {
-      try {
-        const content = await file.text();
-        const fileName = file.name;
-        const fileType = file.name.split(".").pop().toLowerCase();
+    if (!file) return;
 
-        if (fileType === "gpx") {
-          try {
-            displayGPX(content).then(() => {});
-            side_toaster("File loaded", 2000);
-          } catch (error) {
-            console.error(`Fehler bei GPX-Konvertierung: ${fileName}`, error);
-          }
-        } else if (fileType === "geojson" || fileType === "json") {
-          const geoJsonData = JSON.parse(content);
-          displayGeoJSONOnMap(geoJsonData, map);
-          side_toaster("File loaded", 2000);
-        }
-      } catch (error) {
-        console.error(`Fehler beim Laden der Datei: ${file.name}`, error);
-        side_toaster("File not loaded", 2000);
+    try {
+      const fileName = file.name || "";
+      const extension = fileName.split(".").pop()?.toLowerCase();
+
+      const allowed = ["gpx", "geojson", "json", "xml"];
+
+      if (!allowed.includes(extension)) {
+        side_toaster("Unsupported file", 2000);
+        return;
       }
+
+      const content = await new Response(file).text();
+
+      if (extension === "gpx" || extension === "xml") {
+        displayGPX(content, true, "loaded", { name: fileName }).then(() => {
+          side_toaster("GPX loaded", 2000);
+        });
+      }
+
+      if (extension === "geojson" || extension === "json") {
+        const geoJsonData = JSON.parse(content);
+
+        displayGeoJSONOnMap(geoJsonData, map, false);
+
+        side_toaster("GeoJSON loaded", 2000);
+      }
+
+      m.route.set("/mapView");
+    } catch (error) {
+      console.error(error);
+
+      side_toaster("File not loaded", 2000);
     }
   });
 
@@ -360,11 +478,7 @@ let loadFiles = () => {
 };
 
 //display GeoJSON
-let displayGeoJSONOnMap = async (
-  geoJsonData,
-  map,
-  addLineEndpoints = false,
-) => {
+let displayGeoJSONOnMap = (geoJsonData, map, addLineEndpoints = false) => {
   geoJsonLayer = L.geoJSON(geoJsonData, {
     style: (feature) => {
       return {
@@ -408,13 +522,8 @@ let displayGeoJSONOnMap = async (
         const startCoord = coords[0];
         const endCoord = coords[coords.length - 1];
 
-        createStartMarker(startCoord[1], startCoord[0]).then((e) => {
-          e.addTo(markersGroup);
-        });
-
-        createEndMarker(endCoord[1], endCoord[0]).then((e) => {
-          e.addTo(markersGroup);
-        });
+        createStartMarker(startCoord[1], startCoord[0]).addTo(markersGroup);
+        createEndMarker(endCoord[1], endCoord[0]).addTo(markersGroup);
       }
     },
   }).addTo(geoJsonLayer);
@@ -428,44 +537,135 @@ let displayGeoJSONOnMap = async (
 
 //display GPX
 
-let displayGPX = async (gpxString) => {
+const displayGPX = (gpxString, store = false, source, extension) => {
   return new Promise((resolve, reject) => {
+    //clean gpx layer
+    if (gpxOverlayer) {
+      gpxOverlayer.clearLayers();
+    }
+
     gpxOverlayer = new L.GPX(gpxString, {
       async: true,
-      polyline_options: { color: "red" },
+      polyline_options: {
+        color: "red",
+      },
       markers: {
         startIcon: null,
         endIcon: null,
         wptIcons: {},
       },
-    })
-      .on("loaded", function (e) {
+    });
+
+    gpxOverlayer
+      .on("loaded", (e) => {
         const gpx = e.target;
-        const latlngs = gpx.getLayers()[0].getLatLngs();
-        if (!latlngs || latlngs.length === 0) {
-          reject("Keine Koordinaten gefunden");
+        const latlngs = gpx.getLayers()[0]?.getLatLngs();
+        let name;
+        if (extension) {
+          name = extension.name;
+        }
+
+        if (!name) {
+          try {
+            name = gpx.get_name();
+          } catch (e) {
+            console.warn("Fehler beim Abrufen des GPX-Namens:", e);
+          }
+        }
+
+        if (!name) {
+          name = "omap-" + dayjs().format("YYYY-MM-DD-HH-mm");
+        }
+
+        if (store && status.notKaiOS) {
+          let file = {
+            date: new Date(),
+            data: gpxString,
+            name: name,
+            type: "GPX",
+            meta: {
+              distance: gpx.get_distance_imp(),
+            },
+            source: source || "loaded",
+          };
+
+          //add more meta data
+          if (extension) {
+            Object.assign(file.meta, extension);
+          }
+
+          status.gpxFiles.unshift(file);
+
+          // Keep max 5 per source
+
+          const counts = {};
+
+          status.gpxFiles = status.gpxFiles.filter((item) => {
+            const src = item.source || "_unknown";
+            counts[src] = (counts[src] || 0) + 1;
+            return counts[src] <= 5;
+          });
+
+          localforage.setItem("gpxFiles", status.gpxFiles);
+        } else {
+          status.loadFileData = {
+            timestamp: new Date(),
+            name: name,
+            distance: gpx.get_distance_imp() || "unknow",
+          };
+        }
+
+        if (store && !status.notKaiOS) {
+          downloadFile(name, gpxString, "", "gpx");
+        }
+
+        if (!latlngs?.length) {
+          reject(new Error("Error"));
           return;
         }
 
         const start = latlngs[0];
         const end = latlngs[latlngs.length - 1];
 
-        let startMarker = createStartMarker(start.lat, start.lng);
-        startMarker.addTo(markersGroup);
+        if (start.lat && start.lng) {
+          createStartMarker(start.lat, start.lng).addTo(gpxOverlayer);
+        }
 
-        let endMarker = createEndMarker(end.lat, end.lng);
-        endMarker.addTo(markersGroup);
+        if (end.lat && end.lng) {
+          createEndMarker(end.lat, end.lng).addTo(gpxOverlayer);
+        }
 
         map.fitBounds(gpx.getBounds());
+        map.addLayer(gpxOverlayer);
 
-        resolve();
+        //store to open at startup
+        status.loadedFiles = [];
+        localforage.setItem("last_gpx", {
+          data: gpxString,
+          timestamp: new Date(),
+          source: source,
+          extension: extension,
+        });
+
+        status.loadedFiles.push(name);
+
+        resolve(gpx);
       })
-      .on("error", function (e) {
-        reject(e);
-      })
-      .addTo(gpxOverlayer);
+      .on("error", reject);
   });
 };
+
+const loadLastGPX = async () => {
+  try {
+    const lastGpx = await localforage.getItem("last_gpx");
+
+    if (lastGpx && lastGpx.data) {
+      await displayGPX(lastGpx.data, false, lastGpx.source, lastGpx.extension);
+    }
+  } catch (error) {}
+};
+
+loadLastGPX();
 
 //overpass pois
 let poiGroup = null;
@@ -522,6 +722,7 @@ let addTilesLayer = (url, maxzoom, attribution) => {
   }
 
   tilesLayer = L.tileLayer(url, {
+    maxNativeZoom: 18,
     maxZoom: maxzoom,
     attribution: attribution,
     useCache: true,
@@ -534,8 +735,6 @@ let addTilesLayer = (url, maxzoom, attribution) => {
     maxzoom: maxzoom,
     attribution: attribution,
   });
-
-  //   tilesLayer.bringToBack();
 
   status.current_tilelayer = url;
 };
@@ -644,7 +843,7 @@ let createPOIMarker = async (lat, lng, popupText) => {
 };
 
 //create start marker
-let createStartMarker = async (lat, lng) => {
+let createStartMarker = (lat, lng) => {
   const marker = L.marker([lat, lng], {
     icon: L.icon({
       iconUrl: startIcon,
@@ -662,13 +861,11 @@ let createStartMarker = async (lat, lng) => {
     },
   };
 
-  marker.on("click", (e) => {});
-
   return marker;
 };
 
 //create end marker
-let createEndMarker = async (lat, lng) => {
+let createEndMarker = (lat, lng) => {
   const marker = L.marker([lat, lng], {
     icon: L.icon({
       iconUrl: endIcon,
@@ -686,20 +883,89 @@ let createEndMarker = async (lat, lng) => {
     },
   };
 
-  marker.on("click", (e) => {});
-
   return marker;
 };
 
 //tracking
+
 let tracking = () => {
+  if (!status.geolocation) {
+    side_toaster("The device cannot be geolocated", 2000);
+    return;
+  }
   if (status.tracking) {
     status.tracking = false;
+
+    let ask = confirm("do you want save ?");
+    if (ask) {
+      const name = dayjs().format("DD-MM-YYYY-HH-mm-ss");
+      let trackingData = trackingDataToGPXString(status.trackigData, name);
+      downloadFile(name, trackingData, null, "gpx").then(() => {
+        side_toaster("saved", 2000);
+      });
+    }
   } else {
     status.tracking = true;
+    status.trackigData = [];
     side_toaster("tracking started", 2000);
   }
+
+  localforage.removeItem("tempTracking");
 };
+
+async function saveTempTracking() {
+  if (status.tracking && status.trackigData.length > 0) {
+    try {
+      await localforage.setItem("tempTracking", status.trackigData);
+      console.log("backup");
+    } catch (error) {
+      console.error(error);
+    }
+  }
+}
+
+function trackingDataToGPXString(trackingData, trackName = "Track") {
+  let gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" xmlns="http://www.topografix.com/GPX/1/1" creator="o.map">
+  <metadata>
+    <name>${trackName}</name>
+    <time>${new Date().toISOString()}</time>
+  </metadata>
+  <trk>
+    <name>${trackName}</name>
+    <trkseg>`;
+
+  trackingData.forEach((point) => {
+    // Korrekte Fallback-Logik
+    let pointTime;
+    try {
+      pointTime = point.timestamp
+        ? new Date(point.timestamp).toISOString()
+        : new Date().toISOString();
+    } catch (e) {
+      pointTime = new Date().toISOString();
+    }
+
+    gpx += `
+      <trkpt lat="${point.latitude}" lon="${point.longitude}">
+        <ele>${point.altitude || 0}</ele>
+        <time>${pointTime}</time>
+        <extensions>
+          <accuracy>${point.accuracy}</accuracy>
+          <speed>${point.speed || 0}</speed>
+          <heading>${point.heading || 0}</heading>
+        </extensions>
+      </trkpt>`;
+  });
+
+  gpx += `
+    </trkseg>
+  </trk>
+</gpx>`;
+
+  return gpx;
+}
+
 //store marker
 let storeMarker = (data) => {
   const markerName = prompt("Name:", "New Marker");
@@ -888,51 +1154,114 @@ const initMap = () => {
     }, 0);
   }
 
-  let crosshair = document.querySelector("div#cross div#cross-inner");
-
   geolocation((e) => {
+    let crosshair = document.querySelector("div#cross-inner");
+
     if (e == "error") {
       if (crosshair) {
         crosshair.classList.add("unavailable");
+        status.geolocation = false;
       }
     } else {
+      status.geolocation = true;
+
       if (crosshair) {
         crosshair.classList.remove("unavailable");
       }
-    }
-    if (!mainmarker) {
-      mainmarker = L.marker([e.coords.latitude, e.coords.longitude], {
-        draggable: false,
-        icon: L.icon({
-          iconUrl: markerIcon,
-          shadowUrl: null,
-          iconSize: [17, 27],
-          iconAnchor: [9, 27],
-          popupAnchor: [0, -14],
-        }),
-      }).addTo(mainmarkerGroup);
-      setTimeout(() => {
-        map.panTo([e.coords.latitude, e.coords.longitude], 16);
-      }, 5000);
-    }
 
-    mainmarker.setLatLng([e.coords.latitude, e.coords.longitude]);
+      if (!mainmarker && e.coords.latitude) {
+        mainmarker = L.marker([e.coords.latitude, e.coords.longitude], {
+          draggable: false,
+          icon: L.icon({
+            iconUrl: markerIcon,
+            shadowUrl: null,
+            iconSize: [17, 27],
+            iconAnchor: [9, 27],
+            popupAnchor: [0, -14],
+          }),
+        }).addTo(mainmarkerGroup);
+        setTimeout(() => {
+          map.panTo([e.coords.latitude, e.coords.longitude], 16);
+        }, 5000);
+      }
 
-    if (e.coords.accuracy < 50) {
-      const point = {
-        latitude: e.coords.latitude,
-        longitude: e.coords.longitude,
-        timestamp: e.timestamp,
-        accuracy: e.coords.accuracy,
-        altitude: e.coords.altitude,
-        speed: e.coords.speed,
-        heading: e.coords.heading,
-      };
+      mainmarker.setLatLng([e.coords.latitude, e.coords.longitude]);
+      if (status.automapCenter) {
+        map.setView([e.coords.latitude, e.coords.longitude], map.getZoom());
+      }
 
-      if (status.tracking) {
-        status.trackigData.push(point);
-        trackingLine.addLatLng([e.coords.latitude, e.coords.longitude]);
-        status.trackingStats = analyzeTrack(status.trackigData);
+      if (e.coords.accuracy < 50) {
+        const point = {
+          latitude: e.coords.latitude,
+          longitude: e.coords.longitude,
+          timestamp: e.timestamp,
+          accuracy: e.coords.accuracy,
+          altitude: e.coords.altitude,
+          speed: e.coords.speed,
+          heading: e.coords.heading,
+        };
+
+        //follow route
+        if (status.followRoute) {
+          let routeCoordinates = status.followRouteData;
+
+          const turfCoordinates = routeCoordinates.map((coord) => [
+            coord.lng,
+            coord.lat,
+          ]);
+
+          const isImperial = settings.measurement === "imperial";
+
+          const unit = isImperial ? "miles" : "meters";
+
+          const threshold = 50;
+
+          const routeLine = turf.lineString(turfCoordinates);
+          const userPoint = turf.point([point.longitude, point.latitude]);
+          const distance = turf.pointToLineDistance(userPoint, routeLine, {
+            units: unit,
+          });
+
+          if (distance > threshold) {
+            let dif = Date.now() - status.lastNotification;
+            if (dif > 60000) {
+              status.lastNotification = Date.now();
+              if (settings.routingNotification)
+                pushLocalNotification("O.map", "Route warning!");
+            }
+          }
+
+          try {
+            if (settings.screenlock) {
+              keepScreenOn();
+            } else {
+              allowScreenOff();
+            }
+          } catch (e) {
+            alert(e);
+          }
+        }
+
+        if (status.tracking) {
+          try {
+            if (settings.screenlock) {
+              keepScreenOn();
+            } else {
+              allowScreenOff();
+            }
+          } catch (e) {
+            alert(e);
+          }
+          status.trackigData.push(point);
+          trackingLine.addLatLng([e.coords.latitude, e.coords.longitude]);
+          status.trackingStats = analyzeTrack(status.trackigData);
+
+          if (m.route.get() == "/trackingView") {
+            m.redraw();
+          }
+
+          saveTempTracking();
+        }
       }
     }
   });
@@ -943,7 +1272,7 @@ initMap();
 //search comp
 const searchService = {
   async search(query) {
-    if (!query || query.length < 5) return [];
+    if (!query || query.length < 3) return [];
 
     try {
       const res = await fetch(
@@ -978,11 +1307,8 @@ const SearchInput = {
           state.query = e.target.value;
 
           state.results = await searchService.search(state.query);
-          try {
-          } catch (e) {}
 
-          // console.log(state.results);
-          // optional: Parent informieren
+          console.log(state.results);
           if (vnode.attrs.onResults) {
             vnode.attrs.onResults(state.results);
           }
@@ -1000,6 +1326,29 @@ const SearchInput = {
               "div",
               {
                 class: "item",
+                tabIndex: 0,
+
+                "data-lat": parseFloat(item.lat),
+                "data-lng": parseFloat(item.lon),
+                "data-text": item.name,
+
+                onkeydown: (event) => {
+                  if (event.key === "Enter") {
+                    state.query = item.display_name;
+                    state.results = [];
+
+                    if (vnode.attrs.onSelect) {
+                      vnode.attrs.onSelect({
+                        lat: parseFloat(item.lat),
+                        lng: parseFloat(item.lon),
+                        name: item.name,
+                        display_name: item.display_name,
+                        addresstype: item.addresstype,
+                      });
+                    }
+                  }
+                },
+
                 onclick: () => {
                   state.query = item.display_name;
                   state.results = [];
@@ -1010,13 +1359,14 @@ const SearchInput = {
                       lng: parseFloat(item.lon),
                       name: item.name,
                       display_name: item.display_name,
+                      addresstype: item.addresstype,
                     });
                   }
                 },
               },
               [
                 m("h3", { class: "result-name" }, item.name || "Unnamed"),
-                m("div", { class: "" }, item.display_name),
+                m("div", { class: "" }, item.addresstype),
               ],
             ),
           ),
@@ -1035,7 +1385,7 @@ let ors = async (from, to, apikey, profile) => {
 
     xhr.open(
       "POST",
-      "https://api.openrouteservice.org/v2/directions/" + profile + "/geojson",
+      "https://api.openrouteservice.org/v2/directions/" + profile + "/gpx",
     );
     xhr.setRequestHeader("Authorization", apikey);
     xhr.setRequestHeader("Content-Type", "application/json");
@@ -1052,7 +1402,7 @@ let ors = async (from, to, apikey, profile) => {
 
     xhr.onload = function () {
       if (xhr.status === 200) {
-        let test = JSON.parse(xhr.response);
+        let test = xhr.response;
         resolve(test);
       } else if (xhr.status === 403) {
         reject(new Error("Forbidden"));
@@ -1159,6 +1509,8 @@ var root = document.getElementById("app");
 var intro = {
   oninit: () => {
     key_delay();
+    document.querySelector("body").style.background = "white";
+    document.querySelector("html").style.background = "white";
   },
   onremove: () => {
     status.viewReady = false;
@@ -1224,6 +1576,10 @@ var intro = {
   },
 };
 
+/*/////////*/
+/*MAP*/
+/*/////////*/
+
 let mapView = {
   handler: function (e) {
     if (e.key === "SoftLeft" || e.key === "Control") {
@@ -1261,8 +1617,32 @@ let mapView = {
       m.route.set("/menuView");
     }
 
+    if (e.key === "0") {
+      const center = map.getCenter();
+      const url = `https://www.openstreetmap.org/?mlat=${center.lat}&mlon=${center.lng}#map=${map.getZoom()}/${center.lat}/${center.lng}`;
+      share(url);
+    }
+
+    if (e.key === "1") {
+      let f = mainmarker.getLatLng();
+      map.setView(f);
+    }
+
     if (e.key === "2") {
       m.route.set("/searchView");
+    }
+
+    if (e.key === "3") {
+      m.route.set("/routingView");
+    }
+
+    if (e.key === "4") {
+      if (status.automapCenter) {
+        status.automapCenter = false;
+      } else {
+        status.automapCenter = true;
+        side_toaster("Map centered on your position", 3000);
+      }
     }
 
     if (e.key === "5") {
@@ -1278,6 +1658,20 @@ let mapView = {
     if (e.key === "*") {
       caching_tiles();
     }
+
+    localforage.getItem("tempTracking").then((e) => {
+      if (e.length > 0) {
+        let ask = confirm(
+          "It looks like the tracking was interrupted unintentionally. If you want to continue, you can — would you like to?",
+        );
+        if (ask) {
+          status.trackigData = e;
+          status.tracking = true;
+        } else {
+          localforage.removeItem("tempTracking");
+        }
+      }
+    });
   },
 
   oncreate: function () {
@@ -1325,6 +1719,23 @@ let mapView = {
         },
       },
       [
+        status.notKaiOS
+          ? m(
+              "button",
+              {
+                id: "follow-icon",
+                onclick: () => {
+                  if (status.automapCenter) {
+                    status.automapCenter = false;
+                  } else {
+                    status.automapCenter = true;
+                    side_toaster("Map centered on your position", 3000);
+                  }
+                },
+              },
+              Icon(Navigation),
+            )
+          : null,
         m("div", { id: "map-info" }, ""),
         m(
           "div",
@@ -1373,6 +1784,10 @@ let mapView = {
   },
 };
 
+/*/////////*/
+/*MENU*/
+/*/////////*/
+
 var menuView = {
   handler: function (e) {
     if (e.key === "SoftLeft" || e.key === "Control") {
@@ -1401,7 +1816,7 @@ var menuView = {
     return m(
       "div",
       {
-        class: "row panel",
+        class: "row panel not-scroll",
         id: "menu",
       },
       [
@@ -1422,7 +1837,7 @@ var menuView = {
         m(
           "button",
           {
-            tabIndex: 1,
+            tabIndex: 0,
             class: "item col-xs-3",
             onclick: () => {
               m.route.set("/poiView");
@@ -1433,7 +1848,7 @@ var menuView = {
         m(
           "button",
           {
-            tabIndex: 2,
+            tabIndex: 0,
             class: "item col-xs-3",
             onclick: () => {
               m.route.set("/searchView");
@@ -1441,21 +1856,23 @@ var menuView = {
           },
           Icon(Search),
         ),
+        status.notKaiOS
+          ? m(
+              "button",
+              {
+                tabIndex: 0,
+                class: "item col-xs-3",
+                onclick: () => {
+                  loadFiles();
+                },
+              },
+              Icon(Upload),
+            )
+          : null,
         m(
           "button",
           {
-            tabIndex: 3,
-            class: "item col-xs-3",
-            onclick: () => {
-              loadFiles();
-            },
-          },
-          Icon(Upload),
-        ),
-        m(
-          "button",
-          {
-            tabIndex: 4,
+            tabIndex: 0,
             class: "item col-xs-3",
             onclick: () => {
               m.route.set("/filesView");
@@ -1467,7 +1884,7 @@ var menuView = {
         m(
           "button",
           {
-            tabIndex: 5,
+            tabIndex: 0,
             class: "item col-xs-3",
             onclick: () => {
               m.route.set("/trackingView");
@@ -1478,7 +1895,7 @@ var menuView = {
         m(
           "button",
           {
-            tabIndex: 6,
+            tabIndex: 0,
             class: "item col-xs-3",
             onclick: () => {
               m.route.set("/routingView");
@@ -1489,7 +1906,7 @@ var menuView = {
         m(
           "button",
           {
-            tabIndex: 7,
+            tabIndex: 0,
             class: "item col-xs-3",
             onclick: () => {
               m.route.set("/settingsView");
@@ -1500,7 +1917,7 @@ var menuView = {
         m(
           "button",
           {
-            tabIndex: 8,
+            tabIndex: 0,
             class: "item col-xs-3",
             onclick: () => {
               m.route.set("/keyView");
@@ -1511,7 +1928,7 @@ var menuView = {
         m(
           "button",
           {
-            tabIndex: 9,
+            tabIndex: 0,
             class: "item col-xs-3",
             onclick: () => {
               m.route.set("/aboutView");
@@ -1523,6 +1940,10 @@ var menuView = {
     );
   },
 };
+
+/*/////////*/
+/*LAYERS*/
+/*/////////*/
 
 var imageryView = {
   handler: function (e) {
@@ -1642,6 +2063,10 @@ var imageryView = {
   },
 };
 
+/*/////////*/
+/*OPTIONS*/
+/*/////////*/
+
 var optionsView = {
   handler: function (e) {
     if (e.key === "SoftLeft" || e.key === "Control") {
@@ -1685,31 +2110,61 @@ var optionsView = {
       "div",
       {
         class: "panel row center-xs",
-        name: "Poi",
-        id: "poi",
+        name: "options",
+        id: "options",
         tabindex: 0,
       },
       [
         m("div", { class: "col-xs-8 col-md-3" }, [
-          m(
-            "button",
-            {
-              oncreate: (vnode) => {
-                vnode.dom.focus();
-              },
-              class: "item",
-              onclick: () => {
-                storeMarker(status.selectedMarker);
-              },
-            },
-            "save",
-          ),
-          m("button", { class: "item", onclick: () => {} }, "delete"),
+          status.routeSelected
+            ? m(
+                "button",
+                {
+                  oncreate: (vnode) => {
+                    vnode.dom.focus();
+                    if (status.followRoute) {
+                      vnode.dom.textContent = "Stop follow route";
+                    }
+                  },
+                  class: "item",
+                  onclick: () => {
+                    followRoute();
+                  },
+                },
+                "Follow route",
+              )
+            : null,
+          status.routeSelected
+            ? null
+            : m(
+                "button",
+                {
+                  oncreate: (vnode) => {},
+                  class: "item",
+                  onclick: () => {
+                    storeMarker(status.selectedMarker);
+                  },
+                },
+                "save",
+              ),
+          status.routeSelected
+            ? null
+            : m("button", { class: "item", onclick: () => {} }, "delete"),
+          status.routeSelected
+            ? null
+            : m("div", "Name " + status.loadFileData.name),
+          status.routeSelected
+            ? null
+            : m("div", "Distance " + status.loadFileData.distamnce),
         ]),
       ],
     );
   },
 };
+
+/*/////////*/
+/*POI*/
+/*/////////*/
 
 var poiView = {
   handler: function (e) {
@@ -1787,6 +2242,10 @@ var poiView = {
   },
 };
 
+/*/////////*/
+/*FILES*/
+/*/////////*/
+
 var filesView = {
   handler: function (e) {
     if (e.key === "SoftLeft" || e.key === "Control") {
@@ -1797,15 +2256,6 @@ var filesView = {
   },
 
   oncreate: function () {
-    status.osm_files = [];
-
-    osm_server_list_gpx()
-      .then((files) => {
-        status.osm_files = files;
-        m.redraw();
-      })
-      .catch((error) => console.error("Failed:", error));
-
     bottom_bar(
       "<img class='map-button' src='assets/image/map.svg'>",
       "",
@@ -1848,51 +2298,255 @@ var filesView = {
         },
       },
       [
-        m("div", { class: "col-xs-11 col-md-3" }, [
-          m("div", { class: "col-xs-11" }, [m("h2", "MARKERS")]),
-          m("div", { class: "col-xs-11" }, [
+        m("div", { class: "col-xs-12 col-md-3" }, [
+          m("div", { class: "col-xs-12" }, [m("h2", "MARKERS")]),
+          m("div", { class: "col-xs-12" }, [
             m("div", [
-              markersLocal.map((item, index) => {
-                return m(
-                  "button",
-                  {
-                    onclick: () => {
-                      const [lng, lat] = item.geometry.coordinates;
-                      createPOIMarker(lat, lng, item.properties.name).then(
-                        (e) => {
-                          e.addTo(markersGroup);
+              markersLocal.length
+                ? markersLocal.map((item, index) => {
+                    return m(
+                      "button",
+                      {
+                        class: "item",
+                        tabIndex: 0,
+                        oncreate: (vnode) => {
+                          if (index == 0) {
+                            vnode.dom.focus();
+                          }
                         },
-                      );
+                        onclick: () => {
+                          const [lng, lat] = item.geometry.coordinates;
+                          createPOIMarker(lat, lng, item.properties.name).then(
+                            (e) => {
+                              e.addTo(markersGroup);
+                              map.setView([lat, lng], 14);
 
-                      map.setView([lat, lng], 14);
-
-                      m.route.set("/mapView");
-                    },
-                  },
-                  item.properties.name || "unknow",
-                );
-              }),
+                              m.route.set("/mapView");
+                            },
+                          );
+                        },
+                      },
+                      item.properties.name || "unknow",
+                    );
+                  })
+                : m("div", { class: "small" }, "No markers stored"),
             ]),
           ]),
 
-          !status.notKaiOS
-            ? m("div", { class: "col-xs-11" }, [
-                m("h2", "GPX", { oncreate: () => {} }),
+          !status.notKaiOS && status.kaiosGPX.length
+            ? m("div", { class: "col-xs-12" }, [
+                m("h2", "GPX"),
+                m(
+                  "div",
+                  status.kaiosGPX.map((item) => {
+                    return m(
+                      "button",
+                      {
+                        class: "item",
+
+                        oncreate: (vnode) => {
+                          if (
+                            status.loadedFiles.includes(item.split("/").pop())
+                          ) {
+                            vnode.dom.classList.add("activ");
+                          }
+                        },
+
+                        onclick: (e) => {
+                          const button = e.currentTarget;
+
+                          if (button.classList.contains("activ")) {
+                            button.classList.remove("activ");
+                            if (gpxOverlayer) {
+                              gpxOverlayer.clearLayers();
+                            }
+                            return;
+                          }
+
+                          get_file(item)
+                            .then((data) => {
+                              return data.text().then((gpxText) => {
+                                displayGPX(gpxText).then(() => {
+                                  m.route.set("/mapView");
+
+                                  button.classList.add("activ");
+                                  status.loadedFiles = [];
+                                  status.loadedFiles.push(
+                                    item.split("/").pop(),
+                                  );
+                                });
+                              });
+                            })
+
+                            .catch((e) => {
+                              side_toaster(e, 2000);
+                            });
+                        },
+                      },
+                      item.split("/").pop(),
+                    );
+                  }),
+                ),
               ])
             : null,
-          m("div", { class: "col-xs-11" }, [
+
+          status.notKaiOS && status.gpxFiles.length
+            ? m("div", { class: "col-xs-12" }, [
+                m("h2", "GPX"),
+                m(
+                  "div",
+                  status.gpxFiles.map((item) => {
+                    if (item.source != "routing")
+                      return m(
+                        "button",
+                        {
+                          class: "item",
+                          oncreate: (vnode) => {
+                            if (status.loadedFiles.includes(item.name)) {
+                              vnode.dom.classList.add("activ");
+                            }
+                          },
+                          onclick: (e) => {
+                            const button = e.currentTarget;
+
+                            if (button.classList.contains("activ")) {
+                              button.classList.remove("activ");
+                              if (gpxOverlayer) {
+                                gpxOverlayer.clearLayers();
+                              }
+                              return;
+                            }
+
+                            displayGPX(item.data, false)
+                              .then(() => {
+                                button.classList.add("activ");
+                                status.loadedFiles = [];
+                                status.loadedFiles.push(item.name);
+                                m.route.set("/mapView");
+                              })
+                              .catch((e) => {
+                                console.error(e);
+                                side_toaster("Could not be loaded", 3000);
+                              });
+                          },
+                        },
+                        item.name,
+                      );
+                  }),
+                ),
+              ])
+            : null,
+
+          status.notKaiOS && status.gpxFiles.length
+            ? m("div", { class: "col-xs-12" }, [
+                m("h2", "Routing"),
+                m(
+                  "div",
+                  status.gpxFiles.map((item) => {
+                    if (item.source == "routing")
+                      return m(
+                        "button",
+                        {
+                          class: "item",
+
+                          oncreate: (vnode) => {
+                            if (status.loadedFiles.includes(item.name)) {
+                              vnode.dom.classList.add("activ");
+                            }
+                          },
+
+                          onclick: (e) => {
+                            const button = e.currentTarget;
+
+                            if (button.classList.contains("activ")) {
+                              button.classList.remove("activ");
+                              if (gpxOverlayer) {
+                                gpxOverlayer.clearLayers();
+                              }
+                              return;
+                            }
+
+                            displayGPX(item.data, false)
+                              .then(() => {
+                                m.route.set("/mapView");
+                                button.classList.add("activ");
+                                status.loadedFiles = [];
+                                status.loadedFiles.push(item.name);
+                              })
+                              .catch((e) => {
+                                side_toaster("Could not be loaded", 3000);
+                              });
+                          },
+                        },
+                        item.name,
+                      );
+                  }),
+                ),
+              ])
+            : null,
+
+          !status.notKaiOS && status.kaiosGeoJSON.length
+            ? m("div", { class: "col-xs-12" }, [
+                m("h2", "GeoJSON"),
+                m(
+                  "div",
+                  status.kaiosGeoJSON.map((item) => {
+                    return m(
+                      "button",
+                      {
+                        class: "item",
+                        onclick: () => {
+                          get_file(item).then((blob) => {
+                            blob.text().then((text) => {
+                              const geoJsonData = JSON.parse(text);
+
+                              displayGeoJSONOnMap(geoJsonData, map, false);
+                              m.route.set("/mapView");
+                            });
+                          });
+                        },
+                      },
+                      item.split("/").pop(),
+                    );
+                  }),
+                ),
+              ])
+            : null,
+
+          m("div", { class: "col-xs-12" }, [
             m("h2", {}, "OSM FILES"),
+
             status.osmLogged
               ? m("div", [
                   status.osm_files.map((e) => {
                     return m(
                       "button",
                       {
-                        onclick: () => {
+                        class: "item",
+
+                        oncreate: (vnode) => {
+                          if (status.loadedFiles.includes(e.name)) {
+                            vnode.dom.classList.add("activ");
+                          }
+                        },
+
+                        onclick: (event) => {
+                          const button = event.currentTarget;
+
+                          if (button.classList.contains("activ")) {
+                            button.classList.remove("activ");
+                            if (gpxOverlayer) {
+                              gpxOverlayer.clearLayers();
+                            }
+                            return;
+                          }
                           osm_server_load_gpx(e.id, e.name).then((data) => {
                             displayGPX(data)
                               .then(() => {
                                 m.route.set("/mapView");
+                                button.classList.add("activ");
+                                status.loadedFiles = [];
+                                status.loadedFiles.push(e.name);
                               })
                               .catch((e) => {
                                 side_toaster("Could not be loaded", 3000);
@@ -1904,13 +2558,21 @@ var filesView = {
                     );
                   }),
                 ])
-              : "",
+              : m(
+                  "div",
+                  { class: "small" },
+                  "You are not logged in to your OpenStreetMap account",
+                ),
           ]),
         ]),
       ],
     );
   },
 };
+
+/*/////////*/
+/*TRACKING*/
+/*/////////*/
 
 var trackingView = {
   handler: function (e) {
@@ -2026,6 +2688,10 @@ var trackingView = {
   },
 };
 
+/*/////////*/
+/*SEARCH*/
+/*/////////*/
+
 let searchView = {
   handler: function (e) {
     if (e.key === "SoftLeft" || e.key === "Control") {
@@ -2071,28 +2737,7 @@ let searchView = {
       {
         class: "panel row center-xs",
         id: "search",
-        oncreate: (vnode) => {
-          key_delay();
-
-          bottom_bar(
-            "<img class='map-button' src='assets/image/map.svg'>",
-            "",
-            "<img class='menu-button' src='assets/image/menu.svg'>",
-          );
-          top_bar("", "", "");
-
-          document
-            .querySelector(".map-button")
-            .addEventListener("click", () => {
-              m.route.set("/mapView");
-            });
-
-          document
-            .querySelector(".menu-button")
-            .addEventListener("click", () => {
-              m.route.set("/menuView");
-            });
-        },
+        oncreate: () => {},
 
         onkeydown: (e) => {
           if (e.key === "Enter") {
@@ -2107,29 +2752,24 @@ let searchView = {
 
             m.route.set("/mapView");
           }
-
-          if (e.key === "SoftLeft" || e.key === "Control") {
-            m.route.set("/mapView");
-          }
-
-          if (e.key === "SoftRight" || e.key === "Alt") {
-            m.route.set("/menuView");
-          }
         },
       },
       [
         m("div", { class: "col-xs-12 col-md-3" }, [
+          m("div", { class: "item" }),
           m(SearchInput, {
             class: "col-xs-11",
             placeholder: "search",
+            tabIndex: 0,
             oncreate: () => {
               document.querySelector("input").focus();
             },
+
             onSelect: (item) => {
               status.search_collection.push(item);
               localforage
                 .setItem("search", status.search_collection)
-                .then((data) => {
+                .then((item) => {
                   createPOIMarker(item.lat, item.lng, item.name).addTo(
                     markersGroup,
                   );
@@ -2139,36 +2779,49 @@ let searchView = {
             },
           }),
 
-          m("div", { class: "col-xs-12", tabIndex: 0 }, [
-            status.search_collection.map((e) => {
-              return m(
-                "div",
-                {
-                  class: "item",
-                  tabIndex: 0,
-                  onclick: () => {
+          status.search_collection.length
+            ? m("div", { class: "col-xs-12" }, [
+                status.search_collection.map((e) => {
+                  const handleClick = () => {
                     createPOIMarker(e.lat, e.lng, e.name).then((e) => {
                       e.addTo(markersGroup);
                     });
                     map.setView([e.lat, e.lng], 14);
                     m.route.set("/mapView");
-                  },
-                },
-                [m("h3", e.name), m("div", e.display_name)],
-              );
-            }),
-          ]),
+                  };
+
+                  return m(
+                    "button",
+                    {
+                      class: "item",
+                      tabIndex: 0,
+                      "data-lat": e.lat,
+                      "data-lng": e.lng,
+                      "data-text": e.lname,
+                    },
+                    [
+                      m(
+                        "h3",
+                        {
+                          onclick: handleClick,
+                        },
+                        e.name,
+                      ),
+                      m("div", { onclick: handleClick }, e.addresstype),
+                    ],
+                  );
+                }),
+              ])
+            : null,
         ]),
       ],
     );
   },
 };
 
-localforage.getItem("routingData").then((data) => {
-  if (data) {
-    status.routingData = data || [];
-  }
-});
+/*/////////*/
+/*ROUTING*/
+/*/////////*/
 
 var routingView = {
   handler: function (e) {
@@ -2187,23 +2840,27 @@ var routingView = {
     );
     top_bar("", "", "");
 
-    document.querySelector(".map-button").addEventListener("click", () => {
-      m.route.set("/mapView");
-    });
+    const mapBtn = document.querySelector(".map-button");
+    const menuBtn = document.querySelector(".menu-button");
 
-    document.querySelector(".menu-button").addEventListener("click", () => {
-      m.route.set("/menuView");
-    });
+    if (mapBtn) {
+      mapBtn.addEventListener("click", () => {
+        m.route.set("/mapView");
+      });
+    }
 
-    // Keyboard events hier registrieren
-    document.addEventListener("keydown", this.handler.bind(this));
+    if (menuBtn) {
+      menuBtn.addEventListener("click", () => {
+        m.route.set("/menuView");
+      });
+    }
+
+    document.addEventListener("keydown", this.handler);
   },
 
   onremove: function () {
     document.removeEventListener("keydown", this.handler);
   },
-
-  oninit: () => {},
 
   view: function () {
     return m(
@@ -2215,13 +2872,13 @@ var routingView = {
         tabindex: 0,
       },
       [
-        m("div", { class: "col-xs-11 col-md-3" }, [
+        m("div", { class: "col-xs-12 col-md-3" }, [
           // 🔹 PROFILE
           m("div", { class: "row center-xs" }, [
             m("div", { class: "col-xs-11" }, [
               m("h2", "Profile"),
 
-              m("div", { class: "item input-parent" }, [
+              m("div", { class: "item input-parent", tabIndex: 0 }, [
                 m("label", { for: "routing-profile" }, "choose profile"),
 
                 m(
@@ -2256,7 +2913,9 @@ var routingView = {
                 placeholder: "search from",
                 onSelect: (item) => {
                   status.routingFrom = item;
-                  console.log(item);
+                },
+                oncreate: () => {
+                  document.querySelector("input").focus();
                 },
               }),
             ]),
@@ -2269,7 +2928,6 @@ var routingView = {
                 placeholder: "search to",
                 onSelect: (item) => {
                   status.routingTo = item;
-                  console.log(item);
                   let from = [status.routingFrom.lng, status.routingFrom.lat];
                   let to = [status.routingTo.lng, status.routingTo.lat];
 
@@ -2279,87 +2937,19 @@ var routingView = {
                     process.env.ORS_KEY,
                     settings.routingProfile,
                   ).then((e) => {
-                    if (
-                      e.features &&
-                      e.features[0] &&
-                      e.features[0].properties
-                    ) {
-                      e.features[0].properties.from =
-                        status.routingFrom.name || "";
-                      e.features[0].properties.to = status.routingTo.name || "";
-                    }
-                    if (Array.isArray(status.routingData)) {
-                      status.routingData.push(e);
-                      localforage.setItem("routingData", status.routingData);
-                    }
+                    let data = {
+                      "from": status.routingFrom.name,
+                      "to": status.routingTo.name,
+                      "name":
+                        status.routingFrom.name + "-" + status.routingTo.name,
+                    };
 
-                    displayGeoJSONOnMap(e, map, true);
-                    m.route.set("/mapView");
+                    displayGPX(e, true, "routing", data).then((e) => {
+                      m.route.set("/mapView");
+                    });
                   });
                 },
               }),
-            ]),
-          ]),
-
-          m("div", { class: "row center-xs" }, [
-            m("div", { class: "col-xs-12" }, [
-              m(
-                "div",
-                { class: "row" },
-                status.routingData.map((e) => [
-                  m(
-                    "div",
-                    {
-                      class: "row between-xs debug item",
-                      onclick: (vnode) => {
-                        displayGeoJSONOnMap(e, map, true);
-                        m.route.set("/mapView");
-                      },
-                      tabIndex: 0,
-                    },
-                    [
-                      m("div", { class: "col-xs-3 text-algin-left" }, "From"),
-                      m(
-                        "div",
-                        { class: "col-xs-7" },
-                        e.features[0].properties.from || "",
-                      ),
-                      m("div", { class: "col-xs-3 text-algin-left" }, "To"),
-                      m(
-                        "div",
-                        { class: "col-xs-7" },
-                        e.features[0].properties.to || "",
-                      ),
-                      m("div", { class: "col-xs-3 text-algin-left" }, "Ascent"),
-                      m(
-                        "div",
-                        { class: "col-xs-7" },
-                        e.features[0].properties.ascent,
-                      ),
-                      m(
-                        "div",
-                        { class: "col-xs-3 text-algin-left" },
-                        "Descent",
-                      ),
-                      m(
-                        "div",
-                        { class: "col-xs-7" },
-                        e.features[0].properties.descent,
-                      ),
-                      m(
-                        "div",
-                        { class: "col-xs-3 text-algin-left" },
-                        "Distance",
-                      ),
-                      m(
-                        "div",
-                        { class: "col-xs-7" },
-                        e.features[0].properties.summary.distance,
-                      ),
-                    ],
-                  ),
-                ]),
-              ),
             ]),
           ]),
         ]),
@@ -2367,6 +2957,10 @@ var routingView = {
     );
   },
 };
+
+/*/////////*/
+/*KEYS*/
+/*/////////*/
 
 var keyView = {
   handler: function (e) {
@@ -2410,29 +3004,61 @@ var keyView = {
       [
         m(
           "div",
-          { class: "col-xs-10 col-md-3" },
-          m("div", { class: "item row between-xs" }, [
-            m("kbd", { class: "col-xs-1" }, "2"),
+          { class: "col-xs-12 col-md-3" },
+
+          m("div", { class: "item row between-xs no-background-item" }, [
+            m("kbd", { class: "col-xs-2" }, "0"),
+            m("span", "share position"),
+          ]),
+          m("div", { class: "item row between-xs no-background-item" }, [
+            m("kbd", { class: "col-xs-2" }, "1"),
+            m("span", "center map"),
+          ]),
+          m("div", { class: "item row between-xs no-background-item" }, [
+            m("kbd", { class: "col-xs-2" }, "2"),
             m("span", "search"),
           ]),
 
-          m("div", { class: "item row between-xs" }, [
-            m("kbd", { class: "col-xs-1" }, "5"),
+          m("div", { class: "item row between-xs no-background-item" }, [
+            m("kbd", { class: "col-xs-2" }, "3"),
+            m("span", "Routing"),
+          ]),
+
+          m("div", { class: "item row between-xs no-background-item" }, [
+            m("kbd", { class: "col-xs-2" }, "4"),
+            m("span", "Auto center map"),
+          ]),
+
+          m("div", { class: "item row between-xs no-background-item" }, [
+            m("kbd", { class: "col-xs-2" }, "5"),
             m("span", "set marker"),
           ]),
-          m("div", { class: "item row between-xs" }, [
-            m("kbd", { class: "col-xs-1" }, "*"),
+          m("div", { class: "item row between-xs no-background-item" }, [
+            m("kbd", { class: "col-xs-2" }, "*"),
             m("span", "download tiles"),
           ]),
-          m("div", { class: "item row between-xs" }, [
-            m("kbd", { class: "col-xs-1" }, "#"),
+          m("div", { class: "item row between-xs no-background-item" }, [
+            m("kbd", { class: "col-xs-2" }, "#"),
             m("span", "select marker"),
           ]),
+          m("div", {
+            id: "KaiOSads-Wrapper",
+            class: "",
+            tabindex: 0,
+
+            oncreate: () => {
+              load_ads();
+            },
+          }),
         ),
       ],
     );
   },
 };
+
+/*/////////*/
+/*ABOUT*/
+/*/////////*/
 
 var aboutView = {
   handler: function (e) {
@@ -2456,6 +3082,9 @@ var aboutView = {
     });
 
     document.addEventListener("keydown", this.handler);
+
+    document.querySelector("html").style.overflow = "scroll";
+    document.querySelector("body").style.overflow = "scroll";
   },
 
   onremove: function () {
@@ -2469,8 +3098,17 @@ var aboutView = {
         name: "About",
         id: "about",
         tabindex: 0,
-        oncreate: (vnode) => vnode.dom.focus(),
-        onkeydown: (e) => {},
+        oncreate: (vnode) => {
+          vnode.dom.focus();
+          document.querySelector("body").style.overflow = "scroll";
+          document.querySelector("html").style.overflow = "scroll";
+          document.querySelector("#app").style.overflow = "scroll";
+        },
+        onremove: () => {
+          document.querySelector("body").style.overflow = "hidden";
+          document.querySelector("html").style.overflow = "hidden";
+          document.querySelector("#app").style.overflow = "hidden";
+        },
       },
       [
         m("div", { class: "col-xs-9 col-md-3" }, [
@@ -2480,7 +3118,7 @@ var aboutView = {
           ]),
 
           // Maps and Layers
-          m("div", [
+          m("div", { style: "margin-top:10px" }, [
             m("h2", "Maps and Layers"),
             m(
               "div",
@@ -2505,7 +3143,7 @@ var aboutView = {
           ]),
 
           // License
-          m("div", [
+          m("div", { style: "margin-top:10px" }, [
             m("h2", "License"),
             m(
               "div",
@@ -2535,7 +3173,7 @@ var aboutView = {
           ]),
 
           // Privacy Policy
-          m("div", [
+          m("div", { style: "margin-top:10px" }, [
             m("h2", "Privacy Policy"),
             m(
               "div",
@@ -2544,7 +3182,7 @@ var aboutView = {
           ]),
 
           // Thank You
-          m("div", [
+          m("div", { style: "margin-top:10px" }, [
             m("h2", "Thank You!"),
             m(
               "div",
@@ -2557,6 +3195,10 @@ var aboutView = {
   },
 };
 
+/*/////////*/
+/*SETTINGS*/
+/*/////////*/
+
 var settingsView = {
   handler: function (e) {
     if (e.key === "SoftLeft" || e.key === "Control") {
@@ -2566,7 +3208,7 @@ var settingsView = {
     }
   },
 
-  oncreate: () => {
+  oncreate: function () {
     bottom_bar(
       "<img class='map-button' src='assets/image/map.svg'>",
       "",
@@ -2574,13 +3216,22 @@ var settingsView = {
     );
     top_bar("", "", "");
 
-    document.querySelector(".map-button").addEventListener("click", () => {
-      m.route.set("/mapView");
-    });
+    const mapBtn = document.querySelector(".map-button");
+    const menuBtn = document.querySelector(".menu-button");
 
-    document.querySelector(".menu-button").addEventListener("click", () => {
-      m.route.set("/menuView");
-    });
+    if (mapBtn) {
+      mapBtn.addEventListener("click", () => {
+        m.route.set("/mapView");
+      });
+    }
+
+    if (menuBtn) {
+      menuBtn.addEventListener("click", () => {
+        m.route.set("/menuView");
+      });
+    }
+
+    document.addEventListener("keydown", this.handler);
   },
 
   onremove: function () {
@@ -2600,212 +3251,220 @@ var settingsView = {
         id: "settings",
       },
       [
-        m("div", { class: "settings-container row center-xs" }, [
-          m("div", { class: "col-xs-12 col-md-3" }, [
-            // ===== Crosshair =====
-            m("section", [
-              m("h2", "Crosshair"),
-              m(
-                "label",
-                {
-                  class: "item input-parent row middle-xs between-xs",
-                  tabIndex: 0,
-                  oncreate: (vnode) => {
-                    vnode.dom.focus();
-                  },
-                },
-                [
-                  m("div", { class: "label-text" }, "show crosshair ?"),
-                  m("span", { class: "toggle" }, [
-                    m("input", {
-                      type: "checkbox",
-                      checked: settings.crosshair,
-                      onchange: (e) => (settings.crosshair = e.target.checked),
-                    }),
-                    m("span", { class: "slider" }),
-                  ]),
-                ],
-              ),
-            ]),
-
-            // ===== Scale =====
-            m("section", [
-              m("h2", "Scale"),
-              m(
-                "label",
-                {
-                  class: "item input-parent row middle-xs between-xs",
-                  tabIndex: 0,
-                },
-                [
-                  m("div", { class: "label-text" }, "show scale ?"),
-                  m("span", { class: "toggle" }, [
-                    m("input", {
-                      type: "checkbox",
-                      checked: settings.scale,
-                      onchange: (e) => (settings.scale = e.target.checked),
-                    }),
-                    m("span", { class: "slider" }),
-                  ]),
-                ],
-              ),
-            ]),
-
-            // ===== Unit =====
-            m("section", [
-              m("h2", "Unit of measurement"),
-
-              m("div", { class: "item input-parent", tabIndex: 0 }, [
-                m("label", { for: "measurement-unit" }, "choose unit system"),
-
+        m(
+          "div",
+          {
+            class: "settings-container row center-xs",
+            style: "padding-bottom:200px",
+          },
+          [
+            m("div", { class: "col-xs-12 col-md-3" }, [
+              // ===== Crosshair =====
+              m("section", [
+                m("h2", "Crosshair"),
                 m(
-                  "select",
+                  "label",
                   {
-                    id: "measurement-unit",
-                    class: "select-box",
-                    value: settings.measurement,
-                    onchange: (e) => {
-                      settings.measurement = e.target.value;
+                    class: "item input-parent row middle-xs between-xs",
+                    tabIndex: 0,
+                    oncreate: (vnode) => {
+                      setTimeout(() => {
+                        vnode.dom.focus();
+                      }, 1000);
                     },
                   },
                   [
-                    m("option", { value: "metric" }, "metric"),
-                    m("option", { value: "imperial" }, "imperial"),
+                    m("div", { class: "label-text" }, "show crosshair ?"),
+                    m("span", { class: "toggle" }, [
+                      m("input", {
+                        type: "checkbox",
+                        checked: settings.crosshair,
+                        onchange: (e) =>
+                          (settings.crosshair = e.target.checked),
+                      }),
+                      m("span", { class: "slider" }),
+                    ]),
                   ],
                 ),
               ]),
-            ]),
 
-            // ===== OSM =====
-
-            m("section", [
-              m("h2", "Openstreetmap"),
-              m(
-                "button",
-                {
-                  class: "item",
-                  tabIndex: 0,
-
-                  oncreate: (vnode) => {
-                    if (status.osmLogged) {
-                      vnode.dom.remove();
-                    }
-                  },
-                  onclick: () => {
-                    OAuth_osm();
-                  },
-                },
-                "Login",
-              ),
-
-              m(
-                "button",
-                {
-                  class: "item",
-                  tabIndex: 0,
-
-                  oncreate: (vnode) => {
-                    if (!status.osmLogged) {
-                      vnode.dom.remove();
-                    }
-                  },
-                  onclick: () => {
-                    localforage.removeItem("osm_user");
-                    localforage.removeItem("osm_token");
-                  },
-                },
-                "Logout",
-              ),
-            ]),
-
-            // ===== Weather radar =====
-            m("section", [
-              m("h2", "Weather radar layer"),
-
-              m("div", { class: "item input-parent", tabIndex: 0 }, [
+              // ===== Scale =====
+              m("section", [
+                m("h2", "Scale"),
                 m(
                   "label",
-                  { for: "radar-time" },
-                  "After what time to switch radar images?",
-                ),
-                m(
-                  "select",
                   {
-                    id: "radar-time",
-                    class: "select-box",
-                    value: settings.radarTime,
-                    onchange: (e) => (settings.radarTime = e.target.value),
+                    class: "item input-parent row middle-xs between-xs",
+                    tabIndex: 0,
                   },
                   [
-                    m("option", { value: "200" }, "200 ms"),
-                    m("option", { value: "500" }, "500 ms"),
-                    m("option", { value: "750" }, "750 ms"),
-                    m("option", { value: "1000" }, "1 s"),
-                    m("option", { value: "1500" }, "1.5 s"),
-                    m("option", { value: "2000" }, "2 s"),
-                    m("option", { value: "3000" }, "3 s"),
-                    m("option", { value: "4000" }, "4 s"),
+                    m("div", { class: "label-text" }, "show scale ?"),
+                    m("span", { class: "toggle" }, [
+                      m("input", {
+                        type: "checkbox",
+                        checked: settings.scale,
+                        onchange: (e) => (settings.scale = e.target.checked),
+                      }),
+                      m("span", { class: "slider" }),
+                    ]),
+                  ],
+                ),
+              ]),
+
+              // ===== Unit =====
+              m("section", [
+                m("h2", "Unit of measurement"),
+
+                m("div", { class: "item input-parent", tabIndex: 0 }, [
+                  m("label", { for: "measurement-unit" }, "choose unit system"),
+
+                  m(
+                    "select",
+                    {
+                      id: "measurement-unit",
+                      class: "select-box",
+                      value: settings.measurement,
+                      onchange: (e) => {
+                        settings.measurement = e.target.value;
+                      },
+                    },
+                    [
+                      m("option", { value: "metric" }, "metric"),
+                      m("option", { value: "imperial" }, "imperial"),
+                    ],
+                  ),
+                ]),
+              ]),
+
+              // ===== OSM =====
+
+              m("section", [
+                m("h2", "Openstreetmap"),
+                !status.osmLogged
+                  ? m(
+                      "button",
+                      {
+                        class: "item",
+                        tabIndex: 0,
+
+                        oncreate: (vnode) => {},
+                        onclick: () => {
+                          OAuth_osm();
+                        },
+                      },
+                      "Login",
+                    )
+                  : null,
+
+                status.osmLogged
+                  ? m(
+                      "button",
+                      {
+                        class: "item",
+                        tabIndex: 0,
+
+                        onclick: () => {
+                          localforage.removeItem("osm_user");
+                          localforage.removeItem("osm_token");
+                          status.osmLogged = false;
+                          m.redraw();
+                        },
+                      },
+                      "Logout",
+                    )
+                  : null,
+              ]),
+
+              // ===== Weather radar =====
+              m("section", [
+                m("h2", "Weather radar layer"),
+
+                m("div", { class: "item input-parent", tabIndex: 0 }, [
+                  m(
+                    "label",
+                    { for: "radar-time" },
+                    "After what time to switch radar images?",
+                  ),
+                  m(
+                    "select",
+                    {
+                      id: "radar-time",
+                      class: "select-box",
+                      value: settings.radarTime,
+                      onchange: (e) => (settings.radarTime = e.target.value),
+                    },
+                    [
+                      m("option", { value: "200" }, "200 ms"),
+                      m("option", { value: "500" }, "500 ms"),
+                      m("option", { value: "750" }, "750 ms"),
+                      m("option", { value: "1000" }, "1 s"),
+                      m("option", { value: "1500" }, "1.5 s"),
+                      m("option", { value: "2000" }, "2 s"),
+                      m("option", { value: "3000" }, "3 s"),
+                      m("option", { value: "4000" }, "4 s"),
+                    ],
+                  ),
+                ]),
+              ]),
+
+              // ===== Tracking =====
+              m("section", { class: "" }, [
+                m("h2", "Tracking"),
+                m(
+                  "label",
+                  {
+                    class: "item input-parent row middle-xs between-xs",
+                    tabIndex: 0,
+                  },
+                  [
+                    m(
+                      "div",
+                      { class: "label-text" },
+                      "The screen should not be switched off during tracking ?",
+                    ),
+                    m("span", { class: "toggle" }, [
+                      m("input", {
+                        type: "checkbox",
+                        checked: settings.screenlock,
+                        onchange: (e) =>
+                          (settings.screenlock = e.target.checked),
+                      }),
+                      m("span", { class: "slider" }),
+                    ]),
+                  ],
+                ),
+              ]),
+
+              // ===== Routing =====
+              m("section", { class: "", style: "margin-bottom:180px" }, [
+                m("h2", "Routing"),
+                m(
+                  "label",
+                  {
+                    class: "item input-parent row middle-xs between-xs",
+                    tabIndex: 0,
+                  },
+                  [
+                    m(
+                      "div",
+                      { class: "label-text" },
+                      "Receive notifications when following a route ?",
+                    ),
+                    m("span", { class: "toggle" }, [
+                      m("input", {
+                        type: "checkbox",
+                        checked: settings.routingNotification,
+                        onchange: (e) =>
+                          (settings.routingNotification = e.target.checked),
+                      }),
+                      m("span", { class: "slider" }),
+                    ]),
                   ],
                 ),
               ]),
             ]),
-
-            // ===== Network / Cache =====
-            m("section", [
-              m("h2", "Offline map"),
-              m(
-                "label",
-                {
-                  class: "item input-parent row middle-xs between-xs",
-                  tabIndex: 0,
-                },
-                [
-                  m(
-                    "div",
-                    { class: "label-text" },
-                    "only show the offline map ?",
-                  ),
-                  m("span", { class: "toggle" }, [
-                    m("input", {
-                      type: "checkbox",
-                      checked: settings.useOnlyCache,
-                      onchange: (e) =>
-                        (settings.useOnlyCache = e.target.checked),
-                    }),
-                    m("span", { class: "slider" }),
-                  ]),
-                ],
-              ),
-            ]),
-
-            // ===== Tracking =====
-            m("section", [
-              m("h2", "Tracking"),
-              m(
-                "label",
-                {
-                  class: "item input-parent row middle-xs between-xs",
-                  tabIndex: 0,
-                },
-                [
-                  m(
-                    "div",
-                    { class: "label-text" },
-                    "The screen should not be switched off during tracking ?",
-                  ),
-                  m("span", { class: "toggle" }, [
-                    m("input", {
-                      type: "checkbox",
-                      checked: settings.screenlock,
-                      onchange: (e) => (settings.screenlock = e.target.checked),
-                    }),
-                    m("span", { class: "slider" }),
-                  ]),
-                ],
-              ),
-            ]),
-          ]),
-        ]),
+          ],
+        ),
       ],
     );
   },
@@ -2825,49 +3484,6 @@ m.route(root, "/intro", {
   "/keyView": keyView,
   "/poiView": poiView,
   "/optionsView": optionsView,
-});
-
-function scrollToCenter() {
-  const activeElement = document.activeElement;
-  if (!activeElement) return;
-
-  const rect = activeElement.getBoundingClientRect();
-  let elY = rect.top + rect.height / 2;
-
-  let scrollContainer = activeElement.parentNode;
-
-  // Find the first scrollable parent
-  while (scrollContainer) {
-    if (
-      scrollContainer.scrollHeight > scrollContainer.clientHeight ||
-      scrollContainer.scrollWidth > scrollContainer.clientWidth
-    ) {
-      // Calculate the element's offset relative to the scrollable parent
-      const containerRect = scrollContainer.getBoundingClientRect();
-      elY = rect.top - containerRect.top + rect.height / 2;
-      break;
-    }
-    scrollContainer = scrollContainer.parentNode;
-  }
-
-  if (scrollContainer) {
-    scrollContainer.scrollBy({
-      left: 0,
-      top: elY - scrollContainer.clientHeight / 2,
-      behavior: "smooth",
-    });
-  } else {
-    // If no scrollable parent is found, scroll the document body
-    document.body.scrollBy({
-      left: 0,
-      top: elY - window.innerHeight / 2,
-      behavior: "smooth",
-    });
-  }
-}
-
-document.addEventListener("onbeforeunload", function (e) {
-  cache_search();
 });
 
 document.addEventListener("DOMContentLoaded", function (e) {
@@ -2891,11 +3507,10 @@ document.addEventListener("DOMContentLoaded", function (e) {
       document.getElementById("app").querySelectorAll(".item"),
     );
 
-    console.log(items);
-
     if (!items.length) return;
 
     let currentIndex = items.indexOf(active);
+    console.log("currentIndex:", currentIndex, "active:", active);
 
     if (currentIndex === -1) currentIndex = 0;
 
@@ -2911,6 +3526,54 @@ document.addEventListener("DOMContentLoaded", function (e) {
       scrollToCenter();
     }
   };
+
+  function scrollToCenter() {
+    var activeElement = document.activeElement;
+
+    if (!activeElement) {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      var rect = activeElement.getBoundingClientRect();
+      var scrollContainer = activeElement.parentNode;
+
+      while (scrollContainer && scrollContainer !== document.body) {
+        if (scrollContainer.scrollHeight > scrollContainer.clientHeight) {
+          break;
+        }
+        scrollContainer = scrollContainer.parentNode;
+      }
+
+      if (
+        scrollContainer &&
+        scrollContainer !== document.body &&
+        scrollContainer !== document.documentElement
+      ) {
+        var containerRect = scrollContainer.getBoundingClientRect();
+        var relativeY =
+          rect.top -
+          containerRect.top +
+          scrollContainer.scrollTop +
+          rect.height / 2;
+
+        scrollContainer.scrollTop =
+          relativeY - scrollContainer.clientHeight / 2;
+      } else {
+        var targetY =
+          window.pageYOffset +
+          rect.top -
+          window.innerHeight / 2 +
+          rect.height / 2;
+
+        window.scrollTo(0, targetY);
+      }
+    });
+  }
+
+  // ////////////////////////////
+  // //KEYPAD HANDLER////////////
+  // ////////////////////////////
 
   let isKeyDownHandled = false;
 
@@ -2941,10 +3604,6 @@ document.addEventListener("DOMContentLoaded", function (e) {
       }, 300); // Optional timeout to reset the flag after a short delay
     }
   });
-
-  // ////////////////////////////
-  // //KEYPAD HANDLER////////////
-  // ////////////////////////////
 
   let longpress = false;
   const longpress_timespan = 2000;
@@ -3101,7 +3760,7 @@ try {
       alert("Service Worker registration failed:", error);
     });
 } catch (e) {
-  console.error("Error during Service Worker setup:", e);
+  alert("Error during Service Worker setup:");
 }
 
 //redirect from openstreetmap
@@ -3160,7 +3819,7 @@ let app_launcher = () => {
       side_toaster("successfull", 3000);
     });
   } else {
-    setTimeout(() => {
+    if (result) {
       try {
         const activity = new MozActivity({
           name: "omap-oauth",
@@ -3185,16 +3844,21 @@ let app_launcher = () => {
           });
           activity.start().then(
             (rv) => {
-              window.close();
-              console.log(rv);
+              side_toaster("OK", 3000);
+              setTimeout(() => {
+                window.close();
+              }, 2000);
             },
             (err) => {
-              alert(err);
+              alert("Activity" + err);
+              setTimeout(() => {
+                window.close();
+              }, 2000);
             },
           );
         } catch (e) {}
       }
-    }, 4000);
+    }
   }
 };
 
@@ -3203,16 +3867,25 @@ try {
     var option = activityRequest.source;
 
     if (option.name == "omap-oauth") {
-      oauthRedirect(option.data);
+      oauthRedirect(option.data).then(() => {
+        m.route.set("/settingsView");
+        side_toaster("successfull", 3000);
+      });
     }
   });
 } catch (e) {}
 
 app_launcher();
 
-//KaiOS3 handel mastodon oauth
+//KaiOS3 handel openstreetmap oauth
+
 sw_channel.addEventListener("message", (event) => {
-  let result = event.data.oauth_success;
+  let result = event.data.oauth_success.data;
+
+  oauthRedirect(result).then(() => {
+    m.route.set("/settingsView");
+    side_toaster("successfull", 3000);
+  });
 });
 //reload detection
 const isReload =

@@ -24,11 +24,43 @@ export let setTabindex = () => {
   });
 };
 
+//screen managment
+
+// screen on
+export function keepScreenOn() {
+  if ("requestWakeLock" in navigator) {
+    navigator
+      .requestWakeLock("screen")
+      .then((lock) => {
+        window.screenWakeLock = lock;
+      })
+      .catch((err) => {
+        console.error("Wake lock failed:", err);
+        // Fallback für ältere KaiOS-Versionen
+        if ("mozPower" in navigator) {
+          navigator.mozPower.screenEnabled = true;
+        }
+      });
+  } else if ("mozPower" in navigator) {
+    navigator.mozPower.screenEnabled = true;
+  }
+}
+
+// screen off
+export function allowScreenOff() {
+  if (window.screenWakeLock) {
+    window.screenWakeLock.unlock();
+    window.screenWakeLock = null;
+  } else if ("mozPower" in navigator) {
+    navigator.mozPower.screenEnabled = false;
+  }
+}
+
 export let load_ads = function () {
   getKaiAd({
     publisher: "4408b6fa-4e1d-438f-af4d-f3be2fa97208",
-    app: "flop",
-    slot: "flop",
+    app: "o.map",
+    slot: "o.map",
     test: 0,
     timeout: 10000,
     h: 120,
@@ -57,19 +89,6 @@ export let load_ads = function () {
   });
 };
 
-export function generateRandomString(length) {
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let result = "";
-
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * characters.length);
-    result += characters.charAt(randomIndex);
-  }
-
-  return result;
-}
-
 //polyfill
 if (window.NodeList && !NodeList.prototype.forEach) {
   NodeList.prototype.forEach = Array.prototype.forEach;
@@ -81,9 +100,9 @@ export const geolocation = function (callback) {
   let showPosition = function (position) {
     const now = Date.now();
 
-    // Only proceed if 20 seconds have passed since the last callback
+    // Only proceed if 2 seconds have passed since the last callback
     console.log(now - lastCallbackTime);
-    if (now - lastCallbackTime >= 20000) {
+    if (now - lastCallbackTime >= 2000) {
       lastCallbackTime = now;
       callback(position);
     }
@@ -116,62 +135,61 @@ export const geolocation = function (callback) {
   });
 };
 
-export let list_files = function (filetype, callback) {
+export let list_files = async function (filetype) {
+  let files = [];
+
   try {
-    var d = navigator.getDeviceStorage("sdcard");
-    var t = false;
-    var cursor = d.enumerate();
+    // Firefox OS / KaiOS 2
+    if ("getDeviceStorage" in navigator) {
+      const storage = navigator.getDeviceStorage("sdcard");
+      const cursor = storage.enumerate();
 
-    cursor.onsuccess = function () {
-      if (!this.result) {
-        console.log("finished");
-      }
-
-      if (cursor.result.name !== null) {
-        var file = cursor.result;
-        let n = file.name.split(".");
-        let file_type = n[n.length - 1];
-
-        if (file_type == filetype) {
-          callback(file.name);
-          t = true;
-        }
-        this.continue();
-      }
-    };
-
-    cursor.onerror = function () {
-      console.warn("No file found: " + this.error);
-    };
-  } catch (e) {
-    console.log(e);
-  }
-  if ("b2g" in navigator) {
-    try {
-      var sdcard = navigator.b2g.getDeviceStorage("sdcard");
-      var iterable = sdcard.enumerate();
-      async function printAllFiles() {
-        for await (let file of iterable) {
-          let n = file.name.split(".");
-          let file_type = n[n.length - 1];
-
-          if (file_type == filetype) {
-            callback(file.name);
-            t = true;
+      await new Promise((resolve, reject) => {
+        cursor.onsuccess = function () {
+          if (!this.result) {
+            resolve();
+            return;
           }
+
+          const file = this.result;
+          const extension = file.name.split(".").pop()?.toLowerCase();
+
+          if (extension === filetype.toLowerCase()) {
+            files.push(file.name);
+          }
+
+          this.continue();
+        };
+
+        cursor.onerror = function () {
+          reject(this.error);
+        };
+      });
+    }
+
+    // B2G / KaiOS 3
+    else if ("b2g" in navigator) {
+      const storage = navigator.b2g.getDeviceStorage("sdcard");
+      const iterable = storage.enumerate();
+
+      for await (const file of iterable) {
+        const extension = file.name.split(".").pop()?.toLowerCase();
+
+        if (extension === filetype.toLowerCase()) {
+          files.push(file.name);
         }
       }
-      printAllFiles();
-    } catch (e) {
-      console.log(e);
     }
+  } catch (error) {
+    console.error(error);
   }
+
+  return files;
 };
 
-export let clipboard = function () {
+export let clipboard = function (content) {
   try {
-    let text =
-      window.location.origin + "/#!/intro?id=" + settings.custom_peer_id;
+    let text = content;
 
     let input = document.createElement("input");
     input.setAttribute("value", text);
@@ -179,10 +197,7 @@ export let clipboard = function () {
     input.select();
     let result = document.execCommand("copy");
     document.body.removeChild(input);
-    side_toaster(
-      "You can now open an app of your choice and invite a person to chat, the address that leads to the chat room is in your clipboard",
-      3000,
-    );
+    side_toaster("Copied in clipboard", 3000);
 
     return result; // Returns true if the copy was successful, false otherwise
   } catch (error) {
@@ -232,7 +247,7 @@ export function share(url) {
     }
 
     if (status.notKaiOS) {
-      let success = clipboard();
+      let success = clipboard(url);
       if (success) {
         console.log("Text copied to clipboard successfully.");
         resolve(true);
@@ -246,8 +261,8 @@ export function share(url) {
       if (navigator.share) {
         navigator
           .share({
-            title: "Flop P2P-Messenger",
-            text: "Flop P2P-Messenger",
+            title: "o.map",
+            text: "o.map",
             url: url,
           })
           .then(() => {
@@ -349,27 +364,40 @@ function delete_file(filename) {
   };
 }
 
-export function get_file(filename, callback) {
-  let sdcard = "";
+export async function get_file(filename) {
+  let sdcard = null;
 
-  try {
-    sdcard = navigator.getDeviceStorage("sdcard");
-  } catch (e) {}
-
-  if ("b2g" in navigator) {
+  if (navigator.b2g?.getDeviceStorage) {
     try {
       sdcard = navigator.b2g.getDeviceStorage("sdcard");
-    } catch (e) {}
+    } catch (e) {
+      console.warn("b2g.getDeviceStorage fehlgeschlagen:", e);
+    }
   }
-  var request = sdcard.get(filename);
 
-  request.onsuccess = function () {
-    callback(this.result);
-  };
+  if (!sdcard && navigator.getDeviceStorage) {
+    try {
+      sdcard = navigator.getDeviceStorage("sdcard");
+    } catch (e) {
+      console.warn("navigator.getDeviceStorage fehlgeschlagen:", e);
+    }
+  }
 
-  request.onerror = function () {
-    alert("Unable to get the file: " + this.error);
-  };
+  if (!sdcard) {
+    return Promise.reject(new Error("DeviceStorage nicht verfügbar"));
+  }
+
+  return new Promise((resolve, reject) => {
+    const request = sdcard.get(filename);
+
+    request.onsuccess = function () {
+      resolve(this.result);
+    };
+
+    request.onerror = function () {
+      reject(new Error("Datei konnte nicht geladen werden: " + this.error));
+    };
+  });
 }
 
 function write_file(data, filename) {
@@ -448,50 +476,82 @@ let notify = function (param_title, param_text, param_silent) {
   }
 };
 
-//https://notifications.spec.whatwg.org/#dictdef-notificationaction
+export async function pushLocalNotification(title, body) {
+  if (!("Notification" in window)) {
+    console.warn("Notifications werden nicht unterstützt.");
+    return;
+  }
 
-export let pushLocalNotification = function (title, body) {
-  window.Notification.requestPermission().then(() => {
-    var notification = new window.Notification(title, { body: body });
+  // Permission prüfen
+  if (Notification.permission === "default") {
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") return;
+  }
 
-    notification.onclick = function () {
-      notification.close(); // Schließt die Benachrichtigung nach dem Klick
+  if (Notification.permission !== "granted") return;
 
-      if (navigator.mozApps) {
-        // KaiOS 2: App starten mit mozApps
-        var request = navigator.mozApps.getSelf();
-        request.onsuccess = function () {
-          if (request.result) {
-            request.result.launch();
-          }
-        };
-        request.onerror = function () {
-          console.error("Fehler beim Öffnen der App:", request.error);
-        };
+  const notification = new Notification(title, { body });
+
+  notification.onclick = async () => {
+    notification.close();
+
+    // =========================
+    // KaiOS 2
+    // =========================
+    if (navigator.mozApps && navigator.mozApps.getSelf) {
+      const request = navigator.mozApps.getSelf();
+
+      request.onsuccess = function () {
+        if (request.result && request.result.launch) {
+          request.result.launch();
+        }
+      };
+
+      request.onerror = function () {
+        console.error("mozApps Fehler:", request.error);
+      };
+
+      return;
+    }
+
+    // =========================
+    // KaiOS 3
+    // =========================
+    if ("clients" in navigator && navigator.serviceWorker) {
+      const clientList = await navigator.serviceWorker
+        .getRegistrations()
+        .then(() => navigator.serviceWorker.ready)
+        .then(() =>
+          self.clients.matchAll({
+            type: "window",
+            includeUncontrolled: true,
+          }),
+        )
+        .catch(() => []);
+
+      if (clientList.length > 0) {
+        const client = clientList[0];
+
+        if ("focus" in client) {
+          client.focus();
+        }
       } else {
-        // KaiOS 3: App in den Vordergrund holen oder neues Fenster öffnen
-        if (document.visibilityState === "hidden") {
-          window.location.href = "index.html"; // Falls App im Hintergrund läuft
-        } else if ("clients" in navigator) {
-          navigator.clients
-            .matchAll({ type: "window", includeUncontrolled: true })
-            .then((clients) => {
-              if (clients.length > 0) {
-                clients[0].focus(); // Falls App läuft, in den Vordergrund holen
-              } else {
-                navigator.clients.openWindow("index.html"); // Falls nicht, neu öffnen
-              }
-            });
-        } else {
-          // Fallback für ältere Geräte
-          if (!window.location.href.includes("index.html")) {
-            window.location.href = "index.html";
-          }
+        if ("openWindow" in self.clients) {
+          self.clients.openWindow("index.html");
         }
       }
-    };
-  });
-};
+
+      return;
+    }
+
+    // =========================
+    // Fallback
+    // =========================
+    if (!window.location.href.includes("index.html")) {
+      window.location.href = "index.html";
+    }
+  };
+}
 
 if (navigator.mozSetMessageHandler) {
   navigator.mozSetMessageHandler("alarm", function (message) {
@@ -922,55 +982,60 @@ export function deleteFile(storage, path, notification) {
   };
 }
 
-export let downloadFile = function (filename, data, callback) {
-  if (status.notKaiOS) {
-    const imgSrc = data;
+export let downloadFile = async function (
+  filename,
+  data,
+  mimeType = "application/octet-stream",
+  fileextension,
+) {
+  let blob;
 
-    // Create a link element
-    const a = document.createElement("a");
-    a.href = imgSrc;
-    a.download = filename;
-
-    // Append the link to the body
-    document.body.appendChild(a);
-
-    // Programmatically click the link to trigger the download
-    a.click();
-
-    // Remove the link from the document
-    document.body.removeChild(a);
+  // 👉 GPX STRING erkennen
+  if (typeof data === "string" && data.trim().startsWith("<")) {
+    blob = new Blob([data], {
+      type: mimeType || "application/gpx+xml",
+    });
+  } else if (typeof data === "string") {
+    // 👉 URL
+    const res = await fetch(data);
+    blob = await res.blob();
   } else {
-    let sdcard = "";
-
-    try {
-      sdcard = navigator.getDeviceStorage("sdcard");
-    } catch (e) {}
-
-    if ("b2g" in navigator) {
-      try {
-        sdcard = navigator.b2g.getDeviceStorage("sdcard");
-      } catch (e) {}
-    }
-
-    fetch(data)
-      .then((res) => res.blob())
-      .then((blob) => {
-        let request = sdcard.addNamed(blob, filename);
-        request.onsuccess = function () {
-          side_toaster("file downloaded", 2000);
-        };
-
-        request.onerror = function () {
-          side_toaster(
-            "Unable to download the file, the file probably already exists.",
-            4000,
-          );
-        };
-      })
-      .catch((error) => {
-        side_toaster("Unable to download the file", 2000);
-      });
+    blob = new Blob([data], { type: mimeType });
   }
+
+  const url = URL.createObjectURL(blob);
+
+  if (status.notKaiOS) {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename + "." + fileextension;
+
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    URL.revokeObjectURL(url);
+    return;
+  }
+
+  // 📱 KaiOS
+  let sdcard;
+  try {
+    sdcard = navigator.getDeviceStorage("sdcard");
+  } catch (e) {}
+
+  if ("b2g" in navigator) {
+    try {
+      sdcard = navigator.b2g.getDeviceStorage("sdcard");
+    } catch (e) {}
+  }
+
+  return new Promise((resolve, reject) => {
+    const request = sdcard.addNamed(blob, filename + "." + fileextension);
+
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
 };
 
 export let data_export_addressbook = function (filename, data, callback) {
