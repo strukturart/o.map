@@ -52,7 +52,6 @@ export const osm_delete_gpx = async function (id, notify) {
   const token = await localforage.getItem("osm_token");
 
   if (!token) {
-    side_toaster("looks like you are not connected to openstreetmap", 5000);
     return false;
   }
 
@@ -89,7 +88,6 @@ export const osm_update_gpx = async function (id, gpx_data) {
   const token = await localforage.getItem("osm_token");
 
   if (!token) {
-    side_toaster("looks like you are not connected to openstreetmap", 5000);
     return false;
   }
 
@@ -145,9 +143,6 @@ export const osm_get_user = async function (notification = true) {
   const token = await localforage.getItem("osm_token");
 
   if (!token) {
-    if (notification) {
-      side_toaster("looks like you are not connected to openstreetmap", 5000);
-    }
     return false;
   }
 

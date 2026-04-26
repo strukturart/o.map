@@ -1,5 +1,5 @@
   {
-  "version": "1.9.801",
+  "version": "1.9.820",
   "version_name": "hotline",
   "name": "o.map",
   "description": "O.map, your ultimate navigation companion for KaiOS-powered devices. O.map is a lightweight and feature-rich map application designed specifically for KaiOS, enabling you to explore and navigate the world with ease. Whether you're a local resident, a tourist, or an adventurer, O.map is here to enhance your journey and keep you on the right track.",
@@ -18,11 +18,12 @@
     "url": "https://github.com/strukturart/o.map"
   },
 
- "activities": {
-    "maps": {
-    "href": "/index.html",
-    "disposition": "inline"}
-},
+ 
+"activities": {
+    "omap-auth": {
+      "href": "/index.html"
+    }
+  },
 
   "dependencies": {
     "ads-sdk": "1.5.7"
