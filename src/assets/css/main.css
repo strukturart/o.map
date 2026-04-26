@@ -21,10 +21,7 @@
   margin: 0px;
   box-sizing: border-box;
   font-family: "Lato-Regular";
-}
-
-:focus {
-  outline: 0px;
+  outline: 0;
 }
 
 @font-face {
@@ -34,30 +31,21 @@
 
 html,
 body {
-  font-family: "Lato-Regular";
+  font-family: "Roboto" !important;
   font-weight: 400;
   position: relative;
   margin: 0px;
   padding: 0px;
   font-size: 1rem;
   line-height: 1.4rem;
-  scroll-behavior: smooth;
+  max-height: 100%;
+  max-width: 100%;
   height: 100%;
-  margin: 0;
-}
-
-body.screenOff {
-  filter: brightness(0);
-
-  overflow: hidden;
-  max-height: 100vh;
-}
-
-html.screenOff {
-  filter: brightness(0);
-
-  overflow: hidden;
-  max-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
+  overflow-y: hidden;
+  overflow-x: hidden;
+  background: black;
 }
 
 kbd {
@@ -66,7 +54,7 @@ kbd {
   font-family: monospace;
   font-size: 0.9em;
 
-  background: #b8f7bd; /* klassisches Win95 Grau */
+  background: #d6e4d7; /* klassisches Win95 Grau */
 
   border-top: 2px solid #fff; /* Licht */
   border-left: 2px solid #fff;
@@ -167,12 +155,14 @@ input[type="search"] {
   padding: 10px;
   width: 80%;
   margin: 0 0 20px 0;
-  outline: 2px solid black;
+  border: 2px solid black;
   color: black !important;
 }
 
 input[type="search"]:focus {
-  background: none;
+  border: 2px solid black !important;
+  color: black !important;
+  background: white;
 }
 
 .search-results .result-name {
@@ -182,6 +172,10 @@ input[type="search"]:focus {
 
 .text-algin-left {
   text-align: left;
+}
+
+.text-algin-center {
+  text-align: center;
 }
 select {
   width: 99%;
@@ -289,6 +283,9 @@ a.button:focus {
 #app {
   min-width: 100vw;
   min-height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  overflow: hidden;
 }
 
 label {
@@ -298,6 +295,9 @@ label {
 section {
   margin: 0 0 60px 0;
 }
+
+/*///////////////////////////
+///WEATHER LAYER////////////////*/
 
 #map-info {
   width: fit-content;
@@ -353,36 +353,6 @@ div#side-toast img {
   width: 30px;
 }
 
-/*/ ////////////////
-USER INPUT////////////////*/
-
-div#user-input {
-  position: fixed;
-
-  background: gray;
-  color: white;
-  z-index: 50000000;
-  padding: 5px;
-  bottom: -1000px;
-}
-
-div#user-input input {
-  margin: 5px 0 5px 0;
-  padding: 3px;
-  height: 22px;
-  width: 90%;
-  font-size: 1.1rem;
-  background: white !important;
-  position: relative;
-}
-
-div#user-input-description {
-  position: relative;
-  color: white;
-  margin: 10px 0 10px 0;
-  min-width: 11%;
-}
-
 /*///////////////////////////
 ///MAP////////////////*/
 
@@ -418,8 +388,9 @@ div#cross {
 }
 
 .panel {
-  padding: 20px 10px 60px 10px;
+  padding: 20px 10px 160px 10px;
   position: relative;
+  overflow-y: scroll;
 }
 
 .item .label {
@@ -487,6 +458,7 @@ div#bottom-bar {
 div#bottom-bar div div.inner {
   position: relative;
   background: none;
+  padding: 5px 15px 5px 15px;
 }
 
 div#bottom-bar div div div {
@@ -607,15 +579,6 @@ div#top-bar div.button-center:hover {
 /*///////////////////////////
 ///INTRO////////////////*/
 
-@keyframes roll {
-  0% {
-    transform: rotate(0);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
 div#intro {
   position: fixed;
   background: black;
@@ -624,11 +587,6 @@ div#intro {
   height: 100%;
   left: 0;
   top: 0;
-  animation-name: intro;
-  animation-duration: 1s;
-  animation-delay: 8s;
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
 }
 
 div#intro img {
@@ -638,11 +596,6 @@ div#intro img {
   top: 150px;
   left: 50%;
   margin-left: -30px;
-  animation-name: intro_img;
-  animation-duration: 4s;
-  animation-delay: 0s;
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
 }
 
 #intro #version {
@@ -667,9 +620,10 @@ div#intro img {
   letter-spacing: 0.05em;
   padding: 3px 5px;
   white-space: nowrap;
-  color: white;
+  color: black;
   width: fit-content;
   height: 20px;
+  background: white;
 }
 
 /*ADS*/
@@ -685,18 +639,6 @@ div#result-container {
   background: rgb(216, 216, 216) !important;
   max-height: 60vh;
   overflow-y: hidden;
-}
-
-li.items {
-  background: silver;
-  padding: 3px;
-  margin: 0 0 10px 0;
-  list-style: none !important;
-}
-
-li.items:focus {
-  background: black !important;
-  color: white;
 }
 
 #intro {
@@ -768,6 +710,15 @@ div.unavailable div:nth-child(3) {
   margin: 0 0 10px 0;
 }
 
+#routing select {
+  margin: 0 0 30px 0;
+}
+
+#routing .routing-history-item {
+  margin: 20px 0 0px 0;
+  text-align: right;
+}
+
 @media screen and (max-width: 340px) {
   *::-webkit-scrollbar {
     display: none;
@@ -799,7 +750,7 @@ div.unavailable div:nth-child(3) {
 
   div#bottom-bar div div.inner {
     position: relative;
-    padding: 0px 20px 15px 20px;
+    padding: 0px 20px 20px 20px;
   }
 
   .panel {
@@ -808,18 +759,19 @@ div.unavailable div:nth-child(3) {
   }
 
   .input-parent:focus label {
-    color: white;
+    color: white !important;
   }
 
   .label-text:focus {
-    color: white;
+    color: white !important;
   }
 
-  .input-parent:focus {
-    color: black;
-  }
-
-  .input-parent:focus > * {
-    color: black;
+  div#intro img {
+    width: 60px;
+    height: auto;
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    margin-left: -30px;
   }
 }

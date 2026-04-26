@@ -7,7 +7,8 @@ import {
   top_bar,
   getManifest,
   geolocation,
-  setTabindex,
+  list_files,
+  get_file,
 } from "./assets/js/helper.js";
 import localforage from "localforage";
 import m from "mithril";
@@ -15,7 +16,6 @@ import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 
 import L from "leaflet";
-import "swiped-events";
 import { basic_maps, basic_layers, basic_pois } from "./assets/js/maps.js";
 import "leaflet-gpx";
 import * as turf from "@turf/turf";
@@ -82,6 +82,7 @@ export let status = {
   selectedMarker: "",
   search_collection: [],
   routingData: [],
+  osmLogged: false,
 };
 
 let tilesLayer = null;
@@ -181,7 +182,6 @@ if (status.debug) {
 }
 
 //osm
-
 osm_get_user().then((user) => {
   status.osmLogged = true;
 });
@@ -341,12 +341,15 @@ let loadFiles = () => {
           try {
             displayGPX(content).then(() => {});
             side_toaster("File loaded", 2000);
+            m.route.set("/mapView");
           } catch (error) {
             console.error(`Fehler bei GPX-Konvertierung: ${fileName}`, error);
           }
         } else if (fileType === "geojson" || fileType === "json") {
           const geoJsonData = JSON.parse(content);
           displayGeoJSONOnMap(geoJsonData, map);
+          m.route.set("/mapView");
+
           side_toaster("File loaded", 2000);
         }
       } catch (error) {
@@ -360,11 +363,7 @@ let loadFiles = () => {
 };
 
 //display GeoJSON
-let displayGeoJSONOnMap = async (
-  geoJsonData,
-  map,
-  addLineEndpoints = false,
-) => {
+let displayGeoJSONOnMap = (geoJsonData, map, addLineEndpoints = false) => {
   geoJsonLayer = L.geoJSON(geoJsonData, {
     style: (feature) => {
       return {
@@ -978,8 +977,6 @@ const SearchInput = {
           state.query = e.target.value;
 
           state.results = await searchService.search(state.query);
-          try {
-          } catch (e) {}
 
           // console.log(state.results);
           // optional: Parent informieren
@@ -1000,6 +997,12 @@ const SearchInput = {
               "div",
               {
                 class: "item",
+                tabIndex: 0,
+
+                "data-lat": parseFloat(item.lat),
+                "data-lng": parseFloat(item.lon),
+                "data-text": item.name,
+
                 onclick: () => {
                   state.query = item.display_name;
                   state.results = [];
@@ -1159,6 +1162,8 @@ var root = document.getElementById("app");
 var intro = {
   oninit: () => {
     key_delay();
+    document.querySelector("body").style.background = "white";
+    document.querySelector("html").style.background = "white";
   },
   onremove: () => {
     status.viewReady = false;
@@ -1223,6 +1228,10 @@ var intro = {
     );
   },
 };
+
+/*/////////*/
+/*MAP*/
+/*/////////*/
 
 let mapView = {
   handler: function (e) {
@@ -1373,6 +1382,10 @@ let mapView = {
   },
 };
 
+/*/////////*/
+/*MENU*/
+/*/////////*/
+
 var menuView = {
   handler: function (e) {
     if (e.key === "SoftLeft" || e.key === "Control") {
@@ -1401,7 +1414,7 @@ var menuView = {
     return m(
       "div",
       {
-        class: "row panel",
+        class: "row panel not-scroll",
         id: "menu",
       },
       [
@@ -1524,6 +1537,10 @@ var menuView = {
   },
 };
 
+/*/////////*/
+/*LAYERS*/
+/*/////////*/
+
 var imageryView = {
   handler: function (e) {
     if (e.key === "SoftLeft" || e.key === "Control") {
@@ -1642,6 +1659,10 @@ var imageryView = {
   },
 };
 
+/*/////////*/
+/*OPTIONS*/
+/*/////////*/
+
 var optionsView = {
   handler: function (e) {
     if (e.key === "SoftLeft" || e.key === "Control") {
@@ -1710,6 +1731,10 @@ var optionsView = {
     );
   },
 };
+
+/*/////////*/
+/*POI*/
+/*/////////*/
 
 var poiView = {
   handler: function (e) {
@@ -1787,6 +1812,10 @@ var poiView = {
   },
 };
 
+/*/////////*/
+/*FILES*/
+/*/////////*/
+
 var filesView = {
   handler: function (e) {
     if (e.key === "SoftLeft" || e.key === "Control") {
@@ -1795,16 +1824,29 @@ var filesView = {
       m.route.set("/menuView");
     }
   },
+  oninit: () => {
+    if (!status.notKaiOS) {
+      list_files("gpx").then((e) => {
+        status.kaiosGPX = e;
+      });
+
+      list_files("geojson").then((e) => {
+        status.kaiosGeoJSON = e;
+      });
+    }
+  },
 
   oncreate: function () {
-    status.osm_files = [];
+    if (status.osmLogged) {
+      status.osm_files = [];
 
-    osm_server_list_gpx()
-      .then((files) => {
-        status.osm_files = files;
-        m.redraw();
-      })
-      .catch((error) => console.error("Failed:", error));
+      osm_server_list_gpx()
+        .then((files) => {
+          status.osm_files = files;
+          m.redraw();
+        })
+        .catch((error) => console.error("Failed:", error));
+    }
 
     bottom_bar(
       "<img class='map-button' src='assets/image/map.svg'>",
@@ -1852,36 +1894,103 @@ var filesView = {
           m("div", { class: "col-xs-11" }, [m("h2", "MARKERS")]),
           m("div", { class: "col-xs-11" }, [
             m("div", [
-              markersLocal.map((item, index) => {
-                return m(
-                  "button",
-                  {
-                    onclick: () => {
-                      const [lng, lat] = item.geometry.coordinates;
-                      createPOIMarker(lat, lng, item.properties.name).then(
-                        (e) => {
-                          e.addTo(markersGroup);
+              markersLocal.length
+                ? markersLocal.map((item, index) => {
+                    return m(
+                      "button",
+                      {
+                        class: "item",
+                        oncreate: (vnode) => {
+                          if (index == 0) {
+                            vnode.dom.focus();
+                          }
                         },
-                      );
+                        onclick: () => {
+                          const [lng, lat] = item.geometry.coordinates;
+                          createPOIMarker(lat, lng, item.properties.name).then(
+                            (e) => {
+                              e.addTo(markersGroup);
+                              map.setView([lat, lng], 14);
 
-                      map.setView([lat, lng], 14);
-
-                      m.route.set("/mapView");
-                    },
-                  },
-                  item.properties.name || "unknow",
-                );
-              }),
+                              m.route.set("/mapView");
+                            },
+                          );
+                        },
+                      },
+                      item.properties.name || "unknow",
+                    );
+                  })
+                : null,
             ]),
           ]),
 
-          !status.notKaiOS
+          !status.notKaiOS && status.kaiosGPX
             ? m("div", { class: "col-xs-11" }, [
-                m("h2", "GPX", { oncreate: () => {} }),
+                m(
+                  "h2",
+                  {
+                    oncreate: () => {
+                      status.kaiosGPX.map((item) => {
+                        return m(
+                          "button",
+                          {
+                            onclick: () => {
+                              get_file(item).then((data) => {
+                                displayGPX(data)
+                                  .then(() => {
+                                    m.route.set("/mapView");
+                                  })
+                                  .catch((e) => {
+                                    side_toaster("Could not be loaded", 3000);
+                                  });
+                              });
+                            },
+                          },
+                          item,
+                        );
+                      });
+                    },
+                  },
+                  "GPX",
+                ),
               ])
             : null,
+
+          !status.notKaiOS && status.geoJSON
+            ? m("div", { class: "col-xs-11" }, [
+                m(
+                  "h2",
+                  {
+                    oncreate: () => {
+                      status.geoJSON.map((item) => {
+                        return m(
+                          "button",
+                          {
+                            onclick: () => {
+                              get_file(item).then((data) => {
+                                displayGeoJSONOnMap(data)
+                                  .then(() => {
+                                    m.route.set("/mapView");
+                                  })
+                                  .catch((e) => {
+                                    side_toaster("Could not be loaded", 3000);
+                                  });
+                              });
+                            },
+                          },
+                          item,
+                        );
+                      });
+                    },
+                  },
+                  "GeoJSON",
+                ),
+              ])
+            : null,
+
           m("div", { class: "col-xs-11" }, [
             m("h2", {}, "OSM FILES"),
+
             status.osmLogged
               ? m("div", [
                   status.osm_files.map((e) => {
@@ -1904,13 +2013,17 @@ var filesView = {
                     );
                   }),
                 ])
-              : "",
+              : null,
           ]),
         ]),
       ],
     );
   },
 };
+
+/*/////////*/
+/*TRACKING*/
+/*/////////*/
 
 var trackingView = {
   handler: function (e) {
@@ -2026,6 +2139,10 @@ var trackingView = {
   },
 };
 
+/*/////////*/
+/*SEARCH*/
+/*/////////*/
+
 let searchView = {
   handler: function (e) {
     if (e.key === "SoftLeft" || e.key === "Control") {
@@ -2071,28 +2188,7 @@ let searchView = {
       {
         class: "panel row center-xs",
         id: "search",
-        oncreate: (vnode) => {
-          key_delay();
-
-          bottom_bar(
-            "<img class='map-button' src='assets/image/map.svg'>",
-            "",
-            "<img class='menu-button' src='assets/image/menu.svg'>",
-          );
-          top_bar("", "", "");
-
-          document
-            .querySelector(".map-button")
-            .addEventListener("click", () => {
-              m.route.set("/mapView");
-            });
-
-          document
-            .querySelector(".menu-button")
-            .addEventListener("click", () => {
-              m.route.set("/menuView");
-            });
-        },
+        oncreate: (vnode) => {},
 
         onkeydown: (e) => {
           if (e.key === "Enter") {
@@ -2107,29 +2203,24 @@ let searchView = {
 
             m.route.set("/mapView");
           }
-
-          if (e.key === "SoftLeft" || e.key === "Control") {
-            m.route.set("/mapView");
-          }
-
-          if (e.key === "SoftRight" || e.key === "Alt") {
-            m.route.set("/menuView");
-          }
         },
       },
       [
         m("div", { class: "col-xs-12 col-md-3" }, [
+          m("div", { class: "item" }),
           m(SearchInput, {
             class: "col-xs-11",
             placeholder: "search",
+            tabIndex: 0,
             oncreate: () => {
               document.querySelector("input").focus();
             },
+
             onSelect: (item) => {
               status.search_collection.push(item);
               localforage
                 .setItem("search", status.search_collection)
-                .then((data) => {
+                .then((item) => {
                   createPOIMarker(item.lat, item.lng, item.name).addTo(
                     markersGroup,
                   );
@@ -2139,7 +2230,7 @@ let searchView = {
             },
           }),
 
-          m("div", { class: "col-xs-12", tabIndex: 0 }, [
+          m("div", { class: "col-xs-12" }, [
             status.search_collection.map((e) => {
               return m(
                 "div",
@@ -2147,6 +2238,7 @@ let searchView = {
                   class: "item",
                   tabIndex: 0,
                   onclick: () => {
+                    console.log(e);
                     createPOIMarker(e.lat, e.lng, e.name).then((e) => {
                       e.addTo(markersGroup);
                     });
@@ -2163,6 +2255,10 @@ let searchView = {
     );
   },
 };
+
+/*/////////*/
+/*ROUTING*/
+/*/////////*/
 
 localforage.getItem("routingData").then((data) => {
   if (data) {
@@ -2187,23 +2283,27 @@ var routingView = {
     );
     top_bar("", "", "");
 
-    document.querySelector(".map-button").addEventListener("click", () => {
-      m.route.set("/mapView");
-    });
+    const mapBtn = document.querySelector(".map-button");
+    const menuBtn = document.querySelector(".menu-button");
 
-    document.querySelector(".menu-button").addEventListener("click", () => {
-      m.route.set("/menuView");
-    });
+    if (mapBtn) {
+      mapBtn.addEventListener("click", () => {
+        m.route.set("/mapView");
+      });
+    }
 
-    // Keyboard events hier registrieren
-    document.addEventListener("keydown", this.handler.bind(this));
+    if (menuBtn) {
+      menuBtn.addEventListener("click", () => {
+        m.route.set("/menuView");
+      });
+    }
+
+    document.addEventListener("keydown", this.handler);
   },
 
   onremove: function () {
     document.removeEventListener("keydown", this.handler);
   },
-
-  oninit: () => {},
 
   view: function () {
     return m(
@@ -2221,7 +2321,7 @@ var routingView = {
             m("div", { class: "col-xs-11" }, [
               m("h2", "Profile"),
 
-              m("div", { class: "item input-parent" }, [
+              m("div", { class: "item input-parent", tabIndex: 0 }, [
                 m("label", { for: "routing-profile" }, "choose profile"),
 
                 m(
@@ -2256,7 +2356,9 @@ var routingView = {
                 placeholder: "search from",
                 onSelect: (item) => {
                   status.routingFrom = item;
-                  console.log(item);
+                },
+                oncreate: () => {
+                  document.querySelector("input").focus();
                 },
               }),
             ]),
@@ -2269,7 +2371,6 @@ var routingView = {
                 placeholder: "search to",
                 onSelect: (item) => {
                   status.routingTo = item;
-                  console.log(item);
                   let from = [status.routingFrom.lng, status.routingFrom.lat];
                   let to = [status.routingTo.lng, status.routingTo.lat];
 
@@ -2310,10 +2411,16 @@ var routingView = {
                   m(
                     "div",
                     {
-                      class: "row between-xs debug item",
+                      class: "row between-xs item routing-history-item",
                       onclick: (vnode) => {
                         displayGeoJSONOnMap(e, map, true);
                         m.route.set("/mapView");
+                      },
+                      onkeydown: (event) => {
+                        if (event.key === "Enter") {
+                          displayGeoJSONOnMap(e, map, true);
+                          m.route.set("/mapView");
+                        }
                       },
                       tabIndex: 0,
                     },
@@ -2368,6 +2475,10 @@ var routingView = {
   },
 };
 
+/*/////////*/
+/*KEYS*/
+/*/////////*/
+
 var keyView = {
   handler: function (e) {
     if (e.key === "SoftLeft" || e.key === "Control") {
@@ -2412,27 +2523,40 @@ var keyView = {
           "div",
           { class: "col-xs-10 col-md-3" },
           m("div", { class: "item row between-xs" }, [
-            m("kbd", { class: "col-xs-1" }, "2"),
+            m("kbd", { class: "col-xs-2" }, "2"),
             m("span", "search"),
           ]),
 
           m("div", { class: "item row between-xs" }, [
-            m("kbd", { class: "col-xs-1" }, "5"),
+            m("kbd", { class: "col-xs-2" }, "5"),
             m("span", "set marker"),
           ]),
           m("div", { class: "item row between-xs" }, [
-            m("kbd", { class: "col-xs-1" }, "*"),
+            m("kbd", { class: "col-xs-2" }, "*"),
             m("span", "download tiles"),
           ]),
           m("div", { class: "item row between-xs" }, [
-            m("kbd", { class: "col-xs-1" }, "#"),
+            m("kbd", { class: "col-xs-2" }, "#"),
             m("span", "select marker"),
           ]),
+          m("div", {
+            id: "KaiOSads-Wrapper",
+            class: "",
+            tabindex: 0,
+
+            oncreate: () => {
+              load_ads();
+            },
+          }),
         ),
       ],
     );
   },
 };
+
+/*/////////*/
+/*ABOUT*/
+/*/////////*/
 
 var aboutView = {
   handler: function (e) {
@@ -2456,6 +2580,9 @@ var aboutView = {
     });
 
     document.addEventListener("keydown", this.handler);
+
+    document.querySelector("html").style.overflow = "scroll";
+    document.querySelector("body").style.overflow = "scroll";
   },
 
   onremove: function () {
@@ -2557,6 +2684,10 @@ var aboutView = {
   },
 };
 
+/*/////////*/
+/*SETTINGS*/
+/*/////////*/
+
 var settingsView = {
   handler: function (e) {
     if (e.key === "SoftLeft" || e.key === "Control") {
@@ -2566,7 +2697,7 @@ var settingsView = {
     }
   },
 
-  oncreate: () => {
+  oncreate: function () {
     bottom_bar(
       "<img class='map-button' src='assets/image/map.svg'>",
       "",
@@ -2574,13 +2705,22 @@ var settingsView = {
     );
     top_bar("", "", "");
 
-    document.querySelector(".map-button").addEventListener("click", () => {
-      m.route.set("/mapView");
-    });
+    const mapBtn = document.querySelector(".map-button");
+    const menuBtn = document.querySelector(".menu-button");
 
-    document.querySelector(".menu-button").addEventListener("click", () => {
-      m.route.set("/menuView");
-    });
+    if (mapBtn) {
+      mapBtn.addEventListener("click", () => {
+        m.route.set("/mapView");
+      });
+    }
+
+    if (menuBtn) {
+      menuBtn.addEventListener("click", () => {
+        m.route.set("/menuView");
+      });
+    }
+
+    document.addEventListener("keydown", this.handler);
   },
 
   onremove: function () {
@@ -2611,7 +2751,9 @@ var settingsView = {
                   class: "item input-parent row middle-xs between-xs",
                   tabIndex: 0,
                   oncreate: (vnode) => {
-                    vnode.dom.focus();
+                    setTimeout(() => {
+                      vnode.dom.focus();
+                    }, 1000);
                   },
                 },
                 [
@@ -2687,7 +2829,7 @@ var settingsView = {
                   tabIndex: 0,
 
                   oncreate: (vnode) => {
-                    if (status.osmLogged) {
+                    if (!status.osmLogged) {
                       vnode.dom.remove();
                     }
                   },
@@ -2705,7 +2847,7 @@ var settingsView = {
                   tabIndex: 0,
 
                   oncreate: (vnode) => {
-                    if (!status.osmLogged) {
+                    if (status.osmLogged) {
                       vnode.dom.remove();
                     }
                   },
@@ -2786,6 +2928,7 @@ var settingsView = {
                 {
                   class: "item input-parent row middle-xs between-xs",
                   tabIndex: 0,
+                  style: "margin-bottom:80px",
                 },
                 [
                   m(
@@ -2827,49 +2970,6 @@ m.route(root, "/intro", {
   "/optionsView": optionsView,
 });
 
-function scrollToCenter() {
-  const activeElement = document.activeElement;
-  if (!activeElement) return;
-
-  const rect = activeElement.getBoundingClientRect();
-  let elY = rect.top + rect.height / 2;
-
-  let scrollContainer = activeElement.parentNode;
-
-  // Find the first scrollable parent
-  while (scrollContainer) {
-    if (
-      scrollContainer.scrollHeight > scrollContainer.clientHeight ||
-      scrollContainer.scrollWidth > scrollContainer.clientWidth
-    ) {
-      // Calculate the element's offset relative to the scrollable parent
-      const containerRect = scrollContainer.getBoundingClientRect();
-      elY = rect.top - containerRect.top + rect.height / 2;
-      break;
-    }
-    scrollContainer = scrollContainer.parentNode;
-  }
-
-  if (scrollContainer) {
-    scrollContainer.scrollBy({
-      left: 0,
-      top: elY - scrollContainer.clientHeight / 2,
-      behavior: "smooth",
-    });
-  } else {
-    // If no scrollable parent is found, scroll the document body
-    document.body.scrollBy({
-      left: 0,
-      top: elY - window.innerHeight / 2,
-      behavior: "smooth",
-    });
-  }
-}
-
-document.addEventListener("onbeforeunload", function (e) {
-  cache_search();
-});
-
 document.addEventListener("DOMContentLoaded", function (e) {
   /////////////////
   ///NAVIGATION
@@ -2891,26 +2991,76 @@ document.addEventListener("DOMContentLoaded", function (e) {
       document.getElementById("app").querySelectorAll(".item"),
     );
 
-    console.log(items);
+    console.log(items.length);
 
     if (!items.length) return;
 
     let currentIndex = items.indexOf(active);
+    console.log("currentIndex:", currentIndex, "active:", active);
 
     if (currentIndex === -1) currentIndex = 0;
 
     let next = currentIndex + move;
+    console.log("next:", next);
 
     if (next < 0) next = items.length - 1;
     if (next >= items.length) next = 0;
 
     const targetElement = items[next];
+    console.log("targetElement:", targetElement);
 
     if (targetElement) {
-      targetElement.focus();
+      targetElement.focus(); // ← blur() entfernt, direkt focus()
       scrollToCenter();
     }
   };
+
+  function scrollToCenter() {
+    var activeElement = document.activeElement;
+
+    if (!activeElement) {
+      return;
+    }
+
+    var rect = activeElement.getBoundingClientRect();
+
+    var scrollContainer = activeElement.parentNode;
+
+    // Erstes scrollbares Elternelement finden
+    while (scrollContainer && scrollContainer !== document.body) {
+      if (scrollContainer.scrollHeight > scrollContainer.clientHeight) {
+        break;
+      }
+      scrollContainer = scrollContainer.parentNode;
+    }
+
+    if (
+      scrollContainer &&
+      scrollContainer !== document.body &&
+      scrollContainer !== document.documentElement
+    ) {
+      var containerRect = scrollContainer.getBoundingClientRect();
+      var relativeY =
+        rect.top -
+        containerRect.top +
+        scrollContainer.scrollTop +
+        rect.height / 2;
+
+      scrollContainer.scrollTop = relativeY - scrollContainer.clientHeight / 2;
+    } else {
+      var targetY =
+        window.pageYOffset +
+        rect.top -
+        window.innerHeight / 2 +
+        rect.height / 2;
+
+      window.scrollTo(0, targetY);
+    }
+  }
+
+  // ////////////////////////////
+  // //KEYPAD HANDLER////////////
+  // ////////////////////////////
 
   let isKeyDownHandled = false;
 
@@ -2941,10 +3091,6 @@ document.addEventListener("DOMContentLoaded", function (e) {
       }, 300); // Optional timeout to reset the flag after a short delay
     }
   });
-
-  // ////////////////////////////
-  // //KEYPAD HANDLER////////////
-  // ////////////////////////////
 
   let longpress = false;
   const longpress_timespan = 2000;
