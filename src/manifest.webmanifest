@@ -37,7 +37,7 @@
   ],
 
   "b2g_features": {
-    "version": "2.1.996",
+    "version": "2.1.997",
     "id": "o.map",
     "core": true,
     "categories": ["utilities"],

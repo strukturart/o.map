@@ -131,6 +131,10 @@ button.active {
   color: white;
 }
 
+.bold {
+  font-weight: bold;
+}
+
 textarea {
   background: white;
   width: 100%;

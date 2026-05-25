@@ -26,6 +26,7 @@ import "leaflet-gpx";
 import * as turf from "@turf/turf";
 
 import { v4 as uuidv4 } from "uuid";
+import "leaflet-rotatedmarker";
 
 import { createElement, Files, Upload } from "lucide";
 
@@ -56,6 +57,9 @@ const markerIcon = new URL(
   "./assets/css/images/marker-icon.png",
   import.meta.url,
 ).href;
+
+const followIcon = new URL("./assets/css/images/follow.svg", import.meta.url)
+  .href;
 
 const markerPoi = new URL("./assets/css/images/marker-poi.png", import.meta.url)
   .href;
@@ -577,6 +581,12 @@ const displayGPX = (gpxString, store = false, source, extension) => {
           name = "omap-" + dayjs().format("YYYY-MM-DD-HH-mm");
         }
 
+        status.loadFileData = {
+          timestamp: new Date(),
+          name: name,
+          distance: gpx.get_distance_imp() || "unknow",
+        };
+
         if (store && status.notKaiOS) {
           let file = {
             date: new Date(),
@@ -607,12 +617,6 @@ const displayGPX = (gpxString, store = false, source, extension) => {
           });
 
           localforage.setItem("gpxFiles", status.gpxFiles);
-        } else {
-          status.loadFileData = {
-            timestamp: new Date(),
-            name: name,
-            distance: gpx.get_distance_imp() || "unknow",
-          };
         }
 
         if (store && !status.notKaiOS) {
@@ -764,10 +768,10 @@ let addOverLayer = (url, maxzoom, attribution) => {
   status.current_overlayer = url;
 };
 //create default marker
-let createMarker = async (lat, lng, popupText = "", customData) => {
+let followingMarker = async (lat, lng, popupText = "", customData) => {
   const marker = L.marker([lat, lng], {
     icon: L.icon({
-      iconUrl: markerIcon,
+      iconUrl: followIcon,
       shadowUrl: null,
       iconSize: [17, 27],
       iconAnchor: [9, 27],
@@ -1086,6 +1090,52 @@ let caching_tiles = function () {
   tilesLayer.on("seedstart", function (seedData) {});
 };
 
+function handleDeviceOrientation(event) {
+  const heading = event.webkitCompassHeading ?? event.alpha;
+
+  if (typeof heading === "number") {
+    mainmarker.setRotationAngle(heading);
+
+    let followIconElement = document.querySelector("#follow-icon svg");
+
+    if (followIconElement) {
+      followIconElement.style.transform = `rotate(${heading}deg)`;
+    }
+  }
+}
+
+let deviceorientation = () => {
+  if (typeof DeviceOrientationEvent !== "undefined") {
+    if (typeof DeviceOrientationEvent.requestPermission === "function") {
+      DeviceOrientationEvent.requestPermission()
+        .then((permissionState) => {
+          if (permissionState === "granted") {
+            window.addEventListener(
+              "deviceorientation",
+              handleDeviceOrientation,
+            );
+          } else {
+            side_toaster("fallback", 2000);
+            status.fallbackToGeolocationHeading = true;
+          }
+        })
+        .catch((error) => {
+          side_toaster(error, 3000);
+        });
+    } else {
+      console.log("Keine Permission-API vorhanden");
+      side_toaster("OK without", 2000);
+
+      window.addEventListener("deviceorientation", handleDeviceOrientation);
+    }
+  } else {
+    console.log("heading fallback");
+    side_toaster("fallback", 2000);
+
+    status.fallbackToGeolocationHeading = true;
+  }
+};
+
 // Initialize the map and define the setup
 const initMap = () => {
   map = L.map("map-container", {
@@ -1168,17 +1218,29 @@ const initMap = () => {
       if (crosshair) {
         crosshair.classList.remove("unavailable");
       }
+      if (
+        status.fallbackToGeolocationHeading &&
+        e.coords.heading !== null &&
+        e.coords.heading !== undefined
+      ) {
+        let iconElement = document.querySelector("#follow-icon svg");
+        if (iconElement) {
+          iconElement.style.transform = `rotate(${e.coords.heading}deg)`;
+          iconElement.style.transformOrigin = "center";
+        }
+      }
 
       if (!mainmarker && e.coords.latitude) {
         mainmarker = L.marker([e.coords.latitude, e.coords.longitude], {
           draggable: false,
           icon: L.icon({
-            iconUrl: markerIcon,
+            iconUrl: followIcon,
             shadowUrl: null,
-            iconSize: [17, 27],
-            iconAnchor: [9, 27],
-            popupAnchor: [0, -14],
+            iconSize: [21, 35],
+            iconAnchor: [10, 17],
+            popupAnchor: [0, -17],
           }),
+          rotationOrigin: "center center",
         }).addTo(mainmarkerGroup);
         setTimeout(() => {
           map.panTo([e.coords.latitude, e.coords.longitude], 16);
@@ -1660,7 +1722,7 @@ let mapView = {
     }
 
     localforage.getItem("tempTracking").then((e) => {
-      if (e.length > 0) {
+      if (e && e.length > 0) {
         let ask = confirm(
           "It looks like the tracking was interrupted unintentionally. If you want to continue, you can — would you like to?",
         );
@@ -1689,6 +1751,10 @@ let mapView = {
       "div",
       {
         id: "mapView",
+
+        onclick: () => {
+          deviceorientation();
+        },
 
         onremove: () => {
           if (settings.scale) status.scaleControl.remove();
@@ -2151,11 +2217,38 @@ var optionsView = {
             ? null
             : m("button", { class: "item", onclick: () => {} }, "delete"),
           status.routeSelected
-            ? null
-            : m("div", "Name " + status.loadFileData.name),
+            ? m("div", [
+                m("div", { class: "bold", style: "margin-top:10px" }, "Name"),
+                m("div", status.loadFileData.name),
+              ])
+            : null,
           status.routeSelected
-            ? null
-            : m("div", "Distance " + status.loadFileData.distamnce),
+            ? m("div", [
+                m(
+                  "div",
+                  {
+                    class: "bold",
+                  },
+                  "Distance",
+                ),
+                m(
+                  "div",
+                  {
+                    oncreate: (vnode) => {
+                      if (settings.measurement == "imperial") {
+                        vnode.dom.textContent =
+                          (status.loadFileData.distance * 0.621371).toFixed(2) +
+                          " mi";
+                      } else {
+                        vnode.dom.textContent =
+                          status.loadFileData.distance.toFixed(2) + " km";
+                      }
+                    },
+                  },
+                  status.loadFileData.distance,
+                ),
+              ])
+            : null,
         ]),
       ],
     );
