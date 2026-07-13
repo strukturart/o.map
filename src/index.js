@@ -89,6 +89,7 @@ export let status = {
   osm_files: [],
   selectedMarker: "",
   search_collection: [],
+  poi_collection: [],
   routingData: [],
   osmLogged: false,
   kaiosGPX: [],
@@ -163,6 +164,14 @@ localforage.getItem("search").then((value) => {
     status.search_collection = value;
   } else {
     status.search_collection = [];
+  }
+});
+
+localforage.getItem("pois").then((value) => {
+  if (value) {
+    status.poi_collection = value;
+  } else {
+    status.poi_collection = [];
   }
 });
 
@@ -675,41 +684,89 @@ loadLastGPX();
 let poiGroup = null;
 function loadPOIs(tag) {
   const b = map.getBounds().pad(0.2);
-
   const bbox = `${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}`;
 
-  const query = `
-    [out:json][timeout:25];
-    node[${tag}](${bbox});
-    out;
-  `;
+  let query;
+  if (tag.includes("~")) {
+    const [key, values] = tag.split("~");
+    const valueArray = values.split("|");
+    const nwrQueries = valueArray
+      .map((v) => `nwr[${key}=${v}](${bbox});`)
+      .join("\n  ");
 
-  const url =
-    "https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query);
+    query = `
+[out:json][timeout:20];
+(
+  ${nwrQueries}
+);
+out center;
+`;
+  } else {
+    // Standard-Abfrage für einfache Tags
+    query = `
+[out:json][timeout:20];
+nwr[${tag}](${bbox});
+out center;
+`;
+  }
 
-  fetch(url)
-    .then(async (r) => {
-      const text = await r.text();
+  const urls = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+    "https://overpass.osm.ch/api/interpreter",
+  ];
 
-      try {
-        return JSON.parse(text);
-      } catch (e) {
-        side_toaster("data not loaded", 2000);
-        console.error("Overpass returned non-JSON:", text);
-        throw e;
-      }
+  function tryFetch(urlIndex = 0) {
+    if (urlIndex >= urls.length) {
+      side_toaster("Data not loaded", 2000);
+      return;
+    }
+
+    const url = urls[urlIndex];
+
+    fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "Accept": "application/json",
+      },
+      body: "data=" + encodeURIComponent(query),
     })
-    .then((data) => renderPOIs(data))
-    .catch((err) => console.error("Overpass error:", err));
+      .then(async (response) => {
+        const text = await response.text();
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}\n${text}`);
+        }
+
+        return JSON.parse(text);
+      })
+      .then((data) => {
+        console.log(data);
+        renderPOIs(data);
+      })
+      .catch((err) => {
+        tryFetch(urlIndex + 1);
+      });
+  }
+
+  tryFetch();
 }
 
 function renderPOIs(data) {
   poiGroup.clearLayers();
+  // poiGroup = "";
+
   data.elements.forEach((el) => {
-    if (el.type !== "node") return;
+    const lat = el.lat ?? el.center?.lat;
+    const lon = el.lon ?? el.center?.lon;
+
+    if (!lat || !lon) return;
+
     const name = el.tags?.name || el.tags?.amenity || "POI";
-    createPOIMarker(el.lat, el.lon, name).then((e) => {
-      e.addTo(markersGroup);
+
+    createPOIMarker(lat, lon, name, el.tags).then((marker) => {
+      marker.addTo(poiGroup);
     });
   });
 }
@@ -726,8 +783,8 @@ let addTilesLayer = (url, maxzoom, attribution) => {
   }
 
   tilesLayer = L.tileLayer(url, {
-    maxNativeZoom: 18,
-    maxZoom: maxzoom,
+    maxNativeZoom: maxzoom,
+    maxZoom: 24,
     attribution: attribution,
     useCache: true,
     cacheMaxAge: 2629800000,
@@ -811,7 +868,39 @@ let followingMarker = async (lat, lng, popupText = "", customData) => {
 };
 
 //create poi marker
-let createPOIMarker = async (lat, lng, popupText) => {
+let createPOIMarker = async (lat, lng, popupText, tags = {}) => {
+  if (typeof tags === "string") {
+    try {
+      tags = JSON.parse(tags);
+    } catch (e) {
+      tags = {};
+    }
+  } else if (!tags || typeof tags !== "object") {
+    tags = {};
+  }
+
+  let html = `<strong>${popupText}</strong>`;
+
+  if (tags.website) {
+    html += `<br><a href="${tags.website}" target="_blank" rel="noopener">Website</a>`;
+  }
+
+  if (tags.phone) {
+    html += `<br><a href="tel:${tags.phone}">${tags.phone}</a>`;
+  }
+
+  if (tags.mobile) {
+    html += `<br><a href="tel:${tags.mobile}">${tags.mobile}</a>`;
+  }
+
+  if (tags.opening_hours) {
+    html += `<br><b>Opening hours</b><br>${tags.opening_hours.replace(/;/g, "<br>")}`;
+  }
+
+  if (status.notKaiOS) {
+    html += '<br><br><button class="popup-save-marker">save</button>';
+  }
+
   const marker = L.marker([lat, lng], {
     icon: L.icon({
       iconUrl: markerPoi,
@@ -820,20 +909,19 @@ let createPOIMarker = async (lat, lng, popupText) => {
       iconAnchor: [9, 27],
       popupAnchor: [0, -14],
     }),
-  }).bindPopup(popupText);
+  }).bindPopup(html);
 
   marker.feature = {
     type: "Feature",
     properties: {
       type: "poi",
       id: uuidv4(),
-      popupText,
+      popupText: popupText,
+      tags: tags,
     },
   };
 
   marker.on("click", (e) => {
-    const { popupText, type, id } = e.target.feature.properties;
-    console.log("POI Marker:", { type, popupText, id });
     status.selectedMarker = marker;
 
     bottom_bar(
@@ -841,6 +929,14 @@ let createPOIMarker = async (lat, lng, popupText) => {
       "<img class='menu-button' src='assets/image/menu.svg'>",
       "<img class='option-button' src='assets/image/option.svg'>",
     );
+
+    if (status.notKaiOS) {
+      document.querySelectorAll(".popup-save-marker").forEach((button) => {
+        button.addEventListener("click", (e) => {
+          storeMarker(status.selectedMarker);
+        });
+      });
+    }
   });
 
   return marker;
@@ -990,7 +1086,6 @@ let storeMarker = (data) => {
       m.route.set("/mapView");
     })
     .catch((error) => {
-      console.error("Error storing marker:", error);
       side_toaster("Error storing marker", 2000);
     });
 };
@@ -1142,7 +1237,12 @@ const initMap = () => {
     keyboard: true,
     zoomControl: false,
     minZoom: 3,
+    maxNativeZoom: 18,
     worldCopyJump: true,
+  });
+
+  localforage.getItem("lastPosition").then((e) => {
+    if (e.zoom) map.setZoom(e.zoom);
   });
 
   const scripts = [
@@ -1331,6 +1431,60 @@ const initMap = () => {
 
 initMap();
 
+//overpass request
+let OverpassQuery = async (osmId, osmType = "node") => {
+  const query = `
+[out:json];
+${osmType}(${osmId});
+out center;
+`;
+
+  const urls = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+    "https://overpass.osm.ch/api/interpreter",
+  ];
+
+  function tryFetch(urlIndex = 0) {
+    return new Promise((resolve, reject) => {
+      if (urlIndex >= urls.length) {
+        reject(new Error("All Overpass servers failed"));
+        return;
+      }
+
+      const url = urls[urlIndex];
+
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+          "Accept": "application/json",
+        },
+        body: "data=" + encodeURIComponent(query),
+      })
+        .then(async (response) => {
+          const text = await response.text();
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}\n${text}`);
+          }
+
+          return JSON.parse(text);
+        })
+        .then((data) => {
+          resolve(data);
+        })
+        .catch((err) => {
+          tryFetch(urlIndex + 1)
+            .then(resolve)
+            .catch(reject);
+        });
+    });
+  }
+
+  return tryFetch();
+};
+
 //search comp
 const searchService = {
   async search(query) {
@@ -1370,11 +1524,9 @@ const SearchInput = {
 
           state.results = await searchService.search(state.query);
 
-          console.log(state.results);
           if (vnode.attrs.onResults) {
             vnode.attrs.onResults(state.results);
           }
-
           m.redraw();
         },
       }),
@@ -1406,7 +1558,33 @@ const SearchInput = {
                         name: item.name,
                         display_name: item.display_name,
                         addresstype: item.addresstype,
+                        osm_id: item.osm_id,
+                        osm_type: item.osm_type,
                       });
+
+                      OverpassQuery(item.osm_id, item.osm_type).then(
+                        (overpassData) => {
+                          localforage
+                            .getItem("search")
+                            .then((searchResults) => {
+                              const updatedResults = searchResults.map(
+                                (result) => {
+                                  if (result.osm_id === item.osm_id) {
+                                    return {
+                                      ...result,
+                                      tags: JSON.stringify(
+                                        overpassData.elements[0].tags,
+                                      ),
+                                    };
+                                  }
+                                  return result;
+                                },
+                              );
+
+                              localforage.setItem("search", updatedResults);
+                            });
+                        },
+                      );
                     }
                   }
                 },
@@ -1422,7 +1600,30 @@ const SearchInput = {
                       name: item.name,
                       display_name: item.display_name,
                       addresstype: item.addresstype,
+                      osm_id: item.osm_id,
+                      osm_type: item.osm_type,
                     });
+
+                    OverpassQuery(item.osm_id, item.osm_type).then(
+                      (overpassData) => {
+                        console.log("DATA" + overpassData);
+                        localforage.getItem("search").then((searchResults) => {
+                          const updatedResults = searchResults.map((result) => {
+                            if (result.osm_id === item.osm_id) {
+                              return {
+                                ...result,
+                                tags: JSON.stringify(
+                                  overpassData.elements[0].tags,
+                                ),
+                              };
+                            }
+                            return result;
+                          });
+
+                          localforage.setItem("search", updatedResults);
+                        });
+                      },
+                    );
                   }
                 },
               },
@@ -1766,7 +1967,9 @@ let mapView = {
             zoom: map.getZoom(),
           };
 
-          localforage.setItem("lastPosition", mapState);
+          localforage.setItem("lastPosition", mapState).then((e) => {
+            console.log("stored" + JSON.stringify(e));
+          });
 
           document.querySelector("#map-container").style.display = "none";
         },
@@ -1781,6 +1984,11 @@ let mapView = {
                 m.route.set("/optionsView");
 
               if (e.target.classList == "menu-button") m.route.set("/menuView");
+
+              localforage.getItem("lastPosition").then((e) => {
+                console.log("zoom" + e.zoom);
+                if (e.zoom) map.setZoom(e.zoom);
+              });
             });
         },
       },
@@ -1800,6 +2008,19 @@ let mapView = {
                 },
               },
               Icon(Navigation),
+            )
+          : null,
+
+        status.notKaiOS
+          ? m(
+              "button",
+              {
+                id: "search-icon",
+                onclick: () => {
+                  m.route.set("/searchView");
+                },
+              },
+              Icon(Search),
             )
           : null,
         m("div", { id: "map-info" }, ""),
@@ -2310,24 +2531,27 @@ var poiView = {
       [
         m("div", { class: "col-xs-11 col-md-3" }, [
           m("h2", "POI"),
+
           m(
             "div",
-            basic_pois.map((e, i) =>
-              m(
-                "button",
-                {
-                  class: "item",
-                  oncreate: (vnode) => {
-                    if (i == 0) vnode.dom.focus();
+            basic_pois
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .map((e, i) =>
+                m(
+                  "button",
+                  {
+                    class: "item",
+                    oncreate: (vnode) => {
+                      if (i == 0) vnode.dom.focus();
+                    },
+                    onclick: () => {
+                      loadPOIs(e.query);
+                      m.route.set("/mapView");
+                    },
                   },
-                  onclick: () => {
-                    loadPOIs(e.query);
-                    m.route.set("/mapView");
-                  },
-                },
-                e.name,
+                  e.name,
+                ),
               ),
-            ),
           ),
         ]),
       ],
@@ -2409,14 +2633,16 @@ var filesView = {
                         },
                         onclick: () => {
                           const [lng, lat] = item.geometry.coordinates;
-                          createPOIMarker(lat, lng, item.properties.name).then(
-                            (e) => {
-                              e.addTo(markersGroup);
-                              map.setView([lat, lng], 14);
-
-                              m.route.set("/mapView");
-                            },
-                          );
+                          createPOIMarker(
+                            lat,
+                            lng,
+                            item.properties.name,
+                            item.properties.tags ?? {},
+                          ).then((e) => {
+                            e.addTo(markersGroup);
+                            map.setView([lat, lng], 14);
+                            m.route.set("/mapView");
+                          });
                         },
                       },
                       item.properties.name || "unknow",
@@ -2837,8 +3063,9 @@ let searchView = {
             let lat = document.activeElement.getAttribute("data-lat");
             let lng = document.activeElement.getAttribute("data-lng");
             let text = document.activeElement.getAttribute("data-text");
+            let tags = document.activeElement.getAttribute("data-tags");
 
-            createPOIMarker(lat, lng, text).then((e) => {
+            createPOIMarker(lat, lng, text, tags).then((e) => {
               e.addTo(markersGroup);
             });
             map.setView([lat, lng], 15);
@@ -2859,16 +3086,10 @@ let searchView = {
             },
 
             onSelect: (item) => {
-              status.search_collection.push(item);
+              status.search_collection.unshift(item);
               localforage
                 .setItem("search", status.search_collection)
-                .then((item) => {
-                  createPOIMarker(item.lat, item.lng, item.name).addTo(
-                    markersGroup,
-                  );
-                  map.setView([item.lat, item.lng], 15);
-                  m.route.set("/mapView");
-                });
+                .then((item) => {});
             },
           }),
 
@@ -2876,7 +3097,7 @@ let searchView = {
             ? m("div", { class: "col-xs-12" }, [
                 status.search_collection.map((e) => {
                   const handleClick = () => {
-                    createPOIMarker(e.lat, e.lng, e.name).then((e) => {
+                    createPOIMarker(e.lat, e.lng, e.name, e.tags).then((e) => {
                       e.addTo(markersGroup);
                     });
                     map.setView([e.lat, e.lng], 14);
@@ -2891,6 +3112,7 @@ let searchView = {
                       "data-lat": e.lat,
                       "data-lng": e.lng,
                       "data-text": e.lname,
+                      "data-tags": e.tags ?? {},
                     },
                     [
                       m(
