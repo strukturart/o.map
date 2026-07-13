@@ -62,6 +62,7 @@
     "localforage": "^1.10.0",
     "lucide": "^1.8.0",
     "mithril": "^2.2.2",
+    "opening_hours": "^3.13.0",
     "url-search-params-polyfill": "^8.1.1",
     "uuid": "^8.3.2"
   }

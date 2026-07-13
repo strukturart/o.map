@@ -45,7 +45,15 @@ export let basic_pois = [
   },
 
   {
-    "name": "water",
+    "name": "swimming spot",
+    "type": "overpass",
+    "query": "leisure=bathing_place",
+    "attribution": "Overpass",
+    "maxzoom": 18,
+  },
+
+  {
+    "name": "drinking water",
     "type": "overpass",
     "query": "amenity=drinking_water",
     "attribution": "Overpass",
@@ -65,6 +73,23 @@ export let basic_pois = [
     "name": "hostels",
     "type": "overpass",
     "query": "tourism=hostel",
+    "attribution": "Overpass",
+    "maxzoom": 18,
+  },
+
+  {
+    "name": "historic sites",
+    "type": "overpass",
+    "query":
+      "historic~monument|castle|ruins|archaeological_site|memorial|building|church",
+    "attribution": "Overpass",
+    "maxzoom": 18,
+  },
+
+  {
+    "name": "place of worship",
+    "type": "overpass",
+    "query": "amenity=place_of_worship",
     "attribution": "Overpass",
     "maxzoom": 18,
   },
@@ -103,13 +128,6 @@ export let basic_pois = [
   },
 
   // Transport
-  {
-    "name": "bus stations",
-    "type": "overpass",
-    "query": "amenity=bus_station",
-    "attribution": "Overpass",
-    "maxzoom": 18,
-  },
 
   {
     "name": "train stations",
@@ -144,14 +162,6 @@ export let basic_pois = [
     "maxzoom": 18,
   },
 
-  {
-    "name": "hiking trails",
-    "type": "overpass",
-    "query": "route=hiking",
-    "attribution": "Overpass",
-    "maxzoom": 18,
-  },
-
   // Services
   {
     "name": "pharmacies",
@@ -177,19 +187,35 @@ export let basic_pois = [
     "maxzoom": 18,
   },
 
-  {
-    "name": "wifi",
-    "type": "overpass",
-    "query": "amenity=wifi",
-    "attribution": "Overpass",
-    "maxzoom": 18,
-  },
-
   // Outdoor
   {
     "name": "camping",
     "type": "overpass",
     "query": "tourism=camp_site",
+    "attribution": "Overpass",
+    "maxzoom": 18,
+  },
+
+  {
+    "name": "hut",
+    "type": "overpass",
+    "query": "tourism=basic_hut",
+    "attribution": "Overpass",
+    "maxzoom": 18,
+  },
+
+  {
+    "name": "wilderness hut",
+    "type": "overpass",
+    "query": "tourism=wilderness_hut",
+    "attribution": "Overpass",
+    "maxzoom": 18,
+  },
+
+  {
+    "name": "alpin hut",
+    "type": "overpass",
+    "query": "tourism=alpine_hut",
     "attribution": "Overpass",
     "maxzoom": 18,
   },

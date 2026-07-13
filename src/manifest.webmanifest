@@ -6,6 +6,7 @@
   "start_url": "/index.html",
   "priority": "high",
   "display": "standalone",
+  "fullscreen": "true",
   "userAgentInfo": "o.map written by strukturart@gmail.com",
 
   "icons": [
@@ -37,7 +38,7 @@
   ],
 
   "b2g_features": {
-    "version": "2.1.997",
+    "version": "2.1.9981",
     "id": "o.map",
     "core": true,
     "categories": ["utilities"],
