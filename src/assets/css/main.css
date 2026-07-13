@@ -304,6 +304,18 @@ section {
   color: black;
 }
 
+#search-icon {
+  width: fit-content;
+  border-radius: 10px;
+  position: fixed;
+  z-index: 10000;
+  top: 35px;
+  left: 60px;
+  background: yellow;
+  padding: 10px;
+  color: black;
+}
+
 /*///////////////////////////
 ///WEATHER LAYER////////////////*/
 
