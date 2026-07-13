@@ -60,8 +60,10 @@
     "leaflet-gpx": "^2.2.0",
     "leaflet-rotatedmarker": "^0.2.0",
     "localforage": "^1.10.0",
+    "long-press-event": "^2.5.2",
     "lucide": "^1.8.0",
     "mithril": "^2.2.2",
+    "opening_hours": "^3.13.0",
     "url-search-params-polyfill": "^8.1.1",
     "uuid": "^8.3.2"
   }

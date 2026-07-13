@@ -191,7 +191,7 @@ export const OAuth_osm = function (callback) {
     "redirect_uri",
     "https://omap.strukturart.com/index.html",
   );
-  url.searchParams.append("scope", "write_gpx read_gpx read_prefs");
+  url.searchParams.append("scope", "write_gpx read_gpx read_prefs write_notes");
 
   const windowRef = window.open(url.toString());
 };
@@ -219,6 +219,36 @@ export const osm_server_load_gpx = async function (
     );
     const data = await response.text();
 
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const osm_server_create_note = async function (lat, lon, text) {
+  let token = await localforage.getItem("osm_token");
+  let n = "Bearer " + token;
+
+  const myHeaders = new Headers({
+    Authorization: n,
+    "Content-Type": "text/plain",
+  });
+
+  try {
+    const response = await fetch(
+      `https://api.openstreetmap.org/api/0.6/notes?lat=${lat}&lon=${lon}&text=${encodeURIComponent(text)}`,
+      {
+        method: "POST",
+        headers: myHeaders,
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.text();
+    console.log(data);
     return data;
   } catch (error) {
     throw error;

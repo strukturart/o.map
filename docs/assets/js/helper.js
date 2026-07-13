@@ -101,7 +101,6 @@ export const geolocation = function (callback) {
     const now = Date.now();
 
     // Only proceed if 2 seconds have passed since the last callback
-    console.log(now - lastCallbackTime);
     if (now - lastCallbackTime >= 2000) {
       lastCallbackTime = now;
       callback(position);
