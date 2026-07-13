@@ -42,6 +42,11 @@ import {
   Upload,
   List,
   Navigation,
+  Contact,
+  Book,
+  Clock,
+  Download,
+  MapPinPlus,
 } from "lucide";
 
 import {
@@ -89,6 +94,7 @@ export let status = {
   osm_files: [],
   selectedMarker: "",
   search_collection: [],
+  poi_collection: [],
   routingData: [],
   osmLogged: false,
   kaiosGPX: [],
@@ -166,10 +172,35 @@ localforage.getItem("search").then((value) => {
   }
 });
 
+localforage.getItem("pois").then((value) => {
+  if (value) {
+    status.poi_collection = value;
+  } else {
+    status.poi_collection = [];
+  }
+});
+
 let markersLocal = [];
 localforage.getItem("markersLocal").then((e) => {
   markersLocal = e || [];
 });
+
+//share
+let test = () => {
+  const query = window.location.hash.split("?")[1] || "";
+  const params = new URLSearchParams(query);
+  const poiQuery = params.get("poi");
+
+  const share = params.get("share");
+  if (share && params.get("lat") && params.get("lng")) {
+    status.share = {
+      lat: params.get("lat"),
+      lng: params.get("lng"),
+      zoom: params.get("zoom"),
+    };
+  }
+};
+test();
 
 if (!status.notKaiOS) {
   list_files("gpx").then((e) => {
@@ -195,7 +226,7 @@ const DEFAULT_SETTINGS = {
   crosshair: true,
   scale: true,
   measurement: "metric",
-  radarTime: "1000",
+  radarTime: "2000",
   routingNotification: true,
   screenlock: false,
   cacheTime: "6",
@@ -399,7 +430,7 @@ function panToNextMarker() {
   status.selectedMarker.getElement().classList.add("selected-marker");
   previousMarkerIndex = currentMarkerIndex;
 
-  if (m.route.get() == "/mapView") {
+  if (m.route.get() == "/mapView" && !status.notKaiOS) {
     bottom_bar(
       "",
       "<img class='menu-button' src='assets/image/menu.svg'>",
@@ -675,41 +706,119 @@ loadLastGPX();
 let poiGroup = null;
 function loadPOIs(tag) {
   const b = map.getBounds().pad(0.2);
-
   const bbox = `${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}`;
 
-  const query = `
-    [out:json][timeout:25];
-    node[${tag}](${bbox});
-    out;
-  `;
+  let query;
+  if (tag.includes("~")) {
+    const [key, values] = tag.split("~");
+    const valueArray = values.split("|");
+    const nwrQueries = valueArray
+      .map((v) => `nwr[${key}=${v}](${bbox});`)
+      .join("\n  ");
 
-  const url =
-    "https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query);
+    query = `
+[out:json][timeout:10];
+(
+  ${nwrQueries}
+);
+out center;
+`;
+  } else {
+    query = `
+[out:json][timeout:10];
+nwr[${tag}](${bbox});
+out center;
+`;
+  }
 
-  fetch(url)
-    .then(async (r) => {
-      const text = await r.text();
+  const urls = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+    "https://overpass.osm.ch/api/interpreter",
+  ];
 
-      try {
-        return JSON.parse(text);
-      } catch (e) {
-        side_toaster("data not loaded", 2000);
-        console.error("Overpass returned non-JSON:", text);
-        throw e;
-      }
+  function tryFetch(urlIndex = 0) {
+    if (urlIndex >= urls.length) {
+      side_toaster("Data not loaded", 2000);
+      document.querySelector("#info").textContent = "";
+      return;
+    }
+
+    document.querySelector("#info").textContent = "load data..";
+    const url = urls[urlIndex];
+
+    // AbortController für Timeout erstellen
+    const controller = new AbortController();
+    const timeoutMs = 10000; // 10 Sekunden Timeout
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "Accept": "application/json",
+      },
+      body: "data=" + encodeURIComponent(query),
+      signal: controller.signal, // AbortSignal übergeben
     })
-    .then((data) => renderPOIs(data))
-    .catch((err) => console.error("Overpass error:", err));
+      .then(async (response) => {
+        clearTimeout(timeoutId); // Timeout clearen wenn erfolgreich
+
+        if (response.status === 504) {
+          throw new Error("Server Timeout (504) - trying next endpoint");
+        }
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const text = await response.text();
+        return JSON.parse(text);
+      })
+      .then((data) => {
+        if (data.elements && data.elements.length > 0) {
+          renderPOIs(data);
+          document.querySelector("#info").textContent = "";
+        } else {
+          document.querySelector("#info").textContent = "No data found";
+          document.querySelector("#info").classList.add("animation");
+          setTimeout(() => {
+            document.querySelector("#info").textContent = "";
+            document.querySelector("#info").classList.remove("animation");
+          }, 7000);
+        }
+      })
+      .catch((err) => {
+        clearTimeout(timeoutId); // Sicherstellen, dass Timeout immer gelöscht wird
+
+        // AbortError = Timeout
+        if (err.name === "AbortError") {
+          console.error(`Timeout at ${url} (${timeoutMs}ms)`);
+        } else {
+          console.error(`Error at ${url}: ${err.message}`);
+        }
+
+        let delay = 2000 * Math.pow(2, urlIndex);
+        setTimeout(() => tryFetch(urlIndex + 1), delay);
+      });
+  }
+
+  tryFetch();
 }
 
 function renderPOIs(data) {
   poiGroup.clearLayers();
+
+  console.log(JSON.stringify(data));
   data.elements.forEach((el) => {
-    if (el.type !== "node") return;
+    const lat = el.lat ?? el.center?.lat;
+    const lon = el.lon ?? el.center?.lon;
+
+    if (!lat || !lon) return;
+
     const name = el.tags?.name || el.tags?.amenity || "POI";
-    createPOIMarker(el.lat, el.lon, name).then((e) => {
-      e.addTo(markersGroup);
+
+    createPOIMarker(lat, lon, name, el.tags).then((marker) => {
+      marker.addTo(poiGroup);
     });
   });
 }
@@ -726,8 +835,8 @@ let addTilesLayer = (url, maxzoom, attribution) => {
   }
 
   tilesLayer = L.tileLayer(url, {
-    maxNativeZoom: 18,
-    maxZoom: maxzoom,
+    maxNativeZoom: maxzoom,
+    maxZoom: 24,
     attribution: attribution,
     useCache: true,
     cacheMaxAge: 2629800000,
@@ -767,51 +876,47 @@ let addOverLayer = (url, maxzoom, attribution) => {
   });
   status.current_overlayer = url;
 };
-//create default marker
-let followingMarker = async (lat, lng, popupText = "", customData) => {
-  const marker = L.marker([lat, lng], {
-    icon: L.icon({
-      iconUrl: followIcon,
-      shadowUrl: null,
-      iconSize: [17, 27],
-      iconAnchor: [9, 27],
-      popupAnchor: [0, -14],
-    }),
-  });
-
-  if (popupText != null && popupText !== "") {
-    if (typeof popupText !== "string") {
-      console.warn("Invalid popupText type:", popupText);
-    }
-    marker.bindPopup(popupText);
-  }
-
-  marker.feature = {
-    type: "Feature",
-    properties: {
-      type: "default",
-      popupText,
-      customData,
-    },
-  };
-
-  marker.on("click", (e) => {
-    const { popupText, type, id } = e.target.feature.properties;
-    console.log("POI Marker:", { type, popupText, id });
-    status.selectedMarker = marker;
-
-    bottom_bar(
-      "",
-      "<img class='menu-button' src='assets/image/menu.svg'>",
-      "<img class='option-button' src='assets/image/option.svg'>",
-    );
-  });
-
-  return marker;
-};
 
 //create poi marker
-let createPOIMarker = async (lat, lng, popupText) => {
+let createPOIMarker = async (
+  lat,
+  lng,
+  popupText,
+  tags = {},
+  openPopup = false,
+) => {
+  if (typeof tags === "string") {
+    try {
+      tags = JSON.parse(tags);
+    } catch (e) {
+      tags = {};
+    }
+  } else if (!tags || typeof tags !== "object") {
+    tags = {};
+  }
+
+  let html = `<strong>${popupText}</strong>`;
+
+  if (tags.website) {
+    html += `<br><a href="${tags.website}" target="_blank" rel="noopener">Website</a>`;
+  }
+
+  if (tags.phone) {
+    html += `<br><a href="tel:${tags.phone}">${tags.phone}</a>`;
+  }
+
+  if (tags.mobile) {
+    html += `<br><a href="tel:${tags.mobile}">${tags.mobile}</a>`;
+  }
+
+  if (tags.opening_hours) {
+    html += `<br><b>Opening hours</b><br>${tags.opening_hours.replace(/;/g, "<br>")}`;
+  }
+
+  if (status.notKaiOS) {
+    html += '<br><br><button class="popup-save-marker">save</button>';
+  }
+
   const marker = L.marker([lat, lng], {
     icon: L.icon({
       iconUrl: markerPoi,
@@ -820,29 +925,53 @@ let createPOIMarker = async (lat, lng, popupText) => {
       iconAnchor: [9, 27],
       popupAnchor: [0, -14],
     }),
-  }).bindPopup(popupText);
+  });
+
+  if (!status.notKaiOS) {
+    marker.bindPopup(html);
+  }
 
   marker.feature = {
     type: "Feature",
     properties: {
       type: "poi",
       id: uuidv4(),
-      popupText,
+      popupText: popupText,
+      tags: tags,
     },
   };
 
   marker.on("click", (e) => {
-    const { popupText, type, id } = e.target.feature.properties;
-    console.log("POI Marker:", { type, popupText, id });
     status.selectedMarker = marker;
 
-    bottom_bar(
-      "",
-      "<img class='menu-button' src='assets/image/menu.svg'>",
-      "<img class='option-button' src='assets/image/option.svg'>",
-    );
+    mapView.markerData = marker.feature;
+    m.redraw();
+    if (!status.notKaiOS) {
+      bottom_bar(
+        "",
+        "<img class='menu-button' src='assets/image/menu.svg'>",
+        "<img class='option-button' src='assets/image/option.svg'>",
+      );
+    }
+
+    if (status.notKaiOS) {
+      document.querySelectorAll(".popup-save-marker").forEach((button) => {
+        if (button)
+          button.addEventListener("click", (e) => {
+            storeMarker(status.selectedMarker);
+          });
+      });
+    }
   });
 
+  if (openPopup) {
+    marker.openPopup();
+
+    status.selectedMarker = marker;
+
+    mapView.markerData = marker.feature;
+    m.redraw();
+  }
   return marker;
 };
 
@@ -971,11 +1100,16 @@ function trackingDataToGPXString(trackingData, trackName = "Track") {
 }
 
 //store marker
-let storeMarker = (data) => {
-  const markerName = prompt("Name:", "New Marker");
+let storeMarker = async (data) => {
+  let defaultName = "";
+  if (status.selectedMarker) {
+    defaultName =
+      status.selectedMarker?.feature?.properties?.popupText || "New marker";
+  }
+  const markerName = prompt("Name:", defaultName);
   if (markerName === null) {
     side_toaster("Marker not stored", 2000);
-    return;
+    return false;
   }
 
   const geoJsonData = data.toGeoJSON();
@@ -983,16 +1117,17 @@ let storeMarker = (data) => {
   geoJsonData.properties.id = uuidv4();
 
   markersLocal.push(geoJsonData);
-  localforage
-    .setItem("markersLocal", markersLocal)
-    .then(() => {
-      side_toaster("Marker '" + markerName + "' stored", 2000);
-      m.route.set("/mapView");
-    })
-    .catch((error) => {
-      console.error("Error storing marker:", error);
-      side_toaster("Error storing marker", 2000);
-    });
+
+  try {
+    await localforage.setItem("markersLocal", markersLocal);
+    side_toaster("Marker '" + markerName + "' stored", 2000);
+
+    m.route.set("/mapView");
+    return geoJsonData;
+  } catch (error) {
+    side_toaster("Error storing marker", 2000);
+    return false;
+  }
 };
 
 function analyzeTrack(trackingData) {
@@ -1124,13 +1259,11 @@ let deviceorientation = () => {
         });
     } else {
       console.log("Keine Permission-API vorhanden");
-      side_toaster("OK without", 2000);
 
       window.addEventListener("deviceorientation", handleDeviceOrientation);
     }
   } else {
     console.log("heading fallback");
-    side_toaster("fallback", 2000);
 
     status.fallbackToGeolocationHeading = true;
   }
@@ -1142,7 +1275,59 @@ const initMap = () => {
     keyboard: true,
     zoomControl: false,
     minZoom: 3,
+    maxNativeZoom: 18,
     worldCopyJump: true,
+  });
+
+  map.on("zoomend", function () {
+    const center = map.getCenter();
+    let mapState = {
+      lat: center.lat,
+      lng: center.lng,
+      zoom: map.getZoom(),
+    };
+
+    localforage.setItem("lastPosition", mapState).then((e) => {});
+  });
+
+  function updateUrlParams(mapState) {
+    const hash = window.location.hash;
+    const queryStart = hash.indexOf("?");
+
+    let params;
+    if (queryStart !== -1) {
+      params = new URLSearchParams(hash.substring(queryStart + 1));
+    } else {
+      params = new URLSearchParams();
+    }
+
+    params.set("lat", mapState.lat.toFixed(6));
+    params.set("lng", mapState.lng.toFixed(6));
+    params.set("zoom", mapState.zoom);
+
+    const route = queryStart !== -1 ? hash.substring(0, queryStart) : hash;
+    const newUrl = `${route}?${params.toString()}`;
+
+    window.history.replaceState(null, "", newUrl);
+  }
+
+  map.on("moveend", function () {
+    const center = map.getCenter();
+    let mapState = {
+      lat: center.lat,
+      lng: center.lng,
+      zoom: map.getZoom(),
+    };
+
+    localforage.setItem("lastPosition", mapState).then((e) => {
+      updateUrlParams(mapState);
+    });
+  });
+
+  //last position
+  localforage.getItem("lastPosition").then((e) => {
+    if (e.zoom != undefined || e.zoom != NaN)
+      map.setView([e.lat, e.lng], e.zoom);
   });
 
   const scripts = [
@@ -1182,8 +1367,6 @@ const initMap = () => {
     if (e.url) addOverLayer(e.url, e.maxzoom, e.attribution);
   });
 
-  map.setView([51.505, -0.09], 13);
-
   poiGroup = L.layerGroup().addTo(map);
   mainmarkerGroup = L.layerGroup().addTo(map);
   gpxOverlayer = L.layerGroup().addTo(map);
@@ -1197,12 +1380,13 @@ const initMap = () => {
     lineJoin: "round",
   }).addTo(map);
 
-  if (!status.notKaiOS) {
-    setTimeout(() => {
-      const attr = document.querySelector(".leaflet-control-attribution");
-      if (attr) attr.style.display = "none";
-    }, 0);
-  }
+  setTimeout(() => {
+    const attr = document.querySelector(".leaflet-control-attribution");
+    if (attr) attr.style.display = "none";
+  }, 2000);
+
+  if (status.share)
+    map.panTo([status.share.lat, status.share.lng], status.share.zoom);
 
   geolocation((e) => {
     let crosshair = document.querySelector("div#cross-inner");
@@ -1243,7 +1427,11 @@ const initMap = () => {
           rotationOrigin: "center center",
         }).addTo(mainmarkerGroup);
         setTimeout(() => {
-          map.panTo([e.coords.latitude, e.coords.longitude], 16);
+          if (status.share) {
+            map.panTo([status.share.lat, status.share.lng], status.share.zoom);
+          } else {
+            map.panTo([e.coords.latitude, e.coords.longitude], 16);
+          }
         }, 5000);
       }
 
@@ -1331,6 +1519,60 @@ const initMap = () => {
 
 initMap();
 
+//overpass request
+let OverpassQuery = async (osmId, osmType = "node") => {
+  const query = `
+[out:json];
+${osmType}(${osmId});
+out center;
+`;
+
+  const urls = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+    "https://overpass.osm.ch/api/interpreter",
+  ];
+
+  function tryFetch(urlIndex = 0) {
+    return new Promise((resolve, reject) => {
+      if (urlIndex >= urls.length) {
+        reject(new Error("All Overpass servers failed"));
+        return;
+      }
+
+      const url = urls[urlIndex];
+
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+          "Accept": "application/json",
+        },
+        body: "data=" + encodeURIComponent(query),
+      })
+        .then(async (response) => {
+          const text = await response.text();
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}\n${text}`);
+          }
+
+          return JSON.parse(text);
+        })
+        .then((data) => {
+          resolve(data);
+        })
+        .catch((err) => {
+          tryFetch(urlIndex + 1)
+            .then(resolve)
+            .catch(reject);
+        });
+    });
+  }
+
+  return tryFetch();
+};
+
 //search comp
 const searchService = {
   async search(query) {
@@ -1370,11 +1612,9 @@ const SearchInput = {
 
           state.results = await searchService.search(state.query);
 
-          console.log(state.results);
           if (vnode.attrs.onResults) {
             vnode.attrs.onResults(state.results);
           }
-
           m.redraw();
         },
       }),
@@ -1406,7 +1646,33 @@ const SearchInput = {
                         name: item.name,
                         display_name: item.display_name,
                         addresstype: item.addresstype,
+                        osm_id: item.osm_id,
+                        osm_type: item.osm_type,
                       });
+
+                      OverpassQuery(item.osm_id, item.osm_type).then(
+                        (overpassData) => {
+                          localforage
+                            .getItem("search")
+                            .then((searchResults) => {
+                              const updatedResults = searchResults.map(
+                                (result) => {
+                                  if (result.osm_id === item.osm_id) {
+                                    return {
+                                      ...result,
+                                      tags: JSON.stringify(
+                                        overpassData.elements[0].tags,
+                                      ),
+                                    };
+                                  }
+                                  return result;
+                                },
+                              );
+
+                              localforage.setItem("search", updatedResults);
+                            });
+                        },
+                      );
                     }
                   }
                 },
@@ -1422,7 +1688,30 @@ const SearchInput = {
                       name: item.name,
                       display_name: item.display_name,
                       addresstype: item.addresstype,
+                      osm_id: item.osm_id,
+                      osm_type: item.osm_type,
                     });
+
+                    OverpassQuery(item.osm_id, item.osm_type).then(
+                      (overpassData) => {
+                        console.log("DATA" + overpassData);
+                        localforage.getItem("search").then((searchResults) => {
+                          const updatedResults = searchResults.map((result) => {
+                            if (result.osm_id === item.osm_id) {
+                              return {
+                                ...result,
+                                tags: JSON.stringify(
+                                  overpassData.elements[0].tags,
+                                ),
+                              };
+                            }
+                            return result;
+                          });
+
+                          localforage.setItem("search", updatedResults);
+                        });
+                      },
+                    );
                   }
                 },
               },
@@ -1489,84 +1778,123 @@ let ors = async (from, to, apikey, profile) => {
 };
 
 //weather api
+status.weatherlayer = false;
+let weatherLayer = null;
 
 async function loadWeatherLayers() {
   try {
+    // Animation stoppen
     if (status.layerLoopInterval) {
       clearInterval(status.layerLoopInterval);
-      let info = document.querySelector("#map-info");
+      status.layerLoopInterval = null;
+
+      const info = document.querySelector("#map-info");
+
       if (info) {
         info.textContent = "";
       }
+
+      if (weatherLayer) {
+        map.removeLayer(weatherLayer);
+        weatherLayer = null;
+        status.weatherlayer = false;
+      }
+
       return;
     }
+
     const response = await fetch(
       "https://api.rainviewer.com/public/weather-maps.json",
     );
-    let attribution =
-      "<a href='https://www.rainviewer.com/terms.html'>weather data collected by rainviewer.com</a>";
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
 
     const data = await response.json();
 
-    //  console.log(JSON.stringify(data.radar.past));
+    const radar = data.radar.past;
 
-    const imageCache = {};
+    if (!radar || !radar.length) {
+      console.warn("Keine Radar-Daten vorhanden");
+      return;
+    }
 
-    async function preloadImages() {
-      for (const element of data.radar.past) {
-        const url = data.host + element.path + "/256/{z}/{x}/{y}/2/1_1.png";
+    const attribution =
+      "<a href='https://www.rainviewer.com/terms.html'>" +
+      "weather data collected by rainviewer.com" +
+      "</a>";
 
-        try {
-          const response = await fetch(url);
-          const blob = await response.blob();
-          imageCache[url] = URL.createObjectURL(blob);
-        } catch (error) {
-          console.error(error);
-        }
+    let currentIndex = 0;
+
+    const layerDuration = Number(settings.radarTime) || 1000;
+
+    weatherLayer = L.tileLayer("", {
+      opacity: 0.7,
+      attribution: attribution,
+      tileSize: 256,
+    });
+
+    weatherLayer.addTo(map);
+
+    status.weatherlayer = true;
+
+    function showRadarLayer() {
+      const element = radar[currentIndex];
+
+      const url = data.host + element.path + "/256/{z}/{x}/{y}/2/1_1.png";
+
+      console.log("Radar:", currentIndex, url);
+
+      weatherLayer.setUrl(url);
+
+      const time = dayjs(element.time * 1000).format("HH:mm");
+
+      const info = document.querySelector("#map-info");
+
+      if (info) {
+        info.textContent = time;
       }
 
-      startLayerLoop();
+      currentIndex = (currentIndex + 1) % radar.length;
     }
 
-    function startLayerLoop() {
-      let currentIndex = 0;
-      const layerDuration = settings.radarTime;
+    showRadarLayer();
 
-      status.layerLoopInterval = setInterval(() => {
-        const element = data.radar.past[currentIndex];
-        const url = data.host + element.path + "/256/{z}/{x}/{y}/2/1_1.png";
-
-        let time = dayjs(element.time * 1000).format("HH:mm");
-
-        let info = document.querySelector("#map-info");
-        if (info) {
-          info.textContent = time;
-        }
-
-        const cachedUrl = imageCache[url];
-
-        addOverLayer(cachedUrl, 7, attribution);
-
-        currentIndex = (currentIndex + 1) % data.radar.past.length;
-      }, layerDuration);
-    }
-
-    // Starten
-    preloadImages();
+    status.layerLoopInterval = setInterval(showRadarLayer, layerDuration);
   } catch (err) {
-    // side_toaster(`Can't load weather data: ${err}`, 3000);
+    side_toaster("weather data could not loaded.", 3000);
   }
 }
 
 ////////////////
 ///VIEWS
 ///////////////
+window.addEventListener("pageshow", function () {
+  const navigation = performance.getEntriesByType("navigation")[0];
+
+  if (navigation && navigation.type === "reload") {
+    m.route.set("/intro");
+  }
+});
 
 var root = document.getElementById("app");
 
 ///////////////
 ///INTRO//////
 /////////////
+
+let startRoute = window.location.hash.slice(2);
+
+if (!startRoute || startRoute === "/intro") {
+  startRoute = "/mapView";
+}
+
+history.replaceState(
+  null,
+  "",
+  window.location.pathname + window.location.search + "#!/intro",
+);
 
 var intro = {
   oninit: () => {
@@ -1577,6 +1905,7 @@ var intro = {
   onremove: () => {
     status.viewReady = false;
   },
+
   view: function () {
     return m(
       "div",
@@ -1588,8 +1917,9 @@ var intro = {
 
         oninit: function () {
           setTimeout(() => {
-            m.route.set("/mapView");
-          }, 5000);
+            document.querySelector("#map-container").style.display = "none";
+            m.route.set(startRoute);
+          }, 3000);
         },
       },
       [
@@ -1641,8 +1971,209 @@ var intro = {
 /*/////////*/
 /*MAP*/
 /*/////////*/
+let MarkerModal = {
+  view: (vnode) => {
+    const { data, onClose } = vnode.attrs;
+
+    if (!data) return null;
+
+    const properties = data.properties || {};
+    const tags = properties.tags || {};
+
+    const address = [
+      tags["addr:street"] || tags["addr:housenumber"]
+        ? {
+            label: "Adresse",
+            value: [tags["addr:street"], tags["addr:housenumber"]]
+              .filter(Boolean)
+              .join(" "),
+            address: true,
+          }
+        : null,
+
+      tags["addr:postcode"] || tags["addr:city"]
+        ? {
+            label: "",
+            value: [tags["addr:postcode"], tags["addr:city"]]
+              .filter(Boolean)
+              .join(" "),
+            address: true,
+          }
+        : null,
+    ].filter(Boolean);
+
+    const contact = [
+      ...address,
+
+      tags.phone
+        ? {
+            label: "Phone",
+            value: tags.phone,
+            href: `tel:${tags.phone}`,
+          }
+        : null,
+
+      tags.mobile
+        ? {
+            label: "Mobile",
+            value: tags.mobile,
+            href: `tel:${tags.mobile}`,
+          }
+        : null,
+
+      tags.email
+        ? {
+            label: "Email",
+            value: tags.email,
+            href: `mailto:${tags.email}`,
+          }
+        : null,
+
+      tags.website
+        ? {
+            label: "Website",
+            value: tags.website,
+            href: tags.website,
+            external: true,
+          }
+        : null,
+    ].filter(Boolean);
+
+    const tabs = [
+      {
+        id: "info",
+        label: "Info",
+        icon: Icon(Book),
+        content: properties.popupText,
+      },
+      {
+        id: "contact",
+        label: "Kontakt",
+        icon: Icon(Contact),
+        content: contact,
+      },
+      {
+        id: "opening_hours",
+        label: "Öffnungszeiten",
+        icon: Icon(Clock),
+        content: tags.opening_hours
+          ? m.trust(tags.opening_hours.replace(/;/g, "<br>"))
+          : null,
+      },
+      {
+        id: "save",
+        label: "Save",
+        icon: Icon(Download),
+        content: "The marker will be stored in the app.",
+      },
+    ];
+
+    const activeTab = vnode.state.activeTab || "info";
+
+    const activeTabData = tabs.find((tab) => tab.id === activeTab);
+
+    return m("div.marker-modal", [
+      m("div.marker-modal-content", [
+        // Header
+        m("div.modal-header", [
+          m("h3", properties.popupText || "POI"),
+
+          m(
+            "button.modal-close",
+            {
+              type: "button",
+              "aria-label": "close",
+              title: "close",
+              onclick: onClose,
+            },
+            "×",
+          ),
+        ]),
+
+        // Tab Navigation
+        m(
+          "nav.modal-tabs",
+          {
+            role: "tablist",
+          },
+
+          tabs.map((tab) =>
+            m(
+              "button.modal-tab",
+              {
+                type: "button",
+                role: "tab",
+
+                class: activeTab === tab.id ? "active" : "",
+
+                "aria-label": tab.label,
+                "aria-selected": activeTab === tab.id,
+                title: tab.label,
+
+                onclick: () => {
+                  if (tab.id === "save") {
+                    setTimeout(() => {
+                      storeMarker(status.selectedMarker).then((value) => {
+                        status.selectedMarker.remove();
+                        const [lng, lat] = value.geometry.coordinates;
+                        createPOIMarker(
+                          lat,
+                          lng,
+                          value.properties.name,
+                          value.properties.tags ?? {},
+                          true,
+                        ).then((e) => {
+                          e.addTo(markersGroup);
+                        });
+                      });
+                    }, 1000);
+                  }
+
+                  vnode.state.activeTab = tab.id;
+                },
+              },
+
+              m("span.modal-tab-icon", tab.icon),
+            ),
+          ),
+        ),
+
+        // Tab Content
+        m(
+          "div.modal-tab-content",
+
+          activeTab === "contact"
+            ? activeTabData.content.length
+              ? activeTabData.content.map((item) =>
+                  m("div.contact-item", [
+                    item.href
+                      ? m(
+                          "a",
+                          {
+                            href: item.href,
+                            target: item.external ? "_blank" : undefined,
+                            rel: item.external
+                              ? "noopener noreferrer"
+                              : undefined,
+                          },
+                          item.value,
+                        )
+                      : m("div", item.value),
+                  ]),
+                )
+              : m("p", "No contact information.")
+            : activeTabData?.content
+              ? m("div", activeTabData.content)
+              : m("p", "No content."),
+        ),
+      ]),
+    ]);
+  },
+};
 
 let mapView = {
+  markerData: null,
+
   handler: function (e) {
     if (e.key === "SoftLeft" || e.key === "Control") {
       map.zoomIn();
@@ -1739,6 +2270,7 @@ let mapView = {
   oncreate: function () {
     bottom_bar("", "<img class='menu-button' src='assets/image/menu.svg'>", "");
     top_bar("", "", "");
+    document.querySelector("#map-container").style.display = "block";
 
     document.addEventListener("keydown", this.handler);
   },
@@ -1759,20 +2291,27 @@ let mapView = {
         onremove: () => {
           if (settings.scale) status.scaleControl.remove();
 
-          const center = map.getCenter();
-          let mapState = {
-            lat: center.lat,
-            lng: center.lng,
-            zoom: map.getZoom(),
-          };
-
-          localforage.setItem("lastPosition", mapState);
-
           document.querySelector("#map-container").style.display = "none";
         },
 
         oncreate: (vnode) => {
           document.querySelector("#map-container").style.display = "block";
+
+          //overpass
+          setTimeout(() => {
+            const query = window.location.hash.split("?")[1] || "";
+            const params = new URLSearchParams(query);
+            const poiQuery = params.get("poi");
+
+            if (poiQuery) {
+              loadPOIs(poiQuery);
+            }
+
+            const share = params.get("share");
+            if (share) {
+              console.log("share");
+            }
+          }, 1000);
 
           document
             .querySelector("#bottom-bar")
@@ -1785,24 +2324,69 @@ let mapView = {
         },
       },
       [
-        status.notKaiOS
-          ? m(
-              "button",
-              {
-                id: "follow-icon",
-                onclick: () => {
-                  if (status.automapCenter) {
-                    status.automapCenter = false;
-                  } else {
-                    status.automapCenter = true;
-                    side_toaster("Map centered on your position", 3000);
-                  }
+        m("div", { class: "row", id: "icon-bar" }, [
+          status.notKaiOS
+            ? m(
+                "button",
+                {
+                  id: "follow-icon",
+                  onclick: () => {
+                    if (status.automapCenter) {
+                      status.automapCenter = false;
+                    } else {
+                      status.automapCenter = true;
+                      side_toaster("Map centered on your position", 3000);
+                    }
+                  },
                 },
-              },
-              Icon(Navigation),
-            )
-          : null,
-        m("div", { id: "map-info" }, ""),
+                Icon(Navigation),
+              )
+            : null,
+
+          status.notKaiOS
+            ? m(
+                "button",
+                {
+                  id: "search-icon",
+                  onclick: () => {
+                    m.route.set("/searchView");
+                  },
+                },
+                Icon(Search),
+              )
+            : null,
+
+          status.notKaiOS
+            ? m(
+                "button",
+                {
+                  id: "add-marker",
+                  onclick: () => {
+                    let center = map.getCenter();
+                    createPOIMarker(center.lat, center.lng, "", "").then(
+                      (e) => {
+                        e.addTo(markersGroup);
+                        e.fire("click");
+                      },
+                    );
+                  },
+                },
+                Icon(MapPinPlus),
+              )
+            : null,
+
+          m("button", { id: "map-info" }, ""),
+          m("button", { id: "info", class: "" }, ""),
+        ]),
+
+        m(MarkerModal, {
+          data: this.markerData,
+          onClose: () => {
+            mapView.markerData = null;
+            m.redraw();
+          },
+        }),
+
         m(
           "div",
           {
@@ -1895,7 +2479,7 @@ var menuView = {
               m.route.set("/imageryView");
             },
             oncreate: (vnode) => {
-              vnode.dom.focus();
+              if (!status.notKaiOS) vnode.dom.focus();
             },
           },
           Icon(Layers),
@@ -2097,7 +2681,6 @@ var imageryView = {
                 onclick: () => {
                   loadWeatherLayers();
                   status.weatherlayer = !true;
-
                   m.route.set("/mapView");
                 },
                 class: "item",
@@ -2310,24 +2893,27 @@ var poiView = {
       [
         m("div", { class: "col-xs-11 col-md-3" }, [
           m("h2", "POI"),
+
           m(
             "div",
-            basic_pois.map((e, i) =>
-              m(
-                "button",
-                {
-                  class: "item",
-                  oncreate: (vnode) => {
-                    if (i == 0) vnode.dom.focus();
+            basic_pois
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .map((e, i) =>
+                m(
+                  "button",
+                  {
+                    class: "item",
+                    oncreate: (vnode) => {
+                      if (i == 0) vnode.dom.focus();
+                    },
+                    onclick: () => {
+                      const encodedQuery = encodeURIComponent(e.query);
+                      m.route.set("/mapView?poi=" + encodedQuery);
+                    },
                   },
-                  onclick: () => {
-                    loadPOIs(e.query);
-                    m.route.set("/mapView");
-                  },
-                },
-                e.name,
+                  e.name,
+                ),
               ),
-            ),
           ),
         ]),
       ],
@@ -2387,7 +2973,7 @@ var filesView = {
         id: "files",
         tabindex: 0,
         oncreate: (vnode) => {
-          vnode.dom.focus();
+          if (!status.notKaiOS) vnode.dom.focus();
         },
       },
       [
@@ -2403,20 +2989,23 @@ var filesView = {
                         class: "item",
                         tabIndex: 0,
                         oncreate: (vnode) => {
-                          if (index == 0) {
+                          if (index == 0 && !status.notKaiOS) {
                             vnode.dom.focus();
                           }
                         },
                         onclick: () => {
                           const [lng, lat] = item.geometry.coordinates;
-                          createPOIMarker(lat, lng, item.properties.name).then(
-                            (e) => {
-                              e.addTo(markersGroup);
-                              map.setView([lat, lng], 14);
-
-                              m.route.set("/mapView");
-                            },
-                          );
+                          createPOIMarker(
+                            lat,
+                            lng,
+                            item.properties.name,
+                            item.properties.tags ?? {},
+                            true,
+                          ).then((e) => {
+                            e.addTo(markersGroup);
+                            map.setView([lat, lng], 14);
+                            m.route.set("/mapView");
+                          });
                         },
                       },
                       item.properties.name || "unknow",
@@ -2503,8 +3092,12 @@ var filesView = {
                             const button = e.currentTarget;
 
                             if (button.classList.contains("activ")) {
+                              console.log("yes active");
                               button.classList.remove("activ");
+                              status.loadedFiles = [];
+
                               if (gpxOverlayer) {
+                                localforage.removeItem("last_gpx");
                                 gpxOverlayer.clearLayers();
                               }
                               return;
@@ -2552,8 +3145,13 @@ var filesView = {
                             const button = e.currentTarget;
 
                             if (button.classList.contains("activ")) {
+                              console.log("yes active");
+
                               button.classList.remove("activ");
                               if (gpxOverlayer) {
+                                console.log("removed");
+                                localforage.removeItem("last_gpx");
+
                                 gpxOverlayer.clearLayers();
                               }
                               return;
@@ -2630,6 +3228,7 @@ var filesView = {
                             button.classList.remove("activ");
                             if (gpxOverlayer) {
                               gpxOverlayer.clearLayers();
+                              localforage.removeItem("last_gpx");
                             }
                             return;
                           }
@@ -2830,15 +3429,15 @@ let searchView = {
       {
         class: "panel row center-xs",
         id: "search",
-        oncreate: () => {},
 
         onkeydown: (e) => {
           if (e.key === "Enter") {
             let lat = document.activeElement.getAttribute("data-lat");
             let lng = document.activeElement.getAttribute("data-lng");
             let text = document.activeElement.getAttribute("data-text");
+            let tags = document.activeElement.getAttribute("data-tags");
 
-            createPOIMarker(lat, lng, text).then((e) => {
+            createPOIMarker(lat, lng, text, tags, true).then((e) => {
               e.addTo(markersGroup);
             });
             map.setView([lat, lng], 15);
@@ -2859,26 +3458,32 @@ let searchView = {
             },
 
             onSelect: (item) => {
-              status.search_collection.push(item);
+              status.search_collection.unshift(item);
               localforage
                 .setItem("search", status.search_collection)
-                .then((item) => {
-                  createPOIMarker(item.lat, item.lng, item.name).addTo(
-                    markersGroup,
-                  );
-                  map.setView([item.lat, item.lng], 15);
-                  m.route.set("/mapView");
+                .then(() => {
+                  // Warte kurz, bis das DOM aktualisiert ist, dann klick den Button
+                  setTimeout(() => {
+                    const firstButton = document.querySelector(
+                      ".search-history button",
+                    );
+                    if (firstButton) {
+                      firstButton.click();
+                    }
+                  }, 0);
                 });
             },
           }),
 
           status.search_collection.length
-            ? m("div", { class: "col-xs-12" }, [
+            ? m("div", { class: "col-xs-12 search-history" }, [
                 status.search_collection.map((e) => {
-                  const handleClick = () => {
-                    createPOIMarker(e.lat, e.lng, e.name).then((e) => {
-                      e.addTo(markersGroup);
-                    });
+                  const handleAction = () => {
+                    createPOIMarker(e.lat, e.lng, e.name, e.tags).then(
+                      (marker) => {
+                        marker.addTo(markersGroup);
+                      },
+                    );
                     map.setView([e.lat, e.lng], 14);
                     m.route.set("/mapView");
                   };
@@ -2888,20 +3493,15 @@ let searchView = {
                     {
                       class: "item",
                       tabIndex: 0,
-                      "data-lat": e.lat,
-                      "data-lng": e.lng,
-                      "data-text": e.lname,
+                      onclick: handleAction, // ← Hier direkt auf dem Button
+                      onkeydown: (e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          e.target.click(); // Triggert einfach den Click des fokussierten Elements
+                        }
+                      },
                     },
-                    [
-                      m(
-                        "h3",
-                        {
-                          onclick: handleClick,
-                        },
-                        e.name,
-                      ),
-                      m("div", { onclick: handleClick }, e.addresstype),
-                    ],
+                    [m("h3", e.name), m("div", e.addresstype)],
                   );
                 }),
               ])
@@ -3487,11 +4087,6 @@ var settingsView = {
                       onchange: (e) => (settings.radarTime = e.target.value),
                     },
                     [
-                      m("option", { value: "200" }, "200 ms"),
-                      m("option", { value: "500" }, "500 ms"),
-                      m("option", { value: "750" }, "750 ms"),
-                      m("option", { value: "1000" }, "1 s"),
-                      m("option", { value: "1500" }, "1.5 s"),
                       m("option", { value: "2000" }, "2 s"),
                       m("option", { value: "3000" }, "3 s"),
                       m("option", { value: "4000" }, "4 s"),
@@ -3562,6 +4157,8 @@ var settingsView = {
     );
   },
 };
+
+//Routing
 
 m.route(root, "/intro", {
   "/mapView": mapView,

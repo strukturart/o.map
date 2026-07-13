@@ -29,6 +29,210 @@
   src: url("../fonts/Lato-Regular.ttf");
 }
 
+@keyframes tilt-shaking {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(5deg);
+  }
+  50% {
+    transform: rotate(0eg);
+  }
+  75% {
+    transform: rotate(-5deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.marker-modal {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30vh;
+  background: transparent;
+  z-index: 999;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+
+  pointer-events: none;
+}
+
+.marker-modal-content {
+  background: #fff;
+  color: #000;
+
+  padding: 20px;
+  border-radius: 12px 12px 0 0;
+
+  height: 100%;
+  overflow-y: auto;
+
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+
+  animation: slideUp 0.3s ease-out;
+
+  pointer-events: auto;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* ---------------------------------
+   Header
+--------------------------------- */
+
+.modal-header {
+  display: flex;
+  align-items: center;
+
+  margin: -20px -20px 0 -20px;
+  padding: 15px 20px;
+
+  border-bottom: 1px solid #ddd;
+}
+
+.modal-header h3 {
+  flex: 1;
+  margin: 0;
+}
+
+/* ---------------------------------
+   Close Button
+--------------------------------- */
+
+.modal-close {
+  position: absolute;
+  right: 3px;
+  top: 3px;
+
+  width: 32px;
+  height: 32px;
+
+  margin: 0;
+  padding: 0;
+
+  background: transparent;
+  color: #666;
+
+  font-size: 20px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  flex-shrink: 0;
+}
+
+.modal-close:hover {
+  color: #070707;
+}
+
+/* ---------------------------------
+   Tabs
+--------------------------------- */
+
+.modal-tabs {
+  display: flex;
+  flex-direction: row;
+
+  width: 100%;
+
+  border-bottom: 1px solid #ddd;
+}
+
+/* Einzelner Tab */
+
+.modal-tab {
+  flex: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 48px;
+
+  margin: 0;
+  padding: 0;
+
+  background: transparent;
+  color: #777;
+
+  border: none;
+  border-bottom: 2px solid transparent;
+
+  cursor: pointer;
+}
+
+/* Icon */
+
+.modal-tab-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Aktiver Tab */
+
+.modal-tab.active {
+  color: #000;
+  border-bottom-color: #000;
+  background: white;
+}
+
+/* Optional: Hover */
+
+.modal-tab:hover {
+  color: #000;
+  border-bottom-color: #000;
+  background: white;
+}
+
+/* ---------------------------------
+   Content
+--------------------------------- */
+
+.modal-tab-content {
+  padding-top: 15px;
+}
+
+.marker-modal-content p {
+  margin: 0 0 10px 0;
+}
+
+/* ---------------------------------
+   Kontakt
+--------------------------------- */
+
+.contact-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.contact-item strong {
+  display: block;
+  margin-bottom: 3px;
+}
+
+/* ---------------------------------
+   Öffnungszeiten
+--------------------------------- */
+
+.tab-opening-hours div {
+  padding: 3px 0;
+}
+
 html,
 body {
   font-family: "Roboto" !important;
@@ -36,7 +240,7 @@ body {
   position: relative;
   margin: 0px;
   padding: 0px;
-  font-size: 1rem;
+  font-size: 1.1rem;
   line-height: 1.4rem;
   max-height: 100%;
   max-width: 100%;
@@ -79,28 +283,21 @@ p {
 }
 
 h1 {
-  font-size: 1rem;
+  font-size: 1.2rem;
   margin: 25px 0 5px 0;
   color: gray;
   text-transform: uppercase;
+  font-weight: bold;
 }
 
 h2 {
   font-size: 1.2rem;
-  margin: 25px 0 10px 0;
+  margin: 0px 0 10px 0;
   color: black;
   text-transform: uppercase;
   min-width: 100%;
   text-align: center;
-}
-
-h2 {
-  font-size: 1rem;
-  margin: 0px 0 10px 0;
-  color: black;
   font-weight: bold;
-  min-width: 100%;
-  text-align: center;
 }
 
 .small {
@@ -112,12 +309,17 @@ button {
   border-radius: 2px;
   padding: 7px;
   margin: 0 0 5px 0;
-  font-size: 1rem;
+  font-size: 1.1rem;
   background: silver;
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: black;
+  border: none;
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  appearance: none;
 }
 
 button.vip {
@@ -292,13 +494,36 @@ section {
   margin: 0 0 60px 0;
 }
 
-#follow-icon {
-  width: fit-content;
-  border-radius: 10px;
+#icon-bar {
   position: fixed;
   z-index: 10000;
   top: 35px;
-  left: 10px;
+  left: 20px;
+  gap: 10px;
+}
+
+#icon-bar #follow-icon {
+  width: fit-content;
+  border-radius: 10px;
+
+  background: yellow;
+  padding: 10px;
+  color: black;
+}
+
+#icon-bar #search-icon {
+  width: fit-content;
+  border-radius: 10px;
+
+  background: yellow;
+  padding: 10px;
+  color: black;
+}
+
+#icon-bar #add-marker {
+  width: fit-content;
+  border-radius: 10px;
+
   background: yellow;
   padding: 10px;
   color: black;
@@ -307,18 +532,32 @@ section {
 /*///////////////////////////
 ///WEATHER LAYER////////////////*/
 
-#map-info {
+#icon-bar #map-info {
   width: fit-content;
   border-radius: 10px;
-  position: fixed;
-  z-index: 10000;
-  top: 10px;
-  right: 10px;
+  line-height: 0px;
   background: yellow;
   padding: 10px;
+  color: black;
 }
 #map-info:empty {
   display: none;
+}
+
+#icon-bar #info {
+  width: fit-content;
+  border-radius: 10px;
+  line-height: 0px;
+  background: yellow;
+  padding: 10px;
+  color: black;
+}
+#info:empty {
+  display: none;
+}
+
+#info.animation {
+  animation: tilt-shaking 0.25s infinite;
 }
 
 /*///////////////////////////
