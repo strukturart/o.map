@@ -514,7 +514,6 @@ section {
 #icon-bar #follow-icon {
   width: fit-content;
   border-radius: 10px;
-
   background: yellow;
   padding: 10px;
   color: black;
@@ -523,7 +522,6 @@ section {
 #icon-bar #search-icon {
   width: fit-content;
   border-radius: 10px;
-
   background: yellow;
   padding: 10px;
   color: black;
@@ -532,7 +530,14 @@ section {
 #icon-bar #add-marker {
   width: fit-content;
   border-radius: 10px;
+  background: yellow;
+  padding: 10px;
+  color: black;
+}
 
+#icon-bar #wiki-commons {
+  width: fit-content;
+  border-radius: 10px;
   background: yellow;
   padding: 10px;
   color: black;

@@ -50,6 +50,7 @@ import {
   Download,
   MapPinPlus,
   StickyNote,
+  Image,
 } from "lucide";
 
 import {
@@ -73,6 +74,11 @@ const followIcon = new URL("./assets/css/images/follow.svg", import.meta.url)
 const markerPoi = new URL("./assets/css/images/marker-poi.png", import.meta.url)
   .href;
 
+const commonsMarker = new URL(
+  "./assets/css/images/marker-commons.png",
+  import.meta.url,
+).href;
+
 const startIcon = new URL("./assets/css/images/start.png", import.meta.url)
   .href;
 
@@ -85,6 +91,149 @@ function Icon(icon, size = 22) {
   });
 
   return m.trust(svg.outerHTML);
+}
+
+//build commons marker
+let buildCommonsMarker = (image) => {
+  var commonsmarker = L.marker([image.lat, image.lng], {
+    draggable: false,
+    icon: L.icon({
+      iconUrl: commonsMarker,
+      shadowUrl: null,
+      iconSize: [21, 35],
+      iconAnchor: [10, 17],
+      popupAnchor: [0, -17],
+    }),
+  }).addTo(commonsMarkerGroup);
+
+  commonsmarker.on("click", function () {
+    var popup = '<div class="commons-popup">';
+
+    if (image.thumbnail) {
+      popup +=
+        '<a href="' + image.commons + '" target="_blank" rel="noopener">';
+      popup +=
+        '<img src="' +
+        image.thumbnail +
+        '" alt="" style="max-width:200px;max-height:150px;display:block;">';
+      popup += "</a>";
+    }
+
+    popup += "<p>" + image.title + "</p>";
+
+    if (image.artist) {
+      popup += "<small>" + image.artist + "</small><br>";
+    }
+
+    if (image.license) {
+      popup += "<small>Lizenz: " + image.license + "</small><br>";
+    }
+
+    popup +=
+      '<a href="' +
+      image.commons +
+      '" target="_blank" rel="noopener">Wikimedia Commons</a>';
+    popup += "</div>";
+
+    commonsmarker.bindPopup(popup).openPopup();
+  });
+};
+
+async function searchCommons(lat, lng, radius) {
+  if (status.commons_search_running) {
+    side_toaster("search in progress", 3000);
+    return;
+  }
+
+  document.querySelector("#info").textContent = "load data..";
+
+  var params = {
+    action: "query",
+    generator: "geosearch",
+    ggsprimary: "all",
+    ggsnamespace: 6,
+    ggscoord: lat + "|" + lng,
+    ggsradius: radius || 2000,
+    ggslimit: 200,
+    prop: "coordinates|imageinfo",
+    coprimary: "all",
+    iiprop: "url|extmetadata|mime",
+    iiurlwidth: 400,
+    format: "json",
+    origin: "*",
+  };
+
+  status.commons_search_running = true;
+  try {
+    while (true) {
+      var url =
+        "https://commons.wikimedia.org/w/api.php?" +
+        new URLSearchParams(params).toString();
+
+      var response = await fetch(url);
+
+      if (!response.ok) {
+        document.querySelector("#info").textContent = "";
+        throw new Error("HTTP error: " + response.status);
+      }
+
+      var data = await response.json();
+      var pages = data.query?.pages || {};
+
+      Object.values(pages).forEach(function (page) {
+        var info = page.imageinfo?.[0];
+        var coords = page.coordinates?.[0];
+
+        if (!info) return;
+        if (!info.mime || !info.mime.startsWith("image/")) return;
+
+        var lat = coords?.lat;
+        var lng = coords?.lon;
+
+        // Fallback: EXIF-GPS-Data
+        if (!lat || !lng) {
+          var gpsLatitude = info.extmetadata?.GPSLatitude?.value;
+          var gpsLongitude = info.extmetadata?.GPSLongitude?.value;
+
+          if (gpsLatitude && gpsLongitude) {
+            lat = parseFloat(gpsLatitude);
+            lng = parseFloat(gpsLongitude);
+          }
+        }
+
+        if (!lat || !lng) return;
+
+        let image = {
+          title: page.title,
+          lat: lat,
+          lng: lng,
+          thumbnail: info.thumburl,
+          image: info.url,
+          commons: info.descriptionurl,
+          license: info.extmetadata?.LicenseShortName?.value,
+          artist: info.extmetadata?.Artist?.value,
+          dateTime: info.extmetadata?.DateTime?.value,
+          gpsSource: coords ? "structured" : "exif",
+        };
+        buildCommonsMarker(image);
+      });
+
+      if (!data.continue) break;
+
+      Object.assign(params, data.continue);
+    }
+
+    return;
+  } catch (error) {
+    side_toaster("Search error", 3000);
+    status.commons_search_running = false;
+    document.querySelector("#info").textContent = "";
+
+    return [];
+  } finally {
+    status.commons_search_running = false;
+    document.querySelector("#info").textContent = "";
+  }
 }
 
 const sw_channel = new BroadcastChannel("sw-messages");
@@ -122,6 +271,7 @@ let map = null;
 let mainmarker = null;
 let mainmarkerGroup = null;
 let markersGroup = null;
+let commonsMarkerGroup = null;
 let trackingLine;
 
 //load custom maps,layers and pois from user
@@ -202,12 +352,12 @@ let test = () => {
   const query = window.location.hash.split("?")[1] || "";
   const params = new URLSearchParams(query);
 
-  const share = params.get("share");
+  const share = params.get("lat");
   if (share && params.get("lat") && params.get("lng")) {
     status.share = {
       lat: params.get("lat"),
       lng: params.get("lng"),
-      zoom: params.get("zoom"),
+      zoom: params.get("zoom") || 16,
     };
   }
 };
@@ -313,6 +463,7 @@ let key_delay = () => {
 };
 
 //move map
+let mapState = null;
 function MoveMap(direction) {
   document.querySelector("#map-container").focus();
   const baseStep = 0.01;
@@ -332,7 +483,7 @@ function MoveMap(direction) {
   }
   map.panTo(center);
 
-  let mapState = {
+  mapState = {
     lat: center.lat,
     lng: center.lng,
     zoom: map.getZoom(),
@@ -342,7 +493,6 @@ function MoveMap(direction) {
 }
 
 let getMarkers = async () => {
-  retun;
   // Get the current bounds of the map
   const bounds = map.getBounds().pad(0.3);
 
@@ -376,6 +526,19 @@ let getMarkers = async () => {
         const distance = mapCenter.distanceTo(markerLatLng);
 
         // Add the marker and its distance to the list
+        status.markers_in_bounds.push({ layer, distance });
+      }
+    }
+  });
+
+  // Alle Marker in der Gruppe durchsuchen
+  commonsMarkerGroup.eachLayer(function (layer) {
+    if (layer instanceof L.Marker) {
+      const markerLatLng = layer.getLatLng();
+
+      if (bounds.contains(markerLatLng)) {
+        const distance = mapCenter.distanceTo(markerLatLng);
+
         status.markers_in_bounds.push({ layer, distance });
       }
     }
@@ -839,7 +1002,6 @@ let addTilesLayer = (url, maxzoom, attribution) => {
     if (url == status.current_tilelayer) {
       status.current_tilelayer = "";
       localforage.removeItem("lastTilesLayer");
-      return;
     }
   }
 
@@ -1365,7 +1527,6 @@ const initMap = () => {
   localforage
     .getItem("lastTilesLayer")
     .then((e) => {
-      console.log(e);
       if (e.url) {
         addTilesLayer(e.url, e.maxzoom, e.attribution);
       } else {
@@ -1394,6 +1555,8 @@ const initMap = () => {
 
   poiGroup = L.layerGroup().addTo(map);
   mainmarkerGroup = L.layerGroup().addTo(map);
+  commonsMarkerGroup = L.layerGroup().addTo(map);
+
   gpxOverlayer = L.layerGroup().addTo(map);
   geoJsonLayer = L.layerGroup().addTo(map);
   markersGroup = L.layerGroup().addTo(map);
@@ -1461,6 +1624,7 @@ const initMap = () => {
         setTimeout(() => {
           if (status.share) {
             map.panTo([status.share.lat, status.share.lng], status.share.zoom);
+            console.log("it is share");
           } else {
             map.panTo([e.coords.latitude, e.coords.longitude], 16);
           }
@@ -2288,6 +2452,12 @@ let mapView = {
       }
     }
 
+    if (e.key === "7") {
+      searchCommons(mapState.lat, mapState.lng, 2000).then(function (images) {
+        console.log(images);
+      });
+    }
+
     if (e.key === "#") {
       panToNextMarker();
     }
@@ -2435,6 +2605,22 @@ let mapView = {
                 Icon(StickyNote),
               )
             : null,
+
+          m(
+            "button",
+            {
+              id: "wiki-commons",
+              onclick: () => {
+                let center = map.getCenter();
+                searchCommons(center.lat, center.lng, 5000).then(
+                  function (images) {
+                    console.log(images);
+                  },
+                );
+              },
+            },
+            Icon(Image),
+          ),
 
           m("button", { id: "map-info" }, ""),
           m("button", { id: "info", class: "" }, ""),

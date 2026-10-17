@@ -20,8 +20,7 @@ O.Map is an openstreetmap app for KaiOS, it is a good companion for your next ou
 - rainradar
 - weather
 - open openstreetmap link
-- tracking
-- draw track
+- tracking (KaiOS only)
 
 ![image-1](/images/thumbs.svg)
 
@@ -45,6 +44,7 @@ O.Map is an openstreetmap app for KaiOS, it is a good companion for your next ou
 - **key 3** routing
 - **key 4** auto center map
 - **key 5** set marker
+- **key 7** load wiki commons images
 - **key #** offline mode - download map tiles
 - **key \*** jump between markers
 - **key Backspace** close: Menu,measure distance,info panel
@@ -128,6 +128,7 @@ If you want to create a browser version<br>
 - https://openrouteservice.org/
 - https://www.rainviewer.com/api.html
 - https://github.com/MazeMap/Leaflet.TileLayer.PouchDBCached
+- https://commons.wikimedia.org/wiki/Main_Page
 - leaflet.js
 
 ### LICENSES
