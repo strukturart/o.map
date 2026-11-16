@@ -106,21 +106,17 @@ let buildCommonsMarker = (image) => {
     }),
   }).addTo(commonsMarkerGroup);
 
-  commonsmarker.on("click", function () {
-    var popup = '<div class="commons-popup">';
+  var popup = '<div class="commons-popup">';
 
-    if (image.thumbnail) {
-      popup +=
-        '<a href="' + image.commons + '" target="_blank" rel="noopener">';
-      popup +=
-        '<img src="' +
-        image.thumbnail +
-        '" alt="" style="max-width:200px;max-height:150px;display:block;">';
-      popup += "</a>";
-    }
+  if (image.thumbnail) {
+    popup += '<a href="' + image.commons + '" target="_blank" rel="noopener">';
+    popup += '<img src="' + image.thumbnail + '" alt="">';
+    popup += "</a>";
+  }
 
-    popup += "<p>" + image.title + "</p>";
+  popup += "<strong" + image.title + "</strong>";
 
+  if (status.notKaiOS) {
     if (image.artist) {
       popup += "<small>" + image.artist + "</small><br>";
     }
@@ -133,10 +129,23 @@ let buildCommonsMarker = (image) => {
       '<a href="' +
       image.commons +
       '" target="_blank" rel="noopener">Wikimedia Commons</a>';
-    popup += "</div>";
+  }
 
-    commonsmarker.bindPopup(popup).openPopup();
+  popup += "</div>";
+
+  commonsmarker.bindPopup(popup, {
+    maxWidth: Math.min(window.innerWidth - 30, 400),
+    maxHeight: Math.floor(window.innerHeight * 0.6),
+    autoPan: true,
+    keepInView: true,
   });
+
+  commonsmarker.on("click", function () {
+    getMarkers();
+
+    commonsmarker.openPopup();
+  });
+  getMarkers();
 };
 
 async function searchCommons(lat, lng, radius) {
@@ -483,6 +492,8 @@ function MoveMap(direction) {
   }
   map.panTo(center);
 
+  getMarkers();
+
   mapState = {
     lat: center.lat,
     lng: center.lng,
@@ -507,11 +518,13 @@ let getMarkers = async () => {
   }
 
   //close all popups
+
   map.closePopup();
 
-  document.querySelectorAll(".selected-marker").forEach((el) => {
-    el.classList.remove("selected-marker");
-  });
+  if (document.querySelectorAll(".selected-marker"))
+    document.querySelectorAll(".selected-marker").forEach((el) => {
+      el.classList.remove("selected-marker");
+    });
 
   // Iterate over all layers on the map
   map.eachLayer(function (layer) {
@@ -531,19 +544,6 @@ let getMarkers = async () => {
     }
   });
 
-  // Alle Marker in der Gruppe durchsuchen
-  commonsMarkerGroup.eachLayer(function (layer) {
-    if (layer instanceof L.Marker) {
-      const markerLatLng = layer.getLatLng();
-
-      if (bounds.contains(markerLatLng)) {
-        const distance = mapCenter.distanceTo(markerLatLng);
-
-        status.markers_in_bounds.push({ layer, distance });
-      }
-    }
-  });
-
   // Sort the markers by distance (ascending)
   status.markers_in_bounds.sort((a, b) => a.distance - b.distance);
 
@@ -552,7 +552,6 @@ let getMarkers = async () => {
 };
 
 let currentMarkerIndex = -1;
-
 let previousMarkerIndex = null;
 
 function panToNextMarker() {
@@ -580,11 +579,16 @@ function panToNextMarker() {
   const markerLatLng = status.selectedMarker.getLatLng();
 
   // Open popup for the selected marker
-  const popup = status.selectedMarker.getPopup();
-  const content = popup?.getContent();
 
-  if (content && content.trim() !== "") {
-    status.selectedMarker.openPopup();
+  const popup = status.selectedMarker.getPopup();
+
+  if (popup) {
+    console.log(popup);
+    const content = popup.getContent();
+
+    if (content && typeof content === "string" && content.trim() !== "") {
+      status.selectedMarker.openPopup();
+    }
   }
 
   // Pan the map to the selected marker
@@ -2453,7 +2457,8 @@ let mapView = {
     }
 
     if (e.key === "7") {
-      searchCommons(mapState.lat, mapState.lng, 2000).then(function (images) {
+      let center = map.getCenter();
+      searchCommons(center.lat, center.lng, 2000).then(function (images) {
         console.log(images);
       });
     }
@@ -2606,21 +2611,19 @@ let mapView = {
               )
             : null,
 
-          m(
-            "button",
-            {
-              id: "wiki-commons",
-              onclick: () => {
-                let center = map.getCenter();
-                searchCommons(center.lat, center.lng, 5000).then(
-                  function (images) {
-                    console.log(images);
+          status.notKaiOS
+            ? m(
+                "button",
+                {
+                  id: "wiki-commons",
+                  onclick: () => {
+                    let center = map.getCenter();
+                    searchCommons(center.lat, center.lng, 5000).then();
                   },
-                );
-              },
-            },
-            Icon(Image),
-          ),
+                },
+                Icon(Image),
+              )
+            : null,
 
           m("button", { id: "map-info" }, ""),
           m("button", { id: "info", class: "" }, ""),
@@ -3997,6 +4000,18 @@ var keyView = {
                 ],
               )
             : null,
+
+          m(
+            "div",
+            {
+              tabindex: 0,
+              class: "item row between-xs no-background-item",
+            },
+            [
+              m("kbd", { class: "col-xs-2" }, "7"),
+              m("span", "load commons images"),
+            ],
+          ),
           m(
             "div",
             { tabindex: 0, class: "item row between-xs no-background-item" },
@@ -4007,7 +4022,7 @@ var keyView = {
             { tabindex: 0, class: "item row between-xs no-background-item" },
             [m("kbd", { class: "col-xs-2" }, "#"), m("span", "select marker")],
           ),
-          status.notKaiOS
+          !status.notKaiOS
             ? m("div", {
                 id: "KaiOSads-Wrapper",
                 class: "",

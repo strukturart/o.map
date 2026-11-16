@@ -90,6 +90,13 @@
   }
 }
 
+.commons-popup img {
+  max-width: 100%;
+  max-height: 70vh;
+  height: auto;
+  object-fit: contain;
+}
+
 /* ---------------------------------
    Header
 --------------------------------- */
