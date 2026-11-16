@@ -146,7 +146,7 @@ OpenStreetMap is a trademark of the OpenStreetMap Foundation. o.map is not endor
 
 KaiOS
 
-This software uses KaiAds. This is a third party service that may collect information used to identify you. Pricacy policy of KaiAds.
+This software uses KaiAds. This is a third party service that may collect information used to identify you. Privacy policy of KaiAds.
 
 ### other map apps for KaiOS
 

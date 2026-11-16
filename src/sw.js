@@ -62,7 +62,7 @@ const userAgent =
     : "";
 
 if (userAgent && !userAgent.includes("KAIOS")) {
-  const CACHE_NAME = "pwa-cache-v2.240500054";
+  const CACHE_NAME = "pwa-cache-v2.240500055";
   const FILE_LIST_URL = "file-list.json";
 
   self.addEventListener("install", (event) => {

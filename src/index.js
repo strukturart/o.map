@@ -148,7 +148,7 @@ let buildCommonsMarker = (image) => {
   getMarkers();
 };
 
-async function searchCommons(lat, lng, radius) {
+let searchCommons = async (lat, lng, radius) => {
   if (status.commons_search_running) {
     side_toaster("search in progress", 3000);
     return;
@@ -166,7 +166,7 @@ async function searchCommons(lat, lng, radius) {
     ggslimit: 200,
     prop: "coordinates|imageinfo",
     coprimary: "all",
-    iiprop: "url|extmetadata|mime",
+    iiprop: "url|extmetadata|mime|metadata",
     iiurlwidth: 400,
     format: "json",
     origin: "*",
@@ -243,7 +243,7 @@ async function searchCommons(lat, lng, radius) {
     status.commons_search_running = false;
     document.querySelector("#info").textContent = "";
   }
-}
+};
 
 const sw_channel = new BroadcastChannel("sw-messages");
 
