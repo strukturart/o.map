@@ -15,9 +15,8 @@ export const osm_server_upload_gpx = async function (
     return false;
   }
 
-  let n = "Bearer " + general.osm_token;
   const myHeaders = new Headers({
-    Authorization: n,
+    Authorization: "Bearer " + token,
   });
 
   var blob = new Blob([gpx_data], {
@@ -40,7 +39,6 @@ export const osm_server_upload_gpx = async function (
     );
     const data = await response.text();
     if (notify) side_toaster("file uploaded", 4000);
-    status.live_track_id.push(data);
     return data;
   } catch (error) {
     side_toaster("error: " + error, 4000);
@@ -55,9 +53,8 @@ export const osm_delete_gpx = async function (id, notify) {
     return false;
   }
 
-  let n = "Bearer " + general.osm_token;
   const myHeaders = new Headers({
-    Authorization: n,
+    Authorization: "Bearer " + token,
   });
   if (notify) side_toaster("try deleting file", 2000);
 
@@ -70,10 +67,6 @@ export const osm_delete_gpx = async function (id, notify) {
       },
     );
     const data = await response.text();
-
-    try {
-      status.live_track_id = status.live_track_id.filter((item) => item !== id);
-    } catch (e) {}
 
     await new Promise((resolve) => setTimeout(resolve, 2000));
     if (notify) side_toaster("file deleted " + id, 4000);
@@ -91,9 +84,8 @@ export const osm_update_gpx = async function (id, gpx_data) {
     return false;
   }
 
-  let n = "Bearer " + general.osm_token;
   const myHeaders = new Headers({
-    Authorization: n,
+    Authorization: "Bearer " + token,
   });
 
   var blob = new Blob([gpx_data], {
@@ -112,7 +104,7 @@ export const osm_update_gpx = async function (id, gpx_data) {
       const xhr = new XMLHttpRequest({ mozSystem: true });
       const url = "https://api.openstreetmap.org/api/0.6/gpx/" + id;
       xhr.open("PUT", url);
-      xhr.setRequestHeader("Authorization", n);
+      xhr.setRequestHeader("Authorization", "Bearer " + token);
 
       xhr.onload = function () {
         if (xhr.status === 200) {
@@ -202,10 +194,9 @@ export const osm_server_load_gpx = async function (
   download = false,
 ) {
   let token = await localforage.getItem("osm_token");
-  let n = "Bearer " + token;
 
   const myHeaders = new Headers({
-    Authorization: n,
+    Authorization: "Bearer " + token,
     Accept: "application/gpx+xml",
   });
 
@@ -227,10 +218,9 @@ export const osm_server_load_gpx = async function (
 
 export const osm_server_create_note = async function (lat, lon, text) {
   let token = await localforage.getItem("osm_token");
-  let n = "Bearer " + token;
 
   const myHeaders = new Headers({
-    Authorization: n,
+    Authorization: "Bearer " + token,
     "Content-Type": "text/plain",
   });
 
@@ -258,14 +248,13 @@ export const osm_server_create_note = async function (lat, lon, text) {
 export const osm_server_list_gpx = async function () {
   const token = await localforage.getItem("osm_token");
 
-  let n = "Bearer " + token;
-  if (!n) {
+  if (!token) {
     console.log("no token");
     return;
   }
 
   const myHeaders = new Headers({
-    Authorization: n,
+    Authorization: "Bearer " + token,
   });
 
   try {
@@ -298,10 +287,6 @@ export const osm_server_list_gpx = async function () {
             type: "osm_sever",
           });
         }
-
-        files.sort((a, b) => {
-          return b.name.localeCompare(a.name);
-        });
       } else {
         for (let n = 0; n < s[i].childNodes.length; n++) {
           if (s[i].childNodes[n].tagName == "tag") {
@@ -317,15 +302,16 @@ export const osm_server_list_gpx = async function () {
                 id: m.id,
                 type: "osm_sever",
               });
-
-              files.sort((a, b) => {
-                return b.name.localeCompare(a.name);
-              });
             }
           }
         }
       }
     }
+
+    files.sort((a, b) => {
+      return b.name.localeCompare(a.name);
+    });
+
     return files;
   } catch (error) {
     console.log(error);
