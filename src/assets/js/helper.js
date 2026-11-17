@@ -603,7 +603,7 @@ let toast_q = function (text, time) {
     queue = queue.slice(1);
     if (queue.length > 0) {
       setTimeout(() => {
-        toast_q(text, time);
+        toast_q(queue[0].text, queue[0].time);
       }, 1000);
     }
   }, time);
@@ -628,10 +628,10 @@ let toast_qq = function (text, time) {
 
   timeout = setTimeout(function () {
     x.style.transform = "translate(-100vw,0px)";
-    queue_st = queue.slice(1);
+    queue_st = queue_st.slice(1);
     if (queue_st.length > 0) {
       setTimeout(() => {
-        toast_qq(text, time);
+        toast_qq(queue_st[0].text, queue_st[0].time);
       }, 1000);
     }
   }, time);
