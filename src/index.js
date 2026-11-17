@@ -114,7 +114,7 @@ let buildCommonsMarker = (image) => {
     popup += "</a>";
   }
 
-  popup += "<strong" + image.title + "</strong>";
+  popup += "<strong>" + image.title + "</strong>";
 
   if (status.notKaiOS) {
     if (image.artist) {
