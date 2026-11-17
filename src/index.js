@@ -1312,8 +1312,8 @@ function analyzeTrack(trackingData) {
   );
 
   const distanceMeters = turf.length(geoJSONLine, { units: "meters" });
-  const distanceKm = turf.length(geoJSONLine, { units: "kilometers" });
-  const distanceMiles = turf.length(geoJSONLine, { units: "miles" });
+  const distanceKm = distanceMeters / 1000;
+  const distanceMiles = distanceMeters / 1609.344;
 
   const durationSeconds =
     (trackingData[trackingData.length - 1].timestamp -
